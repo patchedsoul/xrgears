@@ -228,30 +228,8 @@ namespace vkTools
 
 	void exitFatal(std::string message, std::string caption)
 	{
-#ifdef _WIN32
-		MessageBox(NULL, message.c_str(), caption.c_str(), MB_OK | MB_ICONERROR);
-#else
-		// TODO : Linux
-#endif
 		std::cerr << message << "\n";
 		exit(1);
-	}
-
-	std::string readTextFile(const char *fileName)
-	{
-		std::string fileContent;
-		std::ifstream fileStream(fileName, std::ios::in);
-		if (!fileStream.is_open()) {
-			printf("File %s not found\n", fileName);
-			return "";
-		}
-		std::string line = "";
-		while (!fileStream.eof()) {
-			getline(fileStream, line);
-			fileContent.append(line + "\n");
-		}
-		fileStream.close();
-		return fileContent;
 	}
 
 	VkShaderModule loadShader(const char *fileName, VkDevice device, VkShaderStageFlagBits stage) 
@@ -285,31 +263,5 @@ namespace vkTools
 			std::cerr << "Error: Could not open shader file \"" << fileName << "\"" << std::endl;
 			return nullptr;
 		}
-	}
-
-	VkShaderModule loadShaderGLSL(const char *fileName, VkDevice device, VkShaderStageFlagBits stage)
-	{
-		std::string shaderSrc = readTextFile(fileName);
-		const char *shaderCode = shaderSrc.c_str();
-		size_t size = strlen(shaderCode);
-		assert(size > 0);
-
-		VkShaderModule shaderModule;
-		VkShaderModuleCreateInfo moduleCreateInfo;
-		moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		moduleCreateInfo.pNext = NULL;
-		moduleCreateInfo.codeSize = 3 * sizeof(uint32_t) + size + 1;
-		moduleCreateInfo.pCode = (uint32_t*)malloc(moduleCreateInfo.codeSize);
-		moduleCreateInfo.flags = 0;
-
-		// Magic SPV number
-		((uint32_t *)moduleCreateInfo.pCode)[0] = 0x07230203; 
-		((uint32_t *)moduleCreateInfo.pCode)[1] = 0;
-		((uint32_t *)moduleCreateInfo.pCode)[2] = stage;
-		memcpy(((uint32_t *)moduleCreateInfo.pCode + 3), shaderCode, size + 1);
-
-		VK_CHECK_RESULT(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
-
-		return shaderModule;
 	}
 }
