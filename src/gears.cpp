@@ -22,7 +22,6 @@
 #include "vulkanexamplebase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
-#define ENABLE_VALIDATION false
 
 class VulkanExample : public VulkanExampleBase
 {
@@ -42,7 +41,7 @@ public:
 	VkPipelineLayout pipelineLayout;
 	VkDescriptorSetLayout descriptorSetLayout;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+  VulkanExample() : VulkanExampleBase()
 	{
 		zoom = -16.0f;
 		rotation = glm::vec3(-23.75, 41.25, 21.0);

@@ -257,7 +257,7 @@ void VulkanExampleBase::submitFrame()
 	VK_CHECK_RESULT(vkQueueWaitIdle(queue));
 }
 
-VulkanExampleBase::VulkanExampleBase(bool enableValidation)
+VulkanExampleBase::VulkanExampleBase()
 {
 	// Check for a valid asset path
 	struct stat info;
