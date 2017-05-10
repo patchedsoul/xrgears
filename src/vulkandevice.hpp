@@ -133,14 +133,6 @@ namespace vk
 				typeBits >>= 1;
 			}
 
-#if defined(__ANDROID__)
-			//todo : Exceptions are disabled by default on Android (need to add LOCAL_CPP_FEATURES += exceptions to Android.mk), so for now just return zero
-			if (memTypeFound)
-			{
-				*memTypeFound = false;
-			}
-			return 0;
-#else
 			if (memTypeFound)
 			{
 				*memTypeFound = false;
@@ -150,7 +142,6 @@ namespace vk
 			{
 				throw std::runtime_error("Could not find a matching memory type");
 			}
-#endif
 		}
 
 		/**
@@ -202,12 +193,7 @@ namespace vk
 				}
 			}
 
-#if defined(__ANDROID__)
-			//todo : Exceptions are disabled by default on Android (need to add LOCAL_CPP_FEATURES += exceptions to Android.mk), so for now just return zero
-			return 0;
-#else
 			throw std::runtime_error("Could not find a matching queue family index");
-#endif
 		}
 
 		/**
