@@ -43,7 +43,7 @@
 #include "VulkanInitializers.hpp"
 #include "vulkandevice.hpp"
 #include "vulkanswapchain.hpp"
-#include "vulkanTextureLoader.hpp"
+//#include "vulkanTextureLoader.hpp"
 #include "vulkanMeshLoader.hpp"
 #include "vulkantextoverlay.hpp"
 #include "camera.hpp"
@@ -126,7 +126,6 @@ protected:
 		VkSemaphore textOverlayComplete;
 	} semaphores;
 	// Simple texture loader
-	vkTools::VulkanTextureLoader *textureLoader = nullptr;
 	// Returns the base asset path (for shaders, models, textures) depending on the os
 	const std::string getAssetPath();
 public: 
