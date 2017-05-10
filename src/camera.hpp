@@ -38,7 +38,7 @@ private:
 		{
 			matrices.view = transM * rotM;
 		}
-	};
+  }
 public:
 	enum CameraType { lookat, firstperson };
 	CameraType type = CameraType::lookat;
