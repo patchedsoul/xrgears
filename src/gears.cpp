@@ -47,7 +47,7 @@ public:
 		rotation = glm::vec3(-23.75, 41.25, 21.0);
 		timerSpeed *= 0.25f;
 		enableTextOverlay = true;
-		title = "Vulkan Example - Gears";
+		title = "xrgears";
 	}
 
 	~VulkanExample()
