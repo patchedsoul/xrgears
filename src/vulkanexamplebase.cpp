@@ -12,10 +12,8 @@
 
 std::vector<const char*> VulkanExampleBase::args;
 
-VkResult VulkanExampleBase::createInstance(bool enableValidation)
+VkResult VulkanExampleBase::createInstance()
 {
-	this->settings.validation = enableValidation;
-
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pApplicationName = name.c_str();
@@ -37,18 +35,10 @@ VkResult VulkanExampleBase::createInstance(bool enableValidation)
 	instanceCreateInfo.pApplicationInfo = &appInfo;
 	if (enabledExtensions.size() > 0)
 	{
-		if (settings.validation)
-		{
-			enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-		}
 		instanceCreateInfo.enabledExtensionCount = (uint32_t)enabledExtensions.size();
 		instanceCreateInfo.ppEnabledExtensionNames = enabledExtensions.data();
 	}
-	if (settings.validation)
-	{
-		instanceCreateInfo.enabledLayerCount = vkDebug::validationLayerCount;
-		instanceCreateInfo.ppEnabledLayerNames = vkDebug::validationLayerNames;
-	}
+
 	return vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
 }
 
@@ -154,10 +144,6 @@ void VulkanExampleBase::createPipelineCache()
 
 void VulkanExampleBase::prepare()
 {
-	if (vulkanDevice->enableDebugMarkers)
-	{
-		vkDebug::DebugMarker::setup(device);
-	}
 	createCommandPool();
 	setupSwapChain();
 	createCommandBuffers();
@@ -340,15 +326,9 @@ VulkanExampleBase::VulkanExampleBase(bool enableValidation)
 		exit(-1);
 	}
 
-	settings.validation = enableValidation;
-
 	// Parse command line arguments
 	for (size_t i = 0; i < args.size(); i++)
 	{
-		if (args[i] == std::string("-validation"))
-		{
-			settings.validation = true;
-		}
 		if (args[i] == std::string("-vsync"))
 		{
 			settings.vsync = true;
@@ -416,11 +396,6 @@ VulkanExampleBase::~VulkanExampleBase()
 
 	delete vulkanDevice;
 
-	if (settings.validation)
-	{
-		vkDebug::freeDebugCallback(instance);
-	}
-
 	vkDestroyInstance(instance, nullptr);
 
 
@@ -433,20 +408,10 @@ void VulkanExampleBase::initVulkan()
 	VkResult err;
 
 	// Vulkan instance
-	err = createInstance(settings.validation);
+  err = createInstance();
 	if (err)
 	{
 		vkTools::exitFatal("Could not create Vulkan instance : \n" + vkTools::errorString(err), "Fatal error");
-	}
-
-	// If requested, we enable the default validation layers for debugging
-	if (settings.validation)
-	{
-		// The report flags determine what type of messages for the layers will be displayed
-		// For validating (debugging) an appplication the error and warning bits should suffice
-		VkDebugReportFlagsEXT debugReportFlags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
-		// Additional flags include performance info, loader and layer debug messages, etc.
-		vkDebug::setupDebugging(instance, debugReportFlags, VK_NULL_HANDLE);
 	}
 
 	// Physical device

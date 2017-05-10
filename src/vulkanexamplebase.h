@@ -38,7 +38,6 @@
 
 #include "keycodes.hpp"
 #include "vulkantools.h"
-#include "vulkandebug.h"
 
 #include "VulkanInitializers.hpp"
 #include "vulkandevice.hpp"
@@ -133,8 +132,6 @@ public:
 
 	/** @brief Example settings that can be changed e.g. by command line arguments */
 	struct Settings {
-		/** @brief Activates validation layers (and message output) when set to true */
-		bool validation = false;
 		/** @brief Set to true if fullscreen mode has been requested via command line */
 		bool fullscreen = false;
 		/** @brief Set to true if v-sync will be forced for the swapchain */
@@ -291,7 +288,7 @@ public:
 	*
 	* @note Virtual, can be overriden by derived example class for custom instance creation
 	*/
-	virtual VkResult createInstance(bool enableValidation);
+  virtual VkResult createInstance();
 
 	// Pure virtual render function (override in derived class)
 	virtual void render() = 0;
