@@ -40,6 +40,10 @@ add_cxxflag("-Wno-delete-non-virtual-dtor")
 add_cxxflag("-Wno-cast-qual")
 add_cxxflag("-Wno-switch")
 
+add_cxxflag("-Wunreachable-code")
+
+add_cxxflag("--coverage")
+
 # find_package(XCB REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_XCB_KHR")
 
