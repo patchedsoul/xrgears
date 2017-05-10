@@ -21,14 +21,6 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
-#if defined(_WIN32)
-#include <windows.h>
-#include <fcntl.h>
-#include <io.h>
-#elif defined(__ANDROID__)
-#include "vulkanandroid.h"
-#include <android/asset_manager.h>
-#endif
 
 // Custom define for better code readability
 #define VK_FLAGS_NONE 0
@@ -36,17 +28,6 @@
 #define DEFAULT_FENCE_TIMEOUT 100000000000
 
 // Macro to check and display Vulkan return results
-#if defined(__ANDROID__)
-#define VK_CHECK_RESULT(f)																				\
-{																										\
-	VkResult res = (f);																					\
-	if (res != VK_SUCCESS)																				\
-	{																									\
-		LOGE("Fatal : VkResult is \" %s \" in %s at line %d", vkTools::errorString(res).c_str(), __FILE__, __LINE__); \
-		assert(res == VK_SUCCESS);																		\
-	}																									\
-}
-#else
 #define VK_CHECK_RESULT(f)																				\
 {																										\
 	VkResult res = (f);																					\
@@ -56,7 +37,6 @@
 		assert(res == VK_SUCCESS);																		\
 	}																									\
 }
-#endif
 
 namespace vkTools
 {
@@ -94,11 +74,7 @@ namespace vkTools
 	void exitFatal(std::string message, std::string caption);
 
 	// Load a SPIR-V shader (binary) 
-#if defined(__ANDROID__)
-	VkShaderModule loadShader(AAssetManager* assetManager, const char *fileName, VkDevice device, VkShaderStageFlagBits stage);
-#else
 	VkShaderModule loadShader(const char *fileName, VkDevice device, VkShaderStageFlagBits stage);
-#endif
 
 	// Load a GLSL shader (text)
 	// Note: GLSL support requires vendor-specific extensions to be enabled and is not a core-feature of Vulkan
