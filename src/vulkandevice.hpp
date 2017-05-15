@@ -62,6 +62,8 @@ namespace vk
 			vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 			// Features should be checked by the examples before using them
 			vkGetPhysicalDeviceFeatures(physicalDevice, &features);
+
+
 			// Memory properties are used regularly for creating all kinds of buffers
 			vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
 			// Queue family properties, used for setting up requested queues upon device creation
@@ -205,7 +207,7 @@ namespace vk
 		*
 		* @return VkResult of the device creation call
 		*/
-		VkResult createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures, bool useSwapChain = true, VkQueueFlags requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)
+		VkResult createLogicalDevice(VkInstance instance, VkPhysicalDeviceFeatures enabledFeatures, bool useSwapChain = true, VkQueueFlags requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)
 		{			
 			// Desired queues need to be requested upon logical device creation
 			// Due to differing queue family configurations of Vulkan implementations this can be a bit tricky, especially if the application
@@ -284,6 +286,16 @@ namespace vk
 				deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 			}
 
+
+			if (extensionSupported(VK_KHX_MULTIVIEW_EXTENSION_NAME))
+				printf("VK_KHX_multiview supported before adding\n");
+
+			deviceExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
+
+			//enabledExtensions.push_back(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
+
+			//enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
 			VkDeviceCreateInfo deviceCreateInfo = {};
 			deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 			deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());;
@@ -302,6 +314,81 @@ namespace vk
 			{
 				// Create a default command pool for graphics command buffers
 				commandPool = createCommandPool(queueFamilyIndices.graphics);
+			}
+
+
+
+
+
+			//vkGetPhysicalDeviceFeatures2KHR(physicalDevice, &features2);
+
+			PFN_vkGetPhysicalDeviceFeatures2KHR pfnGetPhysicalDeviceFeatures2KHR;
+
+			pfnGetPhysicalDeviceFeatures2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceFeatures2KHR"));
+
+			//VkPhysicalDeviceFeatures2KHR features2;
+			//pfnGetPhysicalDeviceFeatures2KHR(physicalDevice, &features2);
+
+			//printf("Got features 2 :) !\n");
+			//features2.features.
+
+			if (pfnGetPhysicalDeviceFeatures2KHR) {
+
+				printf("Got vkGetPhysicalDeviceFeatures2KHR pointer\n");
+
+					// VK_KHX_multiview
+					//if (true) {
+				if (extensionSupported(VK_KHX_MULTIVIEW_EXTENSION_NAME)) {
+
+							printf("VK_KHX_multiview supported\n");
+							VkPhysicalDeviceFeatures2KHR deviceFeatures2{};
+							VkPhysicalDeviceMultiviewFeaturesKHX multiViewFeatures{};
+							multiViewFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHX;
+							deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
+							deviceFeatures2.pNext = &multiViewFeatures;
+							pfnGetPhysicalDeviceFeatures2KHR(physicalDevice, &deviceFeatures2);
+
+							printf("multiview %d\n", multiViewFeatures.multiview);
+							printf("multiviewGeometryShader %d\n", multiViewFeatures.multiviewGeometryShader);
+							printf("multiviewTessellationShader %d\n", multiViewFeatures.multiviewTessellationShader);
+					} else {
+							printf("VK_KHX_multiview unsupported!!\n");
+					}
+			} else {
+				printf("DONT HAVE vkGetPhysicalDeviceFeatures2KHR pointer\n");
+			}
+
+			PFN_vkGetPhysicalDeviceProperties2KHR pfnGetPhysicalDeviceProperties2KHR;
+			pfnGetPhysicalDeviceProperties2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2KHR>(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceProperties2KHR"));
+
+			if (pfnGetPhysicalDeviceFeatures2KHR) {
+
+				printf("Got pfnGetPhysicalDeviceFeatures2KHR pointer\n");
+
+				if (extensionSupported(VK_KHX_MULTIVIEW_EXTENSION_NAME)) {
+					VkPhysicalDeviceProperties2KHR deviceProps2{};
+
+					VkPhysicalDeviceMultiviewPropertiesKHX extProps{};
+					extProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHX;
+					deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+					deviceProps2.pNext = &extProps;
+					pfnGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps2);
+
+					printf("maxMultiviewViewCount %d\n", extProps.maxMultiviewViewCount);
+					printf("maxMultiviewInstanceIndex %d\n", extProps.maxMultiviewInstanceIndex);
+
+					VkPhysicalDeviceProperties2KHR deviceProps22{};
+
+					VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX extProps2{};
+					extProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX;
+					deviceProps22.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+					deviceProps22.pNext = &extProps2;
+					pfnGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps22);
+
+					printf("perViewPositionAllComponents %d\n", extProps2.perViewPositionAllComponents);
+				}
+			} else {
+				printf("DONT HAVE pfnGetPhysicalDeviceFeatures2KHR pointer\n");
 			}
 
 			return result;
@@ -525,6 +612,12 @@ namespace vk
 		bool extensionSupported(std::string extension)
 		{
 			return (std::find(supportedExtensions.begin(), supportedExtensions.end(), extension) != supportedExtensions.end());
+		}
+
+		void printSupportedExtensions() {
+			for (auto extension : supportedExtensions) {
+				printf("%s\n", extension.c_str());
+			}
 		}
 
 	};

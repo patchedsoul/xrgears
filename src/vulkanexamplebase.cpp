@@ -29,6 +29,17 @@ VkResult VulkanExampleBase::createInstance()
 	enabledExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #endif
 
+	//enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
+
+	//enabledExtensions.push_back(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
+
+	//enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+	enabledExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+
+
+
+
 	VkInstanceCreateInfo instanceCreateInfo = {};
 	instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	instanceCreateInfo.pNext = NULL;
@@ -351,7 +362,7 @@ void VulkanExampleBase::initVulkan()
 	VkResult err;
 
 	// Vulkan instance
-  err = createInstance();
+	err = createInstance();
 	if (err)
 	{
 		vkTools::exitFatal("Could not create Vulkan instance : \n" + vkTools::errorString(err), "Fatal error");
@@ -432,7 +443,10 @@ void VulkanExampleBase::initVulkan()
 	// This is handled by a separate class that gets a logical device representation
 	// and encapsulates functions related to a device
 	vulkanDevice = new vk::VulkanDevice(physicalDevice);
-	VK_CHECK_RESULT(vulkanDevice->createLogicalDevice(enabledFeatures));
+
+	//vulkanDevice->printSupportedExtensions();
+
+	VK_CHECK_RESULT(vulkanDevice->createLogicalDevice(instance, enabledFeatures));
 	device = vulkanDevice->logicalDevice;
 
 	// todo: remove
@@ -1175,6 +1189,31 @@ void VulkanExampleBase::setupRenderPass()
 	renderPassInfo.pSubpasses = &subpassDescription;
 	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 	renderPassInfo.pDependencies = dependencies.data();
+
+
+	VkRenderPassMultiviewCreateInfoKHX renderPassMvInfo = {};
+	renderPassMvInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHX;
+	renderPassMvInfo.pNext = NULL;
+
+	renderPassMvInfo.subpassCount = 1;
+	renderPassMvInfo.dependencyCount = 1;
+
+	renderPassMvInfo.correlationMaskCount = 1;
+
+	uint32_t correlationMasks[] = { 0 };
+
+	renderPassMvInfo.pCorrelationMasks = correlationMasks;
+
+	//const uint32_t* viewMasks = new uint32_t(1);
+
+	uint32_t viewMasks[] = { 0, 3, 4, 6, 7 };
+
+	renderPassMvInfo.pViewMasks = viewMasks;
+
+	int32_t viewOffsets[] = { 0, 3, 4, 6, 7 };
+	renderPassMvInfo.pViewOffsets = viewOffsets;
+
+	renderPassInfo.pNext = &renderPassMvInfo;
 
 	VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass));
 }
