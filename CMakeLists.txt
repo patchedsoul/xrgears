@@ -64,3 +64,30 @@ FILE(GLOB_RECURSE XRGEARS_SRC "${CMAKE_SOURCE_DIR}/src/*.cpp")
 add_executable(xrgears ${XRGEARS_SRC})
 
 target_link_libraries(xrgears vulkan xcb assimp)
+
+
+# glslc -o gears.vert.spv gears.vert
+
+file(GLOB_RECURSE SHADER_VERT ${CMAKE_SOURCE_DIR}/data/shaders/*.vert)
+file(GLOB_RECURSE SHADERS_FRAG ${CMAKE_SOURCE_DIR}/data/shaders/*.frag)
+
+
+set(SHADER_GLOB ${SHADER_VERT} ${SHADERS_FRAG})
+message("Found shaders: ${SHADER_GLOB}")
+
+
+
+foreach(SHADER ${SHADER_GLOB})
+    message("Compiling SPV shader for ${SHADER}")
+    execute_process(
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/data/shaders
+	COMMAND glslc -o ${SHADER}.spv ${SHADER}
+    )
+endforeach(SHADER)
+
+
+
+#add_custom_target(shaders
+#        #clean and compile with 1 thread per core
+#	COMMAND glslc -o gears.vert.spv gears.vert
+#)
