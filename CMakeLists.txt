@@ -2,6 +2,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(xrgears)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
+
 # use XCB
 
 function(add_cxxflag FLAG)
@@ -105,6 +107,8 @@ FILE(GLOB EXAMPLE_DIRS RELATIVE
 foreach(EXAMPLE ${EXAMPLE_DIRS})
 	buildExample(${EXAMPLE})
 endforeach(EXAMPLE)
+
+
 
 
 #add_custom_target(shaders
