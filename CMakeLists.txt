@@ -62,13 +62,10 @@ target_link_libraries(vitamin-k vulkan xcb assimp)
 
 # glslc -o gears.vert.spv gears.vert
 
-file(GLOB_RECURSE SHADER_VERT ${CMAKE_SOURCE_DIR}/data/shaders/*.vert)
-file(GLOB_RECURSE SHADERS_FRAG ${CMAKE_SOURCE_DIR}/data/shaders/*.frag)
-
-
-set(SHADER_GLOB ${SHADER_VERT} ${SHADERS_FRAG})
-message("Found shaders: ${SHADER_GLOB}")
-
+file(GLOB_RECURSE SHADER_GLOB
+    ${CMAKE_SOURCE_DIR}/data/shaders/*.vert
+    ${CMAKE_SOURCE_DIR}/data/shaders/*.frag
+    ${CMAKE_SOURCE_DIR}/data/shaders/*.geom)
 
 # build shaders
 foreach(SHADER ${SHADER_GLOB})
