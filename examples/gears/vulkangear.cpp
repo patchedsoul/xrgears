@@ -42,7 +42,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 	std::vector<Vertex> vBuffer;
 	std::vector<uint32_t> iBuffer;
 
-  int i;
+	int i, j;
 	float r0, r1, r2;
 	float ta, da;
 	float u1, v1, u2, v2, len;
@@ -173,7 +173,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 
 	if (useStaging)
 	{
-		vk::Buffer vertexStaging, indexStaging;
+		vks::Buffer vertexStaging, indexStaging;
 
 		// Create staging buffers
 		// Vertex data
@@ -294,7 +294,7 @@ void VulkanGear::updateUniformBuffer(glm::mat4 perspective, glm::vec3 rotation, 
 void VulkanGear::setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout)
 {
 	VkDescriptorSetAllocateInfo allocInfo =
-		vkTools::initializers::descriptorSetAllocateInfo(
+		vks::initializers::descriptorSetAllocateInfo(
 			pool,
 			&descriptorSetLayout,
 			1);
@@ -303,7 +303,7 @@ void VulkanGear::setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout
 
 	// Binding 0 : Vertex shader uniform buffer
 	VkWriteDescriptorSet writeDescriptorSet =
-		vkTools::initializers::writeDescriptorSet(
+		vks::initializers::writeDescriptorSet(
 			descriptorSet,
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			0,

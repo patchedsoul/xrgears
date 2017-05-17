@@ -8,7 +8,18 @@
 
 #pragma once
 
-#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+#ifdef _WIN32
+#pragma comment(linker, "/subsystem:windows")
+#include <windows.h>
+#include <fcntl.h>
+#include <io.h>
+#elif defined(__ANDROID__)
+#include <android/native_activity.h>
+#include <android/asset_manager.h>
+#include <android_native_app_glue.h>
+#include <sys/system_properties.h>
+#include "VulkanAndroid.h"
+#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
 #include <wayland-client.h>
 #elif defined(__linux__)
 #include <xcb/xcb.h>
@@ -20,19 +31,21 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <string>
 #include <array>
 
-#include <vulkan/vulkan.h>
+#include "vulkan/vulkan.h"
 
 #include "keycodes.hpp"
-#include "vulkantools.h"
+#include "VulkanTools.h"
+#include "VulkanDebug.h"
 
 #include "VulkanInitializers.hpp"
-#include "vulkandevice.hpp"
-#include "vulkanswapchain.hpp"
-#include "vulkantextoverlay.hpp"
+#include "VulkanDevice.hpp"
+#include "VulkanSwapChain.hpp"
+#include "VulkanTextOverlay.hpp"
 #include "camera.hpp"
 
 class VulkanExampleBase
@@ -51,8 +64,6 @@ private:
 	// Called if the window is resized and some resources have to be recreatesd
 	void windowResize();
 protected:
-	// Last frame time, measured using a high performance timer (if available)
-	float frameTimer = 1.0f;
 	// Frame counter to display fps
 	uint32_t frameCounter = 0;
 	uint32_t lastFPS = 0;
@@ -72,11 +83,11 @@ protected:
 	* @note By default no phyiscal device features are enabled
 	*/
 	VkPhysicalDeviceFeatures enabledFeatures{};
+	/** @brief Set of device extensions to be enabled for this example (must be set in the derived constructor) */
+	std::vector<const char*> enabledExtensions;
 	/** @brief Logical device, application's view of the physical device (GPU) */
 	// todo: getter? should always point to VulkanDevice->device
 	VkDevice device;
-	/** @brief Encapsulated physical and logical vulkan device */
-	vk::VulkanDevice *vulkanDevice;
 	// Handle to the device graphics queue that command buffers are submitted to
 	VkQueue queue;
 	// Depth buffer format (selected during Vulkan initialization)
@@ -112,16 +123,23 @@ protected:
 		// Text overlay submission and execution
 		VkSemaphore textOverlayComplete;
 	} semaphores;
-	// Simple texture loader
-	// Returns the base asset path (for shaders, models, textures) depending on the os
-	const std::string getAssetPath();
 public: 
 	bool prepared = false;
 	uint32_t width = 1280;
 	uint32_t height = 720;
 
+	/** @brief Last frame time measured using a high performance timer (if available) */
+	float frameTimer = 1.0f;
+	/** @brief Returns os specific base asset path (for shaders, models, textures) */
+	const std::string getAssetPath();
+
+	/** @brief Encapsulated physical and logical vulkan device */
+	vks::VulkanDevice *vulkanDevice;
+
 	/** @brief Example settings that can be changed e.g. by command line arguments */
 	struct Settings {
+		/** @brief Activates validation layers (and message output) when set to true */
+		bool validation = false;
 		/** @brief Set to true if fullscreen mode has been requested via command line */
 		bool fullscreen = false;
 		/** @brief Set to true if v-sync will be forced for the swapchain */
@@ -174,7 +192,22 @@ public:
 	} gamePadState;
 
 	// OS specific 
-#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+#if defined(_WIN32)
+	HWND window;
+	HINSTANCE windowInstance;
+#elif defined(__ANDROID__)
+	// true if application has focused, false if moved to background
+	bool focused = false;
+	struct TouchPos {
+		int32_t x;
+		int32_t y;
+	} touchPos;
+	bool touchDown = false;
+	double touchTimer = 0.0;
+	int64_t lastTapTime = 0;
+	/** @brief Product model and manufacturer of the Android device (via android.Product*) */
+	std::string androidProduct;
+#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
 	wl_display *display = nullptr;
 	wl_registry *registry = nullptr;
 	wl_compositor *compositor = nullptr;
@@ -204,15 +237,22 @@ public:
 #endif
 
 	// Default ctor
-  VulkanExampleBase();
+	VulkanExampleBase(bool enableValidation);
 
 	// dtor
-	~VulkanExampleBase();
+	virtual ~VulkanExampleBase();
 
 	// Setup the vulkan instance, enable required extensions and connect to the physical device (GPU)
 	void initVulkan();
 
-#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+#if defined(_WIN32)
+	void setupConsole(std::string title);
+	HWND setupWindow(HINSTANCE hinstance, WNDPROC wndproc);
+	void handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+#elif defined(__ANDROID__)
+	static int32_t handleAppInput(struct android_app* app, AInputEvent* event);
+	static void handleAppCommand(android_app* app, int32_t cmd);
+#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
 	wl_shell_surface *setupWindow();
 	void initWaylandConnection();
 	static void registryGlobalCb(void *data, struct wl_registry *registry,
@@ -264,7 +304,7 @@ public:
 	*
 	* @note Virtual, can be overriden by derived example class for custom instance creation
 	*/
-  virtual VkResult createInstance();
+	virtual VkResult createInstance(bool enableValidation);
 
 	// Pure virtual render function (override in derived class)
 	virtual void render() = 0;
@@ -273,8 +313,8 @@ public:
 	// Containing view dependant matrices
 	virtual void viewChanged();
 	// Called if a key is pressed
-	// Can be overriden in derived class to do custom key handling
-	virtual void keyPressed(uint32_t keyCode);
+	/** @brief (Virtual) Called after a key was pressed, can be used to do custom key handling */
+	virtual void keyPressed(uint32_t);
 	// Called when the window has been resized
 	// Can be overriden in derived class to recreate or rebuild resources attached to the frame buffer / swapchain
 	virtual void windowResized();
@@ -293,6 +333,9 @@ public:
 	// Setup a default render pass
 	// Can be overriden in derived class to setup a custom render pass (e.g. for MSAA)
 	virtual void setupRenderPass();
+
+	/** @brief (Virtual) Called after the physical device features have been read, can be used to set features to enable on the device */
+	virtual void getEnabledFeatures();
 
 	// Connect and prepare the swap chain
 	void initSwapchain();
@@ -322,15 +365,14 @@ public:
 
 	// Load a SPIR-V shader
 	VkPipelineShaderStageCreateInfo loadShader(std::string fileName, VkShaderStageFlagBits stage);
-
+	
 	// Start the main render loop
 	void renderLoop();
 
 	void updateTextOverlay();
 
-	// Called when the text overlay is updating
-	// Can be overriden in derived class to add custom text to the overlay
-	virtual void getOverlayText(VulkanTextOverlay * textOverlay);
+	/** @brief (Virtual) Called when the text overlay is updating, can be used to add custom text to the overlay */
+	virtual void getOverlayText(VulkanTextOverlay*);
 
 	// Prepare the frame for workload submission
 	// - Acquires the next image from the swap chain 
@@ -342,3 +384,103 @@ public:
 	void submitFrame();
 
 };
+
+// OS specific macros for the example main entry points
+#if defined(_WIN32)
+// Windows entry point
+#define VULKAN_EXAMPLE_MAIN()																		\
+VulkanExample *vulkanExample;																		\
+LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)						\
+{																									\
+	if (vulkanExample != NULL)																		\
+	{																								\
+		vulkanExample->handleMessages(hWnd, uMsg, wParam, lParam);									\
+	}																								\
+	return (DefWindowProc(hWnd, uMsg, wParam, lParam));												\
+}																									\
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)									\
+{																									\
+	for (int32_t i = 0; i < __argc; i++) { VulkanExample::args.push_back(__argv[i]); };  			\
+	vulkanExample = new VulkanExample();															\
+	vulkanExample->initVulkan();																	\
+	vulkanExample->setupWindow(hInstance, WndProc);													\
+	vulkanExample->initSwapchain();																	\
+	vulkanExample->prepare();																		\
+	vulkanExample->renderLoop();																	\
+	delete(vulkanExample);																			\
+	return 0;																						\
+}																									
+#elif defined(__ANDROID__)
+// Android entry point
+// A note on app_dummy(): This is required as the compiler may otherwise remove the main entry point of the application
+#define VULKAN_EXAMPLE_MAIN()																		\
+VulkanExample *vulkanExample;																		\
+void android_main(android_app* state)																\
+{																									\
+	app_dummy();																					\
+	vulkanExample = new VulkanExample();															\
+	state->userData = vulkanExample;																\
+	state->onAppCmd = VulkanExample::handleAppCommand;												\
+	state->onInputEvent = VulkanExample::handleAppInput;											\
+	androidApp = state;																				\
+	vks::android::getDeviceConfig();																\
+	vulkanExample->renderLoop();																	\
+	delete(vulkanExample);																			\
+}
+#elif defined(_DIRECT2DISPLAY)
+// Linux entry point with direct to display wsi
+#define VULKAN_EXAMPLE_MAIN()																		\
+VulkanExample *vulkanExample;																		\
+static void handleEvent()                                											\
+{																									\
+}																									\
+int main(const int argc, const char *argv[])													    \
+{																									\
+	for (size_t i = 0; i < argc; i++) { VulkanExample::args.push_back(argv[i]); };  				\
+	vulkanExample = new VulkanExample();															\
+	vulkanExample->initVulkan();																	\
+	vulkanExample->initSwapchain();																	\
+	vulkanExample->prepare();																		\
+	vulkanExample->renderLoop();																	\
+	delete(vulkanExample);																			\
+	return 0;																						\
+}
+#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+#define VULKAN_EXAMPLE_MAIN()																		\
+VulkanExample *vulkanExample;																		\
+int main(const int argc, const char *argv[])													    \
+{																									\
+	for (size_t i = 0; i < argc; i++) { VulkanExample::args.push_back(argv[i]); };  				\
+	vulkanExample = new VulkanExample();															\
+	vulkanExample->initVulkan();																	\
+	vulkanExample->setupWindow();					 												\
+	vulkanExample->initSwapchain();																	\
+	vulkanExample->prepare();																		\
+	vulkanExample->renderLoop();																	\
+	delete(vulkanExample);																			\
+	return 0;																						\
+}
+#elif defined(__linux__)
+// Linux entry point
+#define VULKAN_EXAMPLE_MAIN()																		\
+VulkanExample *vulkanExample;																		\
+static void handleEvent(const xcb_generic_event_t *event)											\
+{																									\
+	if (vulkanExample != NULL)																		\
+	{																								\
+		vulkanExample->handleEvent(event);															\
+	}																								\
+}																									\
+int main(const int argc, const char *argv[])													    \
+{																									\
+	for (size_t i = 0; i < argc; i++) { VulkanExample::args.push_back(argv[i]); };  				\
+	vulkanExample = new VulkanExample();															\
+	vulkanExample->initVulkan();																	\
+	vulkanExample->setupWindow();					 												\
+	vulkanExample->initSwapchain();																	\
+	vulkanExample->prepare();																		\
+	vulkanExample->renderLoop();																	\
+	delete(vulkanExample);																			\
+	return 0;																						\
+}
+#endif

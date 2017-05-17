@@ -13,9 +13,9 @@
 #include <vector>
 
 #include "vulkan/vulkan.h"
-#include "vulkantools.h"
+#include "VulkanTools.h"
 
-namespace vk
+namespace vks
 {	
 	/**
 	* @brief Encapsulates access to a Vulkan buffer backed up by device memory
@@ -23,9 +23,9 @@ namespace vk
 	*/
 	struct Buffer
 	{
-		VkBuffer buffer;
 		VkDevice device;
-		VkDeviceMemory memory;
+		VkBuffer buffer = VK_NULL_HANDLE;
+		VkDeviceMemory memory = VK_NULL_HANDLE;
 		VkDescriptorBufferInfo descriptor;
 		VkDeviceSize size = 0;
 		VkDeviceSize alignment = 0;

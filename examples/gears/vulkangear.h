@@ -21,9 +21,9 @@
 
 #include "vulkan/vulkan.h"
 
-#include "vulkantools.h"
-#include "vulkandevice.hpp"
-#include "vulkanbuffer.hpp"
+#include "VulkanTools.h"
+#include "VulkanDevice.hpp"
+#include "VulkanBuffer.hpp"
 
 struct Vertex
 {
@@ -70,19 +70,19 @@ private:
 		glm::vec3 lightPos;
 	};
 
-	vk::VulkanDevice *vulkanDevice;
+	vks::VulkanDevice *vulkanDevice;
 
 	glm::vec3 color;
 	glm::vec3 pos;
 	float rotSpeed;
 	float rotOffset;
 
-	vk::Buffer vertexBuffer;
-	vk::Buffer indexBuffer;
+	vks::Buffer vertexBuffer;
+	vks::Buffer indexBuffer;
 	uint32_t indexCount;
 
 	UBO ubo;
-	vk::Buffer uniformBuffer;
+	vks::Buffer uniformBuffer;
 
 	int32_t newVertex(std::vector<Vertex> *vBuffer, float x, float y, float z, const glm::vec3& normal);
 	void newFace(std::vector<uint32_t> *iBuffer, int a, int b, int c);
@@ -96,7 +96,7 @@ public:
 
 	void setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout);
 
-	VulkanGear(vk::VulkanDevice *vulkanDevice) : vulkanDevice(vulkanDevice) {};
+	VulkanGear(vks::VulkanDevice *vulkanDevice) : vulkanDevice(vulkanDevice) {};
 	~VulkanGear();
 
 	void generate(GearInfo *gearinfo, VkQueue queue);

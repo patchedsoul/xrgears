@@ -47,23 +47,15 @@ endfunction(add_verbose_warnings)
 # find_package(XCB REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_XCB_KHR")
 
-set(XRGEARS_SRC
-    ${CMAKE_SOURCE_DIR}/src/gears.cpp
-    ${CMAKE_SOURCE_DIR}/src/vulkangear.cpp
 
-    ${CMAKE_SOURCE_DIR}/src/vulkantools.cpp
-    ${CMAKE_SOURCE_DIR}/src/vulkanexamplebase.cpp
-    ${CMAKE_SOURCE_DIR}/src/vulkandebug.cpp
-)
+file(GLOB VITAMINK_SRC src/*.cpp src/*.h src/*.hpp)
 
-FILE(GLOB_RECURSE LibFiles "${CMAKE_SOURCE_DIR}/src/*.hpp")
-add_custom_target(headers SOURCES ${LibFiles})
+add_library(vitamin-k ${VITAMINK_SRC})
 
-FILE(GLOB_RECURSE XRGEARS_SRC "${CMAKE_SOURCE_DIR}/src/*.cpp")
-#include_directories("src")
-add_executable(xrgears ${XRGEARS_SRC})
 
-target_link_libraries(xrgears vulkan xcb assimp)
+include_directories(src)
+
+target_link_libraries(vitamin-k vulkan xcb assimp)
 
 
 # glslc -o gears.vert.spv gears.vert
@@ -76,7 +68,7 @@ set(SHADER_GLOB ${SHADER_VERT} ${SHADERS_FRAG})
 message("Found shaders: ${SHADER_GLOB}")
 
 
-
+# build shaders
 foreach(SHADER ${SHADER_GLOB})
     message("Compiling SPV shader for ${SHADER}")
     execute_process(
@@ -85,6 +77,34 @@ foreach(SHADER ${SHADER_GLOB})
     )
 endforeach(SHADER)
 
+
+# Function for building single example
+function(buildExample EXAMPLE_NAME)
+	file(GLOB EXAMPLE_SRC examples/${EXAMPLE_NAME}/*.cpp)
+	if(WIN32)
+        add_executable(${EXAMPLE_NAME} WIN32 ${EXAMPLE_SRC})
+        target_link_libraries(${EXAMPLE_NAME}
+          ${Vulkan_LIBRARY} ${ASSIMP_LIBRARIES}
+          ${WINLIBS} vitamin-k)
+	else(WIN32)
+        add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
+        target_link_libraries(${EXAMPLE_NAME}
+          ${Vulkan_LIBRARY} ${ASSIMP_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES}
+          ${CMAKE_THREAD_LIBS_INIT} ${XCB_LIBRARIES}
+          vitamin-k)
+	endif(WIN32)
+endfunction(buildExample)
+
+
+# build examples
+FILE(GLOB EXAMPLE_DIRS RELATIVE
+  ${CMAKE_SOURCE_DIR}/examples
+  ${CMAKE_SOURCE_DIR}/examples/*)
+
+# Build all examples
+foreach(EXAMPLE ${EXAMPLE_DIRS})
+	buildExample(${EXAMPLE})
+endforeach(EXAMPLE)
 
 
 #add_custom_target(shaders

@@ -14,10 +14,10 @@
 #include <assert.h>
 #include <algorithm>
 #include "vulkan/vulkan.h"
-#include "vulkantools.h"
-#include "vulkanbuffer.hpp"
+#include "VulkanTools.h"
+#include "VulkanBuffer.hpp"
 
-namespace vk
+namespace vks
 {	
 	struct VulkanDevice
 	{
@@ -39,6 +39,9 @@ namespace vk
 		/** @brief Default command pool for the graphics queue family index */
 		VkCommandPool commandPool = VK_NULL_HANDLE;
 
+		/** @brief Set to true when the debug marker extension is detected */
+		bool enableDebugMarkers = false;
+
 		/** @brief Contains queue family indices */
 		struct
 		{
@@ -46,6 +49,9 @@ namespace vk
 			uint32_t compute;
 			uint32_t transfer;
 		} queueFamilyIndices;
+
+		/**  @brief Typecast to VkDevice */
+		operator VkDevice() { return logicalDevice; };
 
 		/**
 		* Default constructor
@@ -62,8 +68,6 @@ namespace vk
 			vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 			// Features should be checked by the examples before using them
 			vkGetPhysicalDeviceFeatures(physicalDevice, &features);
-
-
 			// Memory properties are used regularly for creating all kinds of buffers
 			vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
 			// Queue family properties, used for setting up requested queues upon device creation
@@ -135,6 +139,14 @@ namespace vk
 				typeBits >>= 1;
 			}
 
+#if defined(__ANDROID__)
+			//todo : Exceptions are disabled by default on Android (need to add LOCAL_CPP_FEATURES += exceptions to Android.mk), so for now just return zero
+			if (memTypeFound)
+			{
+				*memTypeFound = false;
+			}
+			return 0;
+#else
 			if (memTypeFound)
 			{
 				*memTypeFound = false;
@@ -144,6 +156,7 @@ namespace vk
 			{
 				throw std::runtime_error("Could not find a matching memory type");
 			}
+#endif
 		}
 
 		/**
@@ -195,7 +208,12 @@ namespace vk
 				}
 			}
 
+#if defined(__ANDROID__)
+			//todo : Exceptions are disabled by default on Android (need to add LOCAL_CPP_FEATURES += exceptions to Android.mk), so for now just return zero
+			return 0;
+#else
 			throw std::runtime_error("Could not find a matching queue family index");
+#endif
 		}
 
 		/**
@@ -207,7 +225,7 @@ namespace vk
 		*
 		* @return VkResult of the device creation call
 		*/
-		VkResult createLogicalDevice(VkInstance instance, VkPhysicalDeviceFeatures enabledFeatures, bool useSwapChain = true, VkQueueFlags requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)
+		VkResult createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures, std::vector<const char*> enabledExtensions, bool useSwapChain = true, VkQueueFlags requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)
 		{			
 			// Desired queues need to be requested upon logical device creation
 			// Due to differing queue family configurations of Vulkan implementations this can be a bit tricky, especially if the application
@@ -279,28 +297,28 @@ namespace vk
 			}
 
 			// Create the logical device representation
-			std::vector<const char*> deviceExtensions;
+			std::vector<const char*> deviceExtensions(enabledExtensions);
 			if (useSwapChain)
 			{
 				// If the device will be used for presenting to a display via a swapchain we need to request the swapchain extension
 				deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 			}
 
-
-			if (extensionSupported(VK_KHX_MULTIVIEW_EXTENSION_NAME))
-				printf("VK_KHX_multiview supported before adding\n");
-
-			deviceExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
-
-			//enabledExtensions.push_back(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
-
-			//enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-
 			VkDeviceCreateInfo deviceCreateInfo = {};
 			deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 			deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());;
 			deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
 			deviceCreateInfo.pEnabledFeatures = &enabledFeatures;
+
+			// Enable the debug marker extension if it is present (likely meaning a debugging tool is present)
+			if (extensionSupported(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))
+			{
+			        printf("Debug markers supported!\n");
+				deviceExtensions.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
+				enableDebugMarkers = true;
+			} else {
+			    printf("Debug markers not supported!\n");
+			}
 
 			if (deviceExtensions.size() > 0)
 			{
@@ -314,81 +332,6 @@ namespace vk
 			{
 				// Create a default command pool for graphics command buffers
 				commandPool = createCommandPool(queueFamilyIndices.graphics);
-			}
-
-
-
-
-
-			//vkGetPhysicalDeviceFeatures2KHR(physicalDevice, &features2);
-
-			PFN_vkGetPhysicalDeviceFeatures2KHR pfnGetPhysicalDeviceFeatures2KHR;
-
-			pfnGetPhysicalDeviceFeatures2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceFeatures2KHR"));
-
-			//VkPhysicalDeviceFeatures2KHR features2;
-			//pfnGetPhysicalDeviceFeatures2KHR(physicalDevice, &features2);
-
-			//printf("Got features 2 :) !\n");
-			//features2.features.
-
-			if (pfnGetPhysicalDeviceFeatures2KHR) {
-
-				printf("Got vkGetPhysicalDeviceFeatures2KHR pointer\n");
-
-					// VK_KHX_multiview
-					//if (true) {
-				if (extensionSupported(VK_KHX_MULTIVIEW_EXTENSION_NAME)) {
-
-							printf("VK_KHX_multiview supported\n");
-							VkPhysicalDeviceFeatures2KHR deviceFeatures2{};
-							VkPhysicalDeviceMultiviewFeaturesKHX multiViewFeatures{};
-							multiViewFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHX;
-							deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
-							deviceFeatures2.pNext = &multiViewFeatures;
-							pfnGetPhysicalDeviceFeatures2KHR(physicalDevice, &deviceFeatures2);
-
-							printf("multiview %d\n", multiViewFeatures.multiview);
-							printf("multiviewGeometryShader %d\n", multiViewFeatures.multiviewGeometryShader);
-							printf("multiviewTessellationShader %d\n", multiViewFeatures.multiviewTessellationShader);
-					} else {
-							printf("VK_KHX_multiview unsupported!!\n");
-					}
-			} else {
-				printf("DONT HAVE vkGetPhysicalDeviceFeatures2KHR pointer\n");
-			}
-
-			PFN_vkGetPhysicalDeviceProperties2KHR pfnGetPhysicalDeviceProperties2KHR;
-			pfnGetPhysicalDeviceProperties2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2KHR>(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceProperties2KHR"));
-
-			if (pfnGetPhysicalDeviceFeatures2KHR) {
-
-				printf("Got pfnGetPhysicalDeviceFeatures2KHR pointer\n");
-
-				if (extensionSupported(VK_KHX_MULTIVIEW_EXTENSION_NAME)) {
-					VkPhysicalDeviceProperties2KHR deviceProps2{};
-
-					VkPhysicalDeviceMultiviewPropertiesKHX extProps{};
-					extProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHX;
-					deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
-					deviceProps2.pNext = &extProps;
-					pfnGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps2);
-
-					printf("maxMultiviewViewCount %d\n", extProps.maxMultiviewViewCount);
-					printf("maxMultiviewInstanceIndex %d\n", extProps.maxMultiviewInstanceIndex);
-
-					VkPhysicalDeviceProperties2KHR deviceProps22{};
-
-					VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX extProps2{};
-					extProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX;
-					deviceProps22.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
-					deviceProps22.pNext = &extProps2;
-					pfnGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps22);
-
-					printf("perViewPositionAllComponents %d\n", extProps2.perViewPositionAllComponents);
-				}
-			} else {
-				printf("DONT HAVE pfnGetPhysicalDeviceFeatures2KHR pointer\n");
 			}
 
 			return result;
@@ -409,13 +352,13 @@ namespace vk
 		VkResult createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, VkBuffer *buffer, VkDeviceMemory *memory, void *data = nullptr)
 		{
 			// Create the buffer handle
-			VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo(usageFlags, size);
+			VkBufferCreateInfo bufferCreateInfo = vks::initializers::bufferCreateInfo(usageFlags, size);
 			bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 			VK_CHECK_RESULT(vkCreateBuffer(logicalDevice, &bufferCreateInfo, nullptr, buffer));
 
 			// Create the memory backing up the buffer handle
 			VkMemoryRequirements memReqs;
-			VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
+			VkMemoryAllocateInfo memAlloc = vks::initializers::memoryAllocateInfo();
 			vkGetBufferMemoryRequirements(logicalDevice, *buffer, &memReqs);
 			memAlloc.allocationSize = memReqs.size;
 			// Find a memory type index that fits the properties of the buffer
@@ -428,6 +371,15 @@ namespace vk
 				void *mapped;
 				VK_CHECK_RESULT(vkMapMemory(logicalDevice, *memory, 0, size, 0, &mapped));
 				memcpy(mapped, data, size);
+				// If host coherency hasn't been requested, do a manual flush to make writes visible
+				if ((memoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0)
+				{
+					VkMappedMemoryRange mappedRange = vks::initializers::mappedMemoryRange();
+					mappedRange.memory = *memory;
+					mappedRange.offset = 0;
+					mappedRange.size = size;
+					vkFlushMappedMemoryRanges(logicalDevice, 1, &mappedRange);
+				}
 				vkUnmapMemory(logicalDevice, *memory);
 			}
 
@@ -448,17 +400,17 @@ namespace vk
 		*
 		* @return VK_SUCCESS if buffer handle and memory have been created and (optionally passed) data has been copied
 		*/
-		VkResult createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, vk::Buffer *buffer, VkDeviceSize size, void *data = nullptr)
+		VkResult createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, vks::Buffer *buffer, VkDeviceSize size, void *data = nullptr)
 		{
 			buffer->device = logicalDevice;
 
 			// Create the buffer handle
-			VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo(usageFlags, size);
+			VkBufferCreateInfo bufferCreateInfo = vks::initializers::bufferCreateInfo(usageFlags, size);
 			VK_CHECK_RESULT(vkCreateBuffer(logicalDevice, &bufferCreateInfo, nullptr, &buffer->buffer));
 
 			// Create the memory backing up the buffer handle
 			VkMemoryRequirements memReqs;
-			VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
+			VkMemoryAllocateInfo memAlloc = vks::initializers::memoryAllocateInfo();
 			vkGetBufferMemoryRequirements(logicalDevice, buffer->buffer, &memReqs);
 			memAlloc.allocationSize = memReqs.size;
 			// Find a memory type index that fits the properties of the buffer
@@ -495,7 +447,7 @@ namespace vk
 		*
 		* @note Source and destionation pointers must have the approriate transfer usage flags set (TRANSFER_SRC / TRANSFER_DST)
 		*/
-		void copyBuffer(vk::Buffer *src, vk::Buffer *dst, VkQueue queue, VkBufferCopy *copyRegion = nullptr)
+		void copyBuffer(vks::Buffer *src, vks::Buffer *dst, VkQueue queue, VkBufferCopy *copyRegion = nullptr)
 		{
 			assert(dst->size <= src->size);
 			assert(src->buffer && src->buffer);
@@ -546,7 +498,7 @@ namespace vk
 		*/
 		VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin = false)
 		{
-			VkCommandBufferAllocateInfo cmdBufAllocateInfo = vkTools::initializers::commandBufferAllocateInfo(commandPool, level, 1);
+			VkCommandBufferAllocateInfo cmdBufAllocateInfo = vks::initializers::commandBufferAllocateInfo(commandPool, level, 1);
 
 			VkCommandBuffer cmdBuffer;
 			VK_CHECK_RESULT(vkAllocateCommandBuffers(logicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
@@ -554,7 +506,7 @@ namespace vk
 			// If requested, also start recording for the new command buffer
 			if (begin)
 			{
-				VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+				VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
 				VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 			}
 
@@ -580,12 +532,12 @@ namespace vk
 
 			VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 
-			VkSubmitInfo submitInfo = vkTools::initializers::submitInfo();
+			VkSubmitInfo submitInfo = vks::initializers::submitInfo();
 			submitInfo.commandBufferCount = 1;
 			submitInfo.pCommandBuffers = &commandBuffer;
 
 			// Create fence to ensure that the command buffer has finished executing
-			VkFenceCreateInfo fenceInfo = vkTools::initializers::fenceCreateInfo(VK_FLAGS_NONE);
+			VkFenceCreateInfo fenceInfo = vks::initializers::fenceCreateInfo(VK_FLAGS_NONE);
 			VkFence fence;
 			VK_CHECK_RESULT(vkCreateFence(logicalDevice, &fenceInfo, nullptr, &fence));
 			
@@ -612,12 +564,6 @@ namespace vk
 		bool extensionSupported(std::string extension)
 		{
 			return (std::find(supportedExtensions.begin(), supportedExtensions.end(), extension) != supportedExtensions.end());
-		}
-
-		void printSupportedExtensions() {
-			for (auto extension : supportedExtensions) {
-				printf("%s\n", extension.c_str());
-			}
 		}
 
 	};
