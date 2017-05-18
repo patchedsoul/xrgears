@@ -5,3 +5,5 @@ bin/
 cmake_install.cmake
 *.spv
 libvitamin-k.a
+CMakeLists.txt.user
+xrgears.cbp
