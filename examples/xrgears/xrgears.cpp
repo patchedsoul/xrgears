@@ -18,9 +18,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
+#include "vulkangear.h"
 #include "vulkanexamplebase.h"
 #include "VulkanModel.hpp"
 
+#define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
 
 class VulkanExample : public VulkanExampleBase
@@ -34,6 +36,14 @@ public:
 	});
 
 	vks::Model scene;
+
+	struct {
+		VkPipelineVertexInputStateCreateInfo inputState;
+		std::vector<VkVertexInputBindingDescription> bindingDescriptions;
+		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+	} vertices;
+
+	std::vector<VulkanGear*> gears;
 
 	struct UBOGS {
 		glm::mat4 projection[2];
@@ -75,6 +85,11 @@ public:
 		scene.destroy();
 
 		uniformBufferGS.destroy();
+
+		for (auto& gear : gears)
+		{
+			delete(gear);
+		}
 	}
 
 	// Enable physical device features required for this example				
@@ -157,23 +172,109 @@ public:
 		scene.loadFromFile(getAssetPath() + "models/sampleroom.dae", vertexLayout, 0.25f, vulkanDevice, queue);		
 	}
 
+	void prepareVertices()
+	{
+		// Gear definitions
+		std::vector<float> innerRadiuses = { 1.0f, 0.5f, 1.3f };
+		std::vector<float> outerRadiuses = { 4.0f, 2.0f, 2.0f };
+		std::vector<float> widths = { 1.0f, 2.0f, 0.5f };
+		std::vector<int32_t> toothCount = { 20, 10, 10 };
+		std::vector<float> toothDepth = { 0.7f, 0.7f, 0.7f };
+		std::vector<glm::vec3> colors = {
+			glm::vec3(1.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.2f),
+			glm::vec3(0.0f, 0.0f, 1.0f)
+		};
+		std::vector<glm::vec3> positions = {
+			glm::vec3(-3.0, 0.0, 0.0),
+			glm::vec3(3.1, 0.0, 0.0),
+			glm::vec3(-3.1, -6.2, 0.0)
+		};
+		std::vector<float> rotationSpeeds = { 1.0f, -2.0f, -2.0f };
+		std::vector<float> rotationOffsets = { 0.0f, -9.0f, -30.0f };
+
+		gears.resize(positions.size());
+		for (int32_t i = 0; i < gears.size(); ++i)
+		{
+			GearInfo gearInfo = {};
+			gearInfo.innerRadius = innerRadiuses[i];
+			gearInfo.outerRadius = outerRadiuses[i];
+			gearInfo.width = widths[i];
+			gearInfo.numTeeth = toothCount[i];
+			gearInfo.toothDepth = toothDepth[i];
+			gearInfo.color = colors[i];
+			gearInfo.pos = positions[i];
+			gearInfo.rotSpeed = rotationSpeeds[i];
+			gearInfo.rotOffset = rotationOffsets[i];
+
+			gears[i] = new VulkanGear(vulkanDevice);
+			gears[i]->generate(&gearInfo, queue);
+		}
+
+		// Binding and attribute descriptions are shared across all gears
+		vertices.bindingDescriptions.resize(1);
+		vertices.bindingDescriptions[0] =
+			vks::initializers::vertexInputBindingDescription(
+				VERTEX_BUFFER_BIND_ID,
+				sizeof(Vertex),
+				VK_VERTEX_INPUT_RATE_VERTEX);
+
+		// Attribute descriptions
+		// Describes memory layout and shader positions
+		vertices.attributeDescriptions.resize(3);
+		// Location 0 : Position
+		vertices.attributeDescriptions[0] =
+			vks::initializers::vertexInputAttributeDescription(
+				VERTEX_BUFFER_BIND_ID,
+				0,
+				VK_FORMAT_R32G32B32_SFLOAT,
+				0);
+		// Location 1 : Normal
+		vertices.attributeDescriptions[1] =
+			vks::initializers::vertexInputAttributeDescription(
+				VERTEX_BUFFER_BIND_ID,
+				1,
+				VK_FORMAT_R32G32B32_SFLOAT,
+				sizeof(float) * 3);
+		// Location 2 : Color
+		vertices.attributeDescriptions[2] =
+			vks::initializers::vertexInputAttributeDescription(
+				VERTEX_BUFFER_BIND_ID,
+				2,
+				VK_FORMAT_R32G32B32_SFLOAT,
+				sizeof(float) * 6);
+
+		vertices.inputState = vks::initializers::pipelineVertexInputStateCreateInfo();
+		vertices.inputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertices.bindingDescriptions.size());
+		vertices.inputState.pVertexBindingDescriptions = vertices.bindingDescriptions.data();
+		vertices.inputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertices.attributeDescriptions.size());
+		vertices.inputState.pVertexAttributeDescriptions = vertices.attributeDescriptions.data();
+	}
+
 	void setupDescriptorPool()
 	{
 		// Example uses two ubos
 		std::vector<VkDescriptorPoolSize> poolSizes = {
-			vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1),
+			vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3),
 		};
 
 		VkDescriptorPoolCreateInfo descriptorPoolInfo =
-			vks::initializers::descriptorPoolCreateInfo(static_cast<uint32_t>(poolSizes.size()), poolSizes.data(), 1);
+			vks::initializers::descriptorPoolCreateInfo(
+					static_cast<uint32_t>(poolSizes.size()),
+					poolSizes.data(),
+					3);
 
 		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
 
 	void setupDescriptorSetLayout()
 	{
-		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {			
-			vks::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_GEOMETRY_BIT, 0)	// Binding 1: Geometry shader ubo
+		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
+		{
+			vks::initializers::descriptorSetLayoutBinding(
+			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			VK_SHADER_STAGE_GEOMETRY_BIT,
+			0)	// Binding 1: Geometry shader ubo
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
@@ -201,7 +302,17 @@ public:
 			vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &uniformBufferGS.descriptor),	// Binding 0 :Geometry shader ubo
 		};
 
-		vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
+		vkUpdateDescriptorSets(device,
+													 static_cast<uint32_t>(writeDescriptorSets.size()),
+													 writeDescriptorSets.data(),
+													 0,
+													 nullptr);
+
+		for (auto& gear : gears)
+		{
+			//gear->setupDescriptorSet(descriptorPool, descriptorSetLayout);
+		}
+
 	}
 
 	void preparePipelines()
@@ -357,6 +468,7 @@ public:
 	{
 		VulkanExampleBase::prepare();
 		loadAssets();
+		prepareVertices();
 		prepareUniformBuffers();
 		setupDescriptorSetLayout();
 		preparePipelines();

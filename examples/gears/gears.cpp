@@ -209,6 +209,10 @@ public:
 
 	void setupDescriptorSetLayout()
 	{
+
+		//DebugMarker::beginRegion(drawCmdBuffers[i], "setupDescriptorSetLayout", glm::vec4(0.5f, 0.76f, 0.34f, 1.0f));
+
+
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
 		{
 			// Binding 0 : Vertex shader uniform buffer
@@ -219,9 +223,7 @@ public:
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
-			vks::initializers::descriptorSetLayoutCreateInfo(
-				setLayoutBindings.data(),
-				static_cast<uint32_t>(setLayoutBindings.size()));
+			vks::initializers::descriptorSetLayoutCreateInfo(setLayoutBindings);
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &descriptorSetLayout));
 
@@ -231,6 +233,8 @@ public:
 				1);
 
 		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+
+		//DebugMarker::endRegion(drawCmdBuffers[i]);
 	}
 
 	void setupDescriptorSets()
