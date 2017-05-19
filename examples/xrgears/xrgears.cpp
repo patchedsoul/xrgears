@@ -612,7 +612,17 @@ public:
 	{
 		if (!prepared)
 			return;
+		/*
 		draw();
+		*/
+
+		vkDeviceWaitIdle(device);
+		draw();
+		vkDeviceWaitIdle(device);
+		if (!paused)
+		{
+			updateUniformBuffers();
+		}
 	}
 
 	virtual void viewChanged()
