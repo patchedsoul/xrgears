@@ -82,14 +82,15 @@ private:
 	uint32_t indexCount;
 
 	UBO ubo;
-	vks::Buffer uniformBuffer;
+
 
 	int32_t newVertex(std::vector<Vertex> *vBuffer, float x, float y, float z, const glm::vec3& normal);
 	void newFace(std::vector<uint32_t> *iBuffer, int a, int b, int c);
 
-	//void prepareUniformBuffer();
+	void prepareUniformBuffer();
 public:
 	VkDescriptorSet descriptorSet;
+	vks::Buffer uniformBuffer;
 
 	void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout);
 	void updateUniformBuffer(glm::mat4 perspective, glm::vec3 rotation, float zoom, float timer);
@@ -100,6 +101,8 @@ public:
 	~VulkanGear();
 
 	void generate(GearInfo *gearinfo, VkQueue queue);
+
+	glm::mat4 getModelMatrix(glm::vec3 rotation, float timer);
 
 };
 

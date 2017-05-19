@@ -75,6 +75,7 @@ public:
 		camera.setRotation(glm::vec3(0.0f, 90.0f, 0.0f));
 		camera.setTranslation(glm::vec3(7.0f, 3.2f, 0.0f));
 		camera.movementSpeed = 5.0f;
+		timerSpeed *= 0.25f;
 	}
 
 	~VulkanExample()
@@ -280,7 +281,8 @@ public:
 	{
 		// Example uses two ubos
 		std::vector<VkDescriptorPoolSize> poolSizes = {
-			vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3),
+			vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 4),
+			//vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1),
 		};
 
 		VkDescriptorPoolCreateInfo descriptorPoolInfo =
@@ -296,18 +298,18 @@ public:
 	{
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
 		{
-			/*
+
 			// Binding 0 : Vertex shader uniform buffer
 			vks::initializers::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_VERTEX_BIT,
 			0),
-				*/
+
 			// Binding 1: Geometry shader ubo
 			vks::initializers::descriptorSetLayoutBinding(
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			VK_SHADER_STAGE_GEOMETRY_BIT,
-			0)
+			1)
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
@@ -323,39 +325,96 @@ public:
 
 	void setupDescriptorSet()
 	{
-		VkDescriptorSetAllocateInfo allocInfo =
+
+/*
+		for (auto& gear : gears)
+		{
+			gear->setupDescriptorSet(descriptorPool, descriptorSetLayout);
+		}
+*/
+
+
+		for (auto& gear : gears)
+		{
+			VkDescriptorSetAllocateInfo allocInfo =
+				vks::initializers::descriptorSetAllocateInfo(
+					descriptorPool,
+					&descriptorSetLayout,
+					1);
+
+			VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
+
+			/*
+			// Binding 0 : Vertex shader uniform buffer
+			VkWriteDescriptorSet writeDescriptorSet =
+				vks::initializers::writeDescriptorSet(
+					descriptorSet,
+					VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+					0,
+					&gear->uniformBuffer.descriptor);
+
+			vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1,
+														 &writeDescriptorSet, 0, NULL);
+		}
+		*/
+
+			std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
+
+				// Binding 0 : Vertex shader uniform buffer
+				vks::initializers::writeDescriptorSet(
+					descriptorSet,
+					VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+					0,
+					&gear->uniformBuffer.descriptor),
+
+				// Binding 1 :Geometry shader ubo
+				vks::initializers::writeDescriptorSet(descriptorSet,
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+				&uniformBufferGS.descriptor),
+			};
+
+
+			vkUpdateDescriptorSets(device,
+														 static_cast<uint32_t>(writeDescriptorSets.size()),
+														 writeDescriptorSets.data(),
+														 0,
+														 nullptr);
+		}
+
+	/*
+		// setup multiview uniform buffer
+		VkDescriptorSetAllocateInfo allocInfo2 =
 			vks::initializers::descriptorSetAllocateInfo(
 				descriptorPool,
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
-
-		std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo2, &descriptorSet));
+*/
 /*
+		std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
+
 			// Binding 0 : Vertex shader uniform buffer
 			vks::initializers::writeDescriptorSet(
 				descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformBuffer.descriptor),
-*/
+
 			// Binding 1 :Geometry shader ubo
 			vks::initializers::writeDescriptorSet(descriptorSet,
-			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0,
+			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
 			&uniformBufferGS.descriptor),
 		};
-
+			*/
+/*
 		vkUpdateDescriptorSets(device,
 													 static_cast<uint32_t>(writeDescriptorSets.size()),
 													 writeDescriptorSets.data(),
 													 0,
 													 nullptr);
+*/
 
-		for (auto& gear : gears)
-		{
-			//gear->setupDescriptorSet(descriptorPool, descriptorSetLayout);
-		}
 
 	}
 
@@ -450,7 +509,15 @@ public:
 		// Map persistent
 		VK_CHECK_RESULT(uniformBufferGS.map());
 
+
+/*
+		for (auto& gear : gears)
+		{
+			gear->prepareUniformBuffer();
+		}
+*/
 		updateUniformBuffers();
+
 	}
 
 	void updateUniformBuffers()
@@ -502,6 +569,20 @@ public:
 		uboGS.normal = glm::mat4();
 
 		memcpy(uniformBufferGS.mapped, &uboGS, sizeof(uboGS));
+
+/*
+		for (auto& gear : gears)
+		{
+			glm::mat4 model = gear->getModelMatrix(glm::vec3(), timer * 360.0f);
+		}
+		*/
+
+		glm::mat4 perspective = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
+		for (auto& gear : gears)
+		{
+			gear->updateUniformBuffer(perspective, rotation, zoom, timer * 360.0f);
+		}
+
 	}
 
 	void draw()

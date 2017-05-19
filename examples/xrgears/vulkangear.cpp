@@ -253,7 +253,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 
 	indexCount = iBuffer.size();
 
-//	prepareUniformBuffer();
+	prepareUniformBuffer();
 }
 
 void VulkanGear::draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout)
@@ -264,6 +264,15 @@ void VulkanGear::draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout
 	vkCmdBindIndexBuffer(cmdbuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 	vkCmdDrawIndexed(cmdbuffer, indexCount, 1, 0, 0, 1);
 }
+
+glm::mat4 VulkanGear::getModelMatrix(glm::vec3 rotation, float timer) {
+	glm::mat4 model = glm::mat4();
+	model = glm::translate(model, pos);
+	rotation.z = (rotSpeed * timer) + rotOffset;
+	model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	return model;
+}
+
 
 void VulkanGear::updateUniformBuffer(glm::mat4 perspective, glm::vec3 rotation, float zoom, float timer)
 {
@@ -309,10 +318,11 @@ void VulkanGear::setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout
 			0,
 			&uniformBuffer.descriptor);
 
-	vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1, &writeDescriptorSet, 0, NULL);
+	vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1,
+												 &writeDescriptorSet, 0, NULL);
 }
 
-/*
+
 void VulkanGear::prepareUniformBuffer()
 {
 	VK_CHECK_RESULT(vulkanDevice->createBuffer(
@@ -323,4 +333,4 @@ void VulkanGear::prepareUniformBuffer()
 	// Map persistent
 	VK_CHECK_RESULT(uniformBuffer.map());
 }
-*/
+

@@ -722,7 +722,11 @@ public:
 				&offscreenPass.descriptor)
 		};
 
-		vkUpdateDescriptorSets(device, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(device,
+													 writeDescriptorSets.size(),
+													 writeDescriptorSets.data(),
+													 0,
+													 NULL);
 	}
 
 	void preparePipelines()
