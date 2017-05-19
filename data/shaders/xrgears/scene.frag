@@ -18,5 +18,5 @@ void main()
 	vec3 specular = pow(max(dot(R, V), 0.0), 16.0) * vec3(0.75);
 	outColor = vec4((ambient + diffuse) * inColor.rgb + specular, 1.0);
 	
-	outColor = vec4(inNormal, 1.0f);	
+	//outColor = vec4(inNormal, 1.0f);	
 }

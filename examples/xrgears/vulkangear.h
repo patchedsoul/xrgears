@@ -72,7 +72,11 @@ private:
 		//glm::mat4 normal;
 		//glm::mat4 view;
 		//glm::vec3 lightPos;
-		glm::vec4 lightPos = glm::vec4(-2.5f, -3.5f, 0.0f, 1.0f);
+		//glm::vec4 lightPos = glm::vec4(-2.5f, -3.5f, 0.0f, 1.0f);
+
+
+		glm::vec4 lightPos = glm::vec4(-5.5f, -5.5f, 5.0f, 1.0f);
+
 	};
 
 	vks::VulkanDevice *vulkanDevice;
