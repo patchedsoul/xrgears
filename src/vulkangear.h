@@ -87,7 +87,7 @@ private:
 	int32_t newVertex(std::vector<Vertex> *vBuffer, float x, float y, float z, const glm::vec3& normal);
 	void newFace(std::vector<uint32_t> *iBuffer, int a, int b, int c);
 
-	void prepareUniformBuffer();
+	//void prepareUniformBuffer();
 public:
 	VkDescriptorSet descriptorSet;
 
@@ -96,7 +96,7 @@ public:
 
 	void setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout);
 
-	VulkanGear(vks::VulkanDevice *vulkanDevice) : vulkanDevice(vulkanDevice) {};
+	VulkanGear(vks::VulkanDevice *vulkanDevice) : vulkanDevice(vulkanDevice) {}
 	~VulkanGear();
 
 	void generate(GearInfo *gearinfo, VkQueue queue);

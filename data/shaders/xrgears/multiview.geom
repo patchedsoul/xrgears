@@ -8,7 +8,9 @@ layout (triangle_strip, max_vertices = 3) out;
 layout (binding = 0) uniform UBO 
 {
 	mat4 projection[2];
-	mat4 modelview[2];
+	mat4 view[2];
+	mat4 model;
+	mat4 normal;
 	vec4 lightPos;
 } ubo;
 
@@ -24,13 +26,15 @@ void main(void)
 {	
 	for(int i = 0; i < gl_in.length(); i++)
 	{
-		outNormal = mat3(ubo.modelview[gl_InvocationID]) * inNormal[i];
+		mat4 modelview = ubo.view[gl_InvocationID] * ubo.model;
+
+		outNormal = mat3(modelview) * inNormal[i];
 		outColor = inColor[i];
 
 		vec4 pos = gl_in[i].gl_Position;
-		vec4 worldPos = (ubo.modelview[gl_InvocationID] * pos);
+		vec4 worldPos = (modelview * pos);
 		
-		vec3 lPos = vec3(ubo.modelview[gl_InvocationID]  * ubo.lightPos);
+		vec3 lPos = vec3(modelview  * ubo.lightPos);
 		outLightVec = lPos - worldPos.xyz;
 		outViewVec = -worldPos.xyz;	
 	

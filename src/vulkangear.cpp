@@ -253,13 +253,13 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 
 	indexCount = iBuffer.size();
 
-	prepareUniformBuffer();
+//	prepareUniformBuffer();
 }
 
 void VulkanGear::draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout)
 {
 	VkDeviceSize offsets[1] = { 0 };
-	vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, NULL);
+	//vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, NULL);
 	vkCmdBindVertexBuffers(cmdbuffer, 0, 1, &vertexBuffer.buffer, offsets);
 	vkCmdBindIndexBuffer(cmdbuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 	vkCmdDrawIndexed(cmdbuffer, indexCount, 1, 0, 0, 1);
@@ -312,6 +312,7 @@ void VulkanGear::setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout
 	vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1, &writeDescriptorSet, 0, NULL);
 }
 
+/*
 void VulkanGear::prepareUniformBuffer()
 {
 	VK_CHECK_RESULT(vulkanDevice->createBuffer(
@@ -322,3 +323,4 @@ void VulkanGear::prepareUniformBuffer()
 	// Map persistent
 	VK_CHECK_RESULT(uniformBuffer.map());
 }
+*/

@@ -47,7 +47,9 @@ public:
 
 	struct UBOGS {
 		glm::mat4 projection[2];
-		glm::mat4 modelview[2];
+		glm::mat4 view[2];
+		glm::mat4 model;
+		glm::mat4 normal;
 		glm::vec4 lightPos = glm::vec4(-2.5f, -3.5f, 0.0f, 1.0f);
 	} uboGS;
 
@@ -162,12 +164,22 @@ public:
 			vkCmdSetLineWidth(drawCmdBuffers[i], 1.0f);
 
 			vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-
+/*
 			VkDeviceSize offsets[1] = { 0 };
 			vkCmdBindVertexBuffers(drawCmdBuffers[i], 0, 1, &scene.vertices.buffer, offsets);
 			vkCmdBindIndexBuffer(drawCmdBuffers[i], scene.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
 			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 			vkCmdDrawIndexed(drawCmdBuffers[i], scene.indexCount, 1, 0, 0, 0);
+*/
+
+			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+			for (auto& gear : gears)
+			{
+				gear->draw(drawCmdBuffers[i], pipelineLayout);
+			}
+
+
 
 			vkCmdEndRenderPass(drawCmdBuffers[i]);
 
@@ -331,10 +343,12 @@ public:
 	void preparePipelines()
 	{
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
-			vks::initializers::pipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, VK_FALSE);
+			vks::initializers::pipelineInputAssemblyStateCreateInfo(
+					VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, VK_FALSE);
 
 		VkPipelineRasterizationStateCreateInfo rasterizationState =
-			vks::initializers::pipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE);
+			vks::initializers::pipelineRasterizationStateCreateInfo(
+					VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE);
 
 		VkPipelineColorBlendAttachmentState blendAttachmentState =
 			vks::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE);
@@ -396,11 +410,11 @@ public:
 		pipelineCreateInfo.pStages = shaderStages.data();
 		pipelineCreateInfo.renderPass = renderPass;
 
-		shaderStages[0] = loadShader(getAssetPath() + "shaders/viewportarray/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-		shaderStages[1] = loadShader(getAssetPath() + "shaders/viewportarray/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+		shaderStages[0] = loadShader(getAssetPath() + "shaders/xrgears/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+		shaderStages[1] = loadShader(getAssetPath() + "shaders/xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 		// A geometry shader is used to output geometry to multiple viewports in one single pass
 		// See the "invoctations" decorator of the layout input in the shader
-		shaderStages[2] = loadShader(getAssetPath() + "shaders/viewportarray/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
+		shaderStages[2] = loadShader(getAssetPath() + "shaders/xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
 	}
 
@@ -454,7 +468,7 @@ public:
 		transM = glm::translate(glm::mat4(), camera.position - camRight * (eyeSeparation / 2.0f));
 
 		uboGS.projection[0] = glm::frustum(left, right, bottom, top, zNear, zFar);
-		uboGS.modelview[0] = rotM * transM;
+		uboGS.view[0] = rotM * transM;
 
 		// Right eye
 		left = -aspectRatio * wd2 - 0.5f * eyeSeparation * ndfl;
@@ -463,7 +477,10 @@ public:
 		transM = glm::translate(glm::mat4(), camera.position + camRight * (eyeSeparation / 2.0f));
 
 		uboGS.projection[1] = glm::frustum(left, right, bottom, top, zNear, zFar);
-		uboGS.modelview[1] = rotM * transM;
+		uboGS.view[1] = rotM * transM;
+
+		uboGS.model = glm::mat4();
+		uboGS.normal = glm::mat4();
 
 		memcpy(uniformBufferGS.mapped, &uboGS, sizeof(uboGS));
 	}

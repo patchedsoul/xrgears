@@ -433,9 +433,13 @@ public:
 		}
 		VK_CHECK_RESULT(fpGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL));
 
+		printf("fpGetSwapchainImagesKHR: We received %d swap chain image count.\n", imageCount);
+
 		// Get the swap chain images
 		images.resize(imageCount);
 		VK_CHECK_RESULT(fpGetSwapchainImagesKHR(device, swapChain, &imageCount, images.data()));
+
+		printf("fpGetSwapchainImagesKHR: We received %d swap chain image count.\n", imageCount);
 
 		// Get the swap chain buffers containing the image and imageview
 		buffers.resize(imageCount);

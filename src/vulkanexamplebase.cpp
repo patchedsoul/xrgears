@@ -93,6 +93,9 @@ bool VulkanExampleBase::checkCommandBuffers()
 void VulkanExampleBase::createCommandBuffers()
 {
 	// Create one command buffer for each swap chain image and reuse for rendering
+
+	printf("Swapchain image count %d\n", swapChain.imageCount);
+
 	drawCmdBuffers.resize(swapChain.imageCount);
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
