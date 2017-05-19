@@ -57,7 +57,7 @@ public:
 
 	VkPipeline pipeline;
 	VkPipelineLayout pipelineLayout;
-	VkDescriptorSet descriptorSet;
+	//VkDescriptorSet descriptorSet;
 	VkDescriptorSetLayout descriptorSetLayout;
 
 	// Camera and view properties
@@ -164,7 +164,7 @@ public:
 
 			vkCmdSetLineWidth(drawCmdBuffers[i], 1.0f);
 
-			vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+//			vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 /*
 			VkDeviceSize offsets[1] = { 0 };
 			vkCmdBindVertexBuffers(drawCmdBuffers[i], 0, 1, &scene.vertices.buffer, offsets);
@@ -281,7 +281,7 @@ public:
 	{
 		// Example uses two ubos
 		std::vector<VkDescriptorPoolSize> poolSizes = {
-			vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 4),
+			vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3),
 			//vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1),
 		};
 
@@ -333,6 +333,30 @@ public:
 		}
 */
 
+#if 0
+		std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
+/*
+			// Binding 0 : Vertex shader uniform buffer
+			vks::initializers::writeDescriptorSet(
+				descriptorSet,
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				0,
+				&gear->uniformBuffer.descriptor),
+*/
+			// Binding 1 :Geometry shader ubo
+			vks::initializers::writeDescriptorSet(descriptorSet,
+			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+			&uniformBufferGS.descriptor),
+		};
+
+		for (auto& gear : gears)
+		{
+			gear->setupDescriptorSet(descriptorPool, descriptorSetLayout, &writeDescriptorSets);
+		}
+#endif
+
+
+
 
 		for (auto& gear : gears)
 		{
@@ -342,7 +366,7 @@ public:
 					&descriptorSetLayout,
 					1);
 
-			VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
+			VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &gear->descriptorSet));
 
 			/*
 			// Binding 0 : Vertex shader uniform buffer
@@ -362,23 +386,23 @@ public:
 
 				// Binding 0 : Vertex shader uniform buffer
 				vks::initializers::writeDescriptorSet(
-					descriptorSet,
+					gear->descriptorSet,
 					VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 					0,
 					&gear->uniformBuffer.descriptor),
 
 				// Binding 1 :Geometry shader ubo
-				vks::initializers::writeDescriptorSet(descriptorSet,
+				vks::initializers::writeDescriptorSet(gear->descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
 				&uniformBufferGS.descriptor),
 			};
-
 
 			vkUpdateDescriptorSets(device,
 														 static_cast<uint32_t>(writeDescriptorSets.size()),
 														 writeDescriptorSets.data(),
 														 0,
 														 nullptr);
+
 		}
 
 	/*

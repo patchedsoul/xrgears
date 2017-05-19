@@ -259,7 +259,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 void VulkanGear::draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout)
 {
 	VkDeviceSize offsets[1] = { 0 };
-	//vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, NULL);
+	vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, NULL);
 	vkCmdBindVertexBuffers(cmdbuffer, 0, 1, &vertexBuffer.buffer, offsets);
 	vkCmdBindIndexBuffer(cmdbuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 	vkCmdDrawIndexed(cmdbuffer, indexCount, 1, 0, 0, 1);
@@ -300,7 +300,8 @@ void VulkanGear::updateUniformBuffer(glm::mat4 perspective, glm::vec3 rotation, 
 	memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
 }
 
-void VulkanGear::setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout)
+void VulkanGear::setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout,
+																		std::vector<VkWriteDescriptorSet>* writeDescriptorSets)
 {
 	VkDescriptorSetAllocateInfo allocInfo =
 		vks::initializers::descriptorSetAllocateInfo(
@@ -318,8 +319,18 @@ void VulkanGear::setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout
 			0,
 			&uniformBuffer.descriptor);
 
-	vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1,
-												 &writeDescriptorSet, 0, NULL);
+//	vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1,
+//												 &writeDescriptorSet, 0, NULL);
+
+
+	writeDescriptorSets->push_back(writeDescriptorSet);
+
+	vkUpdateDescriptorSets(vulkanDevice->logicalDevice,
+												 static_cast<uint32_t>(writeDescriptorSets->size()),
+												 writeDescriptorSets->data(),
+												 0,
+												 nullptr);
+
 }
 
 

@@ -28,7 +28,7 @@ void main(void)
 	{
 		mat4 modelview = ubo.view[gl_InvocationID] * ubo.model;
 
-		outNormal = mat3(modelview) * inNormal[i];
+		outNormal = mat3(ubo.normal) * inNormal[i];
 		outColor = inColor[i];
 
 		vec4 pos = gl_in[i].gl_Position;
