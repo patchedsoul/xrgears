@@ -6,11 +6,18 @@
 * This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
 */
 
+#pragma once
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+struct StereoViewProjection {
+	glm::mat4 projection[2];
+	glm::mat4 view[2];
+};
 
 class Camera
 {
@@ -37,7 +44,7 @@ private:
 		{
 			matrices.view = transM * rotM;
 		}
-	};
+	}
 public:
 	enum CameraType { lookat, firstperson };
 	CameraType type = CameraType::lookat;
@@ -73,7 +80,7 @@ public:
 		this->znear = znear;
 		this->zfar = zfar;
 		matrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
-	};
+	}
 
 	void updateAspectRatio(float aspect)
 	{
@@ -90,7 +97,7 @@ public:
 	{
 		this->rotation = rotation;
 		updateViewMatrix();
-	};
+	}
 
 	void rotate(glm::vec3 delta)
 	{
@@ -134,9 +141,13 @@ public:
 					position += glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
 
 				updateViewMatrix();
+
+				printf("Camera\nPosition (%.2f, %.2f, %.2f)\nRotation\n\n",
+							 position.x, position.y, position.z,
+							 rotation.x, rotation.y, rotation.z);
 			}
 		}
-	};
+	}
 
 	// Update camera passing separate axis data (gamepad)
 	// Returns true if view or position has been changed

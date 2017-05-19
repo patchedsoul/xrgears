@@ -274,10 +274,11 @@ glm::mat4 VulkanGear::getModelMatrix(glm::vec3 rotation, float timer) {
 }
 
 
-void VulkanGear::updateUniformBuffer(glm::mat4 perspective, glm::vec3 rotation, float zoom, float timer)
+void VulkanGear::updateUniformBuffer(StereoViewProjection svp, glm::vec3 rotation, float zoom, float timer)
 {
-	ubo.projection = perspective;
+	//ubo.projection = perspective;
 
+	/*
 	ubo.view = glm::lookAt(
 		glm::vec3(0, 0, -zoom),
 		glm::vec3(-1.0, -1.5, 0),
@@ -285,17 +286,26 @@ void VulkanGear::updateUniformBuffer(glm::mat4 perspective, glm::vec3 rotation, 
 		);
 	ubo.view = glm::rotate(ubo.view, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
 	ubo.view = glm::rotate(ubo.view, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	*/
 
 	ubo.model = glm::mat4();
 	ubo.model = glm::translate(ubo.model, pos);
 	rotation.z = (rotSpeed * timer) + rotOffset;
 	ubo.model = glm::rotate(ubo.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	ubo.normal = glm::inverseTranspose(ubo.view * ubo.model);
+	ubo.normal[0] = glm::inverseTranspose(svp.view[0] * ubo.model);
+	ubo.normal[1] = glm::inverseTranspose(svp.view[1] * ubo.model);
 
+	ubo.view[0] = svp.view[0];
+	ubo.view[1] = svp.view[1];
+
+	ubo.projection[0] = svp.projection[0];
+	ubo.projection[1] = svp.projection[1];
+	/*
 	ubo.lightPos = glm::vec3(0.0f, 0.0f, 2.5f);
 	ubo.lightPos.x = sin(glm::radians(timer)) * 8.0f;
 	ubo.lightPos.z = cos(glm::radians(timer)) * 8.0f;
+	*/
 
 	memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
 }

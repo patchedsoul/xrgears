@@ -24,6 +24,7 @@
 #include "VulkanTools.h"
 #include "VulkanDevice.hpp"
 #include "VulkanBuffer.hpp"
+#include "camera.hpp"
 
 struct Vertex
 {
@@ -63,11 +64,15 @@ class VulkanGear
 private:
 	struct UBO
 	{
-		glm::mat4 projection;
+		//glm::mat4 projection;
+		glm::mat4 projection[2];
+		glm::mat4 view[2];
+		glm::mat4 normal[2];
 		glm::mat4 model;
-		glm::mat4 normal;
-		glm::mat4 view;
-		glm::vec3 lightPos;
+		//glm::mat4 normal;
+		//glm::mat4 view;
+		//glm::vec3 lightPos;
+		glm::vec4 lightPos = glm::vec4(-2.5f, -3.5f, 0.0f, 1.0f);
 	};
 
 	vks::VulkanDevice *vulkanDevice;
@@ -93,7 +98,7 @@ public:
 	vks::Buffer uniformBuffer;
 
 	void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout);
-	void updateUniformBuffer(glm::mat4 perspective, glm::vec3 rotation, float zoom, float timer);
+	void updateUniformBuffer(StereoViewProjection svp, glm::vec3 rotation, float zoom, float timer);
 
 	void setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout, std::vector<VkWriteDescriptorSet> *writeDescriptorSets);
 

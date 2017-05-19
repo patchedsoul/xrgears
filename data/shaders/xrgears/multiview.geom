@@ -5,12 +5,13 @@
 layout (triangles, invocations = 2) in;
 layout (triangle_strip, max_vertices = 3) out;
 
-layout (binding = 1) uniform UBO 
+
+layout (binding = 0) uniform UBO 
 {
 	mat4 projection[2];
 	mat4 view[2];
+	mat4 normal[2];
 	mat4 model;
-	mat4 normal;
 	vec4 lightPos;
 } ubo;
 
@@ -28,7 +29,10 @@ void main(void)
 	{
 		mat4 modelview = ubo.view[gl_InvocationID] * ubo.model;
 
-		outNormal = mat3(ubo.normal) * inNormal[i];
+		outNormal = mat3(ubo.normal[gl_InvocationID]) * inNormal[i];
+		
+		//outNormal = inNormal[i];
+		
 		outColor = inColor[i];
 
 		vec4 pos = gl_in[i].gl_Position;

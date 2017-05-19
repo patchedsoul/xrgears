@@ -45,6 +45,7 @@ public:
 
 	std::vector<VulkanGear*> gears;
 
+	/*
 	struct UBOGS {
 		glm::mat4 projection[2];
 		glm::mat4 view[2];
@@ -52,8 +53,9 @@ public:
 		glm::mat4 normal;
 		glm::vec4 lightPos = glm::vec4(-2.5f, -3.5f, 0.0f, 1.0f);
 	} uboGS;
+	*/
 
-	vks::Buffer uniformBufferGS;
+	//vks::Buffer uniformBufferGS;
 
 	VkPipeline pipeline;
 	VkPipelineLayout pipelineLayout;
@@ -72,8 +74,11 @@ public:
 		title = "Vulkan Example - Viewport arrays";
 		enableTextOverlay = true;
 		camera.type = Camera::CameraType::firstperson;
-		camera.setRotation(glm::vec3(0.0f, 90.0f, 0.0f));
-		camera.setTranslation(glm::vec3(7.0f, 3.2f, 0.0f));
+		camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+		//camera.setTranslation(glm::vec3(7.0f, 3.2f, 0.0f));
+
+		camera.setTranslation(glm::vec3(2.2f, 3.2f, -7.6));
+
 		camera.movementSpeed = 5.0f;
 		timerSpeed *= 0.25f;
 	}
@@ -87,7 +92,7 @@ public:
 
 		scene.destroy();
 
-		uniformBufferGS.destroy();
+		//uniformBufferGS.destroy();
 
 		for (auto& gear : gears)
 		{
@@ -302,14 +307,15 @@ public:
 			// Binding 0 : Vertex shader uniform buffer
 			vks::initializers::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-				VK_SHADER_STAGE_VERTEX_BIT,
+				VK_SHADER_STAGE_GEOMETRY_BIT, //VK_SHADER_STAGE_VERTEX_BIT,
 			0),
-
+/*
 			// Binding 1: Geometry shader ubo
 			vks::initializers::descriptorSetLayoutBinding(
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			VK_SHADER_STAGE_GEOMETRY_BIT,
 			1)
+				*/
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
@@ -391,10 +397,12 @@ public:
 					0,
 					&gear->uniformBuffer.descriptor),
 
+				/*
 				// Binding 1 :Geometry shader ubo
 				vks::initializers::writeDescriptorSet(gear->descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
 				&uniformBufferGS.descriptor),
+					*/
 			};
 
 			vkUpdateDescriptorSets(device,
@@ -523,6 +531,7 @@ public:
 	// Prepare and initialize uniform buffer containing shader uniforms
 	void prepareUniformBuffers()
 	{
+		/*
 		// Geometry shader uniform buffer block
 		VK_CHECK_RESULT(vulkanDevice->createBuffer(
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -532,7 +541,7 @@ public:
 
 		// Map persistent
 		VK_CHECK_RESULT(uniformBufferGS.map());
-
+*/
 
 /*
 		for (auto& gear : gears)
@@ -577,8 +586,11 @@ public:
 
 		transM = glm::translate(glm::mat4(), camera.position - camRight * (eyeSeparation / 2.0f));
 
-		uboGS.projection[0] = glm::frustum(left, right, bottom, top, zNear, zFar);
-		uboGS.view[0] = rotM * transM;
+
+		StereoViewProjection svp = {};
+
+		svp.projection[0] = glm::frustum(left, right, bottom, top, zNear, zFar);
+		svp.view[0] = rotM * transM;
 
 		// Right eye
 		left = -aspectRatio * wd2 - 0.5f * eyeSeparation * ndfl;
@@ -586,13 +598,13 @@ public:
 
 		transM = glm::translate(glm::mat4(), camera.position + camRight * (eyeSeparation / 2.0f));
 
-		uboGS.projection[1] = glm::frustum(left, right, bottom, top, zNear, zFar);
-		uboGS.view[1] = rotM * transM;
+		svp.projection[1] = glm::frustum(left, right, bottom, top, zNear, zFar);
+		svp.view[1] = rotM * transM;
 
-		uboGS.model = glm::mat4();
-		uboGS.normal = glm::mat4();
+		//uboGS.model = glm::mat4();
+		//uboGS.normal = glm::mat4();
 
-		memcpy(uniformBufferGS.mapped, &uboGS, sizeof(uboGS));
+		//memcpy(uniformBufferGS.mapped, &uboGS, sizeof(uboGS));
 
 /*
 		for (auto& gear : gears)
@@ -604,7 +616,7 @@ public:
 		glm::mat4 perspective = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
 		for (auto& gear : gears)
 		{
-			gear->updateUniformBuffer(perspective, rotation, zoom, timer * 360.0f);
+			gear->updateUniformBuffer(svp, rotation, zoom, timer * 360.0f);
 		}
 
 	}
