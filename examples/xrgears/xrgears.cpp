@@ -296,16 +296,18 @@ public:
 	{
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
 		{
+			/*
 			// Binding 0 : Vertex shader uniform buffer
 			vks::initializers::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_VERTEX_BIT,
 			0),
+				*/
 			// Binding 1: Geometry shader ubo
 			vks::initializers::descriptorSetLayoutBinding(
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			VK_SHADER_STAGE_GEOMETRY_BIT,
-			1)
+			0)
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
@@ -330,17 +332,17 @@ public:
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
 
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
-
+/*
 			// Binding 0 : Vertex shader uniform buffer
 			vks::initializers::writeDescriptorSet(
 				descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformBuffer.descriptor),
-
+*/
 			// Binding 1 :Geometry shader ubo
 			vks::initializers::writeDescriptorSet(descriptorSet,
-			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0,
 			&uniformBufferGS.descriptor),
 		};
 
