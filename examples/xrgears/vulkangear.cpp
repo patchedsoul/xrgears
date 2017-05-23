@@ -252,8 +252,6 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 	}
 
 	indexCount = iBuffer.size();
-
-	prepareUniformBuffer();
 }
 
 void VulkanGear::draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout)
@@ -274,15 +272,15 @@ glm::mat4 VulkanGear::getModelMatrix(glm::vec3 rotation, float timer) {
 }
 
 
-void VulkanGear::updateUniformBuffer(StereoViewProjection svp, glm::vec3 rotation, float zoom, float timer)
+void VulkanGear::updateUniformBuffer(StereoView sv, glm::vec3 rotation, float zoom, float timer)
 {
 	ubo.model = glm::mat4();
 	ubo.model = glm::translate(ubo.model, pos);
 	rotation.z = (rotSpeed * timer) + rotOffset;
 	ubo.model = glm::rotate(ubo.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	ubo.normal[0] = glm::inverseTranspose(svp.view[0] * ubo.model);
-	ubo.normal[1] = glm::inverseTranspose(svp.view[1] * ubo.model);
+	ubo.normal[0] = glm::inverseTranspose(sv.view[0] * ubo.model);
+	ubo.normal[1] = glm::inverseTranspose(sv.view[1] * ubo.model);
 
 	memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
 }

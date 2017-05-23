@@ -96,13 +96,13 @@ private:
 	int32_t newVertex(std::vector<Vertex> *vBuffer, float x, float y, float z, const glm::vec3& normal);
 	void newFace(std::vector<uint32_t> *iBuffer, int a, int b, int c);
 
-	void prepareUniformBuffer();
 public:
+	void prepareUniformBuffer();
 	VkDescriptorSet descriptorSet;
 	vks::Buffer uniformBuffer;
 
 	void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout);
-	void updateUniformBuffer(StereoViewProjection svp, glm::vec3 rotation, float zoom, float timer);
+	void updateUniformBuffer(StereoView sv, glm::vec3 rotation, float zoom, float timer);
 
 	void setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout, std::vector<VkWriteDescriptorSet> *writeDescriptorSets);
 

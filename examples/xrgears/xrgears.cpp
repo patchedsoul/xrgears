@@ -321,14 +321,6 @@ public:
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			VK_SHADER_STAGE_GEOMETRY_BIT,
 			2),
-
-/*
-			// Binding 1: Geometry shader ubo
-			vks::initializers::descriptorSetLayoutBinding(
-			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			VK_SHADER_STAGE_GEOMETRY_BIT,
-			1)
-				*/
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
@@ -460,54 +452,47 @@ public:
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
 	}
 
+
+	void createUniformBuffer(vks::Buffer *buffer,  VkDeviceSize size) {
+		VK_CHECK_RESULT(vulkanDevice->createBuffer(
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			buffer,
+			size));
+
+		// Map persistent
+		VK_CHECK_RESULT(buffer->map());
+	}
+
 	// Prepare and initialize uniform buffer containing shader uniforms
 	void prepareUniformBuffers()
 	{
-		/*
-		// Geometry shader uniform buffer block
-		VK_CHECK_RESULT(vulkanDevice->createBuffer(
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			&uniformBufferGS,
-			sizeof(uboGS)));
+		createUniformBuffer(&uniformBuffers.lights, sizeof(uboLights));
+		createUniformBuffer(&uniformBuffers.camera, sizeof(uboCamera));
 
-		// Map persistent
-		VK_CHECK_RESULT(uniformBufferGS.map());
-*/
-
-		// Geometry shader uniform buffer block
-		VK_CHECK_RESULT(vulkanDevice->createBuffer(
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			&uniformBuffers.lights,
-			sizeof(uboLights)));
-
-		// Map persistent
-		VK_CHECK_RESULT(uniformBuffers.lights.map());
-
-		VK_CHECK_RESULT(vulkanDevice->createBuffer(
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			&uniformBuffers.camera,
-			sizeof(uboCamera)));
-
-		// Map persistent
-		VK_CHECK_RESULT(uniformBuffers.camera.map());
-
-/*
 		for (auto& gear : gears)
-		{
 			gear->prepareUniformBuffer();
-		}
-*/
-		updateUniformBuffers();
-		updateLights();
-//		updateCamera();
 
+		updateUniformBuffers();
 	}
 
 	void updateUniformBuffers()
 	{
+		updateCamera();
+
+		StereoView sv = {};
+		sv.view[0] = uboCamera.view[0];
+		sv.view[1] = uboCamera.view[1];
+
+		for (auto& gear : gears)
+		{
+			gear->updateUniformBuffer(sv, rotation, zoom, timer * 360.0f);
+		}
+
+		updateLights();
+	}
+
+	void updateCamera() {
 		// Geometry shader matrices for the two viewports
 		// See http://paulbourke.net/stereographics/stereorender/
 
@@ -532,18 +517,15 @@ public:
 		rotM = glm::rotate(rotM, glm::radians(camera.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
 		rotM = glm::rotate(rotM, glm::radians(camera.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		rotM = glm::rotate(rotM, glm::radians(camera.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-	
+
 		// Left eye
 		left = -aspectRatio * wd2 + 0.5f * eyeSeparation * ndfl;
 		right = aspectRatio * wd2 + 0.5f * eyeSeparation * ndfl;
 
 		transM = glm::translate(glm::mat4(), camera.position - camRight * (eyeSeparation / 2.0f));
 
-
-		StereoViewProjection svp = {};
-
-		svp.projection[0] = glm::frustum(left, right, bottom, top, zNear, zFar);
-		svp.view[0] = rotM * transM;
+		uboCamera.projection[0] = glm::frustum(left, right, bottom, top, zNear, zFar);
+		uboCamera.view[0] = rotM * transM;
 
 		// Right eye
 		left = -aspectRatio * wd2 - 0.5f * eyeSeparation * ndfl;
@@ -551,35 +533,10 @@ public:
 
 		transM = glm::translate(glm::mat4(), camera.position + camRight * (eyeSeparation / 2.0f));
 
-		svp.projection[1] = glm::frustum(left, right, bottom, top, zNear, zFar);
-		svp.view[1] = rotM * transM;
-
-		//uboGS.model = glm::mat4();
-		//uboGS.normal = glm::mat4();
-
-		//memcpy(uniformBufferGS.mapped, &uboGS, sizeof(uboGS));
-
-/*
-		for (auto& gear : gears)
-		{
-			glm::mat4 model = gear->getModelMatrix(glm::vec3(), timer * 360.0f);
-		}
-		*/
-
-		uboCamera.view[0] = svp.view[0];
-		uboCamera.view[1] = svp.view[1];
-
-		uboCamera.projection[0] = svp.projection[0];
-		uboCamera.projection[1] = svp.projection[1];
+		uboCamera.projection[1] = glm::frustum(left, right, bottom, top, zNear, zFar);
+		uboCamera.view[1] = rotM * transM;
 
 		memcpy(uniformBuffers.camera.mapped, &uboCamera, sizeof(uboCamera));
-
-		glm::mat4 perspective = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
-		for (auto& gear : gears)
-		{
-			gear->updateUniformBuffer(svp, rotation, zoom, timer * 360.0f);
-		}
-
 	}
 
 	void updateLights()
@@ -600,13 +557,7 @@ public:
 
 		memcpy(uniformBuffers.lights.mapped, &uboLights, sizeof(uboLights));
 	}
-/*
-	void updateCamera()
-	{
 
-		memcpy(uniformBuffers.camera.mapped, &uboCamera, sizeof(uboCamera));
-	}
-*/
 	void draw()
 	{
 		VulkanExampleBase::prepareFrame();
@@ -644,7 +595,6 @@ public:
 		if (!paused)
 		{
 			updateUniformBuffers();
-			updateLights();
 		}
 	}
 

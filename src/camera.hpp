@@ -14,8 +14,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-struct StereoViewProjection {
-	glm::mat4 projection[2];
+struct StereoView {
 	glm::mat4 view[2];
 };
 
