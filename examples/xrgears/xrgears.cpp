@@ -56,6 +56,11 @@ public:
 	*/
 
 	//vks::Buffer uniformBufferGS;
+	vks::Buffer uniformBufferLights;
+
+	struct UBOLights {
+		glm::vec4 lights[4];
+	} uboLights;
 
 	VkPipeline pipeline;
 	VkPipelineLayout pipelineLayout;
@@ -543,6 +548,16 @@ public:
 		VK_CHECK_RESULT(uniformBufferGS.map());
 */
 
+		// Geometry shader uniform buffer block
+		VK_CHECK_RESULT(vulkanDevice->createBuffer(
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			&uniformBufferLights,
+			sizeof(uboLights)));
+
+		// Map persistent
+		VK_CHECK_RESULT(uniformBufferLights.map());
+
 /*
 		for (auto& gear : gears)
 		{
@@ -550,6 +565,7 @@ public:
 		}
 */
 		updateUniformBuffers();
+		updateLights();
 
 	}
 
@@ -621,6 +637,26 @@ public:
 
 	}
 
+	void updateLights()
+	{
+		const float p = 15.0f;
+		uboLights.lights[0] = glm::vec4(-p, -p*0.5f, -p, 1.0f);
+		uboLights.lights[1] = glm::vec4(-p, -p*0.5f,  p, 1.0f);
+		uboLights.lights[2] = glm::vec4( p, -p*0.5f,  p, 1.0f);
+		uboLights.lights[3] = glm::vec4( p, -p*0.5f, -p, 1.0f);
+
+		if (!paused)
+		{
+			uboLights.lights[0].x = sin(glm::radians(timer * 360.0f)) * 20.0f;
+			uboLights.lights[0].z = cos(glm::radians(timer * 360.0f)) * 20.0f;
+			uboLights.lights[1].x = cos(glm::radians(timer * 360.0f)) * 20.0f;
+			uboLights.lights[1].y = sin(glm::radians(timer * 360.0f)) * 20.0f;
+		}
+
+		memcpy(uniformBufferLights.mapped, &uboLights, sizeof(uboLights));
+	}
+
+
 	void draw()
 	{
 		VulkanExampleBase::prepareFrame();
@@ -658,6 +694,7 @@ public:
 		if (!paused)
 		{
 			updateUniformBuffers();
+			updateLights();
 		}
 	}
 
