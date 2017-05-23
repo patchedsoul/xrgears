@@ -6,14 +6,18 @@ layout (triangles, invocations = 2) in;
 layout (triangle_strip, max_vertices = 3) out;
 
 
-layout (binding = 0) uniform UBO 
+layout (binding = 0) uniform UBOMatrices
 {
 	mat4 projection[2];
 	mat4 view[2];
 	mat4 normal[2];
 	mat4 model;
 	vec4 lightPos;
-} ubo;
+} matrices;
+
+layout (binding = 1) uniform UBOLights {
+	vec4 lights[4];
+} uboLights;
 
 layout (location = 0) in vec3 inNormal[];
 layout (location = 1) in vec3 inColor[];
@@ -27,9 +31,9 @@ void main(void)
 {	
 	for(int i = 0; i < gl_in.length(); i++)
 	{
-		mat4 modelview = ubo.view[gl_InvocationID] * ubo.model;
+		mat4 modelview = matrices.view[gl_InvocationID] * matrices.model;
 
-		outNormal = mat3(ubo.normal[gl_InvocationID]) * inNormal[i];
+		outNormal = mat3(matrices.normal[gl_InvocationID]) * inNormal[i];
 		
 		//outNormal = inNormal[i];
 		
@@ -38,11 +42,11 @@ void main(void)
 		vec4 pos = gl_in[i].gl_Position;
 		vec4 worldPos = (modelview * pos);
 		
-		vec3 lPos = vec3(ubo.view[gl_InvocationID] * ubo.lightPos);
+		vec3 lPos = vec3(matrices.view[gl_InvocationID] * uboLights.lights[0]);
 		outLightVec = lPos - worldPos.xyz;
 		outViewVec = -worldPos.xyz;	
 	
-		gl_Position = ubo.projection[gl_InvocationID] * worldPos;
+		gl_Position = matrices.projection[gl_InvocationID] * worldPos;
 
 		// Set the viewport index that the vertex will be emitted to
 		gl_ViewportIndex = gl_InvocationID;

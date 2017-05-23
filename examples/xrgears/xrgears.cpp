@@ -314,6 +314,12 @@ public:
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_GEOMETRY_BIT, //VK_SHADER_STAGE_VERTEX_BIT,
 			0),
+
+			vks::initializers::descriptorSetLayoutBinding(
+			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			VK_SHADER_STAGE_GEOMETRY_BIT,
+			1),
+
 /*
 			// Binding 1: Geometry shader ubo
 			vks::initializers::descriptorSetLayoutBinding(
@@ -354,7 +360,14 @@ public:
 					VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 					0,
 					&gear->uniformBuffer.descriptor),
+				vks::initializers::writeDescriptorSet(
+							gear->descriptorSet,
+							VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+							1,
+							&uniformBufferLights.descriptor),
 			};
+
+
 
 			vkUpdateDescriptorSets(device,
 														 static_cast<uint32_t>(writeDescriptorSets.size()),
