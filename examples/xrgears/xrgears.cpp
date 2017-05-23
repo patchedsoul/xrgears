@@ -336,39 +336,6 @@ public:
 
 	void setupDescriptorSet()
 	{
-
-/*
-		for (auto& gear : gears)
-		{
-			gear->setupDescriptorSet(descriptorPool, descriptorSetLayout);
-		}
-*/
-
-#if 0
-		std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
-/*
-			// Binding 0 : Vertex shader uniform buffer
-			vks::initializers::writeDescriptorSet(
-				descriptorSet,
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-				0,
-				&gear->uniformBuffer.descriptor),
-*/
-			// Binding 1 :Geometry shader ubo
-			vks::initializers::writeDescriptorSet(descriptorSet,
-			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
-			&uniformBufferGS.descriptor),
-		};
-
-		for (auto& gear : gears)
-		{
-			gear->setupDescriptorSet(descriptorPool, descriptorSetLayout, &writeDescriptorSets);
-		}
-#endif
-
-
-
-
 		for (auto& gear : gears)
 		{
 			VkDescriptorSetAllocateInfo allocInfo =
@@ -379,20 +346,6 @@ public:
 
 			VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &gear->descriptorSet));
 
-			/*
-			// Binding 0 : Vertex shader uniform buffer
-			VkWriteDescriptorSet writeDescriptorSet =
-				vks::initializers::writeDescriptorSet(
-					descriptorSet,
-					VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-					0,
-					&gear->uniformBuffer.descriptor);
-
-			vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1,
-														 &writeDescriptorSet, 0, NULL);
-		}
-		*/
-
 			std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
 
 				// Binding 0 : Vertex shader uniform buffer
@@ -401,13 +354,6 @@ public:
 					VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 					0,
 					&gear->uniformBuffer.descriptor),
-
-				/*
-				// Binding 1 :Geometry shader ubo
-				vks::initializers::writeDescriptorSet(gear->descriptorSet,
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
-				&uniformBufferGS.descriptor),
-					*/
 			};
 
 			vkUpdateDescriptorSets(device,
@@ -415,44 +361,7 @@ public:
 														 writeDescriptorSets.data(),
 														 0,
 														 nullptr);
-
 		}
-
-	/*
-		// setup multiview uniform buffer
-		VkDescriptorSetAllocateInfo allocInfo2 =
-			vks::initializers::descriptorSetAllocateInfo(
-				descriptorPool,
-				&descriptorSetLayout,
-				1);
-
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo2, &descriptorSet));
-*/
-/*
-		std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
-
-			// Binding 0 : Vertex shader uniform buffer
-			vks::initializers::writeDescriptorSet(
-				descriptorSet,
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-				0,
-				&uniformBuffer.descriptor),
-
-			// Binding 1 :Geometry shader ubo
-			vks::initializers::writeDescriptorSet(descriptorSet,
-			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
-			&uniformBufferGS.descriptor),
-		};
-			*/
-/*
-		vkUpdateDescriptorSets(device,
-													 static_cast<uint32_t>(writeDescriptorSets.size()),
-													 writeDescriptorSets.data(),
-													 0,
-													 nullptr);
-*/
-
-
 	}
 
 	void preparePipelines()

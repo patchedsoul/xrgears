@@ -310,40 +310,6 @@ void VulkanGear::updateUniformBuffer(StereoViewProjection svp, glm::vec3 rotatio
 	memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
 }
 
-void VulkanGear::setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout,
-																		std::vector<VkWriteDescriptorSet>* writeDescriptorSets)
-{
-	VkDescriptorSetAllocateInfo allocInfo =
-		vks::initializers::descriptorSetAllocateInfo(
-			pool,
-			&descriptorSetLayout,
-			1);
-
-	VK_CHECK_RESULT(vkAllocateDescriptorSets(vulkanDevice->logicalDevice, &allocInfo, &descriptorSet));
-
-	// Binding 0 : Vertex shader uniform buffer
-	VkWriteDescriptorSet writeDescriptorSet =
-		vks::initializers::writeDescriptorSet(
-			descriptorSet,
-			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			0,
-			&uniformBuffer.descriptor);
-
-//	vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1,
-//												 &writeDescriptorSet, 0, NULL);
-
-
-	writeDescriptorSets->push_back(writeDescriptorSet);
-
-	vkUpdateDescriptorSets(vulkanDevice->logicalDevice,
-												 static_cast<uint32_t>(writeDescriptorSets->size()),
-												 writeDescriptorSets->data(),
-												 0,
-												 nullptr);
-
-}
-
-
 void VulkanGear::prepareUniformBuffer()
 {
 	VK_CHECK_RESULT(vulkanDevice->createBuffer(
