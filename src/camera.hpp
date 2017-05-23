@@ -142,9 +142,11 @@ public:
 
 				updateViewMatrix();
 
+				/*
 				printf("Camera\nPosition (%.2f, %.2f, %.2f)\nRotation\n\n",
 							 position.x, position.y, position.z,
 							 rotation.x, rotation.y, rotation.z);
+							 */
 			}
 		}
 	}
