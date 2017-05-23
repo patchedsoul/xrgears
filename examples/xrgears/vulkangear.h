@@ -65,8 +65,8 @@ private:
 	struct UBO
 	{
 		//glm::mat4 projection;
-		glm::mat4 projection[2];
-		glm::mat4 view[2];
+		//glm::mat4 projection[2];
+		//glm::mat4 view[2];
 		glm::mat4 normal[2];
 		glm::mat4 model;
 		//glm::mat4 normal;
@@ -75,7 +75,7 @@ private:
 		//glm::vec4 lightPos = glm::vec4(-2.5f, -3.5f, 0.0f, 1.0f);
 
 
-		glm::vec4 lightPos = glm::vec4(-5.5f, -5.5f, 5.0f, 1.0f);
+		//glm::vec4 lightPos = glm::vec4(-5.5f, -5.5f, 5.0f, 1.0f);
 
 	};
 

@@ -45,22 +45,19 @@ public:
 
 	std::vector<VulkanGear*> gears;
 
-	/*
-	struct UBOGS {
-		glm::mat4 projection[2];
-		glm::mat4 view[2];
-		glm::mat4 model;
-		glm::mat4 normal;
-		glm::vec4 lightPos = glm::vec4(-2.5f, -3.5f, 0.0f, 1.0f);
-	} uboGS;
-	*/
-
-	//vks::Buffer uniformBufferGS;
-	vks::Buffer uniformBufferLights;
+	struct {
+			vks::Buffer lights;
+			vks::Buffer camera;
+	} uniformBuffers;
 
 	struct UBOLights {
 		glm::vec4 lights[4];
 	} uboLights;
+
+	struct UBOCamera {
+		glm::mat4 projection[2];
+		glm::mat4 view[2];
+	} uboCamera;
 
 	VkPipeline pipeline;
 	VkPipelineLayout pipelineLayout;
@@ -320,6 +317,11 @@ public:
 			VK_SHADER_STAGE_GEOMETRY_BIT,
 			1),
 
+			vks::initializers::descriptorSetLayoutBinding(
+			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			VK_SHADER_STAGE_GEOMETRY_BIT,
+			2),
+
 /*
 			// Binding 1: Geometry shader ubo
 			vks::initializers::descriptorSetLayoutBinding(
@@ -364,10 +366,13 @@ public:
 							gear->descriptorSet,
 							VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 							1,
-							&uniformBufferLights.descriptor),
+							&uniformBuffers.lights.descriptor),
+				vks::initializers::writeDescriptorSet(
+							gear->descriptorSet,
+							VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+							2,
+							&uniformBuffers.camera.descriptor),
 			};
-
-
 
 			vkUpdateDescriptorSets(device,
 														 static_cast<uint32_t>(writeDescriptorSets.size()),
@@ -474,11 +479,20 @@ public:
 		VK_CHECK_RESULT(vulkanDevice->createBuffer(
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			&uniformBufferLights,
+			&uniformBuffers.lights,
 			sizeof(uboLights)));
 
 		// Map persistent
-		VK_CHECK_RESULT(uniformBufferLights.map());
+		VK_CHECK_RESULT(uniformBuffers.lights.map());
+
+		VK_CHECK_RESULT(vulkanDevice->createBuffer(
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			&uniformBuffers.camera,
+			sizeof(uboCamera)));
+
+		// Map persistent
+		VK_CHECK_RESULT(uniformBuffers.camera.map());
 
 /*
 		for (auto& gear : gears)
@@ -488,6 +502,7 @@ public:
 */
 		updateUniformBuffers();
 		updateLights();
+//		updateCamera();
 
 	}
 
@@ -551,6 +566,14 @@ public:
 		}
 		*/
 
+		uboCamera.view[0] = svp.view[0];
+		uboCamera.view[1] = svp.view[1];
+
+		uboCamera.projection[0] = svp.projection[0];
+		uboCamera.projection[1] = svp.projection[1];
+
+		memcpy(uniformBuffers.camera.mapped, &uboCamera, sizeof(uboCamera));
+
 		glm::mat4 perspective = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
 		for (auto& gear : gears)
 		{
@@ -575,10 +598,15 @@ public:
 			uboLights.lights[1].y = sin(glm::radians(timer * 360.0f)) * 20.0f;
 		}
 
-		memcpy(uniformBufferLights.mapped, &uboLights, sizeof(uboLights));
+		memcpy(uniformBuffers.lights.mapped, &uboLights, sizeof(uboLights));
 	}
+/*
+	void updateCamera()
+	{
 
-
+		memcpy(uniformBuffers.camera.mapped, &uboCamera, sizeof(uboCamera));
+	}
+*/
 	void draw()
 	{
 		VulkanExampleBase::prepareFrame();

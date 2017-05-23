@@ -296,17 +296,6 @@ void VulkanGear::updateUniformBuffer(StereoViewProjection svp, glm::vec3 rotatio
 	ubo.normal[0] = glm::inverseTranspose(svp.view[0] * ubo.model);
 	ubo.normal[1] = glm::inverseTranspose(svp.view[1] * ubo.model);
 
-	ubo.view[0] = svp.view[0];
-	ubo.view[1] = svp.view[1];
-
-	ubo.projection[0] = svp.projection[0];
-	ubo.projection[1] = svp.projection[1];
-	/*
-	ubo.lightPos = glm::vec3(0.0f, 0.0f, 2.5f);
-	ubo.lightPos.x = sin(glm::radians(timer)) * 8.0f;
-	ubo.lightPos.z = cos(glm::radians(timer)) * 8.0f;
-	*/
-
 	memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
 }
 
