@@ -276,18 +276,6 @@ glm::mat4 VulkanGear::getModelMatrix(glm::vec3 rotation, float timer) {
 
 void VulkanGear::updateUniformBuffer(StereoViewProjection svp, glm::vec3 rotation, float zoom, float timer)
 {
-	//ubo.projection = perspective;
-
-	/*
-	ubo.view = glm::lookAt(
-		glm::vec3(0, 0, -zoom),
-		glm::vec3(-1.0, -1.5, 0),
-		glm::vec3(0, 1, 0)
-		);
-	ubo.view = glm::rotate(ubo.view, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-	ubo.view = glm::rotate(ubo.view, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-	*/
-
 	ubo.model = glm::mat4();
 	ubo.model = glm::translate(ubo.model, pos);
 	rotation.z = (rotSpeed * timer) + rotOffset;
