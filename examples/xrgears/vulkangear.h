@@ -25,6 +25,7 @@
 #include "VulkanDevice.hpp"
 #include "VulkanBuffer.hpp"
 #include "camera.hpp"
+#include "uniformbuffers.h"
 
 struct Vertex
 {
@@ -57,6 +58,7 @@ struct GearInfo
 	glm::vec3 pos;
 	float rotSpeed;
 	float rotOffset;
+	Material material;
 };
 
 class VulkanGear
@@ -86,6 +88,8 @@ private:
 	float rotSpeed;
 	float rotOffset;
 
+	Material material;
+
 	vks::Buffer vertexBuffer;
 	vks::Buffer indexBuffer;
 	uint32_t indexCount;
@@ -102,7 +106,7 @@ public:
 	vks::Buffer uniformBuffer;
 
 	void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout);
-	void updateUniformBuffer(StereoView sv, glm::vec3 rotation, float zoom, float timer);
+	void updateUniformBuffer(StereoView sv, float timer);
 
 	void setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout, std::vector<VkWriteDescriptorSet> *writeDescriptorSets);
 

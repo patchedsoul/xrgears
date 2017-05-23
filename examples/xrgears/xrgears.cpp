@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <vector>
 
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -45,11 +46,6 @@ public:
 
 	std::vector<VulkanGear*> gears;
 
-	struct {
-			vks::Buffer lights;
-			vks::Buffer camera;
-	} uniformBuffers;
-
 	struct UBOLights {
 		glm::vec4 lights[4];
 	} uboLights;
@@ -57,7 +53,13 @@ public:
 	struct UBOCamera {
 		glm::mat4 projection[2];
 		glm::mat4 view[2];
+		glm::vec3 position;
 	} uboCamera;
+
+	struct {
+			vks::Buffer lights;
+			vks::Buffer camera;
+	} uniformBuffers;
 
 	VkPipeline pipeline;
 	VkPipelineLayout pipelineLayout;
@@ -148,9 +150,7 @@ public:
 			VK_CHECK_RESULT(vkBeginCommandBuffer(drawCmdBuffers[i], &cmdBufInfo));
 
 			if (vks::debugmarker::active)
-			{
 				vks::debugmarker::beginRegion(drawCmdBuffers[i], "Render stuff?", glm::vec4(0.3f, 0.94f, 1.0f, 1.0f));
-			}
 
 
 			vkCmdBeginRenderPass(drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -171,23 +171,19 @@ public:
 
 			vkCmdSetLineWidth(drawCmdBuffers[i], 1.0f);
 
-//			vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-/*
+			/*
+			vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 			VkDeviceSize offsets[1] = { 0 };
 			vkCmdBindVertexBuffers(drawCmdBuffers[i], 0, 1, &scene.vertices.buffer, offsets);
 			vkCmdBindIndexBuffer(drawCmdBuffers[i], scene.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
 			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 			vkCmdDrawIndexed(drawCmdBuffers[i], scene.indexCount, 1, 0, 0, 0);
-*/
+			*/
 
 			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 			for (auto& gear : gears)
-			{
 				gear->draw(drawCmdBuffers[i], pipelineLayout);
-			}
-
-
 
 			vkCmdEndRenderPass(drawCmdBuffers[i]);
 
@@ -223,6 +219,18 @@ public:
 			glm::vec3(3.1, 0.0, 0.0),
 			glm::vec3(-3.1, -6.2, 0.0)
 		};
+
+		std::vector<Material> materials = {
+			/*
+			Material("Titanium", glm::vec3(0.541931f, 0.496791f, 0.449419f), 0.1f, 1.0f),
+			Material("Cobalt", glm::vec3(0.662124f, 0.654864f, 0.633732f), 0.1f, 1.0f),
+			Material("Platinum", glm::vec3(0.672411f, 0.637331f, 0.585456f), 0.1f, 1.0f)
+				*/
+			Material("Red", glm::vec3(1.0f, 0.0f, 0.0f), 0.5f, 1.0f),
+			Material("Green", glm::vec3(0.0f, 1.0f, 0.2f), 0.5f, 1.0f),
+			Material("Blue", glm::vec3(0.0f, 0.0f, 1.0f), 0.5f, 1.0f)
+		};
+
 		std::vector<float> rotationSpeeds = { 1.0f, -2.0f, -2.0f };
 		std::vector<float> rotationOffsets = { 0.0f, -9.0f, -30.0f };
 
@@ -239,6 +247,7 @@ public:
 			gearInfo.pos = positions[i];
 			gearInfo.rotSpeed = rotationSpeeds[i];
 			gearInfo.rotOffset = rotationOffsets[i];
+			gearInfo.material = materials[i];
 
 			gears[i] = new VulkanGear(vulkanDevice);
 			gears[i]->generate(&gearInfo, queue);
@@ -314,12 +323,12 @@ public:
 
 			vks::initializers::descriptorSetLayoutBinding(
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			VK_SHADER_STAGE_GEOMETRY_BIT,
+			VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 			1),
 
 			vks::initializers::descriptorSetLayoutBinding(
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			VK_SHADER_STAGE_GEOMETRY_BIT,
+			VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 			2),
 		};
 
@@ -330,6 +339,17 @@ public:
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vks::initializers::pipelineLayoutCreateInfo(&descriptorSetLayout, 1);
+
+		/*
+		 * Push Constants
+		 */
+
+		std::vector<VkPushConstantRange> pushConstantRanges = {
+			vks::initializers::pushConstantRange(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(Material::PushBlock), sizeof(glm::vec3)),
+		};
+
+		pPipelineLayoutCreateInfo.pushConstantRangeCount = 2;
+		pPipelineLayoutCreateInfo.pPushConstantRanges = pushConstantRanges.data();
 
 		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 	}
@@ -485,9 +505,7 @@ public:
 		sv.view[1] = uboCamera.view[1];
 
 		for (auto& gear : gears)
-		{
-			gear->updateUniformBuffer(sv, rotation, zoom, timer * 360.0f);
-		}
+			gear->updateUniformBuffer(sv, timer);
 
 		updateLights();
 	}
@@ -535,6 +553,8 @@ public:
 
 		uboCamera.projection[1] = glm::frustum(left, right, bottom, top, zNear, zFar);
 		uboCamera.view[1] = rotM * transM;
+
+		uboCamera.position = camera.position * -1.0f;
 
 		memcpy(uniformBuffers.camera.mapped, &uboCamera, sizeof(uboCamera));
 	}
@@ -585,9 +605,6 @@ public:
 	{
 		if (!prepared)
 			return;
-		/*
-		draw();
-		*/
 
 		vkDeviceWaitIdle(device);
 		draw();

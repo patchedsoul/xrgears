@@ -22,6 +22,7 @@ layout (binding = 1) uniform UBOLights {
 layout (binding = 2) uniform UBOCamera {
 	mat4 projection[2];
 	mat4 view[2];
+	vec3 position;
 } uboCamera;
 
 layout (location = 0) in vec3 inNormal[];
@@ -31,6 +32,8 @@ layout (location = 0) out vec3 outNormal;
 layout (location = 1) out vec3 outColor;
 layout (location = 2) out vec3 outViewVec;
 layout (location = 3) out vec3 outLightVec;
+
+layout (location = 4) out vec3 outWorldPos;
 
 void main(void)
 {	
@@ -46,6 +49,7 @@ void main(void)
 
 		vec4 pos = gl_in[i].gl_Position;
 		vec4 worldPos = (modelview * pos);
+		outWorldPos = worldPos.xyz;
 		
 		vec3 lPos = vec3(uboCamera.view[gl_InvocationID] * uboLights.lights[0]);
 		outLightVec = lPos - worldPos.xyz;

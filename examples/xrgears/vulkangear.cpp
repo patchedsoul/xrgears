@@ -38,6 +38,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 	this->pos = gearinfo->pos;
 	this->rotOffset = gearinfo->rotOffset;
 	this->rotSpeed = gearinfo->rotSpeed;
+	this->material = gearinfo->material;
 
 	std::vector<Vertex> vBuffer;
 	std::vector<uint32_t> iBuffer;
@@ -260,24 +261,22 @@ void VulkanGear::draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout
 	vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, NULL);
 	vkCmdBindVertexBuffers(cmdbuffer, 0, 1, &vertexBuffer.buffer, offsets);
 	vkCmdBindIndexBuffer(cmdbuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+	vkCmdPushConstants(cmdbuffer,
+										 pipelineLayout,
+										 VK_SHADER_STAGE_FRAGMENT_BIT,
+										 sizeof(glm::vec3),
+										 sizeof(Material::PushBlock), &material);
+
 	vkCmdDrawIndexed(cmdbuffer, indexCount, 1, 0, 0, 1);
 }
 
-glm::mat4 VulkanGear::getModelMatrix(glm::vec3 rotation, float timer) {
-	glm::mat4 model = glm::mat4();
-	model = glm::translate(model, pos);
-	rotation.z = (rotSpeed * timer) + rotOffset;
-	model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-	return model;
-}
-
-
-void VulkanGear::updateUniformBuffer(StereoView sv, glm::vec3 rotation, float zoom, float timer)
+void VulkanGear::updateUniformBuffer(StereoView sv, float timer)
 {
 	ubo.model = glm::mat4();
 	ubo.model = glm::translate(ubo.model, pos);
-	rotation.z = (rotSpeed * timer) + rotOffset;
-	ubo.model = glm::rotate(ubo.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	float rotation_z = (rotSpeed * timer * 360.0f) + rotOffset;
+	ubo.model = glm::rotate(ubo.model, glm::radians(rotation_z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	ubo.normal[0] = glm::inverseTranspose(sv.view[0] * ubo.model);
 	ubo.normal[1] = glm::inverseTranspose(sv.view[1] * ubo.model);
