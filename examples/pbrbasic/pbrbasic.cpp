@@ -66,9 +66,9 @@ public:
 	} models;
 
 	struct {
-		vks::Buffer object;
-		vks::Buffer skybox;
-		vks::Buffer params;
+		vks::Buffer matrices_vert;
+		vks::Buffer matrices_frag;
+		vks::Buffer lights;
 	} uniformBuffers;
 
 	struct UBOMatrices {
@@ -80,7 +80,7 @@ public:
 
 	struct UBOParams {
 		glm::vec4 lights[4];
-	} uboParams;
+	} uboLights;
 
 	VkPipelineLayout pipelineLayout;
 	VkPipeline pipeline;
@@ -133,9 +133,9 @@ public:
 		}
 		models.skybox.destroy();
 
-		uniformBuffers.object.destroy();
-		uniformBuffers.skybox.destroy();
-		uniformBuffers.params.destroy();
+		uniformBuffers.matrices_vert.destroy();
+		uniformBuffers.matrices_frag.destroy();
+		uniformBuffers.lights.destroy();
 	}
 
 	void reBuildCommandBuffers()
@@ -283,8 +283,8 @@ public:
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
 
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
-			vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &uniformBuffers.object.descriptor),
-			vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, &uniformBuffers.params.descriptor),
+			vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &uniformBuffers.matrices_vert.descriptor),
+			vks::initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, &uniformBuffers.lights.descriptor),
 		};
 		vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
 	}
@@ -373,27 +373,27 @@ public:
 		VK_CHECK_RESULT(vulkanDevice->createBuffer(
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			&uniformBuffers.object,
+			&uniformBuffers.matrices_vert,
 			sizeof(uboMatrices)));
 
 		// Skybox vertex shader uniform buffer
 		VK_CHECK_RESULT(vulkanDevice->createBuffer(
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			&uniformBuffers.skybox,
+			&uniformBuffers.matrices_frag,
 			sizeof(uboMatrices)));
 
 		// Shared parameter uniform buffer
 		VK_CHECK_RESULT(vulkanDevice->createBuffer(
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			&uniformBuffers.params,
-			sizeof(uboParams)));
+			&uniformBuffers.lights,
+			sizeof(uboLights)));
 
 		// Map persistent
-		VK_CHECK_RESULT(uniformBuffers.object.map());
-		VK_CHECK_RESULT(uniformBuffers.skybox.map());
-		VK_CHECK_RESULT(uniformBuffers.params.map());
+		VK_CHECK_RESULT(uniformBuffers.matrices_vert.map());
+		VK_CHECK_RESULT(uniformBuffers.matrices_frag.map());
+		VK_CHECK_RESULT(uniformBuffers.lights.map());
 
 		updateUniformBuffers();
 		updateLights();
@@ -406,30 +406,30 @@ public:
 		uboMatrices.view = camera.matrices.view;
 		uboMatrices.model = glm::rotate(glm::mat4(), glm::radians(-90.0f + (models.objectIndex == 1 ? 45.0f : 0.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
 		uboMatrices.camPos = camera.position * -1.0f;
-		memcpy(uniformBuffers.object.mapped, &uboMatrices, sizeof(uboMatrices));
+		memcpy(uniformBuffers.matrices_vert.mapped, &uboMatrices, sizeof(uboMatrices));
 
 		// Skybox
 		uboMatrices.model = glm::mat4(glm::mat3(camera.matrices.view));
-		memcpy(uniformBuffers.skybox.mapped, &uboMatrices, sizeof(uboMatrices));
+		memcpy(uniformBuffers.matrices_frag.mapped, &uboMatrices, sizeof(uboMatrices));
 	}
 
 	void updateLights()
 	{
 		const float p = 15.0f;
-		uboParams.lights[0] = glm::vec4(-p, -p*0.5f, -p, 1.0f);
-		uboParams.lights[1] = glm::vec4(-p, -p*0.5f,  p, 1.0f);
-		uboParams.lights[2] = glm::vec4( p, -p*0.5f,  p, 1.0f);
-		uboParams.lights[3] = glm::vec4( p, -p*0.5f, -p, 1.0f);
+		uboLights.lights[0] = glm::vec4(-p, -p*0.5f, -p, 1.0f);
+		uboLights.lights[1] = glm::vec4(-p, -p*0.5f,  p, 1.0f);
+		uboLights.lights[2] = glm::vec4( p, -p*0.5f,  p, 1.0f);
+		uboLights.lights[3] = glm::vec4( p, -p*0.5f, -p, 1.0f);
 
 		if (!paused)
 		{
-			uboParams.lights[0].x = sin(glm::radians(timer * 360.0f)) * 20.0f;
-			uboParams.lights[0].z = cos(glm::radians(timer * 360.0f)) * 20.0f;
-			uboParams.lights[1].x = cos(glm::radians(timer * 360.0f)) * 20.0f;
-			uboParams.lights[1].y = sin(glm::radians(timer * 360.0f)) * 20.0f;
+			uboLights.lights[0].x = sin(glm::radians(timer * 360.0f)) * 20.0f;
+			uboLights.lights[0].z = cos(glm::radians(timer * 360.0f)) * 20.0f;
+			uboLights.lights[1].x = cos(glm::radians(timer * 360.0f)) * 20.0f;
+			uboLights.lights[1].y = sin(glm::radians(timer * 360.0f)) * 20.0f;
 		}
 
-		memcpy(uniformBuffers.params.mapped, &uboParams, sizeof(uboParams));
+		memcpy(uniformBuffers.lights.mapped, &uboLights, sizeof(uboLights));
 	}
 
 	void draw()
