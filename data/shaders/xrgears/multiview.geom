@@ -38,7 +38,7 @@ void main(void)
 		vec4 pos = gl_in[i].gl_Position;
 		vec4 worldPos = (modelview * pos);
 		
-		vec3 lPos = vec3(modelview  * ubo.lightPos);
+		vec3 lPos = vec3(ubo.view[gl_InvocationID] * ubo.lightPos);
 		outLightVec = lPos - worldPos.xyz;
 		outViewVec = -worldPos.xyz;	
 	
