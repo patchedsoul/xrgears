@@ -39,7 +39,7 @@ struct Material {
 		float r, g, b;
 	} params;
 	std::string name;
-	Material() {};
+	Material() {}
 	Material(std::string n, glm::vec3 c, float r, float m) : name(n) {
 		params.roughness = r;
 		params.metallic = m;
@@ -101,7 +101,7 @@ public:
 		camera.movementSpeed = 4.0f;
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
 		camera.rotationSpeed = 0.25f;
-		paused = true;
+		paused = false;
 		timerSpeed *= 0.25f;
 
 		// Setup some default materials (source: https://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/)
@@ -209,6 +209,9 @@ public:
 					vkCmdPushConstants(drawCmdBuffers[i], pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::vec3), &pos);
 					mat.params.metallic = (float)x / (float)(GRID_DIM - 1);
 					mat.params.roughness = glm::clamp((float)y / (float)(GRID_DIM - 1), 0.05f, 1.0f);
+
+					//printf("Material [%d, %d] Metallic %f Roughness %f\n", y, x, mat.params.metallic, mat.params.roughness);
+
 					vkCmdPushConstants(drawCmdBuffers[i], pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::vec3), sizeof(Material::PushBlock), &mat);
 					vkCmdDrawIndexed(drawCmdBuffers[i], models.objects[models.objectIndex].indexCount, 1, 0, 0, 0);
 				}
