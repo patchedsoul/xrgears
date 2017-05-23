@@ -71,7 +71,7 @@ public:
 
 	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
 	{
-		title = "Vulkan Example - Viewport arrays";
+		title = "XR Gears";
 		enableTextOverlay = true;
 		camera.type = Camera::CameraType::firstperson;
 		camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
