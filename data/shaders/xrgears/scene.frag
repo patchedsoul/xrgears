@@ -1,11 +1,7 @@
 #version 450
 
 layout (location = 0) in vec3 inNormal;
-//layout (location = 1) in vec3 inColor;
-layout (location = 2) in vec3 inViewVec;
-layout (location = 3) in vec3 inLightVec;
-
-layout (location = 4) in vec3 inWorldPos;
+layout (location = 1) in vec3 inWorldPos;
 
 layout (location = 0) out vec4 outColor;
 
@@ -96,7 +92,6 @@ vec3 BRDF(vec3 L, vec3 V, vec3 N, float metallic, float roughness) {
 void main() {		  
 	vec3 N = normalize(inNormal);
 	vec3 V = normalize(uboCamera.position - inWorldPos);
-	//vec3 V = normalize(inViewVec);
 
 	float roughness = material.roughness;
 
@@ -107,7 +102,6 @@ void main() {
 
 	// Specular contribution
 	vec3 Lo = vec3(0.0);
-	
 	for (int i = 0; i < uboLights.lights.length(); i++) {
 		vec3 L = normalize(uboLights.lights[i].xyz - inWorldPos);
 		Lo += BRDF(L, V, N, material.metallic, roughness);
@@ -122,21 +116,3 @@ void main() {
 
 	outColor = vec4(color, 1.0);
 }
-
-/*
-void main() 
-{
-  vec3 color = vec3(material.r, material.g, material.b);
-
-	vec3 N = normalize(inNormal);
-	vec3 L = normalize(inLightVec);
-	vec3 V = normalize(inViewVec);
-	vec3 R = reflect(-L, N);
-	vec3 ambient = vec3(0.1);
-	vec3 diffuse = max(dot(N, L), 0.0) * vec3(1.0);
-	vec3 specular = pow(max(dot(R, V), 0.0), 16.0) * vec3(0.75);
-	outColor = vec4((ambient + diffuse) * color + specular, 1.0);
-	
-	//outColor = vec4(inNormal, 1.0f);	
-}
-*/

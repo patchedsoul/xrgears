@@ -66,19 +66,8 @@ class VulkanGear
 private:
 	struct UBO
 	{
-		//glm::mat4 projection;
-		//glm::mat4 projection[2];
-		//glm::mat4 view[2];
-		glm::mat4 normal[2];
+		//glm::mat4 normal[2];
 		glm::mat4 model;
-		//glm::mat4 normal;
-		//glm::mat4 view;
-		//glm::vec3 lightPos;
-		//glm::vec4 lightPos = glm::vec4(-2.5f, -3.5f, 0.0f, 1.0f);
-
-
-		//glm::vec4 lightPos = glm::vec4(-5.5f, -5.5f, 5.0f, 1.0f);
-
 	};
 
 	vks::VulkanDevice *vulkanDevice;
@@ -87,8 +76,6 @@ private:
 	glm::vec3 pos;
 	float rotSpeed;
 	float rotOffset;
-
-
 
 	vks::Buffer vertexBuffer;
 	vks::Buffer indexBuffer;
