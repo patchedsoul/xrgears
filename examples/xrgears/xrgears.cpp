@@ -85,6 +85,7 @@ public:
 
 		camera.movementSpeed = 5.0f;
 		timerSpeed *= 0.25f;
+		//paused = true;
 	}
 
 	~VulkanExample()
@@ -96,12 +97,8 @@ public:
 
 		scene.destroy();
 
-		//uniformBufferGS.destroy();
-
 		for (auto& gear : gears)
-		{
 			delete(gear);
-		}
 	}
 
 	// Enable physical device features required for this example				
@@ -171,16 +168,9 @@ public:
 
 			vkCmdSetLineWidth(drawCmdBuffers[i], 1.0f);
 
-			/*
-			vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-			VkDeviceSize offsets[1] = { 0 };
-			vkCmdBindVertexBuffers(drawCmdBuffers[i], 0, 1, &scene.vertices.buffer, offsets);
-			vkCmdBindIndexBuffer(drawCmdBuffers[i], scene.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
 			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-			vkCmdDrawIndexed(drawCmdBuffers[i], scene.indexCount, 1, 0, 0, 0);
-			*/
 
-			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+			//drawScene(drawCmdBuffers[i]);
 
 			for (auto& gear : gears)
 				gear->draw(drawCmdBuffers[i], pipelineLayout);
@@ -188,17 +178,30 @@ public:
 			vkCmdEndRenderPass(drawCmdBuffers[i]);
 
 			if (vks::debugmarker::active)
-			{
 				vks::debugmarker::endRegion(drawCmdBuffers[i]);
-			}
 
 			VK_CHECK_RESULT(vkEndCommandBuffer(drawCmdBuffers[i]));
 		}
 	}
 
+	void drawScene(VkCommandBuffer cmdbuffer) {
+		vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &gears[0]->descriptorSet, 0, nullptr);
+		VkDeviceSize offsets[1] = { 0 };
+		vkCmdBindVertexBuffers(cmdbuffer, 0, 1, &scene.vertices.buffer, offsets);
+		vkCmdBindIndexBuffer(cmdbuffer, scene.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+		vkCmdPushConstants(cmdbuffer,
+											 pipelineLayout,
+											 VK_SHADER_STAGE_FRAGMENT_BIT,
+											 sizeof(glm::vec3),
+											 sizeof(Material::PushBlock), &gears[0]->material);
+
+		vkCmdDrawIndexed(cmdbuffer, scene.indexCount, 1, 0, 0, 0);
+	}
+
 	void loadAssets()
 	{
-		scene.loadFromFile(getAssetPath() + "models/sampleroom.dae", vertexLayout, 0.25f, vulkanDevice, queue);		
+		scene.loadFromFile(getAssetPath() + "models/teapot.dae", vertexLayout, 0.25f, vulkanDevice, queue);
 	}
 
 	void prepareVertices()
@@ -221,12 +224,7 @@ public:
 		};
 
 		std::vector<Material> materials = {
-			/*
-			Material("Titanium", glm::vec3(0.541931f, 0.496791f, 0.449419f), 0.1f, 1.0f),
-			Material("Cobalt", glm::vec3(0.662124f, 0.654864f, 0.633732f), 0.1f, 1.0f),
-			Material("Platinum", glm::vec3(0.672411f, 0.637331f, 0.585456f), 0.1f, 1.0f)
-				*/
-			Material("Red", glm::vec3(1.0f, 0.0f, 0.0f), 0.5f, 1.0f),
+			Material("Red", glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, 1.0f),
 			Material("Green", glm::vec3(0.0f, 1.0f, 0.2f), 0.5f, 1.0f),
 			Material("Blue", glm::vec3(0.0f, 0.0f, 1.0f), 0.5f, 1.0f)
 		};

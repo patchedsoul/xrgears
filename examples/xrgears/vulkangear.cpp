@@ -274,6 +274,7 @@ void VulkanGear::draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout
 void VulkanGear::updateUniformBuffer(StereoView sv, float timer)
 {
 	ubo.model = glm::mat4();
+
 	ubo.model = glm::translate(ubo.model, pos);
 	float rotation_z = (rotSpeed * timer * 360.0f) + rotOffset;
 	ubo.model = glm::rotate(ubo.model, glm::radians(rotation_z), glm::vec3(0.0f, 0.0f, 1.0f));

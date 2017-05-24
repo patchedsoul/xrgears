@@ -26,7 +26,7 @@ layout (binding = 2) uniform UBOCamera {
 } uboCamera;
 
 layout (location = 0) in vec3 inNormal[];
-layout (location = 1) in vec3 inColor[];
+//layout (location = 1) in vec3 inColor[];
 
 layout (location = 0) out vec3 outNormal;
 layout (location = 1) out vec3 outColor;
@@ -41,15 +41,17 @@ void main(void)
 	{
 		mat4 modelview = uboCamera.view[gl_InvocationID] * matrices.model;
 
-		outNormal = mat3(matrices.normal[gl_InvocationID]) * inNormal[i];
+		//outNormal = mat3(matrices.normal[gl_InvocationID]) * inNormal[i];
+		
+		outNormal = mat3(matrices.model) * inNormal[i];
 		
 		//outNormal = inNormal[i];
 		
-		outColor = inColor[i];
+		//outColor = inColor[i];
 
 		vec4 pos = gl_in[i].gl_Position;
 		vec4 worldPos = (modelview * pos);
-		outWorldPos = worldPos.xyz;
+		outWorldPos = (matrices.model * pos).xyz;
 		
 		vec3 lPos = vec3(uboCamera.view[gl_InvocationID] * uboLights.lights[0]);
 		outLightVec = lPos - worldPos.xyz;

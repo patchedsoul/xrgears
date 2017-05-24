@@ -5,7 +5,7 @@ layout (location = 1) in vec3 inNormal;
 layout (location = 2) in vec3 inColor;
 
 layout (location = 0) out vec3 outNormal;
-layout (location = 1) out vec3 outColor;
+//layout (location = 1) out vec3 outColor;
 
 /*
 layout (binding = 0) uniform UBO 
@@ -25,7 +25,7 @@ out gl_PerVertex
 
 void main() 
 {
-	outColor = inColor;
+	//outColor = inColor;
 	outNormal = inNormal;
 	
 	//outNormal = normalize(mat3(ubo.normal) * inNormal);

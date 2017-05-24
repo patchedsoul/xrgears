@@ -88,7 +88,7 @@ private:
 	float rotSpeed;
 	float rotOffset;
 
-	Material material;
+
 
 	vks::Buffer vertexBuffer;
 	vks::Buffer indexBuffer;
@@ -101,6 +101,8 @@ private:
 	void newFace(std::vector<uint32_t> *iBuffer, int a, int b, int c);
 
 public:
+		Material material;
+
 	void prepareUniformBuffer();
 	VkDescriptorSet descriptorSet;
 	vks::Buffer uniformBuffer;
