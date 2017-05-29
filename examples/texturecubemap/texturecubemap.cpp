@@ -319,6 +319,8 @@ public:
 			vks::tools::exitFatal("Device does not support any compressed texture format!", "Error");
 		}
 
+		printf("Using texture %s\n", filename.c_str());
+
 		loadCubemap(getAssetPath() + "textures/" + filename, format, false);
 	}
 
