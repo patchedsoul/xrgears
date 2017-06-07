@@ -262,8 +262,7 @@ public:
 		skyboxModel.loadFromFile(getAssetPath() + "models/cube.obj", vertexLayout, 10.0f, vulkanDevice, queue);
 	}
 
-	void prepareVertices()
-	{
+	void initGears() {
 		// Gear definitions
 		std::vector<float> innerRadiuses = { 1.0f, 0.5f, 1.3f };
 		std::vector<float> outerRadiuses = { 4.0f, 2.0f, 2.0f };
@@ -309,7 +308,10 @@ public:
 			gears[i] = new GearNode(vulkanDevice);
 			gears[i]->generate(&gearNodeInfo, &gearInfo, queue);
 		}
+	}
 
+	void prepareVertices()
+	{
 		// Binding and attribute descriptions are shared across all gears
 		vertices.bindingDescriptions.resize(1);
 		vertices.bindingDescriptions[0] =
@@ -1064,6 +1066,7 @@ public:
 		VulkanExampleBase::prepare();
 		loadTextures();
 		loadAssets();
+		initGears();
 		prepareVertices();
 		prepareUniformBuffers();
 		setupDescriptorSetLayoutShading();
