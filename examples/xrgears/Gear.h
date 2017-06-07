@@ -1,0 +1,5 @@
+class Gear
+{
+public:
+	~Gear();
+};

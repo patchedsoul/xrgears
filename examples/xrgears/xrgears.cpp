@@ -39,7 +39,6 @@ public:
 	});
 
 	vks::Model teapotModel;
-
 	vks::Model skyboxModel;
 	vks::Texture cubeMap;
 
@@ -55,7 +54,7 @@ public:
 		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 	} vertices;
 
-	std::vector<VulkanGear*> gears;
+	std::vector<GearNode*> gears;
 
 	struct UBOVS {
 		glm::mat4 projection;
@@ -294,7 +293,7 @@ public:
 		gears.resize(positions.size());
 		for (int32_t i = 0; i < gears.size(); ++i)
 		{
-			GearInfo gearInfo = {};
+			GearNodeInfo gearInfo = {};
 			gearInfo.innerRadius = innerRadiuses[i];
 			gearInfo.outerRadius = outerRadiuses[i];
 			gearInfo.width = widths[i];
@@ -306,7 +305,7 @@ public:
 			gearInfo.rotOffset = rotationOffsets[i];
 			gearInfo.material = materials[i];
 
-			gears[i] = new VulkanGear(vulkanDevice);
+			gears[i] = new GearNode(vulkanDevice);
 			gears[i]->generate(&gearInfo, queue);
 		}
 

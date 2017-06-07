@@ -26,6 +26,7 @@
 #include "VulkanBuffer.hpp"
 #include "camera.hpp"
 #include "uniformbuffers.h"
+#include "Gear.h"
 
 struct Vertex
 {
@@ -47,7 +48,7 @@ struct Vertex
 	}
 };
 
-struct GearInfo
+struct GearNodeInfo
 {
 	float innerRadius;
 	float outerRadius;
@@ -61,9 +62,12 @@ struct GearInfo
 	Material material;
 };
 
-class VulkanGear
+class GearNode
 {
 private:
+
+	Gear gear;
+
 	struct UBO
 	{
 		//glm::mat4 normal[2];
@@ -99,10 +103,10 @@ public:
 
 	void setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout, std::vector<VkWriteDescriptorSet> *writeDescriptorSets);
 
-	VulkanGear(vks::VulkanDevice *vulkanDevice) : vulkanDevice(vulkanDevice) {}
-	~VulkanGear();
+	GearNode(vks::VulkanDevice *vulkanDevice) : vulkanDevice(vulkanDevice) {}
+	~GearNode();
 
-	void generate(GearInfo *gearinfo, VkQueue queue);
+	void generate(GearNodeInfo *gearinfo, VkQueue queue);
 
 	glm::mat4 getModelMatrix(glm::vec3 rotation, float timer);
 

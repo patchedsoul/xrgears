@@ -37,7 +37,7 @@ public:
 		VkPipeline solid;
 	} pipelines;
 
-	std::vector<VulkanGear*> gears;
+	std::vector<GearNode*> gears;
 
 	VkPipelineLayout pipelineLayout;
 	VkDescriptorSetLayout descriptorSetLayout;
@@ -145,7 +145,7 @@ public:
 		gears.resize(positions.size());
 		for (int32_t i = 0; i < gears.size(); ++i)
 		{
-			GearInfo gearInfo = {};
+			GearNodeInfo gearInfo = {};
 			gearInfo.innerRadius = innerRadiuses[i];
 			gearInfo.outerRadius = outerRadiuses[i];
 			gearInfo.width = widths[i];
@@ -156,7 +156,7 @@ public:
 			gearInfo.rotSpeed = rotationSpeeds[i];
 			gearInfo.rotOffset = rotationOffsets[i];
 
-			gears[i] = new VulkanGear(vulkanDevice);
+			gears[i] = new GearNode(vulkanDevice);
 			gears[i]->generate(&gearInfo, queue);
 		}
 

@@ -10,21 +10,21 @@
 
 #include "vulkangear.h"
 
-int32_t VulkanGear::newVertex(std::vector<Vertex> *vBuffer, float x, float y, float z, const glm::vec3& normal)
+int32_t GearNode::newVertex(std::vector<Vertex> *vBuffer, float x, float y, float z, const glm::vec3& normal)
 {
 	Vertex v(glm::vec3(x, y, z), normal, color);
 	vBuffer->push_back(v);
 	return static_cast<int32_t>(vBuffer->size()) - 1;
 }
 
-void VulkanGear::newFace(std::vector<uint32_t> *iBuffer, int a, int b, int c)
+void GearNode::newFace(std::vector<uint32_t> *iBuffer, int a, int b, int c)
 {
 	iBuffer->push_back(a);
 	iBuffer->push_back(b);
 	iBuffer->push_back(c);
 }
 
-VulkanGear::~VulkanGear()
+GearNode::~GearNode()
 {
 	// Clean up vulkan resources
 	uniformBuffer.destroy();
@@ -32,7 +32,7 @@ VulkanGear::~VulkanGear()
 	indexBuffer.destroy();
 }
 
-void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
+void GearNode::generate(GearNodeInfo *gearinfo, VkQueue queue)
 {
 	this->color = gearinfo->color;
 	this->pos = gearinfo->pos;
@@ -256,7 +256,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 	prepareUniformBuffer();
 }
 
-void VulkanGear::draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout)
+void GearNode::draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout)
 {
 	VkDeviceSize offsets[1] = { 0 };
 	vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, NULL);
@@ -265,7 +265,7 @@ void VulkanGear::draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout
 	vkCmdDrawIndexed(cmdbuffer, indexCount, 1, 0, 0, 1);
 }
 
-void VulkanGear::updateUniformBuffer(glm::mat4 perspective, glm::vec3 rotation, float zoom, float timer)
+void GearNode::updateUniformBuffer(glm::mat4 perspective, glm::vec3 rotation, float zoom, float timer)
 {
 	ubo.projection = perspective;
 
@@ -291,7 +291,7 @@ void VulkanGear::updateUniformBuffer(glm::mat4 perspective, glm::vec3 rotation, 
 	memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
 }
 
-void VulkanGear::setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout)
+void GearNode::setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout)
 {
 	VkDescriptorSetAllocateInfo allocInfo =
 		vks::initializers::descriptorSetAllocateInfo(
@@ -312,7 +312,7 @@ void VulkanGear::setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout
 	vkUpdateDescriptorSets(vulkanDevice->logicalDevice, 1, &writeDescriptorSet, 0, NULL);
 }
 
-void VulkanGear::prepareUniformBuffer()
+void GearNode::prepareUniformBuffer()
 {
 	VK_CHECK_RESULT(vulkanDevice->createBuffer(
 		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,

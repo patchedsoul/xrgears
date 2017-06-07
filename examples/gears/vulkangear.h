@@ -45,7 +45,7 @@ struct Vertex
 	}
 };
 
-struct GearInfo
+struct GearNodeInfo
 {
 	float innerRadius;
 	float outerRadius;
@@ -58,7 +58,7 @@ struct GearInfo
 	float rotOffset;
 };
 
-class VulkanGear
+class GearNode
 {
 private:
 	struct UBO
@@ -96,10 +96,10 @@ public:
 
 	void setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout);
 
-	VulkanGear(vks::VulkanDevice *vulkanDevice) : vulkanDevice(vulkanDevice) {};
-	~VulkanGear();
+	GearNode(vks::VulkanDevice *vulkanDevice) : vulkanDevice(vulkanDevice) {};
+	~GearNode();
 
-	void generate(GearInfo *gearinfo, VkQueue queue);
+	void generate(GearNodeInfo *gearinfo, VkQueue queue);
 
 };
 
