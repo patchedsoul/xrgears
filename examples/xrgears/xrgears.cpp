@@ -20,7 +20,7 @@
 #include <gli/gli.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkangear.h"
+#include "GearNode.h"
 #include "vulkanexamplebase.h"
 #include "VulkanModel.hpp"
 #include "VulkanTexture.hpp"
