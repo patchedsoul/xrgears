@@ -12,7 +12,7 @@ layout (triangle_strip, max_vertices = 3) out;
 
 layout (binding = 0) uniform UBOMatrices
 {
-	//mat4 normal[2];
+	mat4 normal[2];
 	mat4 model;
 } uboModel;
 
@@ -30,12 +30,15 @@ layout (location = 1) out vec3 outWorldPos;
 layout (location = 2) out vec3 outViewPos;
 layout (location = 3) out mat4 outInvModelView;
 
+layout (location = 10) out vec3 outViewNormal;
 
 void main(void)
 {	
 	for(int i = 0; i < gl_in.length(); i++)
 	{
 		outNormal = mat3(uboModel.model) * inNormal[i];
+		
+		outViewNormal = (uboModel.normal[gl_InvocationID] * vec4(inNormal[i],1)).xyz;
 
 		vec4 worldPos = uboModel.model * gl_in[i].gl_Position;
 		outWorldPos = worldPos.xyz;

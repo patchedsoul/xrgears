@@ -10,6 +10,8 @@ layout (location = 1) in vec3 inWorldPos;
 layout (location = 2) in vec3 inViewPos;
 layout (location = 3) in mat4 inInvModelView;
 
+layout (location = 10) in vec3 inViewNormal;
+
 layout (location = 0) out vec4 outColor;
 
 layout(push_constant) uniform PushConsts {
@@ -129,12 +131,16 @@ void main() {
 
 
 	vec3 cI = normalize (inViewPos);
-	vec3 cR = reflect (cI, N);
+	vec3 cR = reflect (cI, inViewNormal);
 
 	cR = vec3(inInvModelView * vec4(cR, 0.0));
 	//cR.x *= -1.0;
 
 	outColor = 0.5 * texture(samplerCubeMap, cR, 1.0) + vec4(color, 1.0);
+	
+	
+	//outColor = vec4(inViewNormal, 1.0);
+	
 /*
 	//vec3 N = normalize(inNormal);
 	vec3 L = normalize(inLightVec);

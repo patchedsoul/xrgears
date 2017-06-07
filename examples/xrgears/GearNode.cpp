@@ -52,9 +52,9 @@ void GearNode::updateUniformBuffer(StereoView sv, float timer)
 	ubo.model = glm::rotate(ubo.model, glm::radians(rotation_z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	/*
+	*/
 	ubo.normal[0] = glm::inverseTranspose(sv.view[0] * ubo.model);
 	ubo.normal[1] = glm::inverseTranspose(sv.view[1] * ubo.model);
-	*/
 	memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
 }
 
