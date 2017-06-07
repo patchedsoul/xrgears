@@ -22,40 +22,14 @@
 #include "vulkan/vulkan.h"
 
 #include "VulkanTools.h"
-#include "VulkanDevice.hpp"
+
 #include "VulkanBuffer.hpp"
 #include "camera.hpp"
 #include "uniformbuffers.h"
 #include "Gear.h"
 
-struct Vertex
-{
-	float pos[3];
-	float normal[3];
-	float color[3];
-
-	Vertex(const glm::vec3& p, const glm::vec3& n, const glm::vec3& c)
-	{
-		pos[0] = p.x;
-		pos[1] = p.y;
-		pos[2] = p.z;
-		color[0] = c.x;
-		color[1] = c.y;
-		color[2] = c.z;
-		normal[0] = n.x;
-		normal[1] = n.y;
-		normal[2] = n.z;
-	}
-};
-
 struct GearNodeInfo
 {
-	float innerRadius;
-	float outerRadius;
-	float width;
-	int numTeeth;
-	float toothDepth;
-	glm::vec3 color;
 	glm::vec3 pos;
 	float rotSpeed;
 	float rotOffset;
@@ -73,23 +47,13 @@ private:
 		//glm::mat4 normal[2];
 		glm::mat4 model;
 	};
+	UBO ubo;
 
 	vks::VulkanDevice *vulkanDevice;
 
-	glm::vec3 color;
 	glm::vec3 pos;
 	float rotSpeed;
 	float rotOffset;
-
-	vks::Buffer vertexBuffer;
-	vks::Buffer indexBuffer;
-	uint32_t indexCount;
-
-	UBO ubo;
-
-
-	int32_t newVertex(std::vector<Vertex> *vBuffer, float x, float y, float z, const glm::vec3& normal);
-	void newFace(std::vector<uint32_t> *iBuffer, int a, int b, int c);
 
 public:
 		Material material;
@@ -106,7 +70,7 @@ public:
 	GearNode(vks::VulkanDevice *vulkanDevice) : vulkanDevice(vulkanDevice) {}
 	~GearNode();
 
-	void generate(GearNodeInfo *gearinfo, VkQueue queue);
+	void generate(GearNodeInfo *gearNodeinfo, GearInfo *gearinfo, VkQueue queue);
 
 	glm::mat4 getModelMatrix(glm::vec3 rotation, float timer);
 

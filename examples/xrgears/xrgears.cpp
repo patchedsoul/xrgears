@@ -293,20 +293,21 @@ public:
 		gears.resize(positions.size());
 		for (int32_t i = 0; i < gears.size(); ++i)
 		{
-			GearNodeInfo gearInfo = {};
+			GearNodeInfo gearNodeInfo = {};
+			GearInfo gearInfo = {};
 			gearInfo.innerRadius = innerRadiuses[i];
 			gearInfo.outerRadius = outerRadiuses[i];
 			gearInfo.width = widths[i];
 			gearInfo.numTeeth = toothCount[i];
 			gearInfo.toothDepth = toothDepth[i];
-			gearInfo.color = colors[i];
-			gearInfo.pos = positions[i];
-			gearInfo.rotSpeed = rotationSpeeds[i];
-			gearInfo.rotOffset = rotationOffsets[i];
-			gearInfo.material = materials[i];
+			//gearNodeInfo.color = colors[i];
+			gearNodeInfo.pos = positions[i];
+			gearNodeInfo.rotSpeed = rotationSpeeds[i];
+			gearNodeInfo.rotOffset = rotationOffsets[i];
+			gearNodeInfo.material = materials[i];
 
 			gears[i] = new GearNode(vulkanDevice);
-			gears[i]->generate(&gearInfo, queue);
+			gears[i]->generate(&gearNodeInfo, &gearInfo, queue);
 		}
 
 		// Binding and attribute descriptions are shared across all gears
