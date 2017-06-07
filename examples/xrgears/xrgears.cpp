@@ -199,8 +199,8 @@ public:
 			//drawSkyOldPipeline(drawCmdBuffers[i]);
 			drawSky(drawCmdBuffers[i]);
 			//vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.skybox);
-			//drawTeapot(drawCmdBuffers[i]);
 			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+			drawTeapot(drawCmdBuffers[i]);
 
 			for (auto& gear : gears)
 				gear->draw(drawCmdBuffers[i], pipelineLayout);
