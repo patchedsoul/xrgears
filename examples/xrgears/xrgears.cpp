@@ -199,7 +199,7 @@ public:
 			drawSky(drawCmdBuffers[i]);
 			//vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.skybox);
 			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-			drawTeapot(drawCmdBuffers[i]);
+			//drawTeapot(drawCmdBuffers[i]);
 
 			for (auto& gear : gears)
 				gear->draw(drawCmdBuffers[i], pipelineLayout);
@@ -660,9 +660,6 @@ public:
 		shaderStages[2] = loadShader(getAssetPath() + "shaders/xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
 
-
-
-
 		/*
 		// Skybox pipeline (background cube)
 		std::array<VkPipelineShaderStageCreateInfo,2> shaderStages2;
@@ -683,8 +680,6 @@ public:
 		pipelineCreateInfo.pRasterizationState = &rasterizationStateSky;
 
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.skybox));
-
-
 
 /*
 		VkGraphicsPipelineCreateInfo pipelineCreateInfoSky =
@@ -734,8 +729,6 @@ public:
 		for (auto& gear : gears)
 			gear->prepareUniformBuffer();
 
-
-
 		// Skybox vertex shader uniform buffer
 		VK_CHECK_RESULT(vulkanDevice->createBuffer(
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -746,10 +739,7 @@ public:
 		// Map persistent
 		VK_CHECK_RESULT(uniformBuffers.skybox.map());
 
-
-
 		updateUniformBuffers();
-
 
 	}
 
