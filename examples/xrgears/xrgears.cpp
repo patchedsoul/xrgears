@@ -670,9 +670,9 @@ public:
 
 		std::array<VkPipelineShaderStageCreateInfo,3> shaderStagesSky;
 
-		shaderStagesSky[0] = loadShader(getAssetPath() + "shaders/debug/debug.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-		shaderStagesSky[1] = loadShader(getAssetPath() + "shaders/debug/debug.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-		shaderStagesSky[2] = loadShader(getAssetPath() + "shaders/debug/debug.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
+		shaderStagesSky[0] = loadShader(getAssetPath() + "shaders/xrgears/sky.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+		shaderStagesSky[1] = loadShader(getAssetPath() + "shaders/xrgears/sky.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+		shaderStagesSky[2] = loadShader(getAssetPath() + "shaders/xrgears/sky.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 		//VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
 
 		pipelineCreateInfo.stageCount = shaderStagesSky.size();
