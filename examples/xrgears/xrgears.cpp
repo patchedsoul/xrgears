@@ -23,7 +23,8 @@
 #include "GearNode.h"
 #include "vulkanexamplebase.h"
 #include "VulkanModel.hpp"
-#include "VulkanTexture.hpp"
+
+#include "SkyDome.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -40,7 +41,9 @@ public:
 
 	vks::Model teapotModel;
 	vks::Model skyboxModel;
-	vks::Texture cubeMap;
+
+
+	SkyDome skyDome;
 
 	struct {
 		VkDescriptorSet object;
@@ -113,6 +116,8 @@ public:
 		camera.movementSpeed = 5.0f;
 		timerSpeed *= 0.25f;
 		//paused = true;
+
+		skyDome = SkyDome();
 	}
 
 	~VulkanExample()
@@ -457,12 +462,7 @@ public:
 	void setupDescriptorSet()
 	{
 
-		// Image descriptor for the cube map texture
-		VkDescriptorImageInfo textureDescriptor =
-			vks::initializers::descriptorImageInfo(
-				cubeMap.sampler,
-				cubeMap.view,
-				cubeMap.imageLayout);
+		skyDome.initTextureDescriptor();
 
 		for (auto& gear : gears)
 		{
@@ -492,16 +492,7 @@ public:
 							VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 							2,
 							&uniformBuffers.camera.descriptor),
-
-
-				// Binding 1 : Fragment shader cubemap sampler
-				vks::initializers::writeDescriptorSet(
-					gear->descriptorSet,
-					VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-					3,
-					&textureDescriptor)
-
-
+				skyDome.getCubeMapWriteDescriptorSet(3, gear->descriptorSet)
 			};
 
 			vkUpdateDescriptorSets(device,
@@ -740,6 +731,14 @@ public:
 
 	void loadCubemap(std::string filename, VkFormat format, bool forceLinearTiling)
 	{
+		/*
+		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		skyDome.loadCubemap(device, vulkanDevice, copyCmd, filename, format, forceLinearTiling);
+		VulkanExampleBase::flushCommandBuffer(copyCmd, queue, true);
+		skyDome.createSampler(device, vulkanDevice, format);
+		*/
+
+
 #if defined(__ANDROID__)
 		// Textures are stored inside the apk on Android (compressed)
 		// So they need to be loaded via the asset manager
@@ -759,9 +758,9 @@ public:
 
 		assert(!texCube.empty());
 
-		cubeMap.width = texCube.extent().x;
-		cubeMap.height = texCube.extent().y;
-		cubeMap.mipLevels = texCube.levels();
+		skyDome.cubeMap.width = texCube.extent().x;
+		skyDome.cubeMap.height = texCube.extent().y;
+		skyDome.cubeMap.mipLevels = texCube.levels();
 
 		VkMemoryAllocateInfo memAllocInfo = vks::initializers::memoryAllocateInfo();
 		VkMemoryRequirements memReqs;
@@ -796,28 +795,28 @@ public:
 		VkImageCreateInfo imageCreateInfo = vks::initializers::imageCreateInfo();
 		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 		imageCreateInfo.format = format;
-		imageCreateInfo.mipLevels = cubeMap.mipLevels;
+		imageCreateInfo.mipLevels = skyDome.cubeMap.mipLevels;
 		imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 		imageCreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
 		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		imageCreateInfo.extent = { cubeMap.width, cubeMap.height, 1 };
+		imageCreateInfo.extent = { skyDome.cubeMap.width, skyDome.cubeMap.height, 1 };
 		imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 		// Cube faces count as array layers in Vulkan
 		imageCreateInfo.arrayLayers = 6;
 		// This flag is required for cube map images
 		imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 
-		VK_CHECK_RESULT(vkCreateImage(device, &imageCreateInfo, nullptr, &cubeMap.image));
+		VK_CHECK_RESULT(vkCreateImage(device, &imageCreateInfo, nullptr, &skyDome.cubeMap.image));
 
-		vkGetImageMemoryRequirements(device, cubeMap.image, &memReqs);
+		vkGetImageMemoryRequirements(device, skyDome.cubeMap.image, &memReqs);
 
 		memAllocInfo.allocationSize = memReqs.size;
 		memAllocInfo.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-		VK_CHECK_RESULT(vkAllocateMemory(device, &memAllocInfo, nullptr, &cubeMap.deviceMemory));
-		VK_CHECK_RESULT(vkBindImageMemory(device, cubeMap.image, cubeMap.deviceMemory, 0));
+		VK_CHECK_RESULT(vkAllocateMemory(device, &memAllocInfo, nullptr, &skyDome.cubeMap.deviceMemory));
+		VK_CHECK_RESULT(vkBindImageMemory(device, skyDome.cubeMap.image, skyDome.cubeMap.deviceMemory, 0));
 
 		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
@@ -827,7 +826,7 @@ public:
 
 		for (uint32_t face = 0; face < 6; face++)
 		{
-			for (uint32_t level = 0; level < cubeMap.mipLevels; level++)
+			for (uint32_t level = 0; level < skyDome.cubeMap.mipLevels; level++)
 			{
 				VkBufferImageCopy bufferCopyRegion = {};
 				bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -851,12 +850,12 @@ public:
 		VkImageSubresourceRange subresourceRange = {};
 		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		subresourceRange.baseMipLevel = 0;
-		subresourceRange.levelCount = cubeMap.mipLevels;
+		subresourceRange.levelCount = skyDome.cubeMap.mipLevels;
 		subresourceRange.layerCount = 6;
 
 		vks::tools::setImageLayout(
 			copyCmd,
-			cubeMap.image,
+			skyDome.cubeMap.image,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			subresourceRange);
@@ -865,19 +864,19 @@ public:
 		vkCmdCopyBufferToImage(
 			copyCmd,
 			stagingBuffer,
-			cubeMap.image,
+			skyDome.cubeMap.image,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			static_cast<uint32_t>(bufferCopyRegions.size()),
 			bufferCopyRegions.data()
 			);
 
 		// Change texture image layout to shader read after all faces have been copied
-		cubeMap.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		skyDome.cubeMap.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		vks::tools::setImageLayout(
 			copyCmd,
-			cubeMap.image,
+			skyDome.cubeMap.image,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			cubeMap.imageLayout,
+			skyDome.cubeMap.imageLayout,
 			subresourceRange);
 
 		VulkanExampleBase::flushCommandBuffer(copyCmd, queue, true);
@@ -893,7 +892,7 @@ public:
 		sampler.mipLodBias = 0.0f;
 		sampler.compareOp = VK_COMPARE_OP_NEVER;
 		sampler.minLod = 0.0f;
-		sampler.maxLod = cubeMap.mipLevels;
+		sampler.maxLod = skyDome.cubeMap.mipLevels;
 		sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 		sampler.maxAnisotropy = 1.0f;
 		if (vulkanDevice->features.samplerAnisotropy)
@@ -901,7 +900,7 @@ public:
 			sampler.maxAnisotropy = vulkanDevice->properties.limits.maxSamplerAnisotropy;
 			sampler.anisotropyEnable = VK_TRUE;
 		}
-		VK_CHECK_RESULT(vkCreateSampler(device, &sampler, nullptr, &cubeMap.sampler));
+		VK_CHECK_RESULT(vkCreateSampler(device, &sampler, nullptr, &skyDome.cubeMap.sampler));
 
 		// Create image view
 		VkImageViewCreateInfo view = vks::initializers::imageViewCreateInfo();
@@ -913,9 +912,9 @@ public:
 		// 6 array layers (faces)
 		view.subresourceRange.layerCount = 6;
 		// Set number of mip levels
-		view.subresourceRange.levelCount = cubeMap.mipLevels;
-		view.image = cubeMap.image;
-		VK_CHECK_RESULT(vkCreateImageView(device, &view, nullptr, &cubeMap.view));
+		view.subresourceRange.levelCount = skyDome.cubeMap.mipLevels;
+		view.image = skyDome.cubeMap.image;
+		VK_CHECK_RESULT(vkCreateImageView(device, &view, nullptr, &skyDome.cubeMap.view));
 
 		// Clean up staging resources
 		vkFreeMemory(device, stagingMemory, nullptr);
