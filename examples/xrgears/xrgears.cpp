@@ -510,62 +510,6 @@ public:
 														 0,
 														 nullptr);
 		}
-
-		//setupSkyBoxDesciptorSets();
-
-	}
-
-	void setupSkyBoxDesciptorSets() {
-
-		// Sky box
-
-		// Image descriptor for the cube map texture
-		VkDescriptorImageInfo textureDescriptor =
-			vks::initializers::descriptorImageInfo(
-				cubeMap.sampler,
-				cubeMap.view,
-				cubeMap.imageLayout);
-
-		VkDescriptorSetAllocateInfo allocInfo =
-			vks::initializers::descriptorSetAllocateInfo(
-				descriptorPool,
-				&descriptorSetLayoutSky,
-				1);
-
-		// Sky box descriptor set
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSets.skybox));
-
-		printf("Checking descriptorSets.skybox for null: %p\n", descriptorSets.skybox);
-		printf("Checking uniformBuffers.skybox.descriptor for null: %p\n", uniformBuffers.skybox.descriptor);
-		printf("Checking cubeMap.sampler for null: %p\n", cubeMap.sampler);
-		printf("Checking cubeMap.view for null: %p\n", cubeMap.view);
-		printf("Checking cubeMap.imageLayout for null: %p\n", cubeMap.imageLayout);
-
-
-		std::vector<VkWriteDescriptorSet> writeDescriptorSets =
-		{
-
-			// Binding 0 : Vertex shader uniform buffer
-			vks::initializers::writeDescriptorSet(
-				descriptorSets.skybox,
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-				0,
-				&uniformBuffers.skybox.descriptor),
-						/*
-			// Binding 1 : Fragment shader cubemap sampler
-			vks::initializers::writeDescriptorSet(
-				descriptorSets.skybox,
-				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-				1,
-				&textureDescriptor)
-						*/
-		};
-		vkUpdateDescriptorSets(device, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
-
-
-		printf("Checking uniformBuffers.skybox.descriptor for null: %p\n", uniformBuffers.skybox.descriptor);
-
-
 	}
 
 	void preparePipelines()
@@ -575,7 +519,6 @@ public:
 					VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
 					0,
 					VK_FALSE);
-
 
 		VkPipelineRasterizationStateCreateInfo rasterizationState =
 			vks::initializers::pipelineRasterizationStateCreateInfo(
@@ -615,7 +558,6 @@ public:
 		VkPipelineDynamicStateCreateInfo dynamicState =
 			vks::initializers::pipelineDynamicStateCreateInfo(dynamicStateEnables);
 
-
 		// Tessellation pipeline
 		// Load shaders
 		std::array<VkPipelineShaderStageCreateInfo, 3> shaderStages;
@@ -651,8 +593,6 @@ public:
 		pipelineCreateInfo.pStages = shaderStages.data();
 		pipelineCreateInfo.renderPass = renderPass;
 
-
-
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/xrgears/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 		// A geometry shader is used to output geometry to multiple viewports in one single pass
@@ -660,52 +600,19 @@ public:
 		shaderStages[2] = loadShader(getAssetPath() + "shaders/xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
 
-		/*
+
 		// Skybox pipeline (background cube)
-		std::array<VkPipelineShaderStageCreateInfo,2> shaderStages2;
-
-		shaderStages2[0] = loadShader(getAssetPath() + "shaders/cubemap/skybox.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-		shaderStages2[1] = loadShader(getAssetPath() + "shaders/cubemap/skybox.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-		*/
-
 		std::array<VkPipelineShaderStageCreateInfo,3> shaderStagesSky;
 
 		shaderStagesSky[0] = loadShader(getAssetPath() + "shaders/xrgears/sky.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStagesSky[1] = loadShader(getAssetPath() + "shaders/xrgears/sky.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 		shaderStagesSky[2] = loadShader(getAssetPath() + "shaders/xrgears/sky.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
-		//VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
 
 		pipelineCreateInfo.stageCount = shaderStagesSky.size();
 		pipelineCreateInfo.pStages = shaderStagesSky.data();
 		pipelineCreateInfo.pRasterizationState = &rasterizationStateSky;
 
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.skybox));
-
-/*
-		VkGraphicsPipelineCreateInfo pipelineCreateInfoSky =
-			vks::initializers::pipelineCreateInfo(
-				pipelineLayout,
-				renderPass,
-				0);
-
-		pipelineCreateInfoSky.pVertexInputState = &vertices.inputState;
-		pipelineCreateInfoSky.pInputAssemblyState = &inputAssemblyState;
-		pipelineCreateInfoSky.pRasterizationState = &rasterizationState;
-		pipelineCreateInfoSky.pColorBlendState = &colorBlendState;
-		pipelineCreateInfoSky.pMultisampleState = &multisampleState;
-		pipelineCreateInfoSky.pViewportState = &viewportState;
-		pipelineCreateInfoSky.pDepthStencilState = &depthStencilState;
-		pipelineCreateInfoSky.pDynamicState = &dynamicState;
-		pipelineCreateInfoSky.stageCount = shaderStages2.size();
-		pipelineCreateInfoSky.pStages = shaderStages2.data();
-*/
-
-
-		//pipelineCreateInfo.stageCount = shaderStages2.size();
-		//pipelineCreateInfo.pStages = shaderStages2.data();
-
-		//VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.skybox));
-
 	}
 
 
