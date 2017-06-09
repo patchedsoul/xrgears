@@ -225,7 +225,8 @@ namespace vks
 		*
 		* @return VkResult of the device creation call
 		*/
-		VkResult createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures, std::vector<const char*> enabledExtensions, bool useSwapChain = true, VkQueueFlags requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)
+		VkResult createLogicalDevice(VkInstance instance, VkPhysicalDeviceFeatures enabledFeatures, std::vector<const char*> enabledExtensions,
+																 bool useSwapChain = true, VkQueueFlags requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)
 		{			
 			// Desired queues need to be requested upon logical device creation
 			// Due to differing queue family configurations of Vulkan implementations this can be a bit tricky, especially if the application
@@ -304,6 +305,15 @@ namespace vks
 				deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 			}
 
+
+
+			// Check Multiview Support
+			if (extensionSupported(VK_KHX_MULTIVIEW_EXTENSION_NAME)) {
+				printf("VK_KHX_multiview supported.\n");
+				deviceExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
+			}
+
+
 			VkDeviceCreateInfo deviceCreateInfo = {};
 			deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 			deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());;
@@ -334,8 +344,93 @@ namespace vks
 				commandPool = createCommandPool(queueFamilyIndices.graphics);
 			}
 
+
+			// MULTIVIEW HAX
+
+			//vkGetPhysicalDeviceFeatures2KHR(physicalDevice, &features2);
+
+			PFN_vkGetPhysicalDeviceFeatures2KHR pfnGetPhysicalDeviceFeatures2KHR;
+
+			pfnGetPhysicalDeviceFeatures2KHR =
+					reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(
+						vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceFeatures2KHR"));
+
+			//VkPhysicalDeviceFeatures2KHR features2;
+			//pfnGetPhysicalDeviceFeatures2KHR(physicalDevice, &features2);
+
+			//printf("Got features 2 :) !\n");
+			//features2.features.
+
+			if (pfnGetPhysicalDeviceFeatures2KHR) {
+
+				printf("Got vkGetPhysicalDeviceFeatures2KHR pointer\n");
+
+				// VK_KHX_multiview
+				//if (true) {
+				if (extensionSupported(VK_KHX_MULTIVIEW_EXTENSION_NAME)) {
+
+					printf("VK_KHX_multiview supported\n");
+					VkPhysicalDeviceFeatures2KHR deviceFeatures2{};
+					VkPhysicalDeviceMultiviewFeaturesKHX multiViewFeatures{};
+					multiViewFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHX;
+					deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
+					deviceFeatures2.pNext = &multiViewFeatures;
+					pfnGetPhysicalDeviceFeatures2KHR(physicalDevice, &deviceFeatures2);
+
+					printf("multiview %d\n", multiViewFeatures.multiview);
+					printf("multiviewGeometryShader %d\n", multiViewFeatures.multiviewGeometryShader);
+					printf("multiviewTessellationShader %d\n", multiViewFeatures.multiviewTessellationShader);
+				} else {
+					printf("VK_KHX_multiview unsupported!!\n");
+				}
+			} else {
+				printf("DONT HAVE vkGetPhysicalDeviceFeatures2KHR pointer\n");
+			}
+
+			PFN_vkGetPhysicalDeviceProperties2KHR pfnGetPhysicalDeviceProperties2KHR;
+			pfnGetPhysicalDeviceProperties2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2KHR>(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceProperties2KHR"));
+
+			if (pfnGetPhysicalDeviceFeatures2KHR) {
+
+				printf("Got pfnGetPhysicalDeviceFeatures2KHR pointer\n");
+
+				if (extensionSupported(VK_KHX_MULTIVIEW_EXTENSION_NAME)) {
+					VkPhysicalDeviceProperties2KHR deviceProps2{};
+
+					VkPhysicalDeviceMultiviewPropertiesKHX extProps{};
+					extProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHX;
+					deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+					deviceProps2.pNext = &extProps;
+					pfnGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps2);
+
+					printf("maxMultiviewViewCount %d\n", extProps.maxMultiviewViewCount);
+					printf("maxMultiviewInstanceIndex %d\n", extProps.maxMultiviewInstanceIndex);
+
+					VkPhysicalDeviceProperties2KHR deviceProps22{};
+					VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX extProps2{};
+					extProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX;
+					deviceProps22.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+					deviceProps22.pNext = &extProps2;
+					pfnGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps22);
+
+					printf("perViewPositionAllComponents %d\n", extProps2.perViewPositionAllComponents);
+				}
+			} else {
+				printf("DONT HAVE pfnGetPhysicalDeviceFeatures2KHR pointer\n");
+			}
+
+			// MULTIVIEW HAX
+
+
 			return result;
 		}
+
+		void printSupportedExtensions() {
+			for (auto extension : supportedExtensions) {
+				printf("%s\n", extension.c_str());
+			}
+		}
+
 
 		/**
 		* Create a buffer on the device

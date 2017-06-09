@@ -268,6 +268,47 @@ public:
 		skyboxModel.loadFromFile(getAssetPath() + "models/cube.obj", vertexLayout, 10.0f, vulkanDevice, queue);
 	}
 
+	void initMultiview() {
+		VkDependencyFlagBits flags = VK_DEPENDENCY_VIEW_LOCAL_BIT_KHX;
+
+		VkPhysicalDeviceMultiviewFeaturesKHX deviceMvFeatures = {};
+		deviceMvFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHX;
+		deviceMvFeatures.pNext = NULL;
+
+		VkBool32           multiview;
+		VkBool32           multiviewGeometryShader;
+		VkBool32           multiviewTessellationShader;
+
+		deviceMvFeatures.multiview = multiview;
+		deviceMvFeatures.multiviewGeometryShader = multiviewGeometryShader;
+		deviceMvFeatures.multiviewTessellationShader = multiviewTessellationShader;
+
+		VkPhysicalDeviceMultiviewPropertiesKHX deviceMvProperties = {};
+		deviceMvProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHX;
+		deviceMvProperties.pNext = NULL;
+
+		deviceMvProperties.maxMultiviewInstanceIndex = 0;
+		deviceMvProperties.maxMultiviewViewCount = 0;
+
+		VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX deviceMvPerViewAttributesProperties = {};
+		deviceMvPerViewAttributesProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX;
+		deviceMvPerViewAttributesProperties.pNext = NULL;
+
+		deviceMvPerViewAttributesProperties.perViewPositionAllComponents = 0;
+
+		VkRenderPassMultiviewCreateInfoKHX renderPassMvInfo = {};
+		renderPassMvInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHX;
+		renderPassMvInfo.pNext = NULL;
+
+		renderPassMvInfo.correlationMaskCount = 0;
+		renderPassMvInfo.dependencyCount = 0;
+		renderPassMvInfo.pCorrelationMasks = 0;
+		renderPassMvInfo.pViewMasks = 0;
+		renderPassMvInfo.pViewOffsets = 0;
+		renderPassMvInfo.subpassCount = 0;
+
+	}
+
 	void initGears() {
 		// Gear definitions
 		std::vector<float> innerRadiuses = { 1.0f, 0.5f, 1.3f };
