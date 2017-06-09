@@ -19,6 +19,7 @@ layout (binding = 0) uniform UBOMatrices
 layout (binding = 2) uniform UBOCamera {
 	mat4 projection[2];
 	mat4 view[2];
+	mat4 skyView[2];
 	vec3 position;
 } uboCamera;
 

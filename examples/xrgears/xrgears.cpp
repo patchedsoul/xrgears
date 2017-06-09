@@ -72,6 +72,7 @@ public:
 	struct UBOCamera {
 		glm::mat4 projection[2];
 		glm::mat4 view[2];
+		glm::mat4 skyView[2];
 		glm::vec3 position;
 	} uboCamera;
 
@@ -695,6 +696,7 @@ public:
 
 		uboCamera.projection[0] = glm::frustum(left, right, bottom, top, zNear, zFar);
 		uboCamera.view[0] = rotM * transM;
+		uboCamera.skyView[1] = rotM * glm::translate(glm::mat4(), -camRight * (eyeSeparation / 2.0f));
 
 		// Right eye
 		left = -aspectRatio * wd2 - 0.5f * eyeSeparation * ndfl;
@@ -704,6 +706,7 @@ public:
 
 		uboCamera.projection[1] = glm::frustum(left, right, bottom, top, zNear, zFar);
 		uboCamera.view[1] = rotM * transM;
+		uboCamera.skyView[1] = rotM * glm::translate(glm::mat4(), camRight * (eyeSeparation / 2.0f));;
 
 		uboCamera.position = camera.position * -1.0f;
 
@@ -740,6 +743,8 @@ public:
 
 	void loadTextures()
 	{
+
+		/*
 		// Vulkan core supports three different compressed texture formats
 		// As the support differs between implemementations we need to check device features and select a proper format and file
 		std::string filename;
@@ -763,6 +768,13 @@ public:
 		printf("Using texture %s\n", filename.c_str());
 
 		loadCubemap(getAssetPath() + "textures/" + filename, format);
+		*/
+	loadCubemap(getAssetPath() + "textures/equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
+
+	//loadCubemap(getAssetPath() + "textures/hdr/pisa_cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
+
+		//loadCubemap(getAssetPath() + "textures/cubemap_yokohama_bc3_unorm.ktx", VK_FORMAT_BC2_UNORM_BLOCK);
+
 	}
 
 	void draw()
