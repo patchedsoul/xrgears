@@ -70,7 +70,7 @@ vec3 F_Schlick(float cosTheta, float metallic) {
 
 // Specular BRDF composition --------------------------------------------
 
-vec3 BRDF(vec3 L, vec3 V, vec3 N, float metallic, float roughness) {
+vec3 BRDF(vec3 L, vec3 V, vec3 N, float metallic, float roughness, vec3 reflectionColor) {
 	// Precalculate vectors and dot products	
 	vec3 H = normalize (V + L);
 	float dotNV = clamp(dot(N, V), 0.0, 1.0);
@@ -80,6 +80,7 @@ vec3 BRDF(vec3 L, vec3 V, vec3 N, float metallic, float roughness) {
 
 	// Light color fixed
 	vec3 lightColor = vec3(1.0);
+	//vec3 lightColor = reflectionColor;
 
 	vec3 color = vec3(0.0);
 
@@ -93,7 +94,7 @@ vec3 BRDF(vec3 L, vec3 V, vec3 N, float metallic, float roughness) {
 		// F = Fresnel factor (Reflectance depending on angle of incidence)
 		vec3 F = F_Schlick(dotNV, metallic);
 
-		vec3 spec = D * F * G / (4.0 * dotNL * dotNV);
+		vec3 spec = reflectionColor * D * F * G / (4.0 * dotNL * dotNV);
 
 		color += spec * dotNL * lightColor;
 	}
@@ -114,11 +115,21 @@ void main() {
 	roughness = max(roughness, step(fract(inWorldPos.y * 2.02), 0.5));
 #endif
 
+
+  // reflection mapping
+	vec3 cI = normalize (inViewPos);
+	vec3 cR = reflect (cI, inViewNormal);
+
+	cR = vec3(inInvModelView * vec4(cR, 0.0));
+	cR.x *= -1.0;
+	vec3 reflectionColor = texture(samplerCubeMap, cR, 1.0).rgb;
+
+
 	// Specular contribution
 	vec3 Lo = vec3(0.0);
 	for (int i = 0; i < uboLights.lights.length(); i++) {
 		vec3 L = normalize(uboLights.lights[i].xyz - inWorldPos);
-		Lo += BRDF(L, V, N, material.metallic, roughness);
+		Lo += BRDF(L, V, N, material.metallic, roughness, reflectionColor);
 	};
 	
 	// Combine with ambient
@@ -128,14 +139,7 @@ void main() {
 	// Gamma correct
 	color = pow(color, vec3(0.4545));
 
-  // reflection mapping
-	vec3 cI = normalize (inViewPos);
-	vec3 cR = reflect (cI, inViewNormal);
-
-	cR = vec3(inInvModelView * vec4(cR, 0.0));
-	cR.x *= -1.0;
-
-	outColor = 0.5 * texture(samplerCubeMap, cR, 1.0) + vec4(color, 1.0);
+	outColor = vec4(color, 1.0) + 0.3* vec4(reflectionColor, 1);
 
   // debug
  // outColor = vec4(L, 1.0);
