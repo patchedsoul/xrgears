@@ -2040,24 +2040,16 @@ void VulkanExampleBase::setupRenderPass()
 	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 	renderPassInfo.pDependencies = dependencies.data();
 
-
-	// MUTLIVIEW HAX
-
-
+	// VK_KHX_multiview
 	VkRenderPassMultiviewCreateInfoKHX renderPassMvInfo = {};
 	renderPassMvInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHX;
-	renderPassMvInfo.pNext = NULL;
-
 	renderPassMvInfo.subpassCount = 1;
 	renderPassMvInfo.dependencyCount = 1;
-
 	renderPassMvInfo.correlationMaskCount = 1;
 
 	uint32_t correlationMasks[] = { 0 };
 
 	renderPassMvInfo.pCorrelationMasks = correlationMasks;
-
-	//const uint32_t* viewMasks = new uint32_t(1);
 
 	uint32_t viewMasks[] = { 0, 3, 4, 6, 7 };
 
@@ -2067,8 +2059,7 @@ void VulkanExampleBase::setupRenderPass()
 	renderPassMvInfo.pViewOffsets = viewOffsets;
 
 	renderPassInfo.pNext = &renderPassMvInfo;
-
-	// MULTIVIEW HAX
+	// VK_KHX_multiview
 
 
 	VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass));
