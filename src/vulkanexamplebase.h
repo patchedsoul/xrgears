@@ -115,6 +115,7 @@ protected:
 	// Wraps the swap chain to present images (framebuffers) to the windowing system
 	VulkanSwapChain swapChain;
 	// Synchronization semaphores
+
 	struct {
 		// Swap chain image presentation
 		VkSemaphore presentComplete;

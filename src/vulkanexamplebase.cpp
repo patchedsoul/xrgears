@@ -748,6 +748,18 @@ VulkanExampleBase::~VulkanExampleBase()
 #endif
 }
 
+/*
+// Macro to get a procedure address based on a vulkan instance
+#define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                        \
+{                                                                       \
+	fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetInstanceProcAddr(inst, "vk"#entrypoint)); \
+	if (fp##entrypoint == NULL)                                         \
+	{																    \
+printf("it is null!");\
+exit(1);                                                        \
+	}                                                                   \
+}
+*/
 void VulkanExampleBase::initVulkan()
 {
 	VkResult err;
@@ -856,7 +868,7 @@ void VulkanExampleBase::initVulkan()
 	// This is handled by a separate class that gets a logical device representation
 	// and encapsulates functions related to a device
 	vulkanDevice = new vks::VulkanDevice(physicalDevice);
-	VkResult res = vulkanDevice->createLogicalDevice(instance, enabledFeatures, enabledExtensions);
+	VkResult res = vulkanDevice->createLogicalDevice(enabledFeatures, enabledExtensions);
 	if (res != VK_SUCCESS) {
 		vks::tools::exitFatal("Could not create Vulkan device: \n" + vks::tools::errorString(res), "Fatal error");
 	}
