@@ -20,7 +20,7 @@ layout (binding = 2) uniform UBOCamera {
 } uboCamera;
 
 
-layout (location = 0) in vec3 inNormal[];
+// layout (location = 0) in vec3 inNormal[];
 
 layout (location = 0) out vec3 outUVW;
 
