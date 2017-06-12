@@ -56,12 +56,6 @@ public:
 
 	std::vector<GearNode*> gears;
 
-	struct UBOVS {
-		glm::mat4 projection;
-		glm::mat4 model;
-		float lodBias = 0.0f;
-	} uboVS;
-
 	struct UBOLights {
 		glm::vec4 lights[4];
 	} uboLights;
@@ -468,7 +462,7 @@ public:
 	void setupDescriptorSet()
 	{
 
-		//skyDome->initTextureDescriptor();
+		skyDome->initTextureDescriptor();
 
 		for (auto& gear : gears)
 		{
@@ -498,7 +492,7 @@ public:
 							VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 							2,
 							&uniformBuffers.camera.descriptor),
-				//skyDome->getCubeMapWriteDescriptorSet(3, gear->descriptorSet)
+				skyDome->getCubeMapWriteDescriptorSet(3, gear->descriptorSet)
 			};
 
 			vkUpdateDescriptorSets(device,
@@ -638,24 +632,10 @@ public:
 		for (auto& gear : gears)
 			gear->prepareUniformBuffer();
 
-		//prepareSkyDomeUniformBuffer();
+		skyDome->prepareSkyDomeUniformBuffer(vulkanDevice);
 
 		updateUniformBuffers();
 	}
-
-	/*
-	void prepareSkyDomeUniformBuffer() {
-		// Skybox vertex shader uniform buffer
-		VK_CHECK_RESULT(vulkanDevice->createBuffer(
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			&uniformBuffers.skybox,
-			sizeof(uboVS)));
-
-		// Map persistent
-		VK_CHECK_RESULT(uniformBuffers.skybox.map());
-	}
-	*/
 
 	void updateUniformBuffers()
 	{
@@ -670,18 +650,8 @@ public:
 
 		updateLights();
 
-		uboVS.projection = uboCamera.projection[0];
-		uboVS.model = glm::mat4();
-
-		//updateSkyBoxUniformBuffer();
-
+		skyDome->updateSkyBoxUniformBuffer(uboCamera.projection[0]);
 	}
-
-	/*
-	void updateSkyBoxUniformBuffer() {
-		memcpy(uniformBuffers.skybox.mapped, &uboVS, sizeof(uboVS));
-	}
-	*/
 
 
 	void updateCamera() {
