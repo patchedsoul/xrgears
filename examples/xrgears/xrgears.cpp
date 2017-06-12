@@ -40,13 +40,11 @@ public:
 	});
 
 	//vks::Model teapotModel;
-	//vks::Model skyboxModel;
 
-	//SkyDome skyDome;
+	SkyDome *skyDome;
 
 	struct {
 		VkDescriptorSet object;
-		VkDescriptorSet skybox;
 	} descriptorSets;
 
 
@@ -78,12 +76,10 @@ public:
 	struct {
 			vks::Buffer lights;
 			vks::Buffer camera;
-			//vks::Buffer skybox;
 	} uniformBuffers;
 
 	struct {
 		VkPipeline pbr;
-		//VkPipeline skybox;
 	} pipelines;
 
 
@@ -117,7 +113,7 @@ public:
 		timerSpeed *= 0.25f;
 		//paused = true;
 
-		//skyDome = SkyDome();
+		skyDome = new SkyDome();
 	}
 
 	~VulkanExample()
@@ -129,13 +125,12 @@ public:
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
-		//vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-
 		uniformBuffers.camera.destroy();
 		uniformBuffers.lights.destroy();
 
 //		teapotModel.destroy();
-//		skyboxModel.destroy();
+
+		delete skyDome;
 
 		for (auto& gear : gears)
 			delete(gear);
@@ -276,9 +271,8 @@ public:
 	*/
 
 	void loadAssets() {
+		skyDome->loadAssets(getAssetPath(), vertexLayout, vulkanDevice, queue);
 		//teapotModel.loadFromFile(getAssetPath() + "models/sphere.obj", vertexLayout, 0.25f, vulkanDevice, queue);
-		// Skybox
-		//skyboxModel.loadFromFile(getAssetPath() + "models/cube.obj", vertexLayout, 10.0f, vulkanDevice, queue);
 	}
 
 	void initGears() {
@@ -407,13 +401,11 @@ public:
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 			2),
-			/*
 			// cube map sampler
 			vks::initializers::descriptorSetLayoutBinding(
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			3)
-				*/
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
@@ -476,7 +468,7 @@ public:
 	void setupDescriptorSet()
 	{
 
-		//skyDome.initTextureDescriptor();
+		//skyDome->initTextureDescriptor();
 
 		for (auto& gear : gears)
 		{
@@ -506,7 +498,7 @@ public:
 							VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 							2,
 							&uniformBuffers.camera.descriptor),
-				//skyDome.getCubeMapWriteDescriptorSet(3, gear->descriptorSet)
+				//skyDome->getCubeMapWriteDescriptorSet(3, gear->descriptorSet)
 			};
 
 			vkUpdateDescriptorSets(device,
@@ -762,16 +754,18 @@ public:
 		memcpy(uniformBuffers.lights.mapped, &uboLights, sizeof(uboLights));
 	}
 
-	/*
+
 	void loadCubemap(std::string filename, VkFormat format)
 	{
+		/*
 		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-		skyDome.loadCubemap(device, vulkanDevice, copyCmd, filename, format);
+		skyDome->loadCubemap(device, vulkanDevice, copyCmd, filename, format);
 		VulkanExampleBase::flushCommandBuffer(copyCmd, queue, true);
-		skyDome.createSampler(device, vulkanDevice);
-		skyDome.createImageView(device, format);
+		skyDome->createSampler(device, vulkanDevice);
+		skyDome->createImageView(device, format);
+		*/
 	}
-	*/
+
 
 	void loadTextures()
 	{
@@ -804,7 +798,7 @@ public:
 
 
 		// ==>
-		//loadCubemap(getAssetPath() + "textures/equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
+		loadCubemap(getAssetPath() + "textures/equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
 
 
 

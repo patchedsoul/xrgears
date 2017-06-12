@@ -1,9 +1,14 @@
 #include "VulkanTexture.hpp"
+#include "VulkanModel.hpp"
 
 class SkyDome
 {
 private:
 	vks::Texture cubeMap;
+	vks::Model skyboxModel;
+	VkDescriptorSet descriptorSet;
+	VkPipeline pipeline;
+	vks::Buffer uniformBuffer;
 
 public:
 	VkDescriptorImageInfo textureDescriptor;
@@ -11,6 +16,7 @@ public:
 	~SkyDome() {
 		printf("Destroying cube map.\n");
 		//cubeMap.destroy();
+		skyboxModel.destroy();
 	}
 
 	void initTextureDescriptor() {
@@ -31,6 +37,10 @@ public:
 					&textureDescriptor);
 	}
 
+	void loadAssets(const std::string path, vks::VertexLayout vertexLayout, vks::VulkanDevice *vulkanDevice, VkQueue queue) {
+		// Skybox
+		skyboxModel.loadFromFile(path + "models/cube.obj", vertexLayout, 10.0f, vulkanDevice, queue);
+	}
 
 	VkBufferCreateInfo loadFile(std::string filename) {
 #if defined(__ANDROID__)
