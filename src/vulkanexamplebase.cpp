@@ -143,14 +143,9 @@ VkCommandBuffer VulkanExampleBase::createCommandBuffer(VkCommandBufferLevel leve
 void VulkanExampleBase::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free)
 {
 	if (commandBuffer == VK_NULL_HANDLE)
-	{
 		return;
-	}
 	
-	printf("ending command buffer\n");
 	VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
-
-	printf("ending command buffer endend\n");
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -161,9 +156,7 @@ void VulkanExampleBase::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueu
 	VK_CHECK_RESULT(vkQueueWaitIdle(queue));
 
 	if (free)
-	{
 		vkFreeCommandBuffers(device, cmdPool, 1, &commandBuffer);
-	}
 }
 
 void VulkanExampleBase::createPipelineCache()

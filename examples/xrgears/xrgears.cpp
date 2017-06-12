@@ -41,12 +41,11 @@ public:
 
 	//vks::Model teapotModel;
 
-	SkyDome *skyDome;
+	SkyDome skyDome;
 
 	struct {
 		VkDescriptorSet object;
 	} descriptorSets;
-
 
 	struct {
 		VkPipelineVertexInputStateCreateInfo inputState;
@@ -79,12 +78,12 @@ public:
 
 	VkPipelineLayout pipelineLayout;
 
-		//VkPipelineLayout pipelineLayoutSky;
+	//VkPipelineLayout pipelineLayoutSky;
+	//VkDescriptorSetLayout descriptorSetLayoutSky;
 
 	VkDescriptorSet skydomeDescriptorSet;
 	VkDescriptorSetLayout descriptorSetLayout;
 
-	//VkDescriptorSetLayout descriptorSetLayoutSky;
 
 	// Camera and view properties
 	float eyeSeparation = 0.08f;
@@ -99,21 +98,18 @@ public:
 		enableTextOverlay = true;
 		camera.type = Camera::CameraType::firstperson;
 		camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-		//camera.setTranslation(glm::vec3(7.0f, 3.2f, 0.0f));
-
 		camera.setTranslation(glm::vec3(2.2f, 3.2f, -7.6));
 
 		camera.movementSpeed = 5.0f;
 		timerSpeed *= 0.25f;
 		//paused = true;
 
-		skyDome = new SkyDome();
 	}
 
 	~VulkanExample()
 	{
 		vkDestroyPipeline(device, pipelines.pbr, nullptr);
-		vkDestroyPipeline(device, skyDome->pipeline, nullptr);
+		vkDestroyPipeline(device, skyDome.pipeline, nullptr);
 
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
@@ -122,8 +118,6 @@ public:
 		uniformBuffers.lights.destroy();
 
 //		teapotModel.destroy();
-
-		delete skyDome;
 
 		for (auto& gear : gears)
 			delete(gear);
@@ -237,12 +231,12 @@ public:
 		VkDeviceSize offsets[1] = { 0 };
 
 		vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &gears[0]->descriptorSet, 0, nullptr);
-		vkCmdBindVertexBuffers(cmdbuffer, 0, 1, &skyDome->skyboxModel.vertices.buffer, offsets);
-		vkCmdBindIndexBuffer(cmdbuffer, skyDome->skyboxModel.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindVertexBuffers(cmdbuffer, 0, 1, &skyDome.skyboxModel.vertices.buffer, offsets);
+		vkCmdBindIndexBuffer(cmdbuffer, skyDome.skyboxModel.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
 
-		vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyDome->pipeline);
+		vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyDome.pipeline);
 
-		vkCmdDrawIndexed(cmdbuffer, skyDome->skyboxModel.indexCount, 1, 0, 0, 0);
+		vkCmdDrawIndexed(cmdbuffer, skyDome.skyboxModel.indexCount, 1, 0, 0, 0);
 	}
 
 
@@ -262,7 +256,7 @@ public:
 	*/
 
 	void loadAssets() {
-		skyDome->loadAssets(getAssetPath(), vertexLayout, vulkanDevice, queue);
+		skyDome.loadAssets(getAssetPath(), vertexLayout, vulkanDevice, queue);
 		//teapotModel.loadFromFile(getAssetPath() + "models/sphere.obj", vertexLayout, 0.25f, vulkanDevice, queue);
 	}
 
@@ -459,7 +453,7 @@ public:
 	void setupDescriptorSet()
 	{
 
-		skyDome->initTextureDescriptor();
+		skyDome.initTextureDescriptor();
 
 		for (auto& gear : gears)
 		{
@@ -489,7 +483,7 @@ public:
 							VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 							2,
 							&uniformBuffers.camera.descriptor),
-				skyDome->getCubeMapWriteDescriptorSet(3, gear->descriptorSet)
+				skyDome.getCubeMapWriteDescriptorSet(3, gear->descriptorSet)
 			};
 
 			vkUpdateDescriptorSets(device,
@@ -604,7 +598,7 @@ public:
 		pipelineCreateInfo.pStages = shaderStagesSky.data();
 		pipelineCreateInfo.pRasterizationState = &rasterizationStateSky;
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &skyDome->pipeline));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &skyDome.pipeline));
 	}
 
 	void createUniformBuffer(vks::Buffer *buffer,  VkDeviceSize size) {
@@ -627,7 +621,7 @@ public:
 		for (auto& gear : gears)
 			gear->prepareUniformBuffer();
 
-		skyDome->prepareSkyDomeUniformBuffer(vulkanDevice);
+		skyDome.prepareSkyDomeUniformBuffer(vulkanDevice);
 
 		updateUniformBuffers();
 	}
@@ -645,7 +639,7 @@ public:
 
 		updateLights();
 
-		skyDome->updateSkyBoxUniformBuffer(uboCamera.projection[0]);
+		skyDome.updateSkyBoxUniformBuffer(uboCamera.projection[0]);
 	}
 
 
@@ -723,11 +717,11 @@ public:
 	void loadCubemap(std::string filename, VkFormat format)
 	{
 		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-		skyDome->loadCubemap(device, vulkanDevice, copyCmd, filename, format);
+		skyDome.loadCubemap(device, vulkanDevice, copyCmd, filename, format);
 		VulkanExampleBase::flushCommandBuffer(copyCmd, queue, true);
-		skyDome->deleteStatingBuffer(device);
-		skyDome->createSampler(device, vulkanDevice);
-		skyDome->createImageView(device, format);
+		skyDome.deleteStatingBuffer(device);
+		skyDome.createSampler(device, vulkanDevice);
+		skyDome.createImageView(device, format);
 	}
 
 
