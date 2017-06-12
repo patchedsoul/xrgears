@@ -113,8 +113,7 @@ public:
 	~VulkanExample()
 	{
 		vkDestroyPipeline(device, pipelines.pbr, nullptr);
-		//vkDestroyPipeline(device, pipelines.skybox, nullptr);
-
+		vkDestroyPipeline(device, skyDome->pipeline, nullptr);
 
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
@@ -583,11 +582,10 @@ public:
 		shaderStages[2] = loadShader(getAssetPath() + "shaders/xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.pbr));
 
-		//prepareSkyBox(pipelineCreateInfo);
+		prepareSkyBox(pipelineCreateInfo);
 
 	}
 
-	/*
 	void prepareSkyBox(VkGraphicsPipelineCreateInfo& pipelineCreateInfo) {
 		VkPipelineRasterizationStateCreateInfo rasterizationStateSky =
 			vks::initializers::pipelineRasterizationStateCreateInfo(
@@ -608,9 +606,8 @@ public:
 		pipelineCreateInfo.pStages = shaderStagesSky.data();
 		pipelineCreateInfo.pRasterizationState = &rasterizationStateSky;
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.skybox));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &skyDome->pipeline));
 	}
-	*/
 
 	void createUniformBuffer(vks::Buffer *buffer,  VkDeviceSize size) {
 		VK_CHECK_RESULT(vulkanDevice->createBuffer(

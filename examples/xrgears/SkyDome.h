@@ -8,7 +8,7 @@ private:
 
 	vks::Model skyboxModel;
 	VkDescriptorSet descriptorSet;
-	VkPipeline pipeline;
+
 	vks::Buffer uniformBuffer;
 
 	// Create a host-visible staging buffer that contains the raw image data
@@ -17,6 +17,7 @@ private:
 
 public:
 	VkDescriptorImageInfo textureDescriptor;
+	VkPipeline pipeline;
 
 	struct UBOVS {
 		glm::mat4 projection;
@@ -267,5 +268,4 @@ public:
 		uboVS.model = glm::mat4();
 		memcpy(uniformBuffer.mapped, &uboVS, sizeof(uboVS));
 	}
-
 };
