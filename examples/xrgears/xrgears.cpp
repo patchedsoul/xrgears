@@ -588,8 +588,6 @@ public:
 		for (auto& gear : gears)
 			gear->prepareUniformBuffer();
 
-		skyDome.prepareSkyDomeUniformBuffer(vulkanDevice);
-
 		updateUniformBuffers();
 	}
 
@@ -605,8 +603,6 @@ public:
 			gear->updateUniformBuffer(sv, timer);
 
 		updateLights();
-
-		skyDome.updateSkyBoxUniformBuffer(uboCamera.projection[0]);
 	}
 
 

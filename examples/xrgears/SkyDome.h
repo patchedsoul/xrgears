@@ -8,8 +8,6 @@ private:
 
 	VkDescriptorSet descriptorSet;
 
-	vks::Buffer uniformBuffer;
-
 	// Create a host-visible staging buffer that contains the raw image data
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingMemory;
@@ -19,16 +17,9 @@ public:
 	vks::Model skyboxModel;
 	VkPipeline pipeline;
 
-	struct UBOVS {
-		glm::mat4 projection;
-		glm::mat4 model;
-		float lodBias = 0.0f;
-	} uboVS;
-
 	~SkyDome() {
 		cubeMap.destroy();
 		skyboxModel.destroy();
-		uniformBuffer.destroy();
 	}
 
 	void initTextureDescriptor() {
@@ -247,24 +238,6 @@ public:
 		view.subresourceRange.levelCount = cubeMap.mipLevels;
 		view.image = cubeMap.image;
 		VK_CHECK_RESULT(vkCreateImageView(device, &view, nullptr, &cubeMap.view));
-	}
-
-	void prepareSkyDomeUniformBuffer(vks::VulkanDevice * vulkanDevice) {
-		// Skybox vertex shader uniform buffer
-		VK_CHECK_RESULT(vulkanDevice->createBuffer(
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			&uniformBuffer,
-			sizeof(uboVS)));
-
-		// Map persistent
-		VK_CHECK_RESULT(uniformBuffer.map());
-	}
-
-	void updateSkyBoxUniformBuffer(const glm::mat4& projection) {
-		uboVS.projection = glm::mat4(projection);
-		uboVS.model = glm::mat4();
-		memcpy(uniformBuffer.mapped, &uboVS, sizeof(uboVS));
 	}
 
 	void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout, VkDescriptorSet descriptorSet) {
