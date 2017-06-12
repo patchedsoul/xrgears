@@ -6,7 +6,6 @@ class SkyDome
 private:
 	vks::Texture cubeMap;
 
-	vks::Model skyboxModel;
 	VkDescriptorSet descriptorSet;
 
 	vks::Buffer uniformBuffer;
@@ -17,6 +16,7 @@ private:
 
 public:
 	VkDescriptorImageInfo textureDescriptor;
+	vks::Model skyboxModel;
 	VkPipeline pipeline;
 
 	struct UBOVS {
