@@ -309,12 +309,8 @@ namespace vks
 				deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 			}
 
-			// Check Multiview Support
-			if (extensionSupported(VK_KHX_MULTIVIEW_EXTENSION_NAME)) {
-				printf("VK_KHX_multiview supported.\n");
-				deviceExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
-			}	else
-				printf("VK_KHX_multiview unsupported.\n");
+			//enableIfSupported(&deviceExtensions, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+			//enableIfSupported(&deviceExtensions, VK_KHX_MULTIVIEW_EXTENSION_NAME);
 
 			VkDeviceCreateInfo deviceCreateInfo = {};
 			deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -323,14 +319,7 @@ namespace vks
 			deviceCreateInfo.pEnabledFeatures = &enabledFeatures;
 
 			// Enable the debug marker extension if it is present (likely meaning a debugging tool is present)
-			if (extensionSupported(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))
-			{
-			        printf("Debug markers supported!\n");
-				deviceExtensions.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
-				enableDebugMarkers = true;
-			} else {
-			    printf("Debug markers not supported!\n");
-			}
+			//enableDebugMarkers = enableIfSupported(&deviceExtensions, VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
 
 			if (deviceExtensions.size() > 0)
 			{
@@ -347,10 +336,21 @@ namespace vks
 			}
 
 			// VK_KHX_multiview
-			if (extensionSupported(VK_KHX_MULTIVIEW_EXTENSION_NAME))
-				printMultiviewProperties();
+			//if (extensionSupported(VK_KHX_MULTIVIEW_EXTENSION_NAME))
+			//	printMultiviewProperties();
 
 			return result;
+		}
+
+		bool enableIfSupported(std::vector<const char*> *deviceExtensions, const char* name) {
+			if (extensionSupported(name)) {
+				printf("%s supported.\n", name);
+				deviceExtensions->push_back(name);
+				return true;
+			} else {
+				printf("%s not supported.\n", name);
+				return false;
+			}
 		}
 
 		void printMultiviewProperties() {
