@@ -190,7 +190,8 @@ public:
 
 			vkCmdSetLineWidth(drawCmdBuffers[i], 1.0f);
 
-			drawSky(drawCmdBuffers[i]);
+			skyDome.draw(drawCmdBuffers[i], pipelineLayout, gears[0]->descriptorSet);
+
 			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
 			//drawTeapot(drawCmdBuffers[i]);
 
@@ -205,40 +206,6 @@ public:
 			VK_CHECK_RESULT(vkEndCommandBuffer(drawCmdBuffers[i]));
 		}
 	}
-
-	/*
-	void drawSkyOldPipeline(VkCommandBuffer cmdbuffer) {
-		VkDeviceSize offsets[1] = { 0 };
-
-		vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &gears[0]->descriptorSet, 0, nullptr);
-		vkCmdBindVertexBuffers(cmdbuffer, 0, 1, &skyboxModel.vertices.buffer, offsets);
-		vkCmdBindIndexBuffer(cmdbuffer, skyboxModel.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-
-		vkCmdPushConstants(cmdbuffer,
-											 pipelineLayout,
-											 VK_SHADER_STAGE_FRAGMENT_BIT,
-											 sizeof(glm::vec3),
-											 sizeof(Material::PushBlock), &gears[0]->material);
-
-		vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
-
-		vkCmdDrawIndexed(cmdbuffer, skyboxModel.indexCount, 1, 0, 0, 0);
-	}
-	*/
-
-
-	void drawSky(VkCommandBuffer cmdbuffer) {
-		VkDeviceSize offsets[1] = { 0 };
-
-		vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &gears[0]->descriptorSet, 0, nullptr);
-		vkCmdBindVertexBuffers(cmdbuffer, 0, 1, &skyDome.skyboxModel.vertices.buffer, offsets);
-		vkCmdBindIndexBuffer(cmdbuffer, skyDome.skyboxModel.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-
-		vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyDome.pipeline);
-
-		vkCmdDrawIndexed(cmdbuffer, skyDome.skyboxModel.indexCount, 1, 0, 0, 0);
-	}
-
 
 	/*
 	void drawTeapot(VkCommandBuffer cmdbuffer) {

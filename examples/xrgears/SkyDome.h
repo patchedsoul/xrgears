@@ -261,11 +261,21 @@ public:
 		VK_CHECK_RESULT(uniformBuffer.map());
 	}
 
-	//
-
 	void updateSkyBoxUniformBuffer(const glm::mat4& projection) {
 		uboVS.projection = glm::mat4(projection);
 		uboVS.model = glm::mat4();
 		memcpy(uniformBuffer.mapped, &uboVS, sizeof(uboVS));
+	}
+
+	void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout, VkDescriptorSet descriptorSet) {
+		VkDeviceSize offsets[1] = { 0 };
+
+		vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+		vkCmdBindVertexBuffers(cmdbuffer, 0, 1, &skyboxModel.vertices.buffer, offsets);
+		vkCmdBindIndexBuffer(cmdbuffer, skyboxModel.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+		vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+		vkCmdDrawIndexed(cmdbuffer, skyboxModel.indexCount, 1, 0, 0, 0);
 	}
 };
