@@ -42,8 +42,7 @@ public:
 	vks::Model teapotModel;
 	vks::Model skyboxModel;
 
-
-	SkyDome skyDome;
+	//SkyDome skyDome;
 
 	struct {
 		VkDescriptorSet object;
@@ -79,15 +78,15 @@ public:
 	struct {
 			vks::Buffer lights;
 			vks::Buffer camera;
-			vks::Buffer skybox;
+			//vks::Buffer skybox;
 	} uniformBuffers;
 
 	struct {
-		VkPipeline skybox;
-		//VkPipeline reflect;
+		VkPipeline pbr;
+		//VkPipeline skybox;
 	} pipelines;
 
-	VkPipeline pipeline;
+
 	VkPipelineLayout pipelineLayout;
 
 		//VkPipelineLayout pipelineLayoutSky;
@@ -118,17 +117,20 @@ public:
 		timerSpeed *= 0.25f;
 		//paused = true;
 
-		skyDome = SkyDome();
+		//skyDome = SkyDome();
 	}
 
 	~VulkanExample()
 	{
-		vkDestroyPipeline(device, pipeline, nullptr);
+		vkDestroyPipeline(device, pipelines.pbr, nullptr);
+		//vkDestroyPipeline(device, pipelines.skybox, nullptr);
+
 
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
 		teapotModel.destroy();
+		skyboxModel.destroy();
 
 		for (auto& gear : gears)
 			delete(gear);
@@ -204,7 +206,7 @@ public:
 			//drawSkyOldPipeline(drawCmdBuffers[i]);
 			// drawSky(drawCmdBuffers[i]);
 			//vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.skybox);
-			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
 			//drawTeapot(drawCmdBuffers[i]);
 
 			for (auto& gear : gears)
@@ -232,11 +234,12 @@ public:
 											 sizeof(glm::vec3),
 											 sizeof(Material::PushBlock), &gears[0]->material);
 
-		vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+		vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
 
 		vkCmdDrawIndexed(cmdbuffer, skyboxModel.indexCount, 1, 0, 0, 0);
 	}
 
+	/*
 	void drawSky(VkCommandBuffer cmdbuffer) {
 		VkDeviceSize offsets[1] = { 0 };
 
@@ -248,6 +251,7 @@ public:
 
 		vkCmdDrawIndexed(cmdbuffer, skyboxModel.indexCount, 1, 0, 0, 0);
 	}
+	*/
 
 	void drawTeapot(VkCommandBuffer cmdbuffer) {
 		vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &gears[0]->descriptorSet, 0, nullptr);
@@ -394,11 +398,13 @@ public:
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 			2),
+			/*
 			// cube map sampler
 			vks::initializers::descriptorSetLayoutBinding(
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			3)
+				*/
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
@@ -459,7 +465,7 @@ public:
 	void setupDescriptorSet()
 	{
 
-		skyDome.initTextureDescriptor();
+		//skyDome.initTextureDescriptor();
 
 		for (auto& gear : gears)
 		{
@@ -489,7 +495,7 @@ public:
 							VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 							2,
 							&uniformBuffers.camera.descriptor),
-				skyDome.getCubeMapWriteDescriptorSet(3, gear->descriptorSet)
+				//skyDome.getCubeMapWriteDescriptorSet(3, gear->descriptorSet)
 			};
 
 			vkUpdateDescriptorSets(device,
@@ -513,14 +519,6 @@ public:
 					VK_POLYGON_MODE_FILL,
 					VK_CULL_MODE_BACK_BIT,
 					VK_FRONT_FACE_CLOCKWISE);
-
-
-		VkPipelineRasterizationStateCreateInfo rasterizationStateSky =
-			vks::initializers::pipelineRasterizationStateCreateInfo(
-				VK_POLYGON_MODE_FILL,
-				VK_CULL_MODE_BACK_BIT,
-				VK_FRONT_FACE_COUNTER_CLOCKWISE,
-				0);
 
 		VkPipelineColorBlendAttachmentState blendAttachmentState =
 			vks::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE);
@@ -586,7 +584,20 @@ public:
 		// A geometry shader is used to output geometry to multiple viewports in one single pass
 		// See the "invoctations" decorator of the layout input in the shader
 		shaderStages[2] = loadShader(getAssetPath() + "shaders/xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.pbr));
+
+		//prepareSkyBox(pipelineCreateInfo);
+
+	}
+
+	/*
+	void prepareSkyBox(VkGraphicsPipelineCreateInfo& pipelineCreateInfo) {
+		VkPipelineRasterizationStateCreateInfo rasterizationStateSky =
+			vks::initializers::pipelineRasterizationStateCreateInfo(
+				VK_POLYGON_MODE_FILL,
+				VK_CULL_MODE_BACK_BIT,
+				VK_FRONT_FACE_COUNTER_CLOCKWISE,
+				0);
 
 
 		// Skybox pipeline (background cube)
@@ -602,7 +613,7 @@ public:
 
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.skybox));
 	}
-
+	*/
 
 	void createUniformBuffer(vks::Buffer *buffer,  VkDeviceSize size) {
 		VK_CHECK_RESULT(vulkanDevice->createBuffer(
@@ -624,6 +635,13 @@ public:
 		for (auto& gear : gears)
 			gear->prepareUniformBuffer();
 
+		//prepareSkyDomeUniformBuffer();
+
+		updateUniformBuffers();
+	}
+
+	/*
+	void prepareSkyDomeUniformBuffer() {
 		// Skybox vertex shader uniform buffer
 		VK_CHECK_RESULT(vulkanDevice->createBuffer(
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -633,10 +651,8 @@ public:
 
 		// Map persistent
 		VK_CHECK_RESULT(uniformBuffers.skybox.map());
-
-		updateUniformBuffers();
-
 	}
+	*/
 
 	void updateUniformBuffers()
 	{
@@ -654,9 +670,16 @@ public:
 		uboVS.projection = uboCamera.projection[0];
 		uboVS.model = glm::mat4();
 
-		memcpy(uniformBuffers.skybox.mapped, &uboVS, sizeof(uboVS));
+		//updateSkyBoxUniformBuffer();
 
 	}
+
+	/*
+	void updateSkyBoxUniformBuffer() {
+		memcpy(uniformBuffers.skybox.mapped, &uboVS, sizeof(uboVS));
+	}
+	*/
+
 
 	void updateCamera() {
 		// Geometry shader matrices for the two viewports
@@ -728,6 +751,7 @@ public:
 		memcpy(uniformBuffers.lights.mapped, &uboLights, sizeof(uboLights));
 	}
 
+	/*
 	void loadCubemap(std::string filename, VkFormat format)
 	{
 		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
@@ -736,6 +760,7 @@ public:
 		skyDome.createSampler(device, vulkanDevice);
 		skyDome.createImageView(device, format);
 	}
+	*/
 
 	void loadTextures()
 	{
@@ -765,9 +790,14 @@ public:
 
 		loadCubemap(getAssetPath() + "textures/" + filename, format);
 		*/
-	loadCubemap(getAssetPath() + "textures/equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
 
-	//loadCubemap(getAssetPath() + "textures/hdr/pisa_cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
+
+		// ==>
+		//loadCubemap(getAssetPath() + "textures/equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
+
+
+
+		//loadCubemap(getAssetPath() + "textures/hdr/pisa_cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
 
 		//loadCubemap(getAssetPath() + "textures/cubemap_yokohama_bc3_unorm.ktx", VK_FORMAT_BC2_UNORM_BLOCK);
 

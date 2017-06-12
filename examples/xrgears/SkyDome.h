@@ -2,13 +2,16 @@
 
 class SkyDome
 {
-public:
-
+private:
 	vks::Texture cubeMap;
 
+public:
 	VkDescriptorImageInfo textureDescriptor;
 
-	~SkyDome();
+	~SkyDome() {
+		printf("Destroying cube map.\n");
+		//cubeMap.destroy();
+	}
 
 	void initTextureDescriptor() {
 		// Image descriptor for the cube map texture

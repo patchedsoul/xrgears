@@ -33,7 +33,7 @@ layout (binding = 2) uniform UBOCamera {
 	vec3 position;
 } uboCamera;
 
-layout (binding = 3) uniform samplerCube samplerCubeMap;
+//layout (binding = 3) uniform samplerCube samplerCubeMap;
 
 
 const float PI = 3.14159265359;
@@ -122,8 +122,8 @@ void main() {
 
 	cR = vec3(inInvModelView * vec4(cR, 0.0));
 	cR.x *= -1.0;
-	vec3 reflectionColor = texture(samplerCubeMap, cR, 1.0).rgb;
-
+	//vec3 reflectionColor = texture(samplerCubeMap, cR, 1.0).rgb;
+  vec3 reflectionColor = vec3(1.0);
 
 	// Specular contribution
 	vec3 Lo = vec3(0.0);
