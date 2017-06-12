@@ -5,17 +5,21 @@ class SkyDome
 {
 private:
 	vks::Texture cubeMap;
+
 	vks::Model skyboxModel;
 	VkDescriptorSet descriptorSet;
 	VkPipeline pipeline;
 	vks::Buffer uniformBuffer;
 
+	// Create a host-visible staging buffer that contains the raw image data
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingMemory;
+
 public:
 	VkDescriptorImageInfo textureDescriptor;
 
 	~SkyDome() {
-		printf("Destroying cube map.\n");
-		//cubeMap.destroy();
+		cubeMap.destroy();
 		skyboxModel.destroy();
 	}
 
@@ -42,37 +46,6 @@ public:
 		skyboxModel.loadFromFile(path + "models/cube.obj", vertexLayout, 10.0f, vulkanDevice, queue);
 	}
 
-	VkBufferCreateInfo loadFile(std::string filename) {
-#if defined(__ANDROID__)
-		// Textures are stored inside the apk on Android (compressed)
-		// So they need to be loaded via the asset manager
-		AAsset* asset = AAssetManager_open(androidApp->activity->assetManager, filename.c_str(), AASSET_MODE_STREAMING);
-		assert(asset);
-		size_t size = AAsset_getLength(asset);
-		assert(size > 0);
-
-		void *textureData = malloc(size);
-		AAsset_read(asset, textureData, size);
-		AAsset_close(asset);
-
-		gli::texture_cube texCube(gli::load((const char*)textureData, size));
-#else
-		gli::texture_cube texCube(gli::load(filename));
-#endif
-
-		assert(!texCube.empty());
-
-		cubeMap.width = texCube.extent().x;
-		cubeMap.height = texCube.extent().y;
-		cubeMap.mipLevels = texCube.levels();
-
-		VkBufferCreateInfo bufferCreateInfo = vks::initializers::bufferCreateInfo();
-		bufferCreateInfo.size = texCube.size();
-		// This buffer is used as a transfer source for the buffer copy
-		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	}
-
 	void loadCubemap(VkDevice device, vks::VulkanDevice *vulkanDevice, VkCommandBuffer copyCmd, std::string filename,
 									 VkFormat format)
 	{
@@ -95,6 +68,8 @@ public:
 
 		assert(!texCube.empty());
 
+		cubeMap.device = vulkanDevice;
+
 		cubeMap.width = texCube.extent().x;
 		cubeMap.height = texCube.extent().y;
 		cubeMap.mipLevels = texCube.levels();
@@ -105,13 +80,7 @@ public:
 		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-
 		VkMemoryAllocateInfo memAllocInfo = vks::initializers::memoryAllocateInfo();
-
-
-		// Create a host-visible staging buffer that contains the raw image data
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingMemory;
 
 		VK_CHECK_RESULT(vkCreateBuffer(device, &bufferCreateInfo, nullptr, &stagingBuffer));
 
@@ -218,12 +187,13 @@ public:
 					cubeMap.imageLayout,
 					subresourceRange);
 
+	}
+
+	void deleteStatingBuffer(VkDevice device) {
 		// Clean up staging resources
 		vkFreeMemory(device, stagingMemory, nullptr);
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
-
 	}
-
 
 	void createSampler(VkDevice device, vks::VulkanDevice *vulkanDevice) {
 		// Create sampler
@@ -254,6 +224,7 @@ public:
 		VK_CHECK_RESULT(vkCreateSampler(device, &sampler, nullptr, &cubeMap.sampler));
 	}
 
+
 	void createImageView(VkDevice device, VkFormat format) {
 		// Create image view
 		VkImageViewCreateInfo view = vks::initializers::imageViewCreateInfo();
@@ -269,5 +240,4 @@ public:
 		view.image = cubeMap.image;
 		VK_CHECK_RESULT(vkCreateImageView(device, &view, nullptr, &cubeMap.view));
 	}
-
 };

@@ -147,7 +147,10 @@ void VulkanExampleBase::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueu
 		return;
 	}
 	
+	printf("ending command buffer\n");
 	VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+
+	printf("ending command buffer endend\n");
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

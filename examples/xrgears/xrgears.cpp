@@ -757,13 +757,12 @@ public:
 
 	void loadCubemap(std::string filename, VkFormat format)
 	{
-		/*
 		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 		skyDome->loadCubemap(device, vulkanDevice, copyCmd, filename, format);
 		VulkanExampleBase::flushCommandBuffer(copyCmd, queue, true);
+		skyDome->deleteStatingBuffer(device);
 		skyDome->createSampler(device, vulkanDevice);
 		skyDome->createImageView(device, format);
-		*/
 	}
 
 
