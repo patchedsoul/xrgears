@@ -227,8 +227,14 @@ public:
 		sampler.maxLod = cubeMap.mipLevels;
 		sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 		sampler.maxAnisotropy = 1.0f;
-		if (vulkanDevice->features.samplerAnisotropy)
+
+		// TODO: Validation fails
+		if (false)
+		// if (vulkanDevice->features.samplerAnisotropy)
 		{
+			printf("We think we have anisotropy %f. Feature enabled %d\n",
+						 vulkanDevice->properties.limits.maxSamplerAnisotropy,
+						 vulkanDevice->features.samplerAnisotropy);
 			sampler.maxAnisotropy = vulkanDevice->properties.limits.maxSamplerAnisotropy;
 			sampler.anisotropyEnable = VK_TRUE;
 		}
