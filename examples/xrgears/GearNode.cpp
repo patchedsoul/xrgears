@@ -12,7 +12,6 @@
 
 GearNode::~GearNode()
 {
-	//delete gear;
 	uniformBuffer.destroy();
 }
 

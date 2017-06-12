@@ -39,8 +39,8 @@ public:
 		vks::VERTEX_COMPONENT_COLOR,
 	});
 
-	vks::Model teapotModel;
-	vks::Model skyboxModel;
+	//vks::Model teapotModel;
+	//vks::Model skyboxModel;
 
 	//SkyDome skyDome;
 
@@ -94,7 +94,7 @@ public:
 	VkDescriptorSet skydomeDescriptorSet;
 	VkDescriptorSetLayout descriptorSetLayout;
 
-	VkDescriptorSetLayout descriptorSetLayoutSky;
+	//VkDescriptorSetLayout descriptorSetLayoutSky;
 
 	// Camera and view properties
 	float eyeSeparation = 0.08f;
@@ -129,8 +129,13 @@ public:
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
-		teapotModel.destroy();
-		skyboxModel.destroy();
+		//vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+
+		uniformBuffers.camera.destroy();
+		uniformBuffers.lights.destroy();
+
+//		teapotModel.destroy();
+//		skyboxModel.destroy();
 
 		for (auto& gear : gears)
 			delete(gear);
@@ -221,6 +226,7 @@ public:
 		}
 	}
 
+	/*
 	void drawSkyOldPipeline(VkCommandBuffer cmdbuffer) {
 		VkDeviceSize offsets[1] = { 0 };
 
@@ -238,6 +244,7 @@ public:
 
 		vkCmdDrawIndexed(cmdbuffer, skyboxModel.indexCount, 1, 0, 0, 0);
 	}
+	*/
 
 	/*
 	void drawSky(VkCommandBuffer cmdbuffer) {
@@ -253,6 +260,7 @@ public:
 	}
 	*/
 
+	/*
 	void drawTeapot(VkCommandBuffer cmdbuffer) {
 		vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &gears[0]->descriptorSet, 0, nullptr);
 		VkDeviceSize offsets[1] = { 0 };
@@ -265,6 +273,7 @@ public:
 											 sizeof(Material::PushBlock), &gears[0]->material);
 		vkCmdDrawIndexed(cmdbuffer, teapotModel.indexCount, 1, 0, 0, 0);
 	}
+	*/
 
 	void loadAssets() {
 		//teapotModel.loadFromFile(getAssetPath() + "models/sphere.obj", vertexLayout, 0.25f, vulkanDevice, queue);
@@ -431,6 +440,7 @@ public:
 		//setupDescriptorSetLayoutSky();
 	}
 
+	/*
 	void setupDescriptorSetLayoutSky()
 	{
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
@@ -461,6 +471,7 @@ public:
 
 		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 	}
+	*/
 
 	void setupDescriptorSet()
 	{
