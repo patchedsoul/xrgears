@@ -202,7 +202,7 @@ public:
 			vkCmdSetLineWidth(drawCmdBuffers[i], 1.0f);
 
 			//drawSkyOldPipeline(drawCmdBuffers[i]);
-			drawSky(drawCmdBuffers[i]);
+			// drawSky(drawCmdBuffers[i]);
 			//vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.skybox);
 			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 			//drawTeapot(drawCmdBuffers[i]);
