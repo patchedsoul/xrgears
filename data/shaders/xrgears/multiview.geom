@@ -5,6 +5,9 @@
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
 
+#extension GL_ARB_shader_viewport_layer_array : require
+#extension GL_NV_viewport_array2 : require
+
 
 layout (triangles, invocations = 2) in;
 layout (triangle_strip, max_vertices = 3) out;
@@ -54,6 +57,13 @@ void main(void)
 
 		// Set the viewport index that the vertex will be emitted to
 		gl_ViewportIndex = gl_InvocationID;
+		
+		// VK 1.0: write in GS, read in FS
+    // GL_ARB_shader_viewport_layer_array: write in VS, TS, GS
+    //gl_ViewportIndex = 2;
+    // GL_NV_viewport_array2: write in VS, TS, GS
+    //gl_ViewportMask[0] = 0x07; // viewports 0, 1 and 2
+
 
 		EmitVertex();
 	}
