@@ -81,7 +81,7 @@ public:
 	//VkPipelineLayout pipelineLayoutSky;
 	//VkDescriptorSetLayout descriptorSetLayoutSky;
 
-	VkDescriptorSet skydomeDescriptorSet;
+	//VkDescriptorSet skydomeDescriptorSet;
 	VkDescriptorSetLayout descriptorSetLayout;
 
 

@@ -51,6 +51,13 @@
 class VulkanExampleBase
 {
 private:	
+
+
+	PFN_vkGetPhysicalDeviceFeatures2KHR fpGetPhysicalDeviceFeatures2KHR;
+	PFN_vkGetPhysicalDeviceProperties2KHR fpGetPhysicalDeviceProperties2KHR;
+
+	void printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDevice physicalDevice);
+
 	// fps timer (one second interval)
 	float fpsTimer = 0.0f;
 	// Get window title with example name, device, et.

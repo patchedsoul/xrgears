@@ -35,10 +35,16 @@ VkResult VulkanExampleBase::createInstance(bool enableValidation)
 	instanceExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #endif
 
-	//enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
-	//enabledExtensions.push_back(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
+	instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+
+	enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
+	enabledExtensions.push_back(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
+
+	enabledExtensions.push_back(VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME);
+
 	//enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 	//enabledExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+
 
 
 	VkInstanceCreateInfo instanceCreateInfo = {};
@@ -756,6 +762,56 @@ exit(1);                                                        \
 	}                                                                   \
 }
 */
+
+void VulkanExampleBase::printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDevice physicalDevice) {
+	GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceProperties2KHR);
+	GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceFeatures2KHR);
+
+	if (physicalDevice == nullptr) {
+		printf("physical deivce is empthy!\n");
+	} else {
+		printf("physical deivce is NOT empthy! %p\n", physicalDevice);
+	}
+
+	if (fpGetPhysicalDeviceFeatures2KHR) {
+		VkPhysicalDeviceFeatures2KHR deviceFeatures2{};
+		VkPhysicalDeviceMultiviewFeaturesKHX multiViewFeatures{};
+		multiViewFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHX;
+		deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
+		deviceFeatures2.pNext = &multiViewFeatures;
+		fpGetPhysicalDeviceFeatures2KHR(physicalDevice, &deviceFeatures2);
+
+		//vkGetPhysicalDeviceFeatures2KHR(physicalDevice, &deviceFeatures2);
+
+		printf("multiview %d\n", multiViewFeatures.multiview);
+		printf("multiviewGeometryShader %d\n", multiViewFeatures.multiviewGeometryShader);
+		printf("multiviewTessellationShader %d\n", multiViewFeatures.multiviewTessellationShader);
+	}
+
+	if (fpGetPhysicalDeviceProperties2KHR) {
+		VkPhysicalDeviceProperties2KHR deviceProps2{};
+
+		VkPhysicalDeviceMultiviewPropertiesKHX extProps{};
+		extProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHX;
+		deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+		deviceProps2.pNext = &extProps;
+		fpGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps2);
+
+		printf("maxMultiviewViewCount %d\n", extProps.maxMultiviewViewCount);
+		printf("maxMultiviewInstanceIndex %d\n", extProps.maxMultiviewInstanceIndex);
+
+		VkPhysicalDeviceProperties2KHR deviceProps22{};
+		VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX extProps2{};
+		extProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX;
+		deviceProps22.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+		deviceProps22.pNext = &extProps2;
+		fpGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps22);
+
+		printf("perViewPositionAllComponents %d\n", extProps2.perViewPositionAllComponents);
+	}
+}
+
+
 void VulkanExampleBase::initVulkan()
 {
 	VkResult err;
@@ -869,6 +925,9 @@ void VulkanExampleBase::initVulkan()
 		vks::tools::exitFatal("Could not create Vulkan device: \n" + vks::tools::errorString(res), "Fatal error");
 	}
 	device = vulkanDevice->logicalDevice;
+
+	printMultiviewProperties(device, physicalDevice);
+
 
 	// Get a graphics queue from the device
 	vkGetDeviceQueue(device, vulkanDevice->queueFamilyIndices.graphics, 0, &queue);
@@ -2036,13 +2095,14 @@ void VulkanExampleBase::setupRenderPass()
 	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 	renderPassInfo.pDependencies = dependencies.data();
 
-	/*
+
 	// VK_KHX_multiview
 	VkRenderPassMultiviewCreateInfoKHX renderPassMvInfo = {};
 	renderPassMvInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHX;
 	renderPassMvInfo.subpassCount = 1;
 	renderPassMvInfo.dependencyCount = 1;
 	renderPassMvInfo.correlationMaskCount = 1;
+	renderPassMvInfo.pNext = NULL;
 
 	uint32_t correlationMasks[] = { 2 };
 	renderPassMvInfo.pCorrelationMasks = correlationMasks;
@@ -2054,9 +2114,8 @@ void VulkanExampleBase::setupRenderPass()
 	renderPassMvInfo.pViewOffsets = viewOffsets;
 
 	renderPassInfo.pNext = &renderPassMvInfo;
+	renderPassInfo.pNext = NULL;
 	// VK_KHX_multiview
-	*/
-
 
 	VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass));
 }
