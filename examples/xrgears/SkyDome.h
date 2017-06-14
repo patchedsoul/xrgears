@@ -31,10 +31,10 @@ public:
 					cubeMap.imageLayout);
 	}
 
-	VkWriteDescriptorSet getCubeMapWriteDescriptorSet(unsigned binding, VkDescriptorSet descriptorSet) {
+	VkWriteDescriptorSet getCubeMapWriteDescriptorSet(unsigned binding, VkDescriptorSet ds) {
 
 		return vks::initializers::writeDescriptorSet(
-					descriptorSet,
+					ds,
 					VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 					binding,
 					&textureDescriptor);
