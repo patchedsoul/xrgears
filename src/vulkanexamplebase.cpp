@@ -926,7 +926,7 @@ void VulkanExampleBase::initVulkan()
 	}
 	device = vulkanDevice->logicalDevice;
 
-	printMultiviewProperties(device, physicalDevice);
+	//printMultiviewProperties(device, physicalDevice);
 
 
 	// Get a graphics queue from the device
