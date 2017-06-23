@@ -44,4 +44,6 @@ void main()
 		}
 	}
 	outFragColor = vec4(result, 1.0);
+	outFragColor = texture(samplerColor, inUV);
+	//outFragColor = vec4(1,0,0,1);
 }
