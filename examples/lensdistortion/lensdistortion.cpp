@@ -45,7 +45,6 @@ public:
 
 	struct {
 		vks::Model ufo;
-		vks::Model ufoGlow;
 	} models;
 
 	struct {
@@ -168,7 +167,6 @@ public:
 
 		// Models
 		models.ufo.destroy();
-		models.ufoGlow.destroy();
 
 		// Uniform buffers
 		uniformBuffers.scene.destroy();
@@ -405,9 +403,10 @@ public:
 		vkCmdBindPipeline(offscreenPass.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.glowPass);
 
 		VkDeviceSize offsets[1] = { 0 };
-		vkCmdBindVertexBuffers(offscreenPass.commandBuffer, VERTEX_BUFFER_BIND_ID, 1, &models.ufoGlow.vertices.buffer, offsets);
-		vkCmdBindIndexBuffer(offscreenPass.commandBuffer, models.ufoGlow.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-		vkCmdDrawIndexed(offscreenPass.commandBuffer, models.ufoGlow.indexCount, 1, 0, 0, 0);
+		vkCmdBindVertexBuffers(offscreenPass.commandBuffer, VERTEX_BUFFER_BIND_ID, 1, &models.ufo.vertices.buffer, offsets);
+		vkCmdBindIndexBuffer(offscreenPass.commandBuffer, models.ufo.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(offscreenPass.commandBuffer, models.ufo.indexCount, 1, 0, 0, 0);
+
 
 		vkCmdEndRenderPass(offscreenPass.commandBuffer);
 
@@ -504,7 +503,6 @@ public:
 	void loadAssets()
 	{
 		models.ufo.loadFromFile(getAssetPath() + "models/retroufo.dae", vertexLayout, 0.05f, vulkanDevice, queue);
-		models.ufoGlow.loadFromFile(getAssetPath() + "models/retroufo_glow.dae", vertexLayout, 0.05f, vulkanDevice, queue);
 	}
 
 	void setupVertexDescriptions()
