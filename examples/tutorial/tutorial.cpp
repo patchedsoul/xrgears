@@ -78,6 +78,12 @@ private:
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
         
+        if (enableValidationLayers) {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+            createInfo.ppEnabledLayerNames = validationLayers.data();
+        } else {
+            createInfo.enabledLayerCount = 0;
+        }
         
         VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
         
@@ -85,7 +91,7 @@ private:
             throw std::runtime_error("failed to create instance!");
         }
     }
-    
+
     void checkForExtensions() {
         uint32_t extensionCount = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
@@ -202,9 +208,9 @@ private:
     }
 
     void cleanup() {
-        glfwDestroyWindow(window);
+        DestroyDebugReportCallbackEXT(instance, callback, nullptr);
         vkDestroyInstance(instance, nullptr);
-
+        glfwDestroyWindow(window);
 
         glfwTerminate();
     }
