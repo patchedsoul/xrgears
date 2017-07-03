@@ -12,6 +12,7 @@
 
 #include "swapchain.h"
 #include "queue.h"
+#include "pipeline.h"
 
 const int WIDTH = 1280;
 const int HEIGHT = 720;
@@ -42,6 +43,7 @@ private:
   GLFWwindow* window;
 
   VikSwapChain* swapChain;
+  VikPipeline* pipeline;
 
   VkInstance instance;
   VkDebugReportCallbackEXT callback;
@@ -789,6 +791,8 @@ private:
     swapChain->createImageViews();
     createRenderPass();
     createGraphicsPipeline();
+    pipeline = new VikPipeline();
+
     swapChain->createFramebuffers(renderPass);
     createCommandPool();
     createCommandBuffers();
@@ -804,6 +808,7 @@ private:
     swapChain->createImageViews();
     createRenderPass();
     createGraphicsPipeline();
+    pipeline = new VikPipeline();
     swapChain->createFramebuffers(renderPass);
     createCommandBuffers();
   }
@@ -812,6 +817,8 @@ private:
     delete swapChain;
 
     vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+
+    delete pipeline;
 
     vkDestroyPipeline(device, graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
@@ -823,6 +830,8 @@ private:
     vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
 
     vkDestroyCommandPool(device, commandPool, nullptr);
+
+    delete pipeline;
 
     vkDestroyPipeline(device, graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
