@@ -28,23 +28,9 @@ public:
 
     VkDevice device;
 
-    VikSwapChain(VkDevice d) {
+    VikSwapChain(VkDevice d, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, GLFWwindow* window) {
 	device = d;
-    }
 
-    ~VikSwapChain() {
-	for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
-	    vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
-	}
-
-	for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-	    vkDestroyImageView(device, swapChainImageViews[i], nullptr);
-	}
-
-	vkDestroySwapchainKHR(device, swapChain, nullptr);
-    }
-
-    void createSwapChain(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, GLFWwindow* window) {
 	SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice, surface);
 
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -101,9 +87,19 @@ public:
 
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = extent;
-
     }
 
+    ~VikSwapChain() {
+	for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
+	    vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
+	}
+
+	for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+	    vkDestroyImageView(device, swapChainImageViews[i], nullptr);
+	}
+
+	vkDestroySwapchainKHR(device, swapChain, nullptr);
+    }
 
     void createFramebuffers(VkRenderPass renderPass) {
 	swapChainFramebuffers.resize(swapChainImageViews.size());
@@ -166,7 +162,7 @@ public:
 
     }
 
-    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) {
+    static SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) {
 	SwapChainSupportDetails details;
 
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
@@ -190,7 +186,7 @@ public:
 	return details;
     }
 
-    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window) {
+    static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window) {
 	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
 	    return capabilities.currentExtent;
 	} else {
@@ -211,7 +207,7 @@ public:
 	}
     }
 
-    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes) {
+    static VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes) {
 	VkPresentModeKHR bestMode = VK_PRESENT_MODE_FIFO_KHR;
 
 	for (const auto& availablePresentMode : availablePresentModes) {
@@ -225,7 +221,7 @@ public:
 	return bestMode;
     }
 
-    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+    static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
 	if (availableFormats.size() == 1 && availableFormats[0].format == VK_FORMAT_UNDEFINED) {
 	    return {VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
 	}

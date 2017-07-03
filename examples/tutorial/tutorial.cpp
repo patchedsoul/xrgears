@@ -758,9 +758,7 @@ private:
     createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
-    vikSwapChain = new VikSwapChain(device);
-    vikSwapChain->createSwapChain(surface, physicalDevice, window);
-
+    vikSwapChain = new VikSwapChain(device, surface, physicalDevice, window);
     vikSwapChain->createImageViews();
     createRenderPass();
     createGraphicsPipeline();
@@ -775,8 +773,7 @@ private:
 
     cleanupSwapChain();
 
-    vikSwapChain = new VikSwapChain(device);
-    vikSwapChain->createSwapChain(surface, physicalDevice, window);
+    vikSwapChain = new VikSwapChain(device, surface, physicalDevice, window);
     vikSwapChain->createImageViews();
     createRenderPass();
     createGraphicsPipeline();
