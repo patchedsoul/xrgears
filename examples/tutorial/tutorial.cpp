@@ -66,32 +66,23 @@ private:
 		VkSemaphore imageAvailableSemaphore;
 		VkSemaphore renderFinishedSemaphore;
 
+		void initWindow() {
+				glfwInit();
 
+				glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    void initWindow() {
-        glfwInit();
+				window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
 
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+				glfwSetWindowUserPointer(window, this);
+				glfwSetWindowSizeCallback(window, TutorialApplication::onWindowResized);
+		}
 
-        window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
-    }
+		static void onWindowResized(GLFWwindow* window, int width, int height) {
+				if (width == 0 || height == 0) return;
 
-    void initVulkan() {
-      createInstance();
-      setupDebugCallback();
-      createSurface();
-      pickPhysicalDevice();
-      createLogicalDevice();
-      createSwapChain();
-			createImageViews();
-			createRenderPass();
-			createGraphicsPipeline();
-			createFramebuffers();
-			createCommandPool();
-			createCommandBuffers();
-			createSemaphores();
-    }
+				TutorialApplication* app = reinterpret_cast<TutorialApplication*>(glfwGetWindowUserPointer(window));
+				app->recreateSwapChain();
+		}
 
 		void createSemaphores() {
 			VkSemaphoreCreateInfo semaphoreInfo = {};
@@ -826,7 +817,15 @@ private:
         if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
             return capabilities.currentExtent;
         } else {
-            VkExtent2D actualExtent = {WIDTH, HEIGHT};
+						int w, h;
+						glfwGetWindowSize(window, &w, &h);
+
+						uint32_t width, height;
+
+						width = w;
+						height = h;
+
+						VkExtent2D actualExtent = {width, height};
 
             actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
             actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
@@ -847,7 +846,7 @@ private:
             imageCount = swapChainSupport.capabilities.maxImageCount;
         }
 
-				printf("Creating swapchain with %d images.\n", imageCount);
+				//printf("Creating swapchain with %d images.\n", imageCount);
         
         VkSwapchainCreateInfoKHR createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -909,12 +908,28 @@ private:
 
 			// aquire image
 
+			/*
 			vkAcquireNextImageKHR(device,
 														swapChain,
 														std::numeric_limits<uint64_t>::max(),
 														imageAvailableSemaphore,
 														VK_NULL_HANDLE,
 														&imageIndex);
+			*/
+
+			VkResult result = vkAcquireNextImageKHR(device,
+																							swapChain,
+																							std::numeric_limits<uint64_t>::max(),
+																							imageAvailableSemaphore,
+																							VK_NULL_HANDLE,
+																							&imageIndex);
+
+			if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+					recreateSwapChain();
+					return;
+			} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+					throw std::runtime_error("failed to acquire swap chain image!");
+			}
 
 			// submit command buffer
 
@@ -970,6 +985,55 @@ private:
 			presentInfo.pResults = nullptr; // Optional
 
 			vkQueuePresentKHR(presentQueue, &presentInfo);
+
+			vkQueueWaitIdle(presentQueue);
+		}
+
+		void initVulkan() {
+			createInstance();
+			setupDebugCallback();
+			createSurface();
+			pickPhysicalDevice();
+			createLogicalDevice();
+			createSwapChain();
+			createImageViews();
+			createRenderPass();
+			createGraphicsPipeline();
+			createFramebuffers();
+			createCommandPool();
+			createCommandBuffers();
+			createSemaphores();
+		}
+
+		void recreateSwapChain() {
+				vkDeviceWaitIdle(device);
+
+				cleanupSwapChain();
+
+				createSwapChain();
+				createImageViews();
+				createRenderPass();
+				createGraphicsPipeline();
+				createFramebuffers();
+				createCommandBuffers();
+		}
+
+		void cleanupSwapChain() {
+				for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
+						vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
+				}
+
+				vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+
+				vkDestroyPipeline(device, graphicsPipeline, nullptr);
+				vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+				vkDestroyRenderPass(device, renderPass, nullptr);
+
+				for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+						vkDestroyImageView(device, swapChainImageViews[i], nullptr);
+				}
+
+				vkDestroySwapchainKHR(device, swapChain, nullptr);
 		}
 
 		void cleanup() {
