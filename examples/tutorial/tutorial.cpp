@@ -152,8 +152,6 @@ private:
     }
   }
 
-
-
   void createRenderPass() {
 
     VkAttachmentDescription colorAttachment = {};
@@ -524,7 +522,8 @@ private:
     dependency.srcAccessMask = 0;
 
     dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
     //renderPassInfo.dependencyCount = 1;
     //renderPassInfo.pDependencies = &dependency;
@@ -582,7 +581,10 @@ private:
   void cleanupSwapChain() {
     delete swapChain;
 
-    vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+    vkFreeCommandBuffers(device,
+                         commandPool,
+                         static_cast<uint32_t>(commandBuffers.size()),
+                         commandBuffers.data());
 
     delete pipeline;
 
