@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <fstream>
 
+#include "swapchain.h"
+
 const int WIDTH = 1280;
 const int HEIGHT = 720;
 
@@ -37,6 +39,9 @@ public:
 private:
 
   GLFWwindow* window;
+
+  VikSwapChain* vikSwapChain;
+
   VkInstance instance;
   VkDebugReportCallbackEXT callback;
   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -996,6 +1001,8 @@ private:
     pickPhysicalDevice();
     createLogicalDevice();
     createSwapChain();
+    vikSwapChain = new VikSwapChain();
+
     createImageViews();
     createRenderPass();
     createGraphicsPipeline();
@@ -1011,6 +1018,7 @@ private:
     cleanupSwapChain();
 
     createSwapChain();
+    vikSwapChain = new VikSwapChain();
     createImageViews();
     createRenderPass();
     createGraphicsPipeline();
@@ -1034,9 +1042,13 @@ private:
     }
 
     vkDestroySwapchainKHR(device, swapChain, nullptr);
+
+    delete vikSwapChain;
   }
 
   void cleanup() {
+
+
     vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
     vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
 
@@ -1053,6 +1065,8 @@ private:
     for (size_t i = 0; i < swapChainImageViews.size(); i++) {
       vkDestroyImageView(device, swapChainImageViews[i], nullptr);
     }
+
+    delete vikSwapChain;
 
     vkDestroySwapchainKHR(device, swapChain, nullptr);
     vkDestroyDevice(device, nullptr);
