@@ -63,6 +63,9 @@ private:
 
 		std::vector<VkCommandBuffer> commandBuffers;
 
+		VkSemaphore imageAvailableSemaphore;
+		VkSemaphore renderFinishedSemaphore;
+
 
 
     void initWindow() {
@@ -87,7 +90,19 @@ private:
 			createFramebuffers();
 			createCommandPool();
 			createCommandBuffers();
+			createSemaphores();
     }
+
+		void createSemaphores() {
+			VkSemaphoreCreateInfo semaphoreInfo = {};
+			semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+			if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
+					vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS) {
+
+					throw std::runtime_error("failed to create semaphores!");
+			}
+		}
 
 		void createCommandBuffers() {
 				commandBuffers.resize(swapChainFramebuffers.size());
@@ -880,10 +895,82 @@ private:
     void mainLoop() {
         while (!glfwWindowShouldClose(window)) {
             glfwPollEvents();
+						drawFrame();
         }
     }
 
+		void drawFrame() {
+			uint32_t imageIndex;
+
+			// aquire image
+
+			vkAcquireNextImageKHR(device,
+														swapChain,
+														std::numeric_limits<uint64_t>::max(),
+														imageAvailableSemaphore,
+														VK_NULL_HANDLE,
+														&imageIndex);
+
+			// submit command buffer
+
+			VkSubmitInfo submitInfo = {};
+			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+
+			VkSemaphore waitSemaphores[] = {imageAvailableSemaphore};
+			VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+			submitInfo.waitSemaphoreCount = 1;
+			submitInfo.pWaitSemaphores = waitSemaphores;
+			submitInfo.pWaitDstStageMask = waitStages;
+
+			submitInfo.commandBufferCount = 1;
+			submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+
+			VkSemaphore signalSemaphores[] = {renderFinishedSemaphore};
+			submitInfo.signalSemaphoreCount = 1;
+			submitInfo.pSignalSemaphores = signalSemaphores;
+
+			if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+					throw std::runtime_error("failed to submit draw command buffer!");
+			}
+
+			// subpass dependencies
+
+			VkSubpassDependency dependency = {};
+			dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependency.dstSubpass = 0;
+
+			dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependency.srcAccessMask = 0;
+
+			dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+			//renderPassInfo.dependencyCount = 1;
+			//renderPassInfo.pDependencies = &dependency;
+
+			// presentation
+
+			VkPresentInfoKHR presentInfo = {};
+			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+			presentInfo.waitSemaphoreCount = 1;
+			presentInfo.pWaitSemaphores = signalSemaphores;
+
+			VkSwapchainKHR swapChains[] = {swapChain};
+			presentInfo.swapchainCount = 1;
+			presentInfo.pSwapchains = swapChains;
+			presentInfo.pImageIndices = &imageIndex;
+
+			presentInfo.pResults = nullptr; // Optional
+
+			vkQueuePresentKHR(presentQueue, &presentInfo);
+		}
+
 		void cleanup() {
+			vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
+			vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
+
 			vkDestroyCommandPool(device, commandPool, nullptr);
 
 			for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
