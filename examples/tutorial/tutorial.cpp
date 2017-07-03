@@ -104,43 +104,43 @@ private:
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = (uint32_t) commandBuffers.size();
 
-    if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS)
       throw std::runtime_error("failed to allocate command buffers!");
-    }
 
-    for (size_t i = 0; i < commandBuffers.size(); i++) {
-      VkCommandBufferBeginInfo beginInfo = {};
-      beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-      beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-      beginInfo.pInheritanceInfo = nullptr; // Optional
+    for (size_t i = 0; i < commandBuffers.size(); i++)
+      createCommandBuffer(commandBuffers[i], swapChain->swapChainFramebuffers[i]);
+  }
 
-      vkBeginCommandBuffer(commandBuffers[i], &beginInfo);
+  void createCommandBuffer(VkCommandBuffer commandBuffer, VkFramebuffer frameBuffer) {
+    VkCommandBufferBeginInfo beginInfo = {};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+    beginInfo.pInheritanceInfo = nullptr; // Optional
 
-      VkRenderPassBeginInfo renderPassInfo = {};
-      renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-      renderPassInfo.renderPass = renderPass;
-      renderPassInfo.framebuffer = swapChain->swapChainFramebuffers[i];
+    vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
-      renderPassInfo.renderArea.offset = {0, 0};
-      renderPassInfo.renderArea.extent = swapChain->swapChainExtent;
+    VkRenderPassBeginInfo renderPassInfo = {};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = renderPass;
+    renderPassInfo.framebuffer = frameBuffer;
 
-      VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
-      renderPassInfo.clearValueCount = 1;
-      renderPassInfo.pClearValues = &clearColor;
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = swapChain->swapChainExtent;
 
-      vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+    renderPassInfo.clearValueCount = 1;
+    renderPassInfo.pClearValues = &clearColor;
 
-      vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-      vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-      vkCmdEndRenderPass(commandBuffers[i]);
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
-      if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
-        throw std::runtime_error("failed to record command buffer!");
-      }
-    }
+    vkCmdEndRenderPass(commandBuffer);
 
+    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+      throw std::runtime_error("failed to record command buffer!");
   }
 
   void createCommandPool() {
