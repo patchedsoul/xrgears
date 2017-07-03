@@ -23,7 +23,7 @@ const std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-const bool enableValidationLayers = true;
+const bool enableValidationLayers = false;
 
 class TutorialApplication {
 public:
@@ -55,6 +55,8 @@ private:
 		VkRenderPass renderPass;
 		VkPipelineLayout pipelineLayout;
 
+		VkPipeline graphicsPipeline;
+
 
     void initWindow() {
         glfwInit();
@@ -75,8 +77,6 @@ private:
 			createImageViews();
 			createRenderPass();
 			createGraphicsPipeline();
-			createVertexBuffers();
-			createViewPort();
     }
 
 		void createRenderPass() {
@@ -152,25 +152,32 @@ private:
 			if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
 					throw std::runtime_error("failed to create pipeline layout!");
 			}
-		}
 
-		void createVertexBuffers() {
+			VkGraphicsPipelineCreateInfo pipelineInfo = {};
+			pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+			pipelineInfo.stageCount = 2;
+			pipelineInfo.pStages = shaderStages;
+
+			/*
+			 * Vertex assembly info
+			 */
+
 			VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 			vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 			vertexInputInfo.vertexBindingDescriptionCount = 0;
-			vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
+			//vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
 			vertexInputInfo.vertexAttributeDescriptionCount = 0;
-			vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+			//vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
 
 			VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 			inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 			inputAssembly.primitiveRestartEnable = VK_FALSE;
 
+			/*
+			 * Viewport
+			 */
 
-		}
-
-		void createViewPort() {
 			VkViewport viewport = {};
 			viewport.x = 0.0f;
 			viewport.y = 0.0f;
@@ -243,6 +250,33 @@ private:
 			dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 			dynamicState.dynamicStateCount = 2;
 			dynamicState.pDynamicStates = dynamicStates;
+
+			/*
+			 * Pipeline init
+			 */
+
+
+
+			pipelineInfo.pVertexInputState = &vertexInputInfo;
+			pipelineInfo.pInputAssemblyState = &inputAssembly;
+			pipelineInfo.pViewportState = &viewportState;
+			pipelineInfo.pRasterizationState = &rasterizer;
+			pipelineInfo.pMultisampleState = &multisampling;
+			//pipelineInfo.pDepthStencilState = nullptr; // Optional
+			pipelineInfo.pColorBlendState = &colorBlending;
+			//pipelineInfo.pDynamicState = nullptr; // Optional
+
+			pipelineInfo.layout = pipelineLayout;
+
+			pipelineInfo.renderPass = renderPass;
+			pipelineInfo.subpass = 0;
+
+			//pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
+			//pipelineInfo.basePipelineIndex = -1; // Optional
+
+			if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+					throw std::runtime_error("failed to create graphics pipeline!");
+			}
 		}
 
 		static std::vector<char> readFile(const std::string& filename) {
@@ -755,6 +789,7 @@ private:
     }
 
 		void cleanup() {
+			vkDestroyPipeline(device, graphicsPipeline, nullptr);
 			vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 			vkDestroyRenderPass(device, renderPass, nullptr);
 
