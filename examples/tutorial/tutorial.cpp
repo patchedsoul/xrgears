@@ -96,7 +96,7 @@ private:
   }
 
   void createCommandBuffers() {
-    commandBuffers.resize(swapChain->swapChainFramebuffers.size());
+    commandBuffers.resize(swapChain->framebuffers.size());
 
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -108,7 +108,7 @@ private:
       throw std::runtime_error("failed to allocate command buffers!");
 
     for (size_t i = 0; i < commandBuffers.size(); i++)
-      createCommandBuffer(commandBuffers[i], swapChain->swapChainFramebuffers[i]);
+      createCommandBuffer(commandBuffers[i], swapChain->framebuffers[i]);
   }
 
   void createCommandBuffer(VkCommandBuffer commandBuffer, VkFramebuffer frameBuffer) {
@@ -161,7 +161,7 @@ private:
   void createRenderPass() {
 
     VkAttachmentDescription colorAttachment = {};
-    colorAttachment.format = swapChain->swapChainImageFormat;
+    colorAttachment.format = swapChain->imageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
