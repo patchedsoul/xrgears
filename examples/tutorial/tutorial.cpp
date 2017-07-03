@@ -581,7 +581,7 @@ private:
 
     bool swapChainAdequate = false;
     if (extensionsSupported) {
-      SwapChainSupportDetails swapChainSupport = vikSwapChain->querySwapChainSupport(device, surface);
+      SwapChainSupportDetails swapChainSupport = vikSwapChain->querySupport(device, surface);
       swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
     }
 

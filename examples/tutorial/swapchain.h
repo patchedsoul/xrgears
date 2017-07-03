@@ -31,11 +31,11 @@ public:
     VikSwapChain(VkDevice d, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, GLFWwindow* window) {
 	device = d;
 
-	SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice, surface);
+	SwapChainSupportDetails swapChainSupport = querySupport(physicalDevice, surface);
 
-	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
-	VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-	VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities, window);
+	VkSurfaceFormatKHR surfaceFormat = chooseSurfaceFormat(swapChainSupport.formats);
+	VkPresentModeKHR presentMode = choosePresentMode(swapChainSupport.presentModes);
+	VkExtent2D extent = chooseExtent(swapChainSupport.capabilities, window);
 
 	uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
 	if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
@@ -162,7 +162,7 @@ public:
 
     }
 
-    static SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) {
+    static SwapChainSupportDetails querySupport(VkPhysicalDevice device, VkSurfaceKHR surface) {
 	SwapChainSupportDetails details;
 
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
@@ -186,7 +186,7 @@ public:
 	return details;
     }
 
-    static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window) {
+    static VkExtent2D chooseExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window) {
 	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
 	    return capabilities.currentExtent;
 	} else {
@@ -207,7 +207,7 @@ public:
 	}
     }
 
-    static VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes) {
+    static VkPresentModeKHR choosePresentMode(const std::vector<VkPresentModeKHR> availablePresentModes) {
 	VkPresentModeKHR bestMode = VK_PRESENT_MODE_FIFO_KHR;
 
 	for (const auto& availablePresentMode : availablePresentModes) {
@@ -221,7 +221,7 @@ public:
 	return bestMode;
     }
 
-    static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+    static VkSurfaceFormatKHR chooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
 	if (availableFormats.size() == 1 && availableFormats[0].format == VK_FORMAT_UNDEFINED) {
 	    return {VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
 	}
