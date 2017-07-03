@@ -23,7 +23,7 @@ const std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-const bool enableValidationLayers = false;
+const bool enableValidationLayers = true;
 
 class TutorialApplication {
 public:
@@ -57,6 +57,8 @@ private:
 
 		VkPipeline graphicsPipeline;
 
+		std::vector<VkFramebuffer> swapChainFramebuffers;
+
 
     void initWindow() {
         glfwInit();
@@ -77,7 +79,31 @@ private:
 			createImageViews();
 			createRenderPass();
 			createGraphicsPipeline();
+			createFramebuffers();
     }
+
+		void createFramebuffers() {
+			swapChainFramebuffers.resize(swapChainImageViews.size());
+
+			for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+					VkImageView attachments[] = {
+							swapChainImageViews[i]
+					};
+
+					VkFramebufferCreateInfo framebufferInfo = {};
+					framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+					framebufferInfo.renderPass = renderPass;
+					framebufferInfo.attachmentCount = 1;
+					framebufferInfo.pAttachments = attachments;
+					framebufferInfo.width = swapChainExtent.width;
+					framebufferInfo.height = swapChainExtent.height;
+					framebufferInfo.layers = 1;
+
+					if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+							throw std::runtime_error("failed to create framebuffer!");
+					}
+			}
+		}
 
 		void createRenderPass() {
 
@@ -137,10 +163,6 @@ private:
 			fragShaderStageInfo.pName = "main";
 
 			VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
-
-			vkDestroyShaderModule(device, fragShaderModule, nullptr);
-			vkDestroyShaderModule(device, vertShaderModule, nullptr);
-
 
 			VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 			pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -277,6 +299,9 @@ private:
 			if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
 					throw std::runtime_error("failed to create graphics pipeline!");
 			}
+
+			vkDestroyShaderModule(device, fragShaderModule, nullptr);
+			vkDestroyShaderModule(device, vertShaderModule, nullptr);
 		}
 
 		static std::vector<char> readFile(const std::string& filename) {
@@ -789,6 +814,10 @@ private:
     }
 
 		void cleanup() {
+			for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
+					vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
+			}
+
 			vkDestroyPipeline(device, graphicsPipeline, nullptr);
 			vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 			vkDestroyRenderPass(device, renderPass, nullptr);
