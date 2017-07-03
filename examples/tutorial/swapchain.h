@@ -18,7 +18,7 @@ public:
     VkDevice device;
     VkSwapchainKHR swapChain;
     VkFormat imageFormat;
-    VkExtent2D swapChainExtent;
+    VkExtent2D extent;
 
     std::vector<VkImage> images;
     std::vector<VkImageView> imageViews;
@@ -31,7 +31,7 @@ public:
 
 	VkSurfaceFormatKHR surfaceFormat = chooseSurfaceFormat(swapChainSupport.formats);
 	VkPresentModeKHR presentMode = choosePresentMode(swapChainSupport.presentModes);
-	VkExtent2D extent = chooseExtent(swapChainSupport.capabilities, window);
+	extent = chooseExtent(swapChainSupport.capabilities, window);
 
 	uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
 	if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
@@ -82,7 +82,6 @@ public:
 	vkGetSwapchainImagesKHR(device, swapChain, &imageCount, images.data());
 
 	imageFormat = surfaceFormat.format;
-	swapChainExtent = extent;
     }
 
     ~VikSwapChain() {
@@ -110,8 +109,8 @@ public:
 	    framebufferInfo.renderPass = renderPass;
 	    framebufferInfo.attachmentCount = 1;
 	    framebufferInfo.pAttachments = attachments;
-	    framebufferInfo.width = swapChainExtent.width;
-	    framebufferInfo.height = swapChainExtent.height;
+	    framebufferInfo.width = extent.width;
+	    framebufferInfo.height = extent.height;
 	    framebufferInfo.layers = 1;
 
 	    if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) {
