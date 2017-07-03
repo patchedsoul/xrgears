@@ -41,7 +41,7 @@ private:
 
   GLFWwindow* window;
 
-  VikSwapChain* vikSwapChain;
+  VikSwapChain* swapChain;
 
   VkInstance instance;
   VkDebugReportCallbackEXT callback;
@@ -96,7 +96,7 @@ private:
   }
 
   void createCommandBuffers() {
-    commandBuffers.resize(vikSwapChain->swapChainFramebuffers.size());
+    commandBuffers.resize(swapChain->swapChainFramebuffers.size());
 
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -119,10 +119,10 @@ private:
       VkRenderPassBeginInfo renderPassInfo = {};
       renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
       renderPassInfo.renderPass = renderPass;
-      renderPassInfo.framebuffer = vikSwapChain->swapChainFramebuffers[i];
+      renderPassInfo.framebuffer = swapChain->swapChainFramebuffers[i];
 
       renderPassInfo.renderArea.offset = {0, 0};
-      renderPassInfo.renderArea.extent = vikSwapChain->swapChainExtent;
+      renderPassInfo.renderArea.extent = swapChain->swapChainExtent;
 
       VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
       renderPassInfo.clearValueCount = 1;
@@ -161,7 +161,7 @@ private:
   void createRenderPass() {
 
     VkAttachmentDescription colorAttachment = {};
-    colorAttachment.format = vikSwapChain->swapChainImageFormat;
+    colorAttachment.format = swapChain->swapChainImageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -259,14 +259,14 @@ private:
     VkViewport viewport = {};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = (float) vikSwapChain->swapChainExtent.width;
-    viewport.height = (float) vikSwapChain->swapChainExtent.height;
+    viewport.width = (float) swapChain->swapChainExtent.width;
+    viewport.height = (float) swapChain->swapChainExtent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
     VkRect2D scissor = {};
     scissor.offset = {0, 0};
-    scissor.extent = vikSwapChain->swapChainExtent;
+    scissor.extent = swapChain->swapChainExtent;
 
     VkPipelineViewportStateCreateInfo viewportState = {};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -581,7 +581,7 @@ private:
 
     bool swapChainAdequate = false;
     if (extensionsSupported) {
-      SwapChainSupportDetails swapChainSupport = vikSwapChain->querySupport(device, surface);
+      SwapChainSupportDetails swapChainSupport = swapChain->querySupport(device, surface);
       swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
     }
 
@@ -681,7 +681,7 @@ private:
       */
 
     VkResult result = vkAcquireNextImageKHR(device,
-                                            vikSwapChain->swapChain,
+                                            swapChain->swapChain,
                                             std::numeric_limits<uint64_t>::max(),
                                             imageAvailableSemaphore,
                                             VK_NULL_HANDLE,
@@ -740,7 +740,7 @@ private:
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
-    VkSwapchainKHR swapChains[] = {vikSwapChain->swapChain};
+    VkSwapchainKHR swapChains[] = {swapChain->swapChain};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
@@ -758,11 +758,11 @@ private:
     createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
-    vikSwapChain = new VikSwapChain(device, surface, physicalDevice, window);
-    vikSwapChain->createImageViews();
+    swapChain = new VikSwapChain(device, surface, physicalDevice, window);
+    swapChain->createImageViews();
     createRenderPass();
     createGraphicsPipeline();
-    vikSwapChain->createFramebuffers(renderPass);
+    swapChain->createFramebuffers(renderPass);
     createCommandPool();
     createCommandBuffers();
     createSemaphores();
@@ -773,16 +773,16 @@ private:
 
     cleanupSwapChain();
 
-    vikSwapChain = new VikSwapChain(device, surface, physicalDevice, window);
-    vikSwapChain->createImageViews();
+    swapChain = new VikSwapChain(device, surface, physicalDevice, window);
+    swapChain->createImageViews();
     createRenderPass();
     createGraphicsPipeline();
-    vikSwapChain->createFramebuffers(renderPass);
+    swapChain->createFramebuffers(renderPass);
     createCommandBuffers();
   }
 
   void cleanupSwapChain() {
-    delete vikSwapChain;
+    delete swapChain;
 
     vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 
@@ -801,7 +801,7 @@ private:
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     vkDestroyRenderPass(device, renderPass, nullptr);
 
-    delete vikSwapChain;
+    delete swapChain;
 
     vkDestroyDevice(device, nullptr);
     DestroyDebugReportCallbackEXT(instance, callback, nullptr);
