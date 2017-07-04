@@ -94,7 +94,7 @@ vec3 BRDF(vec3 L, vec3 V, vec3 N, float metallic, float roughness, vec3 reflecti
 		// F = Fresnel factor (Reflectance depending on angle of incidence)
 		vec3 F = F_Schlick(dotNV, metallic);
 
-		vec3 spec = reflectionColor * D * F * G / (4.0 * dotNL * dotNV);
+		vec3 spec = D * F * G / (4.0 * dotNL * dotNV); // reflectionColor * 
 
 		color += spec * dotNL * lightColor;
 	}
@@ -138,7 +138,7 @@ void main() {
 	// Gamma correct
 	color = pow(color, vec3(0.4545));
 
-	outColor = vec4(color, 1.0) + 0.3* vec4(reflectionColor, 1);
+	outColor = vec4(color, 1.0); // + 0.3* vec4(reflectionColor, 1);
 
   // debug
  // outColor = vec4(L, 1.0);

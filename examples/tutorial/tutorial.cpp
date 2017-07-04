@@ -131,7 +131,7 @@ private:
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->graphicsPipeline);
 
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    vkCmdDraw(commandBuffer, 4, 1, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 

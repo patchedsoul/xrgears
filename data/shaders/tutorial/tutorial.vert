@@ -7,16 +7,18 @@ out gl_PerVertex {
 
 layout(location = 0) out vec3 fragColor;
 
-vec2 positions[3] = vec2[](
-    vec2(0.0, -0.5),
-    vec2(0.5, 0.5),
-    vec2(-0.5, 0.5)
-);
+ vec2 positions[4] = vec2[](
+    vec2(1.0, -1.0), // RT
+    vec2(1.0, 1.0), // RB
+     vec2(-1.0, -1.0), // LT
+      vec2(-1.0, 1.0) // LB
+ );
 
-vec3 colors[3] = vec3[](
+vec3 colors[4] = vec3[](
     vec3(1.0, 0.0, 0.0),
     vec3(0.0, 1.0, 0.0),
-    vec3(0.0, 0.0, 1.0)
+    vec3(0.0, 0.0, 1.0),
+    vec3(1.0, 1.0, 1.0)
 );
 
 void main() {
