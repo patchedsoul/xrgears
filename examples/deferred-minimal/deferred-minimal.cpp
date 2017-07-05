@@ -24,7 +24,7 @@
 #include "VulkanModel.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
-#define ENABLE_VALIDATION false
+#define ENABLE_VALIDATION true
 
 // Texture properties
 #define TEX_DIM 2048
@@ -77,11 +77,11 @@ public:
   } uboVS, uboOffscreenVS;
 
   struct {
+    glm::vec4 hmdWarpParam;
+    glm::vec4 aberr;
     glm::vec2 lensCenter;
     glm::vec2 viewportScale;
     float warpScale;
-    glm::vec4 hmdWarpParam;
-    glm::vec3 aberr;
   } uboWarp;
 
   struct Light {
@@ -1091,11 +1091,17 @@ public:
 
     */
 
-    uboWarp.lensCenter = glm::vec2(1,1);
-    uboWarp.viewportScale = glm::vec2(1,1);
-    uboWarp.warpScale = 1.0f;
-    uboWarp.hmdWarpParam = glm::vec4(1,1,1,1);
-    uboWarp.aberr = glm::vec3(1,1,1);
+    uboWarp.lensCenter = glm::vec2(0.0297, 0.0497);
+    uboWarp.viewportScale = glm::vec2(0.0614, 0.0682);
+    uboWarp.warpScale = 0.0318;
+    //uboWarp.hmdWarpParam = glm::vec4(0.f, 0.f, 0.f, 1.f);
+
+    uboWarp.hmdWarpParam = glm::vec4(1.0, 0.22, 0.24, 0.0);
+
+    uboWarp.aberr = glm::vec4(1.0, 1.0, 1.0,1.0);
+    //uboWarp.color = glm::vec3(0.0, 1.0, 0.0);
+
+    //printf("warp Uniform buffer size %d\n", sizeof(uboWarp));
 
     memcpy(uniformBuffers.fsWarp.mapped, &uboWarp, sizeof(uboWarp));
   }

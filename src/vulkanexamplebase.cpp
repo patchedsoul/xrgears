@@ -35,12 +35,12 @@ VkResult VulkanExampleBase::createInstance(bool enableValidation)
 	instanceExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #endif
 
-	instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+  //instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
-	enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
-	enabledExtensions.push_back(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
+  //enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
+  //enabledExtensions.push_back(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
 
-	enabledExtensions.push_back(VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME);
+  //enabledExtensions.push_back(VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME);
 
 	//enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 	//enabledExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
@@ -55,8 +55,11 @@ VkResult VulkanExampleBase::createInstance(bool enableValidation)
 	{
 		if (settings.validation)
 		{
+      printf("Enabling VK_EXT_DEBUG_REPORT_EXTENSION_NAME\n");
 			instanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-		}
+    } else {
+      printf("!NOT! Enabling VK_EXT_DEBUG_REPORT_EXTENSION_NAME\n");
+    }
 		instanceCreateInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
 		instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
 	}

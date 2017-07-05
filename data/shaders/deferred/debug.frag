@@ -21,6 +21,6 @@ void main()
 	//components[2] = vec3(texture(samplerAlbedo, inUV.st).a);  
 	
 	// Select component depending on z coordinate of quad
-	highp int index = int(inUV.z);
+	int index = int(inUV.z);
 	outFragColor.rgb = components[index];
 }
