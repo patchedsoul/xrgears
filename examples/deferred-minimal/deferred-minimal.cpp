@@ -76,21 +76,31 @@ public:
     glm::vec4 instancePos[3];
   } uboVS, uboOffscreenVS;
 
+  struct {
+    glm::vec2 lensCenter;
+    glm::vec2 viewportScale;
+    float warpScale;
+    glm::vec4 hmdWarpParam;
+    glm::vec3 aberr;
+  } uboWarp;
+
   struct Light {
     glm::vec4 position;
     glm::vec3 color;
     float radius;
   };
 
+  /*
   struct {
     Light lights[6];
     glm::vec4 viewPos;
   } uboFragmentLights;
-
+  */
   struct {
     vks::Buffer vsFullScreen;
     vks::Buffer vsOffscreen;
-    vks::Buffer fsLights;
+    //vks::Buffer fsLights;
+    vks::Buffer fsWarp;
   } uniformBuffers;
 
   struct {
@@ -193,7 +203,7 @@ public:
     // Uniform buffers
     uniformBuffers.vsOffscreen.destroy();
     uniformBuffers.vsFullScreen.destroy();
-    uniformBuffers.fsLights.destroy();
+    uniformBuffers.fsWarp.destroy();
 
     vkFreeCommandBuffers(device, cmdPool, 1, &offScreenCmdBuffer);
 
@@ -812,7 +822,7 @@ public:
         descriptorSet,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         4,
-        &uniformBuffers.fsLights.descriptor),
+        &uniformBuffers.fsWarp.descriptor),
     };
 
     vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
@@ -991,17 +1001,17 @@ public:
       &uniformBuffers.vsOffscreen,
       sizeof(uboOffscreenVS)));
 
-    // Deferred fragment shader
+    // Warp UBO in deferred fragment shader
     VK_CHECK_RESULT(vulkanDevice->createBuffer(
       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-      &uniformBuffers.fsLights,
-      sizeof(uboFragmentLights)));
+      &uniformBuffers.fsWarp,
+      sizeof(uboWarp)));
 
     // Map persistent
     VK_CHECK_RESULT(uniformBuffers.vsFullScreen.map());
     VK_CHECK_RESULT(uniformBuffers.vsOffscreen.map());
-    VK_CHECK_RESULT(uniformBuffers.fsLights.map());
+    VK_CHECK_RESULT(uniformBuffers.fsWarp.map());
 
     // Init some values
     uboOffscreenVS.instancePos[0] = glm::vec4(0.0f);
@@ -1011,7 +1021,7 @@ public:
     // Update
     updateUniformBuffersScreen();
     updateUniformBufferDeferredMatrices();
-    updateUniformBufferDeferredLights();
+    updateUniformBufferWarp();
   }
 
   void updateUniformBuffersScreen()
@@ -1032,8 +1042,10 @@ public:
   }
 
   // Update fragment shader light position uniform block
-  void updateUniformBufferDeferredLights()
+  void updateUniformBufferWarp()
   {
+
+    /*
     // White
     uboFragmentLights.lights[0].position = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
     uboFragmentLights.lights[0].color = glm::vec3(1.5f);
@@ -1077,7 +1089,15 @@ public:
     // Current view position
     uboFragmentLights.viewPos = glm::vec4(camera.position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
 
-    memcpy(uniformBuffers.fsLights.mapped, &uboFragmentLights, sizeof(uboFragmentLights));
+    */
+
+    uboWarp.lensCenter = glm::vec2(1,1);
+    uboWarp.viewportScale = glm::vec2(1,1);
+    uboWarp.warpScale = 1.0f;
+    uboWarp.hmdWarpParam = glm::vec4(1,1,1,1);
+    uboWarp.aberr = glm::vec3(1,1,1);
+
+    memcpy(uniformBuffers.fsWarp.mapped, &uboWarp, sizeof(uboWarp));
   }
 
   void draw()
@@ -1143,7 +1163,7 @@ public:
     if (!prepared)
       return;
     draw();
-    updateUniformBufferDeferredLights();
+    updateUniformBufferWarp();
   }
 
   virtual void viewChanged()

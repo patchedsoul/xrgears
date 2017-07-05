@@ -34,34 +34,34 @@ layout (location = 0) out vec4 outFragcolor;
 
 void main()
 {
-/*
+
     //output_loc is the fragment location on screen from [0,1]x[0,1]
-    vec2 output_loc = vec2(gl_TexCoord[0].s, gl_TexCoord[0].t);
+    //vec2 output_loc = vec2(gl_TexCoord[0].s, gl_TexCoord[0].t);
     //Compute fragment location in lens-centered co-ordinates at world scale
-	  vec2 r = output_loc * ViewportScale - LensCenter;
+	  vec2 r = inUV * ubo.ViewportScale - ubo.LensCenter;
     //scale for distortion model
     //distortion model has r=1 being the largest circle inscribed (e.g. eye_w/2)
 
-    r /= WarpScale;
+    r /= ubo.WarpScale;
     //|r|**2
     float r_mag = length(r);
     //offset for which fragment is sourced
-    vec2 r_displaced = r * (HmdWarpParam.w + HmdWarpParam.z * r_mag +
-		"HmdWarpParam.y * r_mag * r_mag +
-		"HmdWarpParam.x * r_mag * r_mag * r_mag);
+    vec2 r_displaced = r * (ubo.HmdWarpParam.w + ubo.HmdWarpParam.z * r_mag +
+		  ubo.HmdWarpParam.y * r_mag * r_mag +
+		  ubo.HmdWarpParam.x * r_mag * r_mag * r_mag);
     //back to world scale
-    r_displaced *= WarpScale;
+    r_displaced *= ubo.WarpScale;
     //back to viewport co-ord
-    vec2 tc_r = (LensCenter + aberr.r * r_displaced) / ViewportScale;
-    vec2 tc_g = (LensCenter + aberr.g * r_displaced) / ViewportScale;
-    vec2 tc_b = (LensCenter + aberr.b * r_displaced) / ViewportScale;
+    vec2 tc_r = (ubo.LensCenter + ubo.aberr.r * r_displaced) / ubo.ViewportScale;
+    vec2 tc_g = (ubo.LensCenter + ubo.aberr.g * r_displaced) / ubo.ViewportScale;
+    vec2 tc_b = (ubo.LensCenter + ubo.aberr.b * r_displaced) / ubo.ViewportScale;
 
-    float red = texture2D(warpTexture, tc_r).r;
-    float green = texture2D(warpTexture, tc_g).g;
-    float blue = texture2D(warpTexture, tc_b).b;
+    float red = texture(warpTexture, tc_r).r;
+    float green = texture(warpTexture, tc_g).g;
+    float blue = texture(warpTexture, tc_b).b;
     //Black edges off the texture
-    gl_FragColor = ((tc_g.x < 0.0) || (tc_g.x > 1.0) || (tc_g.y < 0.0) || (tc_g.y > 1.0)) ? vec4(0.0, 0.0, 0.0, 1.0) : vec4(red, green, blue, 1.0);
-    */
+    outFragcolor = ((tc_g.x < 0.0) || (tc_g.x > 1.0) || (tc_g.y < 0.0) || (tc_g.y > 1.0)) ? vec4(0.0, 0.0, 0.0, 1.0) : vec4(red, green, blue, 1.0);
+    
     
     outFragcolor = texture(warpTexture, inUV);
 }
