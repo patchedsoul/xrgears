@@ -5,8 +5,6 @@
 
   //per eye texture to warp for lens distortion
 layout (binding = 1) uniform sampler2D warpTexture;
-layout (binding = 2) uniform sampler2D samplerNormal;
-layout (binding = 3) uniform sampler2D samplerAlbedo;
 
 layout (binding = 4) uniform UBO 
 {

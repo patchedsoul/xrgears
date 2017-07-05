@@ -17,11 +17,7 @@ layout (binding = 0) uniform UBO
 	vec4 instancePos[3];
 } ubo;
 
-layout (location = 0) out vec3 outNormal;
-layout (location = 1) out vec2 outUV;
-layout (location = 2) out vec3 outColor;
-layout (location = 3) out vec3 outWorldPos;
-layout (location = 4) out vec3 outTangent;
+layout (location = 0) out vec2 outUV;
 
 out gl_PerVertex
 {
@@ -36,17 +32,4 @@ void main()
 	
 	outUV = inUV;
 	outUV.t = 1.0 - outUV.t;
-
-	// Vertex position in world space
-	outWorldPos = vec3(ubo.model * tmpPos);
-	// GL to Vulkan coord space
-	outWorldPos.y = -outWorldPos.y;
-	
-	// Normal in world space
-	mat3 mNormal = transpose(inverse(mat3(ubo.model)));
-	outNormal = mNormal * normalize(inNormal);	
-	outTangent = mNormal * normalize(inTangent);
-	
-	// Currently just vertex color
-	outColor = inColor;
 }

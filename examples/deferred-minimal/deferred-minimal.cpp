@@ -972,10 +972,10 @@ public:
     // Blend attachment states required for all color attachments
     // This is important, as color write mask will otherwise be 0x0 and you
     // won't see anything rendered to the attachment
-    std::array<VkPipelineColorBlendAttachmentState, 3> blendAttachmentStates = {
+    std::array<VkPipelineColorBlendAttachmentState, 1> blendAttachmentStates = {
       vks::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE),
-      vks::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE),
-      vks::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE)
+      //vks::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE),
+      //vks::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE)
     };
 
     colorBlendState.attachmentCount = static_cast<uint32_t>(blendAttachmentStates.size());
@@ -1041,67 +1041,15 @@ public:
     memcpy(uniformBuffers.vsOffscreen.mapped, &uboOffscreenVS, sizeof(uboOffscreenVS));
   }
 
-  // Update fragment shader light position uniform block
+  // Update fragment shader hmd warp uniform block
   void updateUniformBufferWarp()
   {
-
-    /*
-    // White
-    uboFragmentLights.lights[0].position = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
-    uboFragmentLights.lights[0].color = glm::vec3(1.5f);
-    uboFragmentLights.lights[0].radius = 15.0f * 0.25f;
-    // Red
-    uboFragmentLights.lights[1].position = glm::vec4(-2.0f, 0.0f, 0.0f, 0.0f);
-    uboFragmentLights.lights[1].color = glm::vec3(1.0f, 0.0f, 0.0f);
-    uboFragmentLights.lights[1].radius = 15.0f;
-    // Blue
-    uboFragmentLights.lights[2].position = glm::vec4(2.0f, 1.0f, 0.0f, 0.0f);
-    uboFragmentLights.lights[2].color = glm::vec3(0.0f, 0.0f, 2.5f);
-    uboFragmentLights.lights[2].radius = 5.0f;
-    // Yellow
-    uboFragmentLights.lights[3].position = glm::vec4(0.0f, 0.9f, 0.5f, 0.0f);
-    uboFragmentLights.lights[3].color = glm::vec3(1.0f, 1.0f, 0.0f);
-    uboFragmentLights.lights[3].radius = 2.0f;
-    // Green
-    uboFragmentLights.lights[4].position = glm::vec4(0.0f, 0.5f, 0.0f, 0.0f);
-    uboFragmentLights.lights[4].color = glm::vec3(0.0f, 1.0f, 0.2f);
-    uboFragmentLights.lights[4].radius = 5.0f;
-    // Yellow
-    uboFragmentLights.lights[5].position = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
-    uboFragmentLights.lights[5].color = glm::vec3(1.0f, 0.7f, 0.3f);
-    uboFragmentLights.lights[5].radius = 25.0f;
-
-    uboFragmentLights.lights[0].position.x = sin(glm::radians(360.0f * timer)) * 5.0f;
-    uboFragmentLights.lights[0].position.z = cos(glm::radians(360.0f * timer)) * 5.0f;
-
-    uboFragmentLights.lights[1].position.x = -4.0f + sin(glm::radians(360.0f * timer) + 45.0f) * 2.0f;
-    uboFragmentLights.lights[1].position.z =  0.0f + cos(glm::radians(360.0f * timer) + 45.0f) * 2.0f;
-
-    uboFragmentLights.lights[2].position.x = 4.0f + sin(glm::radians(360.0f * timer)) * 2.0f;
-    uboFragmentLights.lights[2].position.z = 0.0f + cos(glm::radians(360.0f * timer)) * 2.0f;
-
-    uboFragmentLights.lights[4].position.x = 0.0f + sin(glm::radians(360.0f * timer + 90.0f)) * 5.0f;
-    uboFragmentLights.lights[4].position.z = 0.0f - cos(glm::radians(360.0f * timer + 45.0f)) * 5.0f;
-
-    uboFragmentLights.lights[5].position.x = 0.0f + sin(glm::radians(-360.0f * timer + 135.0f)) * 10.0f;
-    uboFragmentLights.lights[5].position.z = 0.0f - cos(glm::radians(-360.0f * timer - 45.0f)) * 10.0f;
-
-    // Current view position
-    uboFragmentLights.viewPos = glm::vec4(camera.position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
-
-    */
-
     uboWarp.lensCenter = glm::vec2(0.0297, 0.0497);
     uboWarp.viewportScale = glm::vec2(0.0614, 0.0682);
     uboWarp.warpScale = 0.0318;
-    //uboWarp.hmdWarpParam = glm::vec4(0.f, 0.f, 0.f, 1.f);
-
     uboWarp.hmdWarpParam = glm::vec4(0.2470, -0.1450, 0.1030, 0.7950);
 
     uboWarp.aberr = glm::vec4(0.9850, 1.0000, 1.0150, 1.0);
-    //uboWarp.color = glm::vec3(0.0, 1.0, 0.0);
-
-    //printf("warp Uniform buffer size %d\n", sizeof(uboWarp));
 
     memcpy(uniformBuffers.fsWarp.mapped, &uboWarp, sizeof(uboWarp));
   }
