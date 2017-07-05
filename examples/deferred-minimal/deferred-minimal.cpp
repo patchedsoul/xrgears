@@ -36,7 +36,6 @@
 class VulkanExample : public VulkanExampleBase
 {
 public:
-  bool debugDisplay = false;
 
   struct {
     struct {
@@ -97,7 +96,6 @@ public:
   struct {
     VkPipeline deferred;
     VkPipeline offscreen;
-    VkPipeline debug;
   } pipelines;
 
   struct {
@@ -181,7 +179,6 @@ public:
 
     vkDestroyPipeline(device, pipelines.deferred, nullptr);
     vkDestroyPipeline(device, pipelines.offscreen, nullptr);
-    vkDestroyPipeline(device, pipelines.debug, nullptr);
 
     vkDestroyPipelineLayout(device, pipelineLayouts.deferred, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayouts.offscreen, nullptr);
@@ -555,19 +552,7 @@ public:
       VkDeviceSize offsets[1] = { 0 };
       vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayouts.deferred, 0, 1, &descriptorSet, 0, NULL);
 
-      if (debugDisplay)
-      {
-        vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.debug);
-        vkCmdBindVertexBuffers(drawCmdBuffers[i], VERTEX_BUFFER_BIND_ID, 1, &models.quad.vertices.buffer, offsets);
-        vkCmdBindIndexBuffer(drawCmdBuffers[i], models.quad.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(drawCmdBuffers[i], models.quad.indexCount, 1, 0, 0, 1);
-        // Move viewport to display final composition in lower right corner
-        viewport.x = viewport.width * 0.5f;
-        viewport.y = viewport.height * 0.5f;
-        viewport.width = viewport.width * 0.5f;
-        viewport.height = viewport.height * 0.5f;
-        vkCmdSetViewport(drawCmdBuffers[i], 0, 1, &viewport);
-      }
+      printf("is this 6?: %d\n", models.quad.indexCount);
 
       // Final composition as full screen quad
       vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.deferred);
@@ -963,9 +948,6 @@ public:
 
     // Debug display pipeline
     pipelineCreateInfo.pVertexInputState = &vertices.inputState;
-    shaderStages[0] = loadShader(getAssetPath() + "shaders/deferred/debug.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    shaderStages[1] = loadShader(getAssetPath() + "shaders/deferred/debug.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-    VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.debug));
 
     // Offscreen pipeline
     shaderStages[0] = loadShader(getAssetPath() + "shaders/deferred/mrt.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
@@ -1034,14 +1016,7 @@ public:
 
   void updateUniformBuffersScreen()
   {
-    if (debugDisplay)
-    {
-      uboVS.projection = glm::ortho(0.0f, 2.0f, 0.0f, 2.0f, -1.0f, 1.0f);
-    }
-    else
-    {
-      uboVS.projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f);
-    }
+    uboVS.projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f);
     uboVS.model = glm::mat4();
 
     memcpy(uniformBuffers.vsFullScreen.mapped, &uboVS, sizeof(uboVS));
@@ -1176,20 +1151,12 @@ public:
     updateUniformBufferDeferredMatrices();
   }
 
-  void toggleDebugDisplay()
-  {
-    debugDisplay = !debugDisplay;
-    reBuildCommandBuffers();
-    updateUniformBuffersScreen();
-  }
-
   virtual void keyPressed(uint32_t keyCode)
   {
     switch (keyCode)
     {
     case KEY_F2:
     case GAMEPAD_BUTTON_A:
-      toggleDebugDisplay();
       updateTextOverlay();
       break;
     }
@@ -1203,13 +1170,6 @@ public:
     textOverlay->addText("\"F2\" to toggle debug display", 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
 #endif
     // Render targets
-    if (debugDisplay)
-    {
-      textOverlay->addText("World space position", (float)width * 0.25f, (float)height * 0.5f - 25.0f, VulkanTextOverlay::alignCenter);
-      textOverlay->addText("World space normals", (float)width * 0.75f, (float)height * 0.5f - 25.0f, VulkanTextOverlay::alignCenter);
-      textOverlay->addText("Albedo", (float)width * 0.25f, (float)height - 25.0f, VulkanTextOverlay::alignCenter);
-      textOverlay->addText("Final image", (float)width * 0.75f, (float)height - 25.0f, VulkanTextOverlay::alignCenter);
-    }
   }
 };
 
