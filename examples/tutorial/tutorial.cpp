@@ -76,7 +76,8 @@ private:
   static void onWindowResized(GLFWwindow* window, int width, int height) {
     if (width == 0 || height == 0) return;
 
-    TutorialApplication* app = reinterpret_cast<TutorialApplication*>(glfwGetWindowUserPointer(window));
+    TutorialApplication* app = reinterpret_cast<TutorialApplication*>
+        (glfwGetWindowUserPointer(window));
     app->recreateSwapChain();
   }
 
