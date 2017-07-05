@@ -1096,9 +1096,9 @@ public:
     uboWarp.warpScale = 0.0318;
     //uboWarp.hmdWarpParam = glm::vec4(0.f, 0.f, 0.f, 1.f);
 
-    uboWarp.hmdWarpParam = glm::vec4(1.0, 0.22, 0.24, 0.0);
+    uboWarp.hmdWarpParam = glm::vec4(0.2470, -0.1450, 0.1030, 0.7950);
 
-    uboWarp.aberr = glm::vec4(1.0, 1.0, 1.0,1.0);
+    uboWarp.aberr = glm::vec4(0.9850, 1.0000, 1.0150, 1.0);
     //uboWarp.color = glm::vec3(0.0, 1.0, 0.0);
 
     //printf("warp Uniform buffer size %d\n", sizeof(uboWarp));
