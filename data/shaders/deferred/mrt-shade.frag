@@ -18,16 +18,5 @@ layout (location = 2) out vec4 outAlbedo;
 
 void main() 
 {
-	outPosition = vec4(inWorldPos, 1.0);
-
-	// Calculate normal in tangent space
-	vec3 N = normalize(inNormal);
-	N.y = -N.y;
-	vec3 T = normalize(inTangent);
-	vec3 B = cross(N, T);
-	mat3 TBN = mat3(T, B, N);
-	vec3 tnorm = TBN * normalize(texture(samplerNormalMap, inUV).xyz * 2.0 - vec3(1.0));
-	outNormal = vec4(tnorm, 1.0);
-
-	outAlbedo = texture(samplerColor, inUV);
+	outPosition = texture(samplerColor, inUV);	
 }
