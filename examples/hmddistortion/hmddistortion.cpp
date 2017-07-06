@@ -168,11 +168,6 @@ public:
   {
     models.model.loadFromFile(getAssetPath() + "models/armor/armor.dae", vertexLayout, 1.0f, vulkanDevice, queue);
 
-    vks::ModelCreateInfo modelCreateInfo;
-    modelCreateInfo.scale = glm::vec3(2.0f);
-    modelCreateInfo.uvscale = glm::vec2(4.0f);
-    modelCreateInfo.center = glm::vec3(0.0f, 2.35f, 0.0f);
-
     // Textures
     std::string texFormatSuffix;
     VkFormat texFormat;
