@@ -10,18 +10,17 @@ private:
     vks::Model quad;
     vks::Buffer uboHandle;
 
-public:
-
-    VkPipeline pipeline;
-    VkPipelineLayout pipelineLayout;
-
     struct {
-      glm::vec4 hmdWarpParam;
-      glm::vec4 aberr;
-      glm::vec2 lensCenter;
-      glm::vec2 viewportScale;
-      float warpScale;
+	glm::vec4 hmdWarpParam;
+	glm::vec4 aberr;
+	glm::vec2 lensCenter;
+	glm::vec2 viewportScale;
+	float warpScale;
     } uboData;
+
+public:
+    VkPipelineLayout pipelineLayout;
+    VkPipeline pipeline;
 
     VikDistortion(VkDevice& d) {
 	device = d;
@@ -34,12 +33,19 @@ public:
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     }
 
+    void createPipeLine(VkGraphicsPipelineCreateInfo &pipelineCreateInfo, VkPipelineCache& pipelineCache, std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages) {
+	VkPipelineVertexInputStateCreateInfo emptyInputState = vks::initializers::pipelineVertexInputStateCreateInfo();
+	pipelineCreateInfo.pVertexInputState = &emptyInputState;
+	pipelineCreateInfo.layout = pipelineLayout;
+	VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
+    }
+
     VkWriteDescriptorSet getUniformWriteDescriptorSet(VkDescriptorSet& descriptorSet, uint32_t binding) {
 	return vks::initializers::writeDescriptorSet(
-	  descriptorSet,
-	  VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-	  binding,
-	  &uboHandle.descriptor);
+	            descriptorSet,
+	            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+	            binding,
+	            &uboHandle.descriptor);
     }
 
     void createPipeLineLayout(VkPipelineLayoutCreateInfo& pPipelineLayoutCreateInfo) {
@@ -64,69 +70,64 @@ public:
 	vkCmdDrawIndexed(commandBuffer, quad.indexCount, 1, 0, 0, 1);
     }
 
-    void generateQuads(vks::VulkanDevice *vulkanDevice)
-    {
-      // Setup vertices for multiple screen aligned quads
-      // Used for displaying final result and debug
-      struct Vertex {
-	float pos[3];
-	float uv[2];
-      };
+    void generateQuads(vks::VulkanDevice *vulkanDevice) {
+	// Setup vertices for multiple screen aligned quads
+	// Used for displaying final result and debug
+	struct Vertex {
+	    float pos[3];
+	    float uv[2];
+	};
 
-      std::vector<Vertex> vertexBuffer;
+	std::vector<Vertex> vertexBuffer;
 
-      float x = 0.0f;
-      float y = 0.0f;
-      for (uint32_t i = 0; i < 3; i++)
-      {
-	// Last component of normal is used for debug display sampler index
-	vertexBuffer.push_back({ { x+1.0f, y+1.0f, 0.0f }, { 1.0f, 1.0f } });
-	vertexBuffer.push_back({ { x,      y+1.0f, 0.0f }, { 0.0f, 1.0f } });
-	vertexBuffer.push_back({ { x,      y,      0.0f }, { 0.0f, 0.0f } });
-	vertexBuffer.push_back({ { x+1.0f, y,      0.0f }, { 1.0f, 0.0f } });
-	x += 1.0f;
-	if (x > 1.0f)
-	{
-	  x = 0.0f;
-	  y += 1.0f;
+	float x = 0.0f;
+	float y = 0.0f;
+	for (uint32_t i = 0; i < 3; i++) {
+	    // Last component of normal is used for debug display sampler index
+	    vertexBuffer.push_back({ { x+1.0f, y+1.0f, 0.0f }, { 1.0f, 1.0f } });
+	    vertexBuffer.push_back({ { x,      y+1.0f, 0.0f }, { 0.0f, 1.0f } });
+	    vertexBuffer.push_back({ { x,      y,      0.0f }, { 0.0f, 0.0f } });
+	    vertexBuffer.push_back({ { x+1.0f, y,      0.0f }, { 1.0f, 0.0f } });
+	    x += 1.0f;
+	    if (x > 1.0f)
+	    {
+		x = 0.0f;
+		y += 1.0f;
+	    }
 	}
-      }
 
-      VK_CHECK_RESULT(vulkanDevice->createBuffer(
-        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        vertexBuffer.size() * sizeof(Vertex),
-        &quad.vertices.buffer,
-        &quad.vertices.memory,
-        vertexBuffer.data()));
+	VK_CHECK_RESULT(vulkanDevice->createBuffer(
+	                    VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+	                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+	                    vertexBuffer.size() * sizeof(Vertex),
+	                    &quad.vertices.buffer,
+	                    &quad.vertices.memory,
+	                    vertexBuffer.data()));
 
-      // Setup indices
-      std::vector<uint32_t> indexBuffer = { 0,1,2, 2,3,0 };
+	// Setup indices
+	std::vector<uint32_t> indexBuffer = { 0,1,2, 2,3,0 };
 
-      quad.indexCount = static_cast<uint32_t>(indexBuffer.size());
+	quad.indexCount = static_cast<uint32_t>(indexBuffer.size());
 
-      VK_CHECK_RESULT(vulkanDevice->createBuffer(
-        VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        indexBuffer.size() * sizeof(uint32_t),
-        &quad.indices.buffer,
-        &quad.indices.memory,
-        indexBuffer.data()));
+	VK_CHECK_RESULT(vulkanDevice->createBuffer(
+	                    VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+	                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+	                    indexBuffer.size() * sizeof(uint32_t),
+	                    &quad.indices.buffer,
+	                    &quad.indices.memory,
+	                    indexBuffer.data()));
 
-      quad.device = device;
+	quad.device = device;
     }
 
     // Update fragment shader hmd warp uniform block
-    void updateUniformBufferWarp()
-    {
-      uboData.lensCenter = glm::vec2(0.0297, 0.0497);
-      uboData.viewportScale = glm::vec2(0.0614, 0.0682);
-      uboData.warpScale = 0.0318;
-      uboData.hmdWarpParam = glm::vec4(0.2470, -0.1450, 0.1030, 0.7950);
-
-      uboData.aberr = glm::vec4(0.9850, 1.0000, 1.0150, 1.0);
-
-      memcpy(uboHandle.mapped, &uboData, sizeof(uboData));
+    void updateUniformBufferWarp() {
+	uboData.lensCenter = glm::vec2(0.0297, 0.0497);
+	uboData.viewportScale = glm::vec2(0.0614, 0.0682);
+	uboData.warpScale = 0.0318;
+	uboData.hmdWarpParam = glm::vec4(0.2470, -0.1450, 0.1030, 0.7950);
+	uboData.aberr = glm::vec4(0.9850, 1.0000, 1.0150, 1.0);
+	memcpy(uboHandle.mapped, &uboData, sizeof(uboData));
     }
 
     void prepareUniformBuffer(vks::VulkanDevice *vulkanDevice) {
