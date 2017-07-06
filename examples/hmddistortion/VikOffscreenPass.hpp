@@ -20,7 +20,7 @@ private:
 	VkImageView view;
 	VkFormat format;
     };
-public:
+
     struct FrameBuffer {
 	int32_t width, height;
 	VkFramebuffer frameBuffer;
@@ -29,8 +29,7 @@ public:
 	VkRenderPass renderPass;
     } offScreenFrameBuf;
 
-
-
+public:
     VikOffscreenPass(VkDevice& d) {
 	device = d;
     }
@@ -259,7 +258,7 @@ public:
 	            texDescriptorPosition);
     }
 
-    VkRenderPassBeginInfo getRenderPassBeginInfo() {
+    void beginRenderPass(VkCommandBuffer& cmdBuffer) {
 	// Clear values for all attachments written in the fragment sahder
 	std::array<VkClearValue,2> clearValues;
 	clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
@@ -272,7 +271,8 @@ public:
 	renderPassBeginInfo.renderArea.extent.height = offScreenFrameBuf.height;
 	renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 	renderPassBeginInfo.pClearValues = clearValues.data();
-	return renderPassBeginInfo;
+
+	vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     }
 
     void setViewPortAndScissor(VkCommandBuffer& cmdBuffer) {

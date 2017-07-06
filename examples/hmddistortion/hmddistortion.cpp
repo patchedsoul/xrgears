@@ -40,13 +40,11 @@ public:
   } textures;
 
   // Vertex layout for the models
-  vks::VertexLayout vertexLayout = vks::VertexLayout({
-                                                       vks::VERTEX_COMPONENT_POSITION,
-                                                       vks::VERTEX_COMPONENT_UV,
-                                                       vks::VERTEX_COMPONENT_COLOR,
-                                                       vks::VERTEX_COMPONENT_NORMAL,
-                                                       vks::VERTEX_COMPONENT_TANGENT,
-                                                     });
+  vks::VertexLayout vertexLayout =
+      vks::VertexLayout({
+                          vks::VERTEX_COMPONENT_POSITION,
+                          vks::VERTEX_COMPONENT_UV
+                        });
 
   VikDistortion *hmdDistortion;
   VikOffscreenPass *offscreenPass;
@@ -147,23 +145,10 @@ public:
     clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
     clearValues[1].depthStencil = { 1.0f, 0 };
 
-    VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
-    renderPassBeginInfo.renderPass =  offscreenPass->offScreenFrameBuf.renderPass;
-    renderPassBeginInfo.framebuffer = offscreenPass->offScreenFrameBuf.frameBuffer;
-    renderPassBeginInfo.renderArea.extent.width = offscreenPass->offScreenFrameBuf.width;
-    renderPassBeginInfo.renderArea.extent.height = offscreenPass->offScreenFrameBuf.height;
-    renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-    renderPassBeginInfo.pClearValues = clearValues.data();
-
     VK_CHECK_RESULT(vkBeginCommandBuffer(offScreenCmdBuffer, &cmdBufInfo));
 
-    vkCmdBeginRenderPass(offScreenCmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    VkViewport viewport = vks::initializers::viewport((float)offscreenPass->offScreenFrameBuf.width, (float)offscreenPass->offScreenFrameBuf.height, 0.0f, 1.0f);
-    vkCmdSetViewport(offScreenCmdBuffer, 0, 1, &viewport);
-
-    VkRect2D scissor = vks::initializers::rect2D(offscreenPass->offScreenFrameBuf.width, offscreenPass->offScreenFrameBuf.height, 0, 0);
-    vkCmdSetScissor(offScreenCmdBuffer, 0, 1, &scissor);
+    offscreenPass->beginRenderPass(offScreenCmdBuffer);
+    offscreenPass->setViewPortAndScissor(offScreenCmdBuffer);
 
     vkCmdBindPipeline(offScreenCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.offscreen);
 
@@ -482,7 +467,7 @@ public:
     shaderStages[1] = loadShader(getAssetPath() + "shaders/hmddistortion/diffuse-pass.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
     // Separate render pass
-    pipelineCreateInfo.renderPass = offscreenPass->offScreenFrameBuf.renderPass;
+    pipelineCreateInfo.renderPass = offscreenPass->getRenderPass();
 
     // Separate layout
     pipelineCreateInfo.layout = pipelineLayouts.offscreen;
