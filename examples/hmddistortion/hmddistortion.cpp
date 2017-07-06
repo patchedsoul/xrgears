@@ -74,17 +74,8 @@ public:
   } uboVS, uboOffscreenVS;
 
   struct {
-    glm::vec4 hmdWarpParam;
-    glm::vec4 aberr;
-    glm::vec2 lensCenter;
-    glm::vec2 viewportScale;
-    float warpScale;
-  } uboWarp;
-
-  struct {
     //vks::Buffer vsFullScreen;
     vks::Buffer vsOffscreen;
-    vks::Buffer fsWarp;
   } uniformBuffers;
 
   struct {
@@ -177,8 +168,6 @@ public:
 
     // Uniform buffers
     uniformBuffers.vsOffscreen.destroy();
-    //uniformBuffers.vsFullScreen.destroy();
-    uniformBuffers.fsWarp.destroy();
 
     vkFreeCommandBuffers(device, cmdPool, 1, &offScreenCmdBuffer);
 
@@ -638,7 +627,7 @@ public:
         descriptorSet,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         2,
-        &uniformBuffers.fsWarp.descriptor),
+        &hmdDistortion->fsWarp.descriptor),
     };
 
     vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
@@ -777,16 +766,13 @@ public:
       &uniformBuffers.vsOffscreen,
       sizeof(uboOffscreenVS)));
 
-    // Warp UBO in deferred fragment shader
-    VK_CHECK_RESULT(vulkanDevice->createBuffer(
-      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-      &uniformBuffers.fsWarp,
-      sizeof(uboWarp)));
+
 
     // Map persistent
     VK_CHECK_RESULT(uniformBuffers.vsOffscreen.map());
-    VK_CHECK_RESULT(uniformBuffers.fsWarp.map());
+
+
+    hmdDistortion->prepareUniformBuffer(vulkanDevice);
 
     // Init some values
     uboOffscreenVS.instancePos[0] = glm::vec4(0.0f);
@@ -795,7 +781,7 @@ public:
 
     // Update
     updateUniformBufferDeferredMatrices();
-    updateUniformBufferWarp();
+    hmdDistortion->updateUniformBufferWarp();
   }
 
   void updateUniformBufferDeferredMatrices()
@@ -805,19 +791,6 @@ public:
     uboOffscreenVS.model = glm::mat4();
 
     memcpy(uniformBuffers.vsOffscreen.mapped, &uboOffscreenVS, sizeof(uboOffscreenVS));
-  }
-
-  // Update fragment shader hmd warp uniform block
-  void updateUniformBufferWarp()
-  {
-    uboWarp.lensCenter = glm::vec2(0.0297, 0.0497);
-    uboWarp.viewportScale = glm::vec2(0.0614, 0.0682);
-    uboWarp.warpScale = 0.0318;
-    uboWarp.hmdWarpParam = glm::vec4(0.2470, -0.1450, 0.1030, 0.7950);
-
-    uboWarp.aberr = glm::vec4(0.9850, 1.0000, 1.0150, 1.0);
-
-    memcpy(uniformBuffers.fsWarp.mapped, &uboWarp, sizeof(uboWarp));
   }
 
   void draw()
@@ -884,7 +857,7 @@ public:
     if (!prepared)
       return;
     draw();
-    updateUniformBufferWarp();
+    hmdDistortion->updateUniformBufferWarp();
   }
 
   virtual void viewChanged()
