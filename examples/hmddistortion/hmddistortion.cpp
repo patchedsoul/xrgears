@@ -373,7 +373,7 @@ public:
   }
 
   // Build command buffer for rendering the scene to the offscreen frame buffer attachments
-  void buildDeferredCommandBuffer()
+  void buildWarpCommandBuffer()
   {
     if (offScreenCmdBuffer == VK_NULL_HANDLE)
     {
@@ -949,7 +949,7 @@ public:
     setupDescriptorPool();
     setupDescriptorSet();
     buildCommandBuffers();
-    buildDeferredCommandBuffer();
+    buildWarpCommandBuffer();
     prepared = true;
   }
 
