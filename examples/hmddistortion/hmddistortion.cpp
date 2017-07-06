@@ -501,13 +501,11 @@ public:
       VkDeviceSize offsets[1] = { 0 };
       vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayouts.deferred, 0, 1, &descriptorSet, 0, NULL);
 
-      printf("is this 6?: %d\n", models.quad.indexCount);
-
       // Final composition as full screen quad
       vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.deferred);
       vkCmdBindVertexBuffers(drawCmdBuffers[i], VERTEX_BUFFER_BIND_ID, 1, &models.quad.vertices.buffer, offsets);
       vkCmdBindIndexBuffer(drawCmdBuffers[i], models.quad.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-      vkCmdDrawIndexed(drawCmdBuffers[i], 6, 1, 0, 0, 1);
+      vkCmdDrawIndexed(drawCmdBuffers[i], models.quad.indexCount, 1, 0, 0, 1);
 
       vkCmdEndRenderPass(drawCmdBuffers[i]);
 
@@ -522,9 +520,6 @@ public:
     struct Vertex {
       float pos[3];
       float uv[2];
-      float col[3];
-      float normal[3];
-      float tangent[3];
     };
 
     std::vector<Vertex> vertexBuffer;
@@ -534,10 +529,10 @@ public:
     for (uint32_t i = 0; i < 3; i++)
     {
       // Last component of normal is used for debug display sampler index
-      vertexBuffer.push_back({ { x+1.0f, y+1.0f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, (float)i } });
-      vertexBuffer.push_back({ { x,      y+1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, (float)i } });
-      vertexBuffer.push_back({ { x,      y,      0.0f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, (float)i } });
-      vertexBuffer.push_back({ { x+1.0f, y,      0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, (float)i } });
+      vertexBuffer.push_back({ { x+1.0f, y+1.0f, 0.0f }, { 1.0f, 1.0f } });
+      vertexBuffer.push_back({ { x,      y+1.0f, 0.0f }, { 0.0f, 1.0f } });
+      vertexBuffer.push_back({ { x,      y,      0.0f }, { 0.0f, 0.0f } });
+      vertexBuffer.push_back({ { x+1.0f, y,      0.0f }, { 1.0f, 0.0f } });
       x += 1.0f;
       if (x > 1.0f)
       {
@@ -556,14 +551,7 @@ public:
 
     // Setup indices
     std::vector<uint32_t> indexBuffer = { 0,1,2, 2,3,0 };
-    for (uint32_t i = 0; i < 3; ++i)
-    {
-      uint32_t indices[6] = { 0,1,2, 2,3,0 };
-      for (auto index : indices)
-      {
-        indexBuffer.push_back(i * 4 + index);
-      }
-    }
+
     models.quad.indexCount = static_cast<uint32_t>(indexBuffer.size());
 
     VK_CHECK_RESULT(vulkanDevice->createBuffer(
