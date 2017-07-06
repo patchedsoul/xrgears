@@ -49,15 +49,20 @@ endfunction(add_verbose_warnings)
 # find_package(XCB REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_XCB_KHR")
 
+file(GLOB VKS_SRC vks/*.cpp vks/*.h vks/*.hpp)
+file(GLOB VITAMINK_SRC vitamin-k/*.hpp)
 
-file(GLOB VITAMINK_SRC src/*.cpp src/*.h src/*.hpp)
+add_library(vks ${VKS_SRC})
 
-add_library(vitamin-k ${VITAMINK_SRC})
+message("The cool vitamin-k sources: ${VITAMINK_SRC}")
+
+#add_library(vitamin-k ${VITAMINK_SRC})
 
 
-include_directories(src)
+include_directories(vks)
+include_directories(vitamin-k)
 
-target_link_libraries(vitamin-k vulkan xcb assimp)
+target_link_libraries(vks vulkan xcb assimp)
 
 
 # glslc -o gears.vert.spv gears.vert
@@ -84,13 +89,12 @@ function(buildExample EXAMPLE_NAME)
         add_executable(${EXAMPLE_NAME} WIN32 ${EXAMPLE_SRC})
         target_link_libraries(${EXAMPLE_NAME}
           ${Vulkan_LIBRARY} ${ASSIMP_LIBRARIES}
-          ${WINLIBS} vitamin-k)
+	  ${WINLIBS} vks)
 	else(WIN32)
         add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
         target_link_libraries(${EXAMPLE_NAME}
           ${Vulkan_LIBRARY} ${ASSIMP_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES}
-          ${CMAKE_THREAD_LIBS_INIT} ${XCB_LIBRARIES}
-          vitamin-k)
+          ${CMAKE_THREAD_LIBS_INIT} ${XCB_LIBRARIES} dl glfw vks)
 	endif(WIN32)
 endfunction(buildExample)
 
