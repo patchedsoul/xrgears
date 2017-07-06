@@ -40,11 +40,9 @@ public:
   struct {
     struct {
       vks::Texture2D colorMap;
-      vks::Texture2D normalMap;
     } model;
     struct {
       vks::Texture2D colorMap;
-      vks::Texture2D normalMap;
     } floor;
   } textures;
 
@@ -210,9 +208,7 @@ public:
     vkDestroyRenderPass(device, offScreenFrameBuf.renderPass, nullptr);
 
     textures.model.colorMap.destroy();
-    textures.model.normalMap.destroy();
     textures.floor.colorMap.destroy();
-    textures.floor.normalMap.destroy();
 
     vkDestroySemaphore(device, offscreenSemaphore, nullptr);
   }
@@ -512,9 +508,7 @@ public:
     }
 
     textures.model.colorMap.loadFromFile(getAssetPath() + "models/armor/color" + texFormatSuffix + ".ktx", texFormat, vulkanDevice, queue);
-    textures.model.normalMap.loadFromFile(getAssetPath() + "models/armor/normal" + texFormatSuffix + ".ktx", texFormat, vulkanDevice, queue);
     textures.floor.colorMap.loadFromFile(getAssetPath() + "textures/stonefloor01_color" + texFormatSuffix + ".ktx", texFormat, vulkanDevice, queue);
-    textures.floor.normalMap.loadFromFile(getAssetPath() + "textures/stonefloor01_normal" + texFormatSuffix + ".ktx", texFormat, vulkanDevice, queue);
   }
 
   void reBuildCommandBuffers()
@@ -811,12 +805,6 @@ public:
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         2,
         &texDescriptorNormal),
-      // Binding 3 : Albedo texture target
-      vks::initializers::writeDescriptorSet(
-        descriptorSet,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        3,
-        &texDescriptorAlbedo),
       // Binding 4 : Fragment shader uniform buffer
       vks::initializers::writeDescriptorSet(
         descriptorSet,
@@ -844,13 +832,7 @@ public:
         descriptorSets.model,
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         1,
-        &textures.model.colorMap.descriptor),
-      // Binding 2: Normal map
-      vks::initializers::writeDescriptorSet(
-        descriptorSets.model,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        2,
-        &textures.model.normalMap.descriptor)
+        &textures.model.colorMap.descriptor)
     };
     vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
 
@@ -869,13 +851,7 @@ public:
         descriptorSets.floor,
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         1,
-        &textures.floor.colorMap.descriptor),
-      // Binding 2: Normal map
-      vks::initializers::writeDescriptorSet(
-        descriptorSets.floor,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        2,
-        &textures.floor.normalMap.descriptor)
+        &textures.floor.colorMap.descriptor)
     };
     vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
   }
