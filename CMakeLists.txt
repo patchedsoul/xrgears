@@ -1,6 +1,6 @@
 
 cmake_minimum_required(VERSION 3.8)
-project(xrgears)
+project(xrgears CXX)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
 
@@ -56,8 +56,9 @@ add_library(vks ${VKS_SRC})
 
 message("The cool vitamin-k sources: ${VITAMINK_SRC}")
 
-#add_library(vitamin-k ${VITAMINK_SRC})
+add_library(vitamin-k ${VITAMINK_SRC})
 
+SET_TARGET_PROPERTIES(vitamin-k  PROPERTIES LINKER_LANGUAGE CXX)
 
 include_directories(vks)
 include_directories(vitamin-k)
