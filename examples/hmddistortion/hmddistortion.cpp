@@ -78,22 +78,9 @@ public:
     float warpScale;
   } uboWarp;
 
-  struct Light {
-    glm::vec4 position;
-    glm::vec3 color;
-    float radius;
-  };
-
-  /*
-  struct {
-    Light lights[6];
-    glm::vec4 viewPos;
-  } uboFragmentLights;
-  */
   struct {
     vks::Buffer vsFullScreen;
     vks::Buffer vsOffscreen;
-    //vks::Buffer fsLights;
     vks::Buffer fsWarp;
   } uniformBuffers;
 
@@ -125,7 +112,7 @@ public:
   struct FrameBuffer {
     int32_t width, height;
     VkFramebuffer frameBuffer;
-    FrameBufferAttachment position, normal, albedo;
+    FrameBufferAttachment position;
     FrameBufferAttachment depth;
     VkRenderPass renderPass;
   } offScreenFrameBuf;
@@ -165,14 +152,6 @@ public:
     vkDestroyImageView(device, offScreenFrameBuf.position.view, nullptr);
     vkDestroyImage(device, offScreenFrameBuf.position.image, nullptr);
     vkFreeMemory(device, offScreenFrameBuf.position.mem, nullptr);
-
-    vkDestroyImageView(device, offScreenFrameBuf.normal.view, nullptr);
-    vkDestroyImage(device, offScreenFrameBuf.normal.image, nullptr);
-    vkFreeMemory(device, offScreenFrameBuf.normal.mem, nullptr);
-
-    vkDestroyImageView(device, offScreenFrameBuf.albedo.view, nullptr);
-    vkDestroyImage(device, offScreenFrameBuf.albedo.image, nullptr);
-    vkFreeMemory(device, offScreenFrameBuf.albedo.mem, nullptr);
 
     // Depth attachment
     vkDestroyImageView(device, offScreenFrameBuf.depth.view, nullptr);
@@ -280,18 +259,6 @@ public:
       VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
       &offScreenFrameBuf.position);
 
-    // (World space) Normals
-    createAttachment(
-      VK_FORMAT_R16G16B16A16_SFLOAT,
-      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-      &offScreenFrameBuf.normal);
-
-    // Albedo (color)
-    createAttachment(
-      VK_FORMAT_R8G8B8A8_UNORM,
-      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-      &offScreenFrameBuf.albedo);
-
     // Depth attachment
 
     // Find a suitable depth format
@@ -305,17 +272,17 @@ public:
       &offScreenFrameBuf.depth);
 
     // Set up separate renderpass with references to the color and depth attachments
-    std::array<VkAttachmentDescription, 4> attachmentDescs = {};
+    std::array<VkAttachmentDescription, 2> attachmentDescs = {};
 
     // Init attachment properties
-    for (uint32_t i = 0; i < 4; ++i)
+    for (uint32_t i = 0; i < 2; ++i)
     {
       attachmentDescs[i].samples = VK_SAMPLE_COUNT_1_BIT;
       attachmentDescs[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
       attachmentDescs[i].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
       attachmentDescs[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
       attachmentDescs[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-      if (i == 3)
+      if (i == 1)
       {
         attachmentDescs[i].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         attachmentDescs[i].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -329,17 +296,13 @@ public:
 
     // Formats
     attachmentDescs[0].format = offScreenFrameBuf.position.format;
-    attachmentDescs[1].format = offScreenFrameBuf.normal.format;
-    attachmentDescs[2].format = offScreenFrameBuf.albedo.format;
-    attachmentDescs[3].format = offScreenFrameBuf.depth.format;
+    attachmentDescs[1].format = offScreenFrameBuf.depth.format;
 
     std::vector<VkAttachmentReference> colorReferences;
     colorReferences.push_back({ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
-    colorReferences.push_back({ 1, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
-    colorReferences.push_back({ 2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
 
     VkAttachmentReference depthReference = {};
-    depthReference.attachment = 3;
+    depthReference.attachment = 1;
     depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkSubpassDescription subpass = {};
@@ -378,11 +341,9 @@ public:
 
     VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &offScreenFrameBuf.renderPass));
 
-    std::array<VkImageView,4> attachments;
+    std::array<VkImageView,2> attachments;
     attachments[0] = offScreenFrameBuf.position.view;
-    attachments[1] = offScreenFrameBuf.normal.view;
-    attachments[2] = offScreenFrameBuf.albedo.view;
-    attachments[3] = offScreenFrameBuf.depth.view;
+    attachments[1] = offScreenFrameBuf.depth.view;
 
     VkFramebufferCreateInfo fbufCreateInfo = {};
     fbufCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -426,11 +387,9 @@ public:
     VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
 
     // Clear values for all attachments written in the fragment sahder
-    std::array<VkClearValue,4> clearValues;
+    std::array<VkClearValue,2> clearValues;
     clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
-    clearValues[1].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
-    clearValues[2].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
-    clearValues[3].depthStencil = { 1.0f, 0 };
+    clearValues[1].depthStencil = { 1.0f, 0 };
 
     VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
     renderPassBeginInfo.renderPass =  offScreenFrameBuf.renderPass;
@@ -758,18 +717,6 @@ public:
       vks::initializers::descriptorImageInfo(
         colorSampler,
         offScreenFrameBuf.position.view,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-    VkDescriptorImageInfo texDescriptorNormal =
-      vks::initializers::descriptorImageInfo(
-        colorSampler,
-        offScreenFrameBuf.normal.view,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-    VkDescriptorImageInfo texDescriptorAlbedo =
-      vks::initializers::descriptorImageInfo(
-        colorSampler,
-        offScreenFrameBuf.albedo.view,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     writeDescriptorSets = {
