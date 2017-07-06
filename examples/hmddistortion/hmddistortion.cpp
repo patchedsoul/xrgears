@@ -41,9 +41,6 @@ public:
     struct {
       vks::Texture2D colorMap;
     } model;
-    struct {
-      vks::Texture2D colorMap;
-    } floor;
   } textures;
 
   // Vertex layout for the models
@@ -57,7 +54,6 @@ public:
 
   struct {
     vks::Model model;
-    vks::Model floor;
     vks::Model quad;
   } models;
 
@@ -195,7 +191,6 @@ public:
 
     // Meshes
     models.model.destroy();
-    models.floor.destroy();
     models.quad.destroy();
 
     // Uniform buffers
@@ -208,7 +203,6 @@ public:
     vkDestroyRenderPass(device, offScreenFrameBuf.renderPass, nullptr);
 
     textures.model.colorMap.destroy();
-    textures.floor.colorMap.destroy();
 
     vkDestroySemaphore(device, offscreenSemaphore, nullptr);
   }
@@ -433,7 +427,7 @@ public:
 
     // Clear values for all attachments written in the fragment sahder
     std::array<VkClearValue,4> clearValues;
-    clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+    clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
     clearValues[1].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
     clearValues[2].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
     clearValues[3].depthStencil = { 1.0f, 0 };
@@ -460,12 +454,6 @@ public:
 
     VkDeviceSize offsets[1] = { 0 };
 
-    // Background
-    vkCmdBindDescriptorSets(offScreenCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayouts.offscreen, 0, 1, &descriptorSets.floor, 0, NULL);
-    vkCmdBindVertexBuffers(offScreenCmdBuffer, VERTEX_BUFFER_BIND_ID, 1, &models.floor.vertices.buffer, offsets);
-    vkCmdBindIndexBuffer(offScreenCmdBuffer, models.floor.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(offScreenCmdBuffer, models.floor.indexCount, 1, 0, 0, 0);
-
     // Object
     vkCmdBindDescriptorSets(offScreenCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayouts.offscreen, 0, 1, &descriptorSets.model, 0, NULL);
     vkCmdBindVertexBuffers(offScreenCmdBuffer, VERTEX_BUFFER_BIND_ID, 1, &models.model.vertices.buffer, offsets);
@@ -485,7 +473,6 @@ public:
     modelCreateInfo.scale = glm::vec3(2.0f);
     modelCreateInfo.uvscale = glm::vec2(4.0f);
     modelCreateInfo.center = glm::vec3(0.0f, 2.35f, 0.0f);
-    models.floor.loadFromFile(getAssetPath() + "models/plane.obj", vertexLayout, &modelCreateInfo, vulkanDevice, queue);
 
     // Textures
     std::string texFormatSuffix;
@@ -508,7 +495,6 @@ public:
     }
 
     textures.model.colorMap.loadFromFile(getAssetPath() + "models/armor/color" + texFormatSuffix + ".ktx", texFormat, vulkanDevice, queue);
-    textures.floor.colorMap.loadFromFile(getAssetPath() + "textures/stonefloor01_color" + texFormatSuffix + ".ktx", texFormat, vulkanDevice, queue);
   }
 
   void reBuildCommandBuffers()
@@ -799,12 +785,6 @@ public:
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         1,
         &texDescriptorPosition),
-      // Binding 2 : Normals texture target
-      vks::initializers::writeDescriptorSet(
-        descriptorSet,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        2,
-        &texDescriptorNormal),
       // Binding 4 : Fragment shader uniform buffer
       vks::initializers::writeDescriptorSet(
         descriptorSet,
@@ -833,25 +813,6 @@ public:
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         1,
         &textures.model.colorMap.descriptor)
-    };
-    vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
-
-    // Background
-    VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSets.floor));
-    writeDescriptorSets =
-    {
-      // Binding 0: Vertex shader uniform buffer
-      vks::initializers::writeDescriptorSet(
-        descriptorSets.floor,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        0,
-        &uniformBuffers.vsOffscreen.descriptor),
-      // Binding 1: Color map
-      vks::initializers::writeDescriptorSet(
-        descriptorSets.floor,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        1,
-        &textures.floor.colorMap.descriptor)
     };
     vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
   }
