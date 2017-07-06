@@ -360,7 +360,7 @@ public:
   }
 
   // Build command buffer for rendering the scene to the offscreen frame buffer attachments
-  void buildWarpCommandBuffer()
+  void buildOffscreenCommandBuffer()
   {
     if (offScreenCmdBuffer == VK_NULL_HANDLE)
     {
@@ -690,9 +690,6 @@ public:
         dynamicStateEnables.data(),
         static_cast<uint32_t>(dynamicStateEnables.size()),
         0);
-
-
-
     VkGraphicsPipelineCreateInfo pipelineCreateInfo =
       vks::initializers::pipelineCreateInfo(
         nullptr,
@@ -835,7 +832,7 @@ public:
     setupDescriptorPool();
     setupDescriptorSet();
     buildCommandBuffers();
-    buildWarpCommandBuffer();
+    buildOffscreenCommandBuffer();
     prepared = true;
   }
 

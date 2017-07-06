@@ -18,10 +18,10 @@ private:
 	float warpScale;
     } uboData;
 
-public:
     VkPipelineLayout pipelineLayout;
     VkPipeline pipeline;
 
+public:
     VikDistortion(VkDevice& d) {
 	device = d;
     }
