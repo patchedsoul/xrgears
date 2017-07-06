@@ -92,13 +92,10 @@ public:
 
   VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
   {
-    title = "Vulkan Example - Deferred shading (2016 by Sascha Willems)";
+    title = "Vulkan HMD Warp Example";
     enableTextOverlay = true;
     camera.type = Camera::CameraType::firstperson;
     camera.movementSpeed = 5.0f;
-#ifndef __ANDROID__
-    camera.rotationSpeed = 0.25f;
-#endif
     camera.position = { 2.15f, 0.3f, -8.75f };
     camera.setRotation(glm::vec3(-0.75f, 12.5f, 0.0f));
     camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
@@ -130,9 +127,7 @@ public:
   void buildOffscreenCommandBuffer()
   {
     if (offScreenCmdBuffer == VK_NULL_HANDLE)
-    {
       offScreenCmdBuffer = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
-    }
 
     // Create a semaphore used to synchronize offscreen rendering and usage
     VkSemaphoreCreateInfo semaphoreCreateInfo = vks::initializers::semaphoreCreateInfo();
@@ -152,17 +147,21 @@ public:
 
     vkCmdBindPipeline(offScreenCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.offscreen);
 
-    VkDeviceSize offsets[1] = { 0 };
-
-    // Object
-    vkCmdBindDescriptorSets(offScreenCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayouts.offscreen, 0, 1, &descriptorSets.model, 0, NULL);
-    vkCmdBindVertexBuffers(offScreenCmdBuffer, VERTEX_BUFFER_BIND_ID, 1, &models.model.vertices.buffer, offsets);
-    vkCmdBindIndexBuffer(offScreenCmdBuffer, models.model.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(offScreenCmdBuffer, models.model.indexCount, 3, 0, 0, 0);
+    drawModel(offScreenCmdBuffer);
 
     vkCmdEndRenderPass(offScreenCmdBuffer);
 
     VK_CHECK_RESULT(vkEndCommandBuffer(offScreenCmdBuffer));
+  }
+
+  void drawModel(VkCommandBuffer& cmdBuffer) {
+    VkDeviceSize offsets[1] = { 0 };
+
+    // Object
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayouts.offscreen, 0, 1, &descriptorSets.model, 0, NULL);
+    vkCmdBindVertexBuffers(cmdBuffer, VERTEX_BUFFER_BIND_ID, 1, &models.model.vertices.buffer, offsets);
+    vkCmdBindIndexBuffer(cmdBuffer, models.model.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexed(cmdBuffer, models.model.indexCount, 3, 0, 0, 0);
   }
 
   void loadAssets()
@@ -209,7 +208,11 @@ public:
 
   void buildCommandBuffers()
   {
-    VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+    for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
+      buildWarpCommandBuffer(drawCmdBuffers[i], frameBuffers[i]);
+  }
+
+  void buildWarpCommandBuffer(VkCommandBuffer& cmdBuffer, VkFramebuffer frameBuffer) {
 
     VkClearValue clearValues[2];
     clearValues[0].color = { { 0.0f, 0.0f, 0.2f, 0.0f } };
@@ -224,31 +227,29 @@ public:
     renderPassBeginInfo.clearValueCount = 2;
     renderPassBeginInfo.pClearValues = clearValues;
 
-    for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
-    {
-      // Set target frame buffer
-      renderPassBeginInfo.framebuffer = frameBuffers[i];
+    // Set target frame buffer
+    renderPassBeginInfo.framebuffer = frameBuffer;
 
-      VK_CHECK_RESULT(vkBeginCommandBuffer(drawCmdBuffers[i], &cmdBufInfo));
+    VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+    VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 
-      vkCmdBeginRenderPass(drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-      VkViewport viewport = vks::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
-      vkCmdSetViewport(drawCmdBuffers[i], 0, 1, &viewport);
+    VkViewport viewport = vks::initializers::viewport(
+          (float) width, (float) height,
+          0.0f, 1.0f);
+    vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
 
-      VkRect2D scissor = vks::initializers::rect2D(width, height, 0, 0);
-      vkCmdSetScissor(drawCmdBuffers[i], 0, 1, &scissor);
+    VkRect2D scissor = vks::initializers::rect2D(width, height, 0, 0);
+    vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
-      // Final composition as full screen quad
-      hmdDistortion->drawQuad(drawCmdBuffers[i], descriptorSet);
+    // Final composition as full screen quad
+    hmdDistortion->drawQuad(cmdBuffer, descriptorSet);
 
-      vkCmdEndRenderPass(drawCmdBuffers[i]);
+    vkCmdEndRenderPass(cmdBuffer);
 
-      VK_CHECK_RESULT(vkEndCommandBuffer(drawCmdBuffers[i]));
-    }
+    VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffer));
   }
-
-
 
   void setupVertexDescriptions()
   {
