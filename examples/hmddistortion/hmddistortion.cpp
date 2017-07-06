@@ -23,6 +23,8 @@
 #include "VulkanTexture.hpp"
 #include "VulkanModel.hpp"
 
+#include "VikDistortion.hpp"
+
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
 
@@ -51,6 +53,8 @@ public:
     vks::VERTEX_COMPONENT_NORMAL,
     vks::VERTEX_COMPONENT_TANGENT,
   });
+
+  VikDistortion *hmdDistortion;
 
   struct {
     vks::Model model;
@@ -940,6 +944,7 @@ public:
   {
     VulkanExampleBase::prepare();
     loadAssets();
+    hmdDistortion = new VikDistortion();
     generateQuads();
     setupVertexDescriptions();
     prepareOffscreenFramebuffer();
