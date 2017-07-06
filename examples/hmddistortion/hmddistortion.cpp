@@ -83,7 +83,7 @@ public:
   } uboWarp;
 
   struct {
-    vks::Buffer vsFullScreen;
+    //vks::Buffer vsFullScreen;
     vks::Buffer vsOffscreen;
     vks::Buffer fsWarp;
   } uniformBuffers;
@@ -178,7 +178,7 @@ public:
 
     // Uniform buffers
     uniformBuffers.vsOffscreen.destroy();
-    uniformBuffers.vsFullScreen.destroy();
+    //uniformBuffers.vsFullScreen.destroy();
     uniformBuffers.fsWarp.destroy();
 
     vkFreeCommandBuffers(device, cmdPool, 1, &offScreenCmdBuffer);
@@ -681,12 +681,6 @@ public:
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     writeDescriptorSets = {
-      // Binding 0 : Vertex shader uniform buffer
-      vks::initializers::writeDescriptorSet(
-        descriptorSet,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        0,
-        &uniformBuffers.vsFullScreen.descriptor),
       // Binding 1 : Position texture target
       vks::initializers::writeDescriptorSet(
         descriptorSet,
@@ -819,8 +813,6 @@ public:
     // won't see anything rendered to the attachment
     std::array<VkPipelineColorBlendAttachmentState, 1> blendAttachmentStates = {
       vks::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE),
-      //vks::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE),
-      //vks::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE)
     };
 
     colorBlendState.attachmentCount = static_cast<uint32_t>(blendAttachmentStates.size());
@@ -832,13 +824,6 @@ public:
   // Prepare and initialize uniform buffer containing shader uniforms
   void prepareUniformBuffers()
   {
-    // Fullscreen vertex shader
-    VK_CHECK_RESULT(vulkanDevice->createBuffer(
-      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-      &uniformBuffers.vsFullScreen,
-      sizeof(uboVS)));
-
     // Deferred vertex shader
     VK_CHECK_RESULT(vulkanDevice->createBuffer(
       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -854,7 +839,6 @@ public:
       sizeof(uboWarp)));
 
     // Map persistent
-    VK_CHECK_RESULT(uniformBuffers.vsFullScreen.map());
     VK_CHECK_RESULT(uniformBuffers.vsOffscreen.map());
     VK_CHECK_RESULT(uniformBuffers.fsWarp.map());
 
@@ -864,17 +848,8 @@ public:
     uboOffscreenVS.instancePos[2] = glm::vec4(4.0f, 0.0, -4.0f, 0.0f);
 
     // Update
-    updateUniformBuffersScreen();
     updateUniformBufferDeferredMatrices();
     updateUniformBufferWarp();
-  }
-
-  void updateUniformBuffersScreen()
-  {
-    uboVS.projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f);
-    uboVS.model = glm::mat4();
-
-    memcpy(uniformBuffers.vsFullScreen.mapped, &uboVS, sizeof(uboVS));
   }
 
   void updateUniformBufferDeferredMatrices()
