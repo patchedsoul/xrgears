@@ -664,21 +664,11 @@ public:
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         VK_SHADER_STAGE_FRAGMENT_BIT,
         1),
-      // Binding 2 : Normals texture target
-      vks::initializers::descriptorSetLayoutBinding(
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        2),
-      // Binding 3 : Albedo texture target
-      vks::initializers::descriptorSetLayoutBinding(
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        3),
       // Binding 4 : Fragment shader uniform buffer
       vks::initializers::descriptorSetLayoutBinding(
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         VK_SHADER_STAGE_FRAGMENT_BIT,
-        4),
+        2),
     };
 
     VkDescriptorSetLayoutCreateInfo descriptorLayout =
@@ -736,7 +726,7 @@ public:
       vks::initializers::writeDescriptorSet(
         descriptorSet,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        4,
+        2,
         &uniformBuffers.fsWarp.descriptor),
     };
 

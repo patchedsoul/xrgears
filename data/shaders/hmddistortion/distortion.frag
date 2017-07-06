@@ -6,7 +6,7 @@
   //per eye texture to warp for lens distortion
 layout (binding = 1) uniform sampler2D warpTexture;
 
-layout (binding = 4) uniform UBO 
+layout (binding = 2) uniform UBO 
 {
   //Distoriton coefficients (PanoTools model) [a,b,c,d]
   vec4 HmdWarpParam;
