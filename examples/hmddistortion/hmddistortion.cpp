@@ -41,12 +41,12 @@ public:
 
   // Vertex layout for the models
   vks::VertexLayout vertexLayout = vks::VertexLayout({
-    vks::VERTEX_COMPONENT_POSITION,
-    vks::VERTEX_COMPONENT_UV,
-    vks::VERTEX_COMPONENT_COLOR,
-    vks::VERTEX_COMPONENT_NORMAL,
-    vks::VERTEX_COMPONENT_TANGENT,
-  });
+                                                       vks::VERTEX_COMPONENT_POSITION,
+                                                       vks::VERTEX_COMPONENT_UV,
+                                                       vks::VERTEX_COMPONENT_COLOR,
+                                                       vks::VERTEX_COMPONENT_NORMAL,
+                                                       vks::VERTEX_COMPONENT_TANGENT,
+                                                     });
 
   VikDistortion *hmdDistortion;
   VikOffscreenPass *offscreenPass;
@@ -270,27 +270,27 @@ public:
     // Binding description
     vertices.bindingDescriptions.resize(1);
     vertices.bindingDescriptions[0] =
-      vks::initializers::vertexInputBindingDescription(
-        VERTEX_BUFFER_BIND_ID,
-        vertexLayout.stride(),
-        VK_VERTEX_INPUT_RATE_VERTEX);
+        vks::initializers::vertexInputBindingDescription(
+          VERTEX_BUFFER_BIND_ID,
+          vertexLayout.stride(),
+          VK_VERTEX_INPUT_RATE_VERTEX);
 
     // Attribute descriptions
     vertices.attributeDescriptions.resize(2);
     // Location 0: Position
     vertices.attributeDescriptions[0] =
-      vks::initializers::vertexInputAttributeDescription(
-        VERTEX_BUFFER_BIND_ID,
-        0,
-        VK_FORMAT_R32G32B32_SFLOAT,
-        0);
+        vks::initializers::vertexInputAttributeDescription(
+          VERTEX_BUFFER_BIND_ID,
+          0,
+          VK_FORMAT_R32G32B32_SFLOAT,
+          0);
     // Location 1: Texture coordinates
     vertices.attributeDescriptions[1] =
-      vks::initializers::vertexInputAttributeDescription(
-        VERTEX_BUFFER_BIND_ID,
-        1,
-        VK_FORMAT_R32G32_SFLOAT,
-        sizeof(float) * 3);
+        vks::initializers::vertexInputAttributeDescription(
+          VERTEX_BUFFER_BIND_ID,
+          1,
+          VK_FORMAT_R32G32_SFLOAT,
+          sizeof(float) * 3);
 
     vertices.inputState = vks::initializers::pipelineVertexInputStateCreateInfo();
     vertices.inputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertices.bindingDescriptions.size());
@@ -308,10 +308,10 @@ public:
     };
 
     VkDescriptorPoolCreateInfo descriptorPoolInfo =
-      vks::initializers::descriptorPoolCreateInfo(
-        static_cast<uint32_t>(poolSizes.size()),
-        poolSizes.data(),
-        3);
+        vks::initializers::descriptorPoolCreateInfo(
+          static_cast<uint32_t>(poolSizes.size()),
+          poolSizes.data(),
+          3);
 
     VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &descriptorPool));
   }
@@ -323,32 +323,32 @@ public:
     {
       // Binding 0 : Vertex shader uniform buffer
       vks::initializers::descriptorSetLayoutBinding(
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        VK_SHADER_STAGE_VERTEX_BIT,
-        0),
+      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      VK_SHADER_STAGE_VERTEX_BIT,
+      0),
       // Binding 1 : Position texture target / Scene colormap
       vks::initializers::descriptorSetLayoutBinding(
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        1),
+      VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      VK_SHADER_STAGE_FRAGMENT_BIT,
+      1),
       // Binding 4 : Fragment shader uniform buffer
       vks::initializers::descriptorSetLayoutBinding(
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        2),
+      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      VK_SHADER_STAGE_FRAGMENT_BIT,
+      2),
     };
 
     VkDescriptorSetLayoutCreateInfo descriptorLayout =
-      vks::initializers::descriptorSetLayoutCreateInfo(
-        setLayoutBindings.data(),
-        static_cast<uint32_t>(setLayoutBindings.size()));
+        vks::initializers::descriptorSetLayoutCreateInfo(
+          setLayoutBindings.data(),
+          static_cast<uint32_t>(setLayoutBindings.size()));
 
     VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &descriptorSetLayout));
 
     VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
-      vks::initializers::pipelineLayoutCreateInfo(
-        &descriptorSetLayout,
-        1);
+        vks::initializers::pipelineLayoutCreateInfo(
+          &descriptorSetLayout,
+          1);
 
     hmdDistortion->createPipeLineLayout(pPipelineLayoutCreateInfo);
 
@@ -362,27 +362,18 @@ public:
 
     // Textured quad descriptor set
     VkDescriptorSetAllocateInfo allocInfo =
-      vks::initializers::descriptorSetAllocateInfo(
-        descriptorPool,
-        &descriptorSetLayout,
-        1);
+        vks::initializers::descriptorSetAllocateInfo(
+          descriptorPool,
+          &descriptorSetLayout,
+          1);
 
     VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
 
-    // Image descriptors for the offscreen color attachments
-    VkDescriptorImageInfo texDescriptorPosition =
-      vks::initializers::descriptorImageInfo(
-        offscreenPass->colorSampler,
-        offscreenPass->offScreenFrameBuf.position.view,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    VkDescriptorImageInfo offScreenImageInfo = offscreenPass->getDescriptorImageInfo();
 
     writeDescriptorSets = {
       // Binding 1 : Position texture target
-      vks::initializers::writeDescriptorSet(
-        descriptorSet,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        1,
-        &texDescriptorPosition),
+      offscreenPass->getImageWriteDescriptorSet(descriptorSet, &offScreenImageInfo, 1),
       // Binding 4 : Fragment shader uniform buffer
       hmdDistortion->getUniformWriteDescriptorSet(descriptorSet, 2)
     };
@@ -397,16 +388,16 @@ public:
     {
       // Binding 0: Vertex shader uniform buffer
       vks::initializers::writeDescriptorSet(
-        descriptorSets.model,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        0,
-        &uniformBuffers.vsOffscreen.descriptor),
+      descriptorSets.model,
+      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      0,
+      &uniformBuffers.vsOffscreen.descriptor),
       // Binding 1: Color map
       vks::initializers::writeDescriptorSet(
-        descriptorSets.model,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        1,
-        &textures.model.colorMap.descriptor)
+      descriptorSets.model,
+      VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      1,
+      &textures.model.colorMap.descriptor)
     };
     vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
   }
@@ -414,56 +405,56 @@ public:
   void preparePipelines()
   {
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
-      vks::initializers::pipelineInputAssemblyStateCreateInfo(
-        VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-        0,
-        VK_FALSE);
+        vks::initializers::pipelineInputAssemblyStateCreateInfo(
+          VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+          0,
+          VK_FALSE);
 
     VkPipelineRasterizationStateCreateInfo rasterizationState =
-      vks::initializers::pipelineRasterizationStateCreateInfo(
-        VK_POLYGON_MODE_FILL,
-        VK_CULL_MODE_BACK_BIT,
-        VK_FRONT_FACE_CLOCKWISE,
-        0);
+        vks::initializers::pipelineRasterizationStateCreateInfo(
+          VK_POLYGON_MODE_FILL,
+          VK_CULL_MODE_BACK_BIT,
+          VK_FRONT_FACE_CLOCKWISE,
+          0);
 
     VkPipelineColorBlendAttachmentState blendAttachmentState =
-      vks::initializers::pipelineColorBlendAttachmentState(
-        0xf,
-        VK_FALSE);
+        vks::initializers::pipelineColorBlendAttachmentState(
+          0xf,
+          VK_FALSE);
 
     VkPipelineColorBlendStateCreateInfo colorBlendState =
-      vks::initializers::pipelineColorBlendStateCreateInfo(
-        1,
-        &blendAttachmentState);
+        vks::initializers::pipelineColorBlendStateCreateInfo(
+          1,
+          &blendAttachmentState);
 
     VkPipelineDepthStencilStateCreateInfo depthStencilState =
-      vks::initializers::pipelineDepthStencilStateCreateInfo(
-        VK_TRUE,
-        VK_TRUE,
-        VK_COMPARE_OP_LESS_OR_EQUAL);
+        vks::initializers::pipelineDepthStencilStateCreateInfo(
+          VK_TRUE,
+          VK_TRUE,
+          VK_COMPARE_OP_LESS_OR_EQUAL);
 
     VkPipelineViewportStateCreateInfo viewportState =
-      vks::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+        vks::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
 
     VkPipelineMultisampleStateCreateInfo multisampleState =
-      vks::initializers::pipelineMultisampleStateCreateInfo(
-        VK_SAMPLE_COUNT_1_BIT,
-        0);
+        vks::initializers::pipelineMultisampleStateCreateInfo(
+          VK_SAMPLE_COUNT_1_BIT,
+          0);
 
     std::vector<VkDynamicState> dynamicStateEnables = {
       VK_DYNAMIC_STATE_VIEWPORT,
       VK_DYNAMIC_STATE_SCISSOR
     };
     VkPipelineDynamicStateCreateInfo dynamicState =
-      vks::initializers::pipelineDynamicStateCreateInfo(
-        dynamicStateEnables.data(),
-        static_cast<uint32_t>(dynamicStateEnables.size()),
-        0);
+        vks::initializers::pipelineDynamicStateCreateInfo(
+          dynamicStateEnables.data(),
+          static_cast<uint32_t>(dynamicStateEnables.size()),
+          0);
     VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-      vks::initializers::pipelineCreateInfo(
-        nullptr,
-        renderPass,
-        0);
+        vks::initializers::pipelineCreateInfo(
+          nullptr,
+          renderPass,
+          0);
 
     std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 
@@ -514,10 +505,10 @@ public:
   {
     // Deferred vertex shader
     VK_CHECK_RESULT(vulkanDevice->createBuffer(
-      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-      &uniformBuffers.vsOffscreen,
-      sizeof(uboOffscreenVS)));
+                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                      &uniformBuffers.vsOffscreen,
+                      sizeof(uboOffscreenVS)));
 
 
 
@@ -625,10 +616,10 @@ public:
   {
     switch (keyCode)
     {
-    case KEY_F2:
-    case GAMEPAD_BUTTON_A:
-      updateTextOverlay();
-      break;
+      case KEY_F2:
+      case GAMEPAD_BUTTON_A:
+        updateTextOverlay();
+        break;
     }
   }
 

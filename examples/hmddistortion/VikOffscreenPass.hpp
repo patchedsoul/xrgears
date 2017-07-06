@@ -2,16 +2,12 @@
 
 #include "VulkanDevice.hpp"
 
-// Texture properties
-#define TEX_DIM 2048
-#define TEX_FILTER VK_FILTER_LINEAR
-
 // Offscreen frame buffer properties
-#define FB_DIM TEX_DIM
+#define FB_DIM 2048
 
 class VikOffscreenPass {
-public:
 
+private:
     VkDevice device;
 
     // One sampler for the frame buffer color attachments
@@ -24,25 +20,28 @@ public:
 	VkImageView view;
 	VkFormat format;
     };
+public:
     struct FrameBuffer {
 	int32_t width, height;
 	VkFramebuffer frameBuffer;
-	FrameBufferAttachment position;
+	FrameBufferAttachment diffuseColor;
 	FrameBufferAttachment depth;
 	VkRenderPass renderPass;
     } offScreenFrameBuf;
+
+
 
     VikOffscreenPass(VkDevice& d) {
 	device = d;
     }
 
     ~VikOffscreenPass() {
-	 vkDestroySampler(device, colorSampler, nullptr);
+	vkDestroySampler(device, colorSampler, nullptr);
 
 	// Color attachments
-	vkDestroyImageView(device, offScreenFrameBuf.position.view, nullptr);
-	vkDestroyImage(device, offScreenFrameBuf.position.image, nullptr);
-	vkFreeMemory(device, offScreenFrameBuf.position.mem, nullptr);
+	vkDestroyImageView(device, offScreenFrameBuf.diffuseColor.view, nullptr);
+	vkDestroyImage(device, offScreenFrameBuf.diffuseColor.image, nullptr);
+	vkFreeMemory(device, offScreenFrameBuf.diffuseColor.mem, nullptr);
 
 	// Depth attachment
 	vkDestroyImageView(device, offScreenFrameBuf.depth.view, nullptr);
@@ -128,7 +127,7 @@ public:
 	            vulkanDevice,
 	            VK_FORMAT_R16G16B16A16_SFLOAT,
 	            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-	            &offScreenFrameBuf.position);
+	            &offScreenFrameBuf.diffuseColor);
 
 	// Depth attachment
 
@@ -167,7 +166,7 @@ public:
 	}
 
 	// Formats
-	attachmentDescs[0].format = offScreenFrameBuf.position.format;
+	attachmentDescs[0].format = offScreenFrameBuf.diffuseColor.format;
 	attachmentDescs[1].format = offScreenFrameBuf.depth.format;
 
 	std::vector<VkAttachmentReference> colorReferences;
@@ -214,7 +213,7 @@ public:
 	VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &offScreenFrameBuf.renderPass));
 
 	std::array<VkImageView,2> attachments;
-	attachments[0] = offScreenFrameBuf.position.view;
+	attachments[0] = offScreenFrameBuf.diffuseColor.view;
 	attachments[1] = offScreenFrameBuf.depth.view;
 
 	VkFramebufferCreateInfo fbufCreateInfo = {};
@@ -242,5 +241,57 @@ public:
 	sampler.maxLod = 1.0f;
 	sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 	VK_CHECK_RESULT(vkCreateSampler(device, &sampler, nullptr, &colorSampler));
+    }
+
+    VkDescriptorImageInfo getDescriptorImageInfo() {
+	// Image descriptors for the offscreen color attachments
+	return vks::initializers::descriptorImageInfo(
+	            colorSampler,
+	            offScreenFrameBuf.diffuseColor.view,
+	            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
+
+    VkWriteDescriptorSet getImageWriteDescriptorSet(VkDescriptorSet& descriptorSet, VkDescriptorImageInfo *texDescriptorPosition, uint32_t binding) {
+	return vks::initializers::writeDescriptorSet(
+	            descriptorSet,
+	            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+	            binding,
+	            texDescriptorPosition);
+    }
+
+    VkRenderPassBeginInfo getRenderPassBeginInfo() {
+	// Clear values for all attachments written in the fragment sahder
+	std::array<VkClearValue,2> clearValues;
+	clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
+	clearValues[1].depthStencil = { 1.0f, 0 };
+
+	VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
+	renderPassBeginInfo.renderPass =  offScreenFrameBuf.renderPass;
+	renderPassBeginInfo.framebuffer = offScreenFrameBuf.frameBuffer;
+	renderPassBeginInfo.renderArea.extent.width = offScreenFrameBuf.width;
+	renderPassBeginInfo.renderArea.extent.height = offScreenFrameBuf.height;
+	renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+	renderPassBeginInfo.pClearValues = clearValues.data();
+	return renderPassBeginInfo;
+    }
+
+    void setViewPortAndScissor(VkCommandBuffer& cmdBuffer) {
+	VkViewport viewport =
+	        vks::initializers::viewport(
+	            (float)offScreenFrameBuf.width,
+	            (float)offScreenFrameBuf.height,
+	            0.0f, 1.0f);
+	vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
+
+	VkRect2D scissor =
+	        vks::initializers::rect2D(
+	            offScreenFrameBuf.width,
+	            offScreenFrameBuf.height,
+	            0, 0);
+	vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
+    }
+
+    VkRenderPass getRenderPass() {
+	return offScreenFrameBuf.renderPass;
     }
 };
