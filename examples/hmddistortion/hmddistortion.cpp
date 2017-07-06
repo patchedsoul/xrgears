@@ -24,6 +24,7 @@
 #include "VulkanModel.hpp"
 
 #include "VikDistortion.hpp"
+#include "VikOffscreenPass.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
@@ -55,6 +56,7 @@ public:
   });
 
   VikDistortion *hmdDistortion;
+  VikOffscreenPass *offscreenPass;
 
   struct {
     vks::Model model;
@@ -160,6 +162,8 @@ public:
     models.model.destroy();
 
     delete hmdDistortion;
+
+    delete offscreenPass;
 
     // Uniform buffers
     uniformBuffers.vsOffscreen.destroy();
@@ -825,6 +829,9 @@ public:
     hmdDistortion = new VikDistortion(device);
     hmdDistortion->generateQuads(vulkanDevice);
     setupVertexDescriptions();
+
+    offscreenPass = new VikOffscreenPass();
+
     prepareOffscreenFramebuffer();
     prepareUniformBuffers();
     setupDescriptorSetLayout();
