@@ -588,7 +588,7 @@ public:
         VK_VERTEX_INPUT_RATE_VERTEX);
 
     // Attribute descriptions
-    vertices.attributeDescriptions.resize(5);
+    vertices.attributeDescriptions.resize(2);
     // Location 0: Position
     vertices.attributeDescriptions[0] =
       vks::initializers::vertexInputAttributeDescription(
@@ -603,27 +603,6 @@ public:
         1,
         VK_FORMAT_R32G32_SFLOAT,
         sizeof(float) * 3);
-    // Location 2: Color
-    vertices.attributeDescriptions[2] =
-      vks::initializers::vertexInputAttributeDescription(
-        VERTEX_BUFFER_BIND_ID,
-        2,
-        VK_FORMAT_R32G32B32_SFLOAT,
-        sizeof(float) * 5);
-    // Location 3: Normal
-    vertices.attributeDescriptions[3] =
-      vks::initializers::vertexInputAttributeDescription(
-        VERTEX_BUFFER_BIND_ID,
-        3,
-        VK_FORMAT_R32G32B32_SFLOAT,
-        sizeof(float) * 8);
-    // Location 4: Tangent
-    vertices.attributeDescriptions[4] =
-      vks::initializers::vertexInputAttributeDescription(
-        VERTEX_BUFFER_BIND_ID,
-        4,
-        VK_FORMAT_R32G32B32_SFLOAT,
-        sizeof(float) * 11);
 
     vertices.inputState = vks::initializers::pipelineVertexInputStateCreateInfo();
     vertices.inputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertices.bindingDescriptions.size());
