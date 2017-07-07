@@ -598,8 +598,18 @@ public:
     // Load shaders
     std::array<VkPipelineShaderStageCreateInfo, 3> shaderStages;
 
+
     VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-        vks::initializers::pipelineCreateInfo(pipelineLayout, renderPass);
+        vks::initializers::pipelineCreateInfo(pipelineLayout, offscreenPass->getRenderPass());
+
+
+    /*
+    VkGraphicsPipelineCreateInfo pipelineCreateInfo =
+        vks::initializers::pipelineCreateInfo(
+          nullptr,
+          offscreenPass->getRenderPass(),
+          0);
+*/
 
     // Vertex bindings an attributes
     std::vector<VkVertexInputBindingDescription> vertexInputBindings = {
@@ -627,7 +637,7 @@ public:
     pipelineCreateInfo.pDynamicState = &dynamicState;
     pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
     pipelineCreateInfo.pStages = shaderStages.data();
-    pipelineCreateInfo.renderPass = renderPass;
+    pipelineCreateInfo.renderPass = offscreenPass->getRenderPass();
 
     shaderStages[0] = loadShader(getAssetPath() + "shaders/xrgears/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = loadShader(getAssetPath() + "shaders/xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -698,8 +708,6 @@ public:
       gear->updateUniformBuffer(sv, timer);
 
     updateLights();
-
-    hmdDistortion->updateUniformBufferWarp();
   }
 
 
@@ -891,9 +899,18 @@ public:
     offscreenPass->prepareOffscreenFramebuffer(vulkanDevice, physicalDevice);
 
     prepareUniformBuffers();
+    hmdDistortion->prepareUniformBuffer(vulkanDevice);
+    hmdDistortion->updateUniformBufferWarp();
+
     setupDescriptorSetLayoutShading();
+
+    hmdDistortion->createDescriptorSetLayout();
+    hmdDistortion->createPipeLineLayout();
+    hmdDistortion->createPipeLine(renderPass, pipelineCache);
+
     preparePipelines();
     setupDescriptorPool();
+    hmdDistortion->createDescriptorSet(offscreenPass, descriptorPool);
     setupDescriptorSet();
     buildCommandBuffers();
     buildOffscreenCommandBuffer();
