@@ -48,7 +48,7 @@ public:
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
   }
 
-  VkWriteDescriptorSet getUniformWriteDescriptorSet(VkDescriptorSet& descriptorSet, uint32_t binding) {
+  VkWriteDescriptorSet getUniformWriteDescriptorSet(uint32_t binding) {
     return vks::initializers::writeDescriptorSet(
           descriptorSet,
           VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -74,7 +74,7 @@ public:
       // Binding 0 : Render texture target
       offscreenPass->getImageWriteDescriptorSet(descriptorSet, &offScreenImageInfo, 0),
       // Binding 1 : Fragment shader uniform buffer
-      getUniformWriteDescriptorSet(descriptorSet, 1)
+      getUniformWriteDescriptorSet(1)
     };
 
     vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);

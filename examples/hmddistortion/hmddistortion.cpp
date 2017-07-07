@@ -307,16 +307,11 @@ public:
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       VK_SHADER_STAGE_VERTEX_BIT,
       0),
-      // Binding 1 : Position texture target / Scene colormap
+      // Binding 1 : colormap
       vks::initializers::descriptorSetLayoutBinding(
       VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
       VK_SHADER_STAGE_FRAGMENT_BIT,
-      1),
-      // Binding 4 : Fragment shader uniform buffer
-      vks::initializers::descriptorSetLayoutBinding(
-      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      VK_SHADER_STAGE_FRAGMENT_BIT,
-      2),
+      1)
     };
 
     VkDescriptorSetLayoutCreateInfo descriptorLayout =
@@ -550,13 +545,15 @@ public:
   {
     VulkanExampleBase::prepare();
     loadAssets();
+
     hmdDistortion = new VikDistortion(device);
     hmdDistortion->generateQuads(vulkanDevice);
+
     setupVertexDescriptions();
 
     offscreenPass = new VikOffscreenPass(device);
-
     offscreenPass->prepareOffscreenFramebuffer(vulkanDevice, physicalDevice);
+
     prepareUniformBuffers();
     setupDescriptorSetLayout();
     preparePipelines();
