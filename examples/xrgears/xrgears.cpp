@@ -88,6 +88,9 @@ public:
   //VkDescriptorSet skydomeDescriptorSet;
   VkDescriptorSetLayout descriptorSetLayout;
 
+  VkCommandBuffer offScreenCmdBuffer = VK_NULL_HANDLE;
+  // Semaphore used to synchronize between offscreen and final scene rendering
+  VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
   // Camera and view properties
   float eyeSeparation = 0.08f;
@@ -112,11 +115,15 @@ public:
 
   ~VulkanExample()
   {
+    delete offscreenPass;
+
     vkDestroyPipeline(device, pipelines.pbr, nullptr);
     vkDestroyPipeline(device, skyDome.pipeline, nullptr);
 
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+
+    delete hmdDistortion;
 
     uniformBuffers.camera.destroy();
     uniformBuffers.lights.destroy();
@@ -151,7 +158,82 @@ public:
     printf("Draw command buffers size: %d\n", drawCmdBuffers.size());
 
     for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
-      buildCommandBuffer(drawCmdBuffers[i], frameBuffers[i]);
+      //buildPbrCommandBuffer(drawCmdBuffers[i], frameBuffers[i]);
+      buildWarpCommandBuffer(drawCmdBuffers[i], frameBuffers[i]);
+  }
+
+  void buildWarpCommandBuffer(VkCommandBuffer& cmdBuffer, VkFramebuffer frameBuffer) {
+
+    VkClearValue clearValues[2];
+    clearValues[0].color = { { 0.0f, 0.0f, 0.2f, 0.0f } };
+    clearValues[1].depthStencil = { 1.0f, 0 };
+
+    VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
+    renderPassBeginInfo.renderPass = renderPass;
+    renderPassBeginInfo.renderArea.offset.x = 0;
+    renderPassBeginInfo.renderArea.offset.y = 0;
+    renderPassBeginInfo.renderArea.extent.width = width;
+    renderPassBeginInfo.renderArea.extent.height = height;
+    renderPassBeginInfo.clearValueCount = 2;
+    renderPassBeginInfo.pClearValues = clearValues;
+
+    // Set target frame buffer
+    renderPassBeginInfo.framebuffer = frameBuffer;
+
+    VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+    VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
+
+    vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    VkViewport viewport = vks::initializers::viewport(
+          (float) width, (float) height,
+          0.0f, 1.0f);
+    vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor = vks::initializers::rect2D(width, height, 0, 0);
+    vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
+
+    // Final composition as full screen quad
+    //hmdDistortion->drawQuad(cmdBuffer, descriptorSet);
+
+    vkCmdEndRenderPass(cmdBuffer);
+
+    VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffer));
+  }
+
+  // Build command buffer for rendering the scene to the offscreen frame buffer attachments
+  void buildOffscreenCommandBuffer()
+  {
+    if (offScreenCmdBuffer == VK_NULL_HANDLE)
+      offScreenCmdBuffer = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+
+    // Create a semaphore used to synchronize offscreen rendering and usage
+    VkSemaphoreCreateInfo semaphoreCreateInfo = vks::initializers::semaphoreCreateInfo();
+    VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &offscreenSemaphore));
+
+    buildPbrCommandBuffer(offScreenCmdBuffer);
+
+    /*
+    VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+
+    // Clear values for all attachments written in the fragment sahder
+    std::array<VkClearValue,2> clearValues;
+    clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
+    clearValues[1].depthStencil = { 1.0f, 0 };
+
+    VK_CHECK_RESULT(vkBeginCommandBuffer(offScreenCmdBuffer, &cmdBufInfo));
+
+    offscreenPass->beginRenderPass(offScreenCmdBuffer);
+    offscreenPass->setViewPortAndScissor(offScreenCmdBuffer);
+
+    vkCmdBindPipeline(offScreenCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.offscreen);
+
+    drawModel(offScreenCmdBuffer);
+
+    vkCmdEndRenderPass(offScreenCmdBuffer);
+
+    VK_CHECK_RESULT(vkEndCommandBuffer(offScreenCmdBuffer));
+    */
   }
 
   void setViewPortAndScissors(VkCommandBuffer cmdBuffer) {
@@ -170,13 +252,15 @@ public:
     vkCmdSetScissor(cmdBuffer, 0, 2, scissorRects);
   }
 
-  void buildCommandBuffer(VkCommandBuffer cmdBuffer, VkFramebuffer frameBuffer) {
+  void buildPbrCommandBuffer(VkCommandBuffer cmdBuffer) {
     VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+
 
     VkClearValue clearValues[2];
     clearValues[0].color = defaultClearColor;
     clearValues[1].depthStencil = { 1.0f, 0 };
 
+    /*
     VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
     renderPassBeginInfo.renderPass = renderPass;
     renderPassBeginInfo.renderArea.offset.x = 0;
@@ -185,18 +269,20 @@ public:
     renderPassBeginInfo.renderArea.extent.height = height;
     renderPassBeginInfo.clearValueCount = 2;
     renderPassBeginInfo.pClearValues = clearValues;
-
     // Set target frame buffer
     renderPassBeginInfo.framebuffer = frameBuffer;
+    */
 
     VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 
     if (vks::debugmarker::active)
-      vks::debugmarker::beginRegion(cmdBuffer, "Render stuff?", glm::vec4(0.3f, 0.94f, 1.0f, 1.0f));
+      vks::debugmarker::beginRegion(cmdBuffer, "Pbr offscreen", glm::vec4(0.3f, 0.94f, 1.0f, 1.0f));
 
-    vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    //vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    //setViewPortAndScissors(cmdBuffer);
 
-    setViewPortAndScissors(cmdBuffer);
+    offscreenPass->beginRenderPass(cmdBuffer);
+    offscreenPass->setViewPortAndScissor(cmdBuffer);
 
     vkCmdSetLineWidth(cmdBuffer, 1.0f);
 
