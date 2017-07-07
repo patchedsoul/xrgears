@@ -4,6 +4,7 @@
 
 #include "../vks/VulkanModel.hpp"
 #include "VikOffscreenPass.hpp"
+#include "VikShader.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 
@@ -12,6 +13,9 @@ private:
   VkDevice device;
   vks::Model quad;
   vks::Buffer uboHandle;
+
+  VkShaderModule vertexShader;
+  VkShaderModule fragmentShader;
 
   struct {
     glm::vec4 hmdWarpParam;
@@ -37,11 +41,92 @@ public:
 
     quad.destroy();
     uboHandle.destroy();
+
+    vkDestroyShaderModule(device, vertexShader, nullptr);
+    vkDestroyShaderModule(device, fragmentShader, nullptr);
+
     vkDestroyPipeline(device, pipeline, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
   }
 
-  void createPipeLine(VkGraphicsPipelineCreateInfo &pipelineCreateInfo, VkPipelineCache& pipelineCache, std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages) {
+  void createPipeLine(VkRenderPass& renderPass, VkPipelineCache& pipelineCache) {
+
+    VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
+        vks::initializers::pipelineInputAssemblyStateCreateInfo(
+          VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+          0,
+          VK_FALSE);
+
+    VkPipelineRasterizationStateCreateInfo rasterizationState =
+        vks::initializers::pipelineRasterizationStateCreateInfo(
+          VK_POLYGON_MODE_FILL,
+          VK_CULL_MODE_BACK_BIT,
+          VK_FRONT_FACE_CLOCKWISE,
+          0);
+
+    VkPipelineColorBlendAttachmentState blendAttachmentState =
+        vks::initializers::pipelineColorBlendAttachmentState(
+          0xf,
+          VK_FALSE);
+
+    VkPipelineColorBlendStateCreateInfo colorBlendState =
+        vks::initializers::pipelineColorBlendStateCreateInfo(
+          1,
+          &blendAttachmentState);
+
+    VkPipelineDepthStencilStateCreateInfo depthStencilState =
+        vks::initializers::pipelineDepthStencilStateCreateInfo(
+          VK_TRUE,
+          VK_TRUE,
+          VK_COMPARE_OP_LESS_OR_EQUAL);
+
+    VkPipelineViewportStateCreateInfo viewportState =
+        vks::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+
+    VkPipelineMultisampleStateCreateInfo multisampleState =
+        vks::initializers::pipelineMultisampleStateCreateInfo(
+          VK_SAMPLE_COUNT_1_BIT,
+          0);
+
+    std::vector<VkDynamicState> dynamicStateEnables = {
+      VK_DYNAMIC_STATE_VIEWPORT,
+      VK_DYNAMIC_STATE_SCISSOR
+    };
+    VkPipelineDynamicStateCreateInfo dynamicState =
+        vks::initializers::pipelineDynamicStateCreateInfo(
+          dynamicStateEnables.data(),
+          static_cast<uint32_t>(dynamicStateEnables.size()),
+          0);
+    VkGraphicsPipelineCreateInfo pipelineCreateInfo =
+        vks::initializers::pipelineCreateInfo(
+          nullptr,
+          renderPass,
+          0);
+
+    std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
+
+    pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
+    pipelineCreateInfo.pRasterizationState = &rasterizationState;
+    pipelineCreateInfo.pColorBlendState = &colorBlendState;
+    pipelineCreateInfo.pMultisampleState = &multisampleState;
+    pipelineCreateInfo.pViewportState = &viewportState;
+    pipelineCreateInfo.pDepthStencilState = &depthStencilState;
+    pipelineCreateInfo.pDynamicState = &dynamicState;
+    pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
+    pipelineCreateInfo.pStages = shaderStages.data();
+
+
+    // Final fullscreen composition pass pipeline
+    shaderStages[0] = VikShader::load(device, "hmddistortion/distortion.vert.spv",
+                                      VK_SHADER_STAGE_VERTEX_BIT);
+    vertexShader = shaderStages[0].module;
+
+    shaderStages[1] = VikShader::load(device, "hmddistortion/distortion.frag.spv",
+                                      VK_SHADER_STAGE_FRAGMENT_BIT);
+    //shaderModules.push_back(shaderStages[1].module);
+    fragmentShader = shaderStages[1].module;
+
+
     VkPipelineVertexInputStateCreateInfo emptyInputState = vks::initializers::pipelineVertexInputStateCreateInfo();
     pipelineCreateInfo.pVertexInputState = &emptyInputState;
     pipelineCreateInfo.layout = pipelineLayout;
