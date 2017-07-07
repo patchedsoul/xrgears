@@ -196,7 +196,7 @@ public:
     vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
     // Final composition as full screen quad
-    //hmdDistortion->drawQuad(cmdBuffer, descriptorSet);
+    hmdDistortion->drawQuad(cmdBuffer);
 
     vkCmdEndRenderPass(cmdBuffer);
 
@@ -285,7 +285,8 @@ public:
 
     offscreenPass->beginRenderPass(cmdBuffer);
     //offscreenPass->setViewPortAndScissor(cmdBuffer);
-    setViewPortAndScissors(cmdBuffer);
+    offscreenPass->setViewPortAndScissorStereo(cmdBuffer);
+    //setViewPortAndScissors(cmdBuffer);
 
     vkCmdSetLineWidth(cmdBuffer, 1.0f);
 

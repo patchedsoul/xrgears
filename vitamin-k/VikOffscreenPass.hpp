@@ -293,6 +293,25 @@ public:
     vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
   }
 
+  void setViewPortAndScissorStereo(VkCommandBuffer& cmdBuffer) {
+    VkViewport viewports[2];
+
+    int32_t w = offScreenFrameBuf.width, h = offScreenFrameBuf.height;
+
+    // Left
+    viewports[0] = { 0, 0, (float) w / 2.0f, (float) h, 0.0, 1.0f };
+    // Right
+    viewports[1] = { (float) w / 2.0f, 0, (float) w / 2.0f, (float) h, 0.0, 1.0f };
+
+    vkCmdSetViewport(cmdBuffer, 0, 2, viewports);
+
+    VkRect2D scissorRects[2] = {
+      vks::initializers::rect2D(w / 2, h, 0, 0),
+      vks::initializers::rect2D(w / 2, h, w / 2, 0),
+    };
+    vkCmdSetScissor(cmdBuffer, 0, 2, scissorRects);
+  }
+
   VkRenderPass getRenderPass() {
     return offScreenFrameBuf.renderPass;
   }
