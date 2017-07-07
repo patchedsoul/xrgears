@@ -698,6 +698,8 @@ public:
       gear->updateUniformBuffer(sv, timer);
 
     updateLights();
+
+    hmdDistortion->updateUniformBufferWarp();
   }
 
 
@@ -826,10 +828,50 @@ public:
 
   void draw()
   {
+    /*
     VulkanExampleBase::prepareFrame();
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];
     VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+    VulkanExampleBase::submitFrame();
+    */
+
+    VulkanExampleBase::prepareFrame();
+
+    // The scene render command buffer has to wait for the offscreen
+    // rendering to be finished before we can use the framebuffer
+    // color image for sampling during final rendering
+    // To ensure this we use a dedicated offscreen synchronization
+    // semaphore that will be signaled when offscreen renderin
+    // has been finished
+    // This is necessary as an implementation may start both
+    // command buffers at the same time, there is no guarantee
+    // that command buffers will be executed in the order they
+    // have been submitted by the application
+
+    // Offscreen rendering
+
+    // Wait for swap chain presentation to finish
+    submitInfo.pWaitSemaphores = &semaphores.presentComplete;
+    // Signal ready with offscreen semaphore
+    submitInfo.pSignalSemaphores = &offscreenSemaphore;
+
+    // Submit work
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &offScreenCmdBuffer;
+    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+
+    // Scene rendering
+
+    // Wait for offscreen semaphore
+    submitInfo.pWaitSemaphores = &offscreenSemaphore;
+    // Signal ready with render complete semaphpre
+    submitInfo.pSignalSemaphores = &semaphores.renderComplete;
+
+    // Submit work
+    submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];
+    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+
     VulkanExampleBase::submitFrame();
   }
 
@@ -838,14 +880,23 @@ public:
     VulkanExampleBase::prepare();
     loadTextures();
     loadAssets();
+
+    hmdDistortion = new VikDistortion(device);
+    hmdDistortion->generateQuads(vulkanDevice);
+
     initGears();
     prepareVertices();
+
+    offscreenPass = new VikOffscreenPass(device);
+    offscreenPass->prepareOffscreenFramebuffer(vulkanDevice, physicalDevice);
+
     prepareUniformBuffers();
     setupDescriptorSetLayoutShading();
     preparePipelines();
     setupDescriptorPool();
     setupDescriptorSet();
     buildCommandBuffers();
+    buildOffscreenCommandBuffer();
     prepared = true;
   }
 
