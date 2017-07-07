@@ -257,12 +257,12 @@ public:
   void buildPbrCommandBuffer(VkCommandBuffer cmdBuffer) {
     VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
 
-
+    /*
     VkClearValue clearValues[2];
     clearValues[0].color = defaultClearColor;
     clearValues[1].depthStencil = { 1.0f, 0 };
 
-    /*
+
     VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
     renderPassBeginInfo.renderPass = renderPass;
     renderPassBeginInfo.renderArea.offset.x = 0;
@@ -284,7 +284,8 @@ public:
     //setViewPortAndScissors(cmdBuffer);
 
     offscreenPass->beginRenderPass(cmdBuffer);
-    offscreenPass->setViewPortAndScissor(cmdBuffer);
+    //offscreenPass->setViewPortAndScissor(cmdBuffer);
+    setViewPortAndScissors(cmdBuffer);
 
     vkCmdSetLineWidth(cmdBuffer, 1.0f);
 
