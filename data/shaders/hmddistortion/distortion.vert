@@ -5,19 +5,28 @@
 
 layout (location = 0) out vec2 outUV;
 
-vec2 positions[4] = vec2[](
-  vec2(-1.0, -1.0), // LT
-  vec2( 1.0, -1.0), // RT
+vec2 positions[6] = vec2[](
   vec2(-1.0,  1.0), // LB
-  vec2( 1.0,  1.0)  // RB
+  vec2(-1.0, -1.0), // LT
+  vec2(0,  1.0), // RB
+  vec2(0, -1.0), // RT
+  
+  //QUad2
+  vec2(1.0,  1.0), // RB
+  vec2(1.0, -1.0) // RT
 );
 
-vec2 uvs[4] = vec2[](
-  vec2(0.0, 0.0),
-  vec2(1.0, 0.0), 
+vec2 uvs[6] = vec2[](
   vec2(0.0, 1.0),
-  vec2(1.0, 1.0)
+  vec2(0.0, 0.0), 
+  vec2(1.0, 1.0),
+  vec2(1.0, 0.0),
+  
+  vec2(1.0, 1.0),
+  vec2(1.0, 0.0)
 );
+
+
 
 
 out gl_PerVertex

@@ -57,6 +57,6 @@ void main()
     float blue = texture(warpTexture, tc_b).b;
     //Black edges off the texture
     outFragcolor = ((tc_g.x < 0.0) || (tc_g.x > 1.0) || (tc_g.y < 0.0) || (tc_g.y > 1.0)) ? vec4(0.0, 0.0, 0.0, 1.0) : vec4(red, green, blue, 1.0);
-    //outFragcolor = vec4(inUV, 0, 1);
-    outFragcolor = texture(warpTexture, inUV);
+    outFragcolor = vec4(inUV, 0, 1);
+    //outFragcolor = texture(warpTexture, inUV);
 }
