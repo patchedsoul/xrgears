@@ -1,6 +1,9 @@
+#pragma once
+
 #include <vulkan/vulkan.h>
 
 #include "../vks/VulkanModel.hpp"
+#include "VikOffscreenPass.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 
@@ -21,12 +24,17 @@ private:
   VkPipelineLayout pipelineLayout;
   VkPipeline pipeline;
 
+  VkDescriptorSetLayout descriptorSetLayout;
+  VkDescriptorSet descriptorSet;
+
 public:
   VikDistortion(VkDevice& d) {
     device = d;
   }
 
   ~VikDistortion() {
+    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+
     quad.destroy();
     uboHandle.destroy();
     vkDestroyPipeline(device, pipeline, nullptr);
@@ -48,7 +56,66 @@ public:
           &uboHandle.descriptor);
   }
 
-  void createPipeLineLayout(VkPipelineLayoutCreateInfo& pPipelineLayoutCreateInfo) {
+  void createDescriptorSet(VikOffscreenPass *offscreenPass, VkDescriptorPool& descriptorPool) {
+    std::vector<VkWriteDescriptorSet> writeDescriptorSets;
+
+    // Textured quad descriptor set
+    VkDescriptorSetAllocateInfo allocInfo =
+        vks::initializers::descriptorSetAllocateInfo(
+          descriptorPool,
+          &descriptorSetLayout,
+          1);
+
+    VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
+
+    VkDescriptorImageInfo offScreenImageInfo = offscreenPass->getDescriptorImageInfo();
+
+    writeDescriptorSets = {
+      // Binding 1 : Position texture target
+      offscreenPass->getImageWriteDescriptorSet(descriptorSet, &offScreenImageInfo, 1),
+      // Binding 4 : Fragment shader uniform buffer
+      getUniformWriteDescriptorSet(descriptorSet, 2)
+    };
+
+    vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
+
+  }
+
+  void createDescriptorSetLayout() {
+    // Deferred shading layout
+    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
+    {
+      // Binding 0 : Vertex shader uniform buffer
+      vks::initializers::descriptorSetLayoutBinding(
+      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      VK_SHADER_STAGE_VERTEX_BIT,
+      0),
+      // Binding 1 : Position texture target / Scene colormap
+      vks::initializers::descriptorSetLayoutBinding(
+      VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      VK_SHADER_STAGE_FRAGMENT_BIT,
+      1),
+      // Binding 4 : Fragment shader uniform buffer
+      vks::initializers::descriptorSetLayoutBinding(
+      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      VK_SHADER_STAGE_FRAGMENT_BIT,
+      2),
+    };
+
+    VkDescriptorSetLayoutCreateInfo descriptorLayout =
+        vks::initializers::descriptorSetLayoutCreateInfo(
+          setLayoutBindings.data(),
+          static_cast<uint32_t>(setLayoutBindings.size()));
+
+    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &descriptorSetLayout));
+  }
+
+  void createPipeLineLayout() {
+    VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
+        vks::initializers::pipelineLayoutCreateInfo(
+          &descriptorSetLayout,
+          1);
+
     VK_CHECK_RESULT(vkCreatePipelineLayout(device,
                                            &pPipelineLayoutCreateInfo,
                                            nullptr,
@@ -56,7 +123,7 @@ public:
 
   }
 
-  void drawQuad(VkCommandBuffer& commandBuffer, VkDescriptorSet& descriptorSet) {
+  void drawQuad(VkCommandBuffer& commandBuffer) {
     VkDeviceSize offsets[1] = { 0 };
 
     vkCmdBindDescriptorSets(commandBuffer,

@@ -239,7 +239,7 @@ public:
     vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
     // Final composition as full screen quad
-    hmdDistortion->drawQuad(cmdBuffer, descriptorSet);
+    hmdDistortion->drawQuad(cmdBuffer);
 
     vkCmdEndRenderPass(cmdBuffer);
 
@@ -331,7 +331,8 @@ public:
           &descriptorSetLayout,
           1);
 
-    hmdDistortion->createPipeLineLayout(pPipelineLayoutCreateInfo);
+    hmdDistortion->createDescriptorSetLayout();
+    hmdDistortion->createPipeLineLayout();
 
     // Offscreen (scene) rendering pipeline layout
     VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayouts.offscreen));
@@ -341,12 +342,10 @@ public:
   {
     std::vector<VkWriteDescriptorSet> writeDescriptorSets;
 
+
+    /*
     // Textured quad descriptor set
-    VkDescriptorSetAllocateInfo allocInfo =
-        vks::initializers::descriptorSetAllocateInfo(
-          descriptorPool,
-          &descriptorSetLayout,
-          1);
+
 
     VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
 
@@ -360,8 +359,17 @@ public:
     };
 
     vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
+*/
+
+    hmdDistortion->createDescriptorSet(offscreenPass, descriptorPool);
 
     // Offscreen (scene)
+
+    VkDescriptorSetAllocateInfo allocInfo =
+        vks::initializers::descriptorSetAllocateInfo(
+          descriptorPool,
+          &descriptorSetLayout,
+          1);
 
     // Model
     VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSets.model));
