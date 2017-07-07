@@ -132,6 +132,8 @@ public:
 
     for (auto& gear : gears)
       delete(gear);
+
+    vkDestroySemaphore(device, offscreenSemaphore, nullptr);
   }
 
   // Enable physical device features required for this example
@@ -416,8 +418,8 @@ public:
   {
     // Example uses two ubos
     std::vector<VkDescriptorPoolSize> poolSizes = {
-      vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 9),
-      vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3)
+      vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10),
+      vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4)
     };
 
     VkDescriptorPoolCreateInfo descriptorPoolInfo =
