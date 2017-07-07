@@ -54,8 +54,6 @@ file(GLOB VITAMINK_SRC vitamin-k/*.hpp)
 
 add_library(vks ${VKS_SRC})
 
-message("The cool vitamin-k sources: ${VITAMINK_SRC}")
-
 add_library(vitamin-k ${VITAMINK_SRC})
 
 SET_TARGET_PROPERTIES(vitamin-k  PROPERTIES LINKER_LANGUAGE CXX)
@@ -99,7 +97,6 @@ function(buildExample EXAMPLE_NAME)
 	endif(WIN32)
 endfunction(buildExample)
 
-
 # build examples
 FILE(GLOB EXAMPLE_DIRS RELATIVE
   ${CMAKE_SOURCE_DIR}/examples
@@ -109,9 +106,6 @@ FILE(GLOB EXAMPLE_DIRS RELATIVE
 foreach(EXAMPLE ${EXAMPLE_DIRS})
 	buildExample(${EXAMPLE})
 endforeach(EXAMPLE)
-
-
-
 
 #add_custom_target(shaders
 #        #clean and compile with 1 thread per core

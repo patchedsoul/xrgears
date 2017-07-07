@@ -20,11 +20,11 @@
 #include <gli/gli.hpp>
 
 #include <vulkan/vulkan.h>
-#include "GearNode.h"
+#include "VikGearNode.hpp"
 #include "vulkanexamplebase.h"
 #include "VulkanModel.hpp"
 
-#include "SkyDome.h"
+#include "VikSkyDome.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
