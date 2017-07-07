@@ -53,7 +53,7 @@ public:
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
         vks::initializers::pipelineInputAssemblyStateCreateInfo(
-          VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+          VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
           0,
           VK_FALSE);
 
@@ -212,9 +212,11 @@ public:
                             &descriptorSet, 0, NULL);
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-    vkCmdBindVertexBuffers(commandBuffer, VERTEX_BUFFER_BIND_ID, 1, &quad.vertices.buffer, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, quad.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(commandBuffer, quad.indexCount, 1, 0, 0, 1);
+    //vkCmdBindVertexBuffers(commandBuffer, VERTEX_BUFFER_BIND_ID, 1, &quad.vertices.buffer, offsets);
+    //vkCmdBindIndexBuffer(commandBuffer, quad.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
+    //vkCmdDrawIndexed(commandBuffer, 6, 1, 0, 0, 1);
+
+    vkCmdDraw(commandBuffer, 4, 1, 0, 0);
   }
 
   void generateQuads(vks::VulkanDevice *vulkanDevice) {
@@ -226,22 +228,12 @@ public:
     };
 
     std::vector<Vertex> vertexBuffer;
+    // Last component of normal is used for debug display sampler index
+    vertexBuffer.push_back({ { 1.f, .5f, 0.f }, { 1.f, .5f } });
+    vertexBuffer.push_back({ { 0.f, .5f, 0.f }, { 0.f, .5f } });
+    vertexBuffer.push_back({ { 0.f, 0.f, 0.f }, { 0.f, 0.f } });
+    vertexBuffer.push_back({ { 1.f, 0.f, 0.f }, { 1.f, 0.f } });
 
-    float x = 0.0f;
-    float y = 0.0f;
-    for (uint32_t i = 0; i < 3; i++) {
-      // Last component of normal is used for debug display sampler index
-      vertexBuffer.push_back({ { x+1.0f, y+1.0f, 0.0f }, { 1.0f, 1.0f } });
-      vertexBuffer.push_back({ { x,      y+1.0f, 0.0f }, { 0.0f, 1.0f } });
-      vertexBuffer.push_back({ { x,      y,      0.0f }, { 0.0f, 0.0f } });
-      vertexBuffer.push_back({ { x+1.0f, y,      0.0f }, { 1.0f, 0.0f } });
-      x += 1.0f;
-      if (x > 1.0f)
-      {
-        x = 0.0f;
-        y += 1.0f;
-      }
-    }
 
     VK_CHECK_RESULT(vulkanDevice->createBuffer(
                       VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,

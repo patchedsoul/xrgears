@@ -43,6 +43,8 @@ public:
 
   //vks::Model teapotModel;
 
+  bool enableSky = false;
+
   SkyDome skyDome;
   VikDistortion *hmdDistortion;
   VikOffscreenPass *offscreenPass;
@@ -118,7 +120,9 @@ public:
     delete offscreenPass;
 
     vkDestroyPipeline(device, pipelines.pbr, nullptr);
-    vkDestroyPipeline(device, skyDome.pipeline, nullptr);
+
+    if (enableSky)
+      vkDestroyPipeline(device, skyDome.pipeline, nullptr);
 
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
@@ -290,7 +294,8 @@ public:
 
     vkCmdSetLineWidth(cmdBuffer, 1.0f);
 
-    skyDome.draw(cmdBuffer, pipelineLayout, gears[0]->descriptorSet);
+    if (enableSky)
+      skyDome.draw(cmdBuffer, pipelineLayout, gears[0]->descriptorSet);
 
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
     //drawTeapot(drawCmdBuffers[i]);
@@ -322,7 +327,8 @@ public:
   */
 
   void loadAssets() {
-    skyDome.loadAssets(getAssetPath(), vertexLayout, vulkanDevice, queue);
+    if (enableSky)
+      skyDome.loadAssets(getAssetPath(), vertexLayout, vulkanDevice, queue);
     //teapotModel.loadFromFile(getAssetPath() + "models/sphere.obj", vertexLayout, 0.25f, vulkanDevice, queue);
   }
 
@@ -451,13 +457,15 @@ public:
       vks::initializers::descriptorSetLayoutBinding(
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-      2),
-      // cube map sampler
-      vks::initializers::descriptorSetLayoutBinding(
-      VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-      VK_SHADER_STAGE_FRAGMENT_BIT,
-      3)
+      2)
     };
+
+    // cube map sampler
+    //if (enableSky)
+      setLayoutBindings.push_back(vks::initializers::descriptorSetLayoutBinding(
+                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                    VK_SHADER_STAGE_FRAGMENT_BIT,
+                                    3));
 
     VkDescriptorSetLayoutCreateInfo descriptorLayout =
         vks::initializers::descriptorSetLayoutCreateInfo(setLayoutBindings);
@@ -519,7 +527,8 @@ public:
   void setupDescriptorSet()
   {
 
-    skyDome.initTextureDescriptor();
+    if (enableSky)
+      skyDome.initTextureDescriptor();
 
     for (auto& gear : gears)
     {
@@ -548,9 +557,11 @@ public:
         gear->descriptorSet,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         2,
-        &uniformBuffers.camera.descriptor),
-        skyDome.getCubeMapWriteDescriptorSet(3, gear->descriptorSet)
+        &uniformBuffers.camera.descriptor)
       };
+
+      if (enableSky)
+        writeDescriptorSets.push_back(skyDome.getCubeMapWriteDescriptorSet(3, gear->descriptorSet));
 
       vkUpdateDescriptorSets(device,
                              static_cast<uint32_t>(writeDescriptorSets.size()),
@@ -650,7 +661,8 @@ public:
     shaderStages[2] = loadShader(getAssetPath() + "shaders/xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.pbr));
 
-    createSkyDomePipeline(pipelineCreateInfo);
+    if (enableSky)
+      createSkyDomePipeline(pipelineCreateInfo);
 
   }
 
@@ -828,7 +840,8 @@ public:
 
 
     // ==>
-    loadCubemap(getAssetPath() + "textures/equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
+    if (enableSky)
+      loadCubemap(getAssetPath() + "textures/equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
 
 
 
