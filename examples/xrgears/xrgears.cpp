@@ -144,68 +144,73 @@ public:
 
 	void buildCommandBuffers()
 	{
-		VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
-
-		VkClearValue clearValues[2];
-		clearValues[0].color = defaultClearColor;
-		clearValues[1].depthStencil = { 1.0f, 0 };
-
-		VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
-		renderPassBeginInfo.renderPass = renderPass;
-		renderPassBeginInfo.renderArea.offset.x = 0;
-		renderPassBeginInfo.renderArea.offset.y = 0;
-		renderPassBeginInfo.renderArea.extent.width = width;
-		renderPassBeginInfo.renderArea.extent.height = height;
-		renderPassBeginInfo.clearValueCount = 2;
-		renderPassBeginInfo.pClearValues = clearValues;
-
 		printf("Draw command buffers size: %d\n", drawCmdBuffers.size());
 
 		for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
-		{
-			// Set target frame buffer
-			renderPassBeginInfo.framebuffer = frameBuffers[i];
-
-			VK_CHECK_RESULT(vkBeginCommandBuffer(drawCmdBuffers[i], &cmdBufInfo));
-
-			if (vks::debugmarker::active)
-				vks::debugmarker::beginRegion(drawCmdBuffers[i], "Render stuff?", glm::vec4(0.3f, 0.94f, 1.0f, 1.0f));
-
-
-			vkCmdBeginRenderPass(drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-			VkViewport viewports[2];
-			// Left
-			viewports[0] = { 0, 0, (float)width / 2.0f, (float)height, 0.0, 1.0f };
-			// Right
-			viewports[1] = { (float)width / 2.0f, 0, (float)width / 2.0f, (float)height, 0.0, 1.0f };
-
-			vkCmdSetViewport(drawCmdBuffers[i], 0, 2, viewports);
-
-			VkRect2D scissorRects[2] = {
-				vks::initializers::rect2D(width/2, height, 0, 0),
-				vks::initializers::rect2D(width/2, height, width / 2, 0),
-			};
-			vkCmdSetScissor(drawCmdBuffers[i], 0, 2, scissorRects);
-
-			vkCmdSetLineWidth(drawCmdBuffers[i], 1.0f);
-
-			skyDome.draw(drawCmdBuffers[i], pipelineLayout, gears[0]->descriptorSet);
-
-			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
-			//drawTeapot(drawCmdBuffers[i]);
-
-			for (auto& gear : gears)
-				gear->draw(drawCmdBuffers[i], pipelineLayout);
-
-			vkCmdEndRenderPass(drawCmdBuffers[i]);
-
-			if (vks::debugmarker::active)
-				vks::debugmarker::endRegion(drawCmdBuffers[i]);
-
-			VK_CHECK_RESULT(vkEndCommandBuffer(drawCmdBuffers[i]));
-		}
+      buildCommandBuffer(drawCmdBuffers[i], frameBuffers[i]);
 	}
+
+  void setViewPortAndScissors(VkCommandBuffer cmdBuffer) {
+    VkViewport viewports[2];
+    // Left
+    viewports[0] = { 0, 0, (float)width / 2.0f, (float)height, 0.0, 1.0f };
+    // Right
+    viewports[1] = { (float)width / 2.0f, 0, (float)width / 2.0f, (float)height, 0.0, 1.0f };
+
+    vkCmdSetViewport(cmdBuffer, 0, 2, viewports);
+
+    VkRect2D scissorRects[2] = {
+      vks::initializers::rect2D(width/2, height, 0, 0),
+      vks::initializers::rect2D(width/2, height, width / 2, 0),
+    };
+    vkCmdSetScissor(cmdBuffer, 0, 2, scissorRects);
+  }
+
+  void buildCommandBuffer(VkCommandBuffer cmdBuffer, VkFramebuffer frameBuffer) {
+    VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+
+    VkClearValue clearValues[2];
+    clearValues[0].color = defaultClearColor;
+    clearValues[1].depthStencil = { 1.0f, 0 };
+
+    VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
+    renderPassBeginInfo.renderPass = renderPass;
+    renderPassBeginInfo.renderArea.offset.x = 0;
+    renderPassBeginInfo.renderArea.offset.y = 0;
+    renderPassBeginInfo.renderArea.extent.width = width;
+    renderPassBeginInfo.renderArea.extent.height = height;
+    renderPassBeginInfo.clearValueCount = 2;
+    renderPassBeginInfo.pClearValues = clearValues;
+
+    // Set target frame buffer
+    renderPassBeginInfo.framebuffer = frameBuffer;
+
+    VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
+
+    if (vks::debugmarker::active)
+      vks::debugmarker::beginRegion(cmdBuffer, "Render stuff?", glm::vec4(0.3f, 0.94f, 1.0f, 1.0f));
+
+    vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    setViewPortAndScissors(cmdBuffer);
+
+    vkCmdSetLineWidth(cmdBuffer, 1.0f);
+
+    skyDome.draw(cmdBuffer, pipelineLayout, gears[0]->descriptorSet);
+
+    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
+    //drawTeapot(drawCmdBuffers[i]);
+
+    for (auto& gear : gears)
+      gear->draw(cmdBuffer, pipelineLayout);
+
+    vkCmdEndRenderPass(cmdBuffer);
+
+    if (vks::debugmarker::active)
+      vks::debugmarker::endRegion(cmdBuffer);
+
+    VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffer));
+  }
 
 	/*
 	void drawTeapot(VkCommandBuffer cmdbuffer) {
@@ -541,11 +546,11 @@ public:
 		shaderStages[2] = loadShader(getAssetPath() + "shaders/xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.pbr));
 
-		prepareSkyBox(pipelineCreateInfo);
+    createSkyDomePipeline(pipelineCreateInfo);
 
 	}
 
-	void prepareSkyBox(VkGraphicsPipelineCreateInfo& pipelineCreateInfo) {
+  void createSkyDomePipeline(VkGraphicsPipelineCreateInfo& pipelineCreateInfo) {
 		VkPipelineRasterizationStateCreateInfo rasterizationStateSky =
 			vks::initializers::pipelineRasterizationStateCreateInfo(
 				VK_POLYGON_MODE_FILL,
@@ -640,7 +645,7 @@ public:
 
 		uboCamera.projection[0] = glm::frustum(left, right, bottom, top, zNear, zFar);
 		uboCamera.view[0] = rotM * transM;
-		uboCamera.skyView[1] = rotM * glm::translate(glm::mat4(), -camRight * (eyeSeparation / 2.0f));
+    uboCamera.skyView[0] = rotM * glm::translate(glm::mat4(), -camRight * (eyeSeparation / 2.0f));
 
 		// Right eye
 		left = -aspectRatio * wd2 - 0.5f * eyeSeparation * ndfl;
