@@ -24,7 +24,8 @@ layout (binding = 1) uniform UBO
   float WarpScale;
 } ubo;
 
-layout (location = 0) in vec2 inUV;
+layout (location = 0) in vec2 inStereoUV;
+layout (location = 1) in vec2 inMonoUV;
 
 layout (location = 0) out vec4 outFragcolor;
 
@@ -34,7 +35,7 @@ void main()
     //output_loc is the fragment location on screen from [0,1]x[0,1]
     //vec2 output_loc = vec2(gl_TexCoord[0].s, gl_TexCoord[0].t);
     //Compute fragment location in lens-centered co-ordinates at world scale
-	  vec2 r = inUV * ubo.ViewportScale - ubo.LensCenter;
+	  vec2 r = inStereoUV * ubo.ViewportScale - ubo.LensCenter;
     //scale for distortion model
     //distortion model has r=1 being the largest circle inscribed (e.g. eye_w/2)
 
@@ -57,6 +58,6 @@ void main()
     float blue = texture(warpTexture, tc_b).b;
     //Black edges off the texture
     outFragcolor = ((tc_g.x < 0.0) || (tc_g.x > 1.0) || (tc_g.y < 0.0) || (tc_g.y > 1.0)) ? vec4(0.0, 0.0, 0.0, 1.0) : vec4(red, green, blue, 1.0);
-    outFragcolor = vec4(inUV, 0, 1);
+    //outFragcolor = vec4(inMonoUV, 0, 1);
     //outFragcolor = texture(warpTexture, inUV);
 }

@@ -62,8 +62,8 @@ float G_SchlicksmithGGX(float dotNL, float dotNV, float roughness) {
 }
 
 // Fresnel function ----------------------------------------------------
-vec3 F_Schlick(float cosTheta, float metallic) {
-	vec3 F0 = mix(vec3(0.04), materialcolor(), metallic); // * material.specular
+vec3 F_Schlick(float cosTheta, float metallic, vec3 reflectionColor) {
+	vec3 F0 = mix(vec3(0.04) * reflectionColor, materialcolor(), metallic) ;
 	vec3 F = F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0); 
 	return F;    
 }
@@ -92,11 +92,13 @@ vec3 BRDF(vec3 L, vec3 V, vec3 N, float metallic, float roughness, vec3 reflecti
 		// G = Geometric shadowing term (Microfacets shadowing)
 		float G = G_SchlicksmithGGX(dotNL, dotNV, roughness);
 		// F = Fresnel factor (Reflectance depending on angle of incidence)
-		vec3 F = F_Schlick(dotNV, metallic);
+		vec3 F = F_Schlick(dotNV, metallic, reflectionColor);
 
-		vec3 spec = D * F * G / (4.0 * dotNL * dotNV); // reflectionColor * 
+		vec3 spec = D * F * G / (4.0 * dotNL * dotNV);
 
 		color += spec * dotNL * lightColor;
+		
+		//color = F;
 	}
 
 	return color;
@@ -133,12 +135,13 @@ void main() {
 	
 	// Combine with ambient
 	vec3 color = materialcolor() * 0.02;
+	//color += 0.1 * reflectionColor;
 	color += Lo;
 
 	// Gamma correct
 	color = pow(color, vec3(0.4545));
 
-	outColor = vec4(color, 1.0); // + 0.3* vec4(reflectionColor, 1);
+	outColor = vec4(color, 1.0); //+ 0.1* vec4(reflectionColor, 1);
 
   // debug
  // outColor = vec4(L, 1.0);

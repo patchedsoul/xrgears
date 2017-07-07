@@ -53,7 +53,7 @@ public:
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
         vks::initializers::pipelineInputAssemblyStateCreateInfo(
-          VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
+          VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
           0,
           VK_FALSE);
 
@@ -216,7 +216,7 @@ public:
     //vkCmdBindIndexBuffer(commandBuffer, quad.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
     //vkCmdDrawIndexed(commandBuffer, 6, 1, 0, 0, 1);
 
-    vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+    vkCmdDraw(commandBuffer, 12, 1, 0, 0);
   }
 
   void generateQuads(vks::VulkanDevice *vulkanDevice) {
@@ -261,9 +261,18 @@ public:
 
   // Update fragment shader hmd warp uniform block
   void updateUniformBufferWarp() {
-    uboData.lensCenter = glm::vec2(0.0297, 0.0497);
+    uboData.lensCenter = glm::vec2(0.0297, 0.0297);
+    //uboData.lensCenter = glm::vec2(0.5f, 0.5f);
+
     uboData.viewportScale = glm::vec2(0.0614, 0.0682);
+    //uboData.viewportScale = glm::vec2(1.0, 1.0);
+
+
     uboData.warpScale = 0.0318;
+
+    //uboData.warpScale = .05f;
+
+
     uboData.hmdWarpParam = glm::vec4(0.2470, -0.1450, 0.1030, 0.7950);
     uboData.aberr = glm::vec4(0.9850, 1.0000, 1.0150, 1.0);
     memcpy(uboHandle.mapped, &uboData, sizeof(uboData));

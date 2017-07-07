@@ -43,9 +43,9 @@ public:
 
   //vks::Model teapotModel;
 
-  bool enableSky = false;
+  bool enableSky = true;
 
-  SkyDome skyDome;
+  SkyDome *skyDome;
   VikDistortion *hmdDistortion;
   VikOffscreenPass *offscreenPass;
 
@@ -121,8 +121,10 @@ public:
 
     vkDestroyPipeline(device, pipelines.pbr, nullptr);
 
-    if (enableSky)
-      vkDestroyPipeline(device, skyDome.pipeline, nullptr);
+    if (enableSky) {
+      vkDestroyPipeline(device, skyDome->pipeline, nullptr);
+      delete skyDome;
+    }
 
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
@@ -295,7 +297,7 @@ public:
     vkCmdSetLineWidth(cmdBuffer, 1.0f);
 
     if (enableSky)
-      skyDome.draw(cmdBuffer, pipelineLayout, gears[0]->descriptorSet);
+      skyDome->draw(cmdBuffer, pipelineLayout, gears[0]->descriptorSet);
 
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
     //drawTeapot(drawCmdBuffers[i]);
@@ -328,7 +330,7 @@ public:
 
   void loadAssets() {
     if (enableSky)
-      skyDome.loadAssets(getAssetPath(), vertexLayout, vulkanDevice, queue);
+      skyDome->loadAssets(getAssetPath(), vertexLayout, vulkanDevice, queue);
     //teapotModel.loadFromFile(getAssetPath() + "models/sphere.obj", vertexLayout, 0.25f, vulkanDevice, queue);
   }
 
@@ -351,9 +353,9 @@ public:
     };
 
     std::vector<Material> materials = {
-      Material("Red", glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, 1.0f),
-      Material("Green", glm::vec3(0.0f, 1.0f, 0.2f), 0.5f, 1.0f),
-      Material("Blue", glm::vec3(0.0f, 0.0f, 1.0f), 0.5f, 1.0f)
+      Material("Red", glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, 0.9f),
+      Material("Green", glm::vec3(0.0f, 1.0f, 0.2f), 0.5f, 0.1f),
+      Material("Blue", glm::vec3(0.0f, 0.0f, 1.0f), 0.5f, 0.5f)
     };
 
     std::vector<float> rotationSpeeds = { 1.0f, -2.0f, -2.0f };
@@ -528,7 +530,7 @@ public:
   {
 
     if (enableSky)
-      skyDome.initTextureDescriptor();
+      skyDome->initTextureDescriptor();
 
     for (auto& gear : gears)
     {
@@ -561,7 +563,7 @@ public:
       };
 
       if (enableSky)
-        writeDescriptorSets.push_back(skyDome.getCubeMapWriteDescriptorSet(3, gear->descriptorSet));
+        writeDescriptorSets.push_back(skyDome->getCubeMapWriteDescriptorSet(3, gear->descriptorSet));
 
       vkUpdateDescriptorSets(device,
                              static_cast<uint32_t>(writeDescriptorSets.size()),
@@ -686,7 +688,7 @@ public:
     pipelineCreateInfo.pStages = shaderStagesSky.data();
     pipelineCreateInfo.pRasterizationState = &rasterizationStateSky;
 
-    VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &skyDome.pipeline));
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &skyDome->pipeline));
   }
 
   void createUniformBuffer(vks::Buffer *buffer,  VkDeviceSize size) {
@@ -801,11 +803,11 @@ public:
   void loadCubemap(std::string filename, VkFormat format)
   {
     VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-    skyDome.loadCubemap(device, vulkanDevice, copyCmd, filename, format);
+    skyDome->loadCubemap(device, vulkanDevice, copyCmd, filename, format);
     VulkanExampleBase::flushCommandBuffer(copyCmd, queue, true);
-    skyDome.deleteStatingBuffer(device);
-    skyDome.createSampler(device, vulkanDevice);
-    skyDome.createImageView(device, format);
+    skyDome->deleteStatingBuffer(device);
+    skyDome->createSampler(device, vulkanDevice);
+    skyDome->createImageView(device, format);
   }
 
 
@@ -841,13 +843,13 @@ public:
 
     // ==>
     if (enableSky)
-      loadCubemap(getAssetPath() + "textures/equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
+      //loadCubemap(getAssetPath() + "textures/equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
 
 
 
     //loadCubemap(getAssetPath() + "textures/hdr/pisa_cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
 
-    //loadCubemap(getAssetPath() + "textures/cubemap_yokohama_bc3_unorm.ktx", VK_FORMAT_BC2_UNORM_BLOCK);
+    loadCubemap(getAssetPath() + "textures/cubemap_yokohama_bc3_unorm.ktx", VK_FORMAT_BC2_UNORM_BLOCK);
 
   }
 
@@ -902,6 +904,10 @@ public:
 
   void prepare()
   {
+
+    if (enableSky)
+      skyDome = new SkyDome();
+
     VulkanExampleBase::prepare();
     loadTextures();
     loadAssets();
