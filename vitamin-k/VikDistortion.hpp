@@ -71,10 +71,10 @@ public:
     VkDescriptorImageInfo offScreenImageInfo = offscreenPass->getDescriptorImageInfo();
 
     writeDescriptorSets = {
-      // Binding 1 : Position texture target
-      offscreenPass->getImageWriteDescriptorSet(descriptorSet, &offScreenImageInfo, 1),
-      // Binding 4 : Fragment shader uniform buffer
-      getUniformWriteDescriptorSet(descriptorSet, 2)
+      // Binding 0 : Render texture target
+      offscreenPass->getImageWriteDescriptorSet(descriptorSet, &offScreenImageInfo, 0),
+      // Binding 1 : Fragment shader uniform buffer
+      getUniformWriteDescriptorSet(descriptorSet, 1)
     };
 
     vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
@@ -85,21 +85,16 @@ public:
     // Deferred shading layout
     std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
     {
-      // Binding 0 : Vertex shader uniform buffer
-      vks::initializers::descriptorSetLayoutBinding(
-      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      VK_SHADER_STAGE_VERTEX_BIT,
-      0),
-      // Binding 1 : Position texture target / Scene colormap
+      // Binding 0 : Render texture target
       vks::initializers::descriptorSetLayoutBinding(
       VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
       VK_SHADER_STAGE_FRAGMENT_BIT,
-      1),
-      // Binding 4 : Fragment shader uniform buffer
+      0),
+      // Binding 1 : Fragment shader uniform buffer
       vks::initializers::descriptorSetLayoutBinding(
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       VK_SHADER_STAGE_FRAGMENT_BIT,
-      2),
+      1),
     };
 
     VkDescriptorSetLayoutCreateInfo descriptorLayout =

@@ -340,27 +340,6 @@ public:
 
   void setupDescriptorSet()
   {
-    std::vector<VkWriteDescriptorSet> writeDescriptorSets;
-
-
-    /*
-    // Textured quad descriptor set
-
-
-    VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
-
-    VkDescriptorImageInfo offScreenImageInfo = offscreenPass->getDescriptorImageInfo();
-
-    writeDescriptorSets = {
-      // Binding 1 : Position texture target
-      offscreenPass->getImageWriteDescriptorSet(descriptorSet, &offScreenImageInfo, 1),
-      // Binding 4 : Fragment shader uniform buffer
-      hmdDistortion->getUniformWriteDescriptorSet(descriptorSet, 2)
-    };
-
-    vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
-*/
-
     hmdDistortion->createDescriptorSet(offscreenPass, descriptorPool);
 
     // Offscreen (scene)
@@ -373,7 +352,7 @@ public:
 
     // Model
     VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSets.model));
-    writeDescriptorSets =
+    std::vector<VkWriteDescriptorSet> writeDescriptorSets =
     {
       // Binding 0: Vertex shader uniform buffer
       vks::initializers::writeDescriptorSet(

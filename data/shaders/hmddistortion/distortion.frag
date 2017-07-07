@@ -4,9 +4,9 @@
 #extension GL_ARB_shading_language_420pack : enable
 
   //per eye texture to warp for lens distortion
-layout (binding = 1) uniform sampler2D warpTexture;
+layout (binding = 0) uniform sampler2D warpTexture;
 
-layout (binding = 2) uniform UBO 
+layout (binding = 1) uniform UBO 
 {
   //Distoriton coefficients (PanoTools model) [a,b,c,d]
   vec4 HmdWarpParam;
