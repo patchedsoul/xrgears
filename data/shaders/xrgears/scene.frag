@@ -2,6 +2,7 @@
 
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
+#extension GL_EXT_multiview : enable
 
 
 layout (location = 0) in vec3 inNormal;
@@ -11,6 +12,7 @@ layout (location = 2) in vec3 inViewPos;
 layout (location = 3) in mat4 inInvModelView;
 
 layout (location = 10) in vec3 inViewNormal;
+layout (location = 11) in flat int inViewPortIndex;
 
 layout (location = 0) out vec4 outColor;
 

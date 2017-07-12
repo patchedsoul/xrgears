@@ -121,7 +121,7 @@ public:
                                       VK_SHADER_STAGE_VERTEX_BIT);
     vertexShader = shaderStages[0].module;
 
-    shaderStages[1] = VikShader::load(device, "hmddistortion/distortion.frag.spv",
+    shaderStages[1] = VikShader::load(device, "hmddistortion/ph5-distortion.frag.spv",
                                       VK_SHADER_STAGE_FRAGMENT_BIT);
     //shaderModules.push_back(shaderStages[1].module);
     fragmentShader = shaderStages[1].module;
