@@ -20,6 +20,9 @@
 #include <gli/gli.hpp>
 
 #include <vulkan/vulkan.h>
+
+#include <openhmd.h>
+
 #include "VikGearNode.hpp"
 #include "vulkanexamplebase.h"
 #include "VulkanModel.hpp"
@@ -853,6 +856,10 @@ public:
 
   }
 
+  void initOpenHMD() {
+    ohmd_context* ctx = ohmd_ctx_create();
+  }
+
   void draw()
   {
     /*
@@ -924,6 +931,8 @@ public:
     prepareUniformBuffers();
     hmdDistortion->prepareUniformBuffer(vulkanDevice);
     hmdDistortion->updateUniformBufferWarp();
+
+    initOpenHMD();
 
     setupDescriptorSetLayoutShading();
 

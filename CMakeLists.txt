@@ -63,6 +63,7 @@ include_directories(vitamin-k)
 
 target_link_libraries(vks vulkan xcb assimp)
 
+INCLUDE_DIRECTORIES(/usr/include/openhmd/)
 
 # glslc -o gears.vert.spv gears.vert
 
@@ -93,7 +94,7 @@ function(buildExample EXAMPLE_NAME)
         add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
         target_link_libraries(${EXAMPLE_NAME}
           ${Vulkan_LIBRARY} ${ASSIMP_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES}
-          ${CMAKE_THREAD_LIBS_INIT} ${XCB_LIBRARIES} dl glfw vks)
+          ${CMAKE_THREAD_LIBS_INIT} ${XCB_LIBRARIES} dl glfw openhmd vks)
 	endif(WIN32)
 endfunction(buildExample)
 
