@@ -837,12 +837,14 @@ public:
     fix_rotation(hmdViewLeft);
     fix_rotation(hmdViewRight);
 
+    glm::mat4 translationMatrix = glm::translate(glm::mat4(), camera.position);
+
     uboCamera.projection[0] = hmdProjectionLeft;
-    uboCamera.view[0] = hmdViewLeft;
+    uboCamera.view[0] = hmdViewLeft * translationMatrix;
     uboCamera.skyView[0] = hmdViewLeft;
 
     uboCamera.projection[1] = hmdProjectionRight;
-    uboCamera.view[1] = hmdViewRight;
+    uboCamera.view[1] = hmdViewRight  * translationMatrix;
     uboCamera.skyView[1] = hmdViewRight;
 
     uboCamera.position = camera.position * -1.0f;
