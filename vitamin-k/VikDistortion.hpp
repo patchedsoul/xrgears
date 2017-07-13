@@ -123,7 +123,9 @@ public:
                                       VK_SHADER_STAGE_VERTEX_BIT);
     vertexShader = shaderStages[0].module;
 
-    shaderStages[1] = VikShader::load(device, "hmddistortion/distortion.frag.spv",
+    shaderStages[1] = VikShader::load(device,
+                                      "hmddistortion/openhmd-distortion-sps.frag.spv",
+                                      //"hmddistortion/distortion.frag.spv",
                                       VK_SHADER_STAGE_FRAGMENT_BIT);
     //shaderModules.push_back(shaderStages[1].module);
     fragmentShader = shaderStages[1].module;
@@ -290,6 +292,7 @@ public:
     uboData.lensCenter[1] = glm::make_vec4(right_lens_center);
 
     uboData.viewportScale = glm::make_vec2(viewport_scale);
+    //uboData.viewportScale.x *= 2.0f;
 
     uboData.warpScale = (left_lens_center[0] > right_lens_center[0]) ? left_lens_center[0] : right_lens_center[0];
 

@@ -35,7 +35,14 @@ void main()
     // output_loc is the fragment location on screen from [0,1]x[0,1]
     //vec2 output_loc = vec2(gl_TexCoord[0].s, gl_TexCoord[0].t);
     // Compute fragment location in lens-centered co-ordinates at world scale
-	  vec2 r = inStereoUV * ubo.ViewportScale - ubo.LensCenter[inViewIndex];
+    
+    //vec2 texCoord = 2.0 * inMonoUV - vec2(1.0);
+    
+    //const vec2 offset2 = vec2(0.25 + inViewIndex * 0.5, 0.5);
+    
+	  vec2 r = inMonoUV * ubo.ViewportScale - ubo.LensCenter[inViewIndex];
+	  
+	      //const vec2 offset = vec2(0.25 + inViewIndex * 0.5, 0.5);
 
     // scale for distortion model
     // distortion model has r=1 being the largest circle inscribed (e.g. eye_w/2)
@@ -54,10 +61,14 @@ void main()
     // back to world scale
     r_displaced *= ubo.WarpScale;
 
+    //const vec2 offset = vec2(0.25 + inViewIndex * 0.5, 0.5);
+    
+    const vec2 offset = vec2(0);
+
     // back to viewport co-ord
-    vec2 tc_r = (ubo.LensCenter[inViewIndex] + ubo.aberr.r * r_displaced) / ubo.ViewportScale;
-    vec2 tc_g = (ubo.LensCenter[inViewIndex] + ubo.aberr.g * r_displaced) / ubo.ViewportScale;
-    vec2 tc_b = (ubo.LensCenter[inViewIndex] + ubo.aberr.b * r_displaced) / ubo.ViewportScale;
+    vec2 tc_r = offset + (ubo.LensCenter[inViewIndex] + ubo.aberr.r * r_displaced) / ubo.ViewportScale;
+    vec2 tc_g = offset + (ubo.LensCenter[inViewIndex] + ubo.aberr.g * r_displaced) / ubo.ViewportScale;
+    vec2 tc_b = offset + (ubo.LensCenter[inViewIndex] + ubo.aberr.b * r_displaced) / ubo.ViewportScale;
     
     vec3 color = vec3(
       texture(warpTexture, tc_r).r,
@@ -70,6 +81,9 @@ void main()
       
     outFragcolor =  vec4(color, 1.0);
     
-    //outFragcolor = vec4(inMonoUV, 0, 1);
+    
+    outFragcolor =  texture(warpTexture, r);
+    
+    //outFragcolor = vec4(inStereoUV, 0, 1);
     //outFragcolor = texture(warpTexture, inUV);
 }

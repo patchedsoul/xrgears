@@ -143,7 +143,7 @@ void main() {
 	// Gamma correct
 	color = pow(color, vec3(0.4545));
 
-	outColor = vec4(color, 1.0); //+ 0.1* vec4(reflectionColor, 1);
+	outColor = inViewPortIndex * vec4(color, 1.0); //+ 0.1* vec4(reflectionColor, 1);
 
   // debug
  // outColor = vec4(L, 1.0);

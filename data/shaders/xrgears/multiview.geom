@@ -35,6 +35,7 @@ layout (location = 2) out vec3 outViewPos;
 layout (location = 3) out mat4 outInvModelView;
 
 layout (location = 10) out vec3 outViewNormal;
+layout (location = 11) out int inViewPortIndex;
 
 void main(void)
 {	
@@ -63,6 +64,8 @@ void main(void)
     //gl_ViewportIndex = 2;
     // GL_NV_viewport_array2: write in VS, TS, GS
     //gl_ViewportMask[0] = 0x07; // viewports 0, 1 and 2
+    
+    inViewPortIndex = gl_InvocationID;
 
 
 		EmitVertex();
