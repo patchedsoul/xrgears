@@ -555,7 +555,7 @@ public:
 
     prepareUniformBuffers();
     hmdDistortion->prepareUniformBuffer(vulkanDevice);
-    hmdDistortion->updateUniformBufferWarp();
+    //hmdDistortion->updateUniformBufferWarp();
 
 
     setupDescriptorSetLayout();
@@ -576,7 +576,7 @@ public:
     if (!prepared)
       return;
     draw();
-    hmdDistortion->updateUniformBufferWarp();
+    //hmdDistortion->updateUniformBufferWarp();
   }
 
   virtual void viewChanged()

@@ -1044,8 +1044,7 @@ public:
 
     prepareUniformBuffers();
     hmdDistortion->prepareUniformBuffer(vulkanDevice);
-    hmdDistortion->updateUniformBufferWarp();
-
+    hmdDistortion->updateUniformBufferWarp(openHmdDevice);
 
     setupDescriptorSetLayoutShading();
 

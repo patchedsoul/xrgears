@@ -2,6 +2,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <openhmd/openhmd.h>
+
 #include "../vks/VulkanModel.hpp"
 #include "VikOffscreenPass.hpp"
 #include "VikShader.hpp"
@@ -20,7 +22,7 @@ private:
   struct {
     glm::vec4 hmdWarpParam;
     glm::vec4 aberr;
-    glm::vec2 lensCenter;
+    glm::vec4 lensCenter[2];
     glm::vec2 viewportScale;
     float warpScale;
   } uboData;
@@ -121,7 +123,7 @@ public:
                                       VK_SHADER_STAGE_VERTEX_BIT);
     vertexShader = shaderStages[0].module;
 
-    shaderStages[1] = VikShader::load(device, "hmddistortion/ph5-distortion.frag.spv",
+    shaderStages[1] = VikShader::load(device, "hmddistortion/distortion.frag.spv",
                                       VK_SHADER_STAGE_FRAGMENT_BIT);
     //shaderModules.push_back(shaderStages[1].module);
     fragmentShader = shaderStages[1].module;
@@ -260,21 +262,47 @@ public:
   }
 
   // Update fragment shader hmd warp uniform block
-  void updateUniformBufferWarp() {
-    uboData.lensCenter = glm::vec2(0.0297, 0.0297);
-    //uboData.lensCenter = glm::vec2(0.5f, 0.5f);
+  void updateUniformBufferWarp(ohmd_device* openHmdDevice) {
+    float viewport_scale[2];
+    float distortion_coeffs[4];
+    float aberr_scale[4];
+    float sep;
+    float left_lens_center[4];
+    float right_lens_center[4];
+    //viewport is half the screen
+    ohmd_device_getf(openHmdDevice, OHMD_SCREEN_HORIZONTAL_SIZE, &(viewport_scale[0]));
+    viewport_scale[0] /= 2.0f;
+    ohmd_device_getf(openHmdDevice, OHMD_SCREEN_VERTICAL_SIZE, &(viewport_scale[1]));
+    //distortion coefficients
+    ohmd_device_getf(openHmdDevice, OHMD_UNIVERSAL_DISTORTION_K, &(distortion_coeffs[0]));
+    ohmd_device_getf(openHmdDevice, OHMD_UNIVERSAL_ABERRATION_K, &(aberr_scale[0]));
+    aberr_scale[3] = 0;
 
-    uboData.viewportScale = glm::vec2(0.0614, 0.0682);
-    //uboData.viewportScale = glm::vec2(1.0, 1.0);
+    //calculate lens centers (assuming the eye separation is the distance betweenteh lense centers)
+    ohmd_device_getf(openHmdDevice, OHMD_LENS_HORIZONTAL_SEPARATION, &sep);
+    ohmd_device_getf(openHmdDevice, OHMD_LENS_VERTICAL_POSITION, &(left_lens_center[1]));
+    ohmd_device_getf(openHmdDevice, OHMD_LENS_VERTICAL_POSITION, &(right_lens_center[1]));
+    left_lens_center[0] = viewport_scale[0] - sep/2.0f;
+    right_lens_center[0] = sep/2.0f;
+    //asume calibration was for lens view to which ever edge of screen is further away from lens center
 
+    uboData.lensCenter[0] = glm::make_vec4(left_lens_center);
+    uboData.lensCenter[1] = glm::make_vec4(right_lens_center);
 
-    uboData.warpScale = 0.0318;
+    uboData.viewportScale = glm::make_vec2(viewport_scale);
 
-    //uboData.warpScale = .05f;
+    uboData.warpScale = (left_lens_center[0] > right_lens_center[0]) ? left_lens_center[0] : right_lens_center[0];
 
+    uboData.hmdWarpParam = glm::make_vec4(distortion_coeffs);
+    uboData.aberr = glm::make_vec4(aberr_scale);
 
-    uboData.hmdWarpParam = glm::vec4(0.2470, -0.1450, 0.1030, 0.7950);
-    uboData.aberr = glm::vec4(0.9850, 1.0000, 1.0150, 1.0);
+    printf("hmdWarpParam  %.4f %.4f %.4f %.4f\n", uboData.hmdWarpParam[0], uboData.hmdWarpParam[1], uboData.hmdWarpParam[2], uboData.hmdWarpParam[3]);
+    printf("aberr         %.4f %.4f %.4f %.4f\n", uboData.aberr[0], uboData.aberr[1], uboData.aberr[2], uboData.aberr[3]);
+    printf("lensCenter 0  %.4f %.4f\n", uboData.lensCenter[0][0], uboData.lensCenter[0][1]);
+    printf("lensCenter 1  %.4f %.4f\n", uboData.lensCenter[1][0], uboData.lensCenter[1][1]);
+    printf("viewportScale %.4f %.4f\n", uboData.viewportScale[0], uboData.viewportScale[1]);
+    printf("warpScale     %.4f\n", uboData.warpScale);
+
     memcpy(uboHandle.mapped, &uboData, sizeof(uboData));
   }
 

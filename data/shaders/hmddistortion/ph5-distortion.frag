@@ -53,7 +53,7 @@ layout (binding = 1) uniform UBO
   vec4 aberr;
 
   //Position of lens center in m (usually eye_w/2, eye_h/2)
-  vec2 LensCenter;
+  vec2 LensCenter[2];
 
   //Scale from texture co-ords to m (usually eye_w, eye_h)
   vec2 ViewportScale;
