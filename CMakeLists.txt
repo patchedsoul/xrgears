@@ -45,6 +45,7 @@ endfunction(add_verbose_warnings)
 
 #    add_cxxflag("--coverage")
 
+add_cxxflag("-fPIC")
 
 # find_package(XCB REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_XCB_KHR")
