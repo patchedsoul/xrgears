@@ -23,6 +23,8 @@
 #include "VulkanModel.hpp"
 #include "VulkanBuffer.hpp"
 
+#include "VikSkyCube.hpp"
+
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
 
@@ -35,9 +37,7 @@ class VulkanExample : public VulkanExampleBase
 public:
 	bool bloom = true;
 
-	struct {
-		vks::TextureCubeMap cubemap;
-	} textures;
+  VikSkyCube *skyCube;
 
 	// Vertex layout for the models
 	vks::VertexLayout vertexLayout = vks::VertexLayout({
@@ -50,7 +50,6 @@ public:
 	struct {
 		vks::Model ufo;
 		vks::Model ufoGlow;
-		vks::Model skyBox;
 	} models;
 
 	struct {
@@ -61,7 +60,6 @@ public:
 
 	struct {
 		vks::Buffer scene;
-		vks::Buffer skyBox;
 		vks::Buffer blurParams;
 	} uniformBuffers;
 
@@ -86,7 +84,6 @@ public:
 		VkPipeline blurHorz;
 		VkPipeline glowPass;
 		VkPipeline phongPass;
-		VkPipeline skyBox;
 	} pipelines;
 
 	struct {
@@ -98,7 +95,6 @@ public:
 		VkDescriptorSet blurVert;
 		VkDescriptorSet blurHorz;
 		VkDescriptorSet scene;
-		VkDescriptorSet skyBox;
 	} descriptorSets;
 
 	struct {
@@ -166,7 +162,7 @@ public:
 		vkDestroyPipeline(device, pipelines.blurVert, nullptr);
 		vkDestroyPipeline(device, pipelines.phongPass, nullptr);
 		vkDestroyPipeline(device, pipelines.glowPass, nullptr);
-		vkDestroyPipeline(device, pipelines.skyBox, nullptr);
+
 
 		vkDestroyPipelineLayout(device, pipelineLayouts.blur , nullptr);
 		vkDestroyPipelineLayout(device, pipelineLayouts.scene, nullptr);
@@ -177,14 +173,12 @@ public:
 		// Models
 		models.ufo.destroy();
 		models.ufoGlow.destroy();
-		models.skyBox.destroy();
 
 		// Uniform buffers
 		uniformBuffers.scene.destroy();
-		uniformBuffers.skyBox.destroy();
 		uniformBuffers.blurParams.destroy();
 
-		textures.cubemap.destroy();
+    delete skyCube;
 	}
 
 	// Setup the offscreen framebuffer for rendering the mirrored scene
@@ -483,13 +477,7 @@ public:
 
 			VkDeviceSize offsets[1] = { 0 };
 
-			// Skybox 
-			vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayouts.scene, 0, 1, &descriptorSets.skyBox, 0, NULL);
-			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.skyBox);
-
-			vkCmdBindVertexBuffers(drawCmdBuffers[i], VERTEX_BUFFER_BIND_ID, 1, &models.skyBox.vertices.buffer, offsets);
-			vkCmdBindIndexBuffer(drawCmdBuffers[i], models.skyBox.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-			vkCmdDrawIndexed(drawCmdBuffers[i], models.skyBox.indexCount, 1, 0, 0, 0);
+      skyCube->draw(drawCmdBuffers[i], pipelineLayouts.scene);
 
 			// 3D scene
 			vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayouts.scene, 0, 1, &descriptorSets.scene, 0, NULL);
@@ -524,9 +512,9 @@ public:
 	{
 		models.ufo.loadFromFile(getAssetPath() + "models/retroufo.dae", vertexLayout, 0.05f, vulkanDevice, queue);
 		models.ufoGlow.loadFromFile(getAssetPath() + "models/retroufo_glow.dae", vertexLayout, 0.05f, vulkanDevice, queue);
-		models.skyBox.loadFromFile(getAssetPath() + "models/cube.obj", vertexLayout, 1.0f, vulkanDevice, queue);
-		textures.cubemap.loadFromFile(getAssetPath() + "textures/cubemap_space.ktx", VK_FORMAT_R8G8B8A8_UNORM, vulkanDevice, queue);
-	}
+
+    skyCube->loadAssets(vertexLayout, vulkanDevice, queue);
+  }
 
 	void setupVertexDescriptions()
 	{
@@ -654,13 +642,7 @@ public:
 		};
 		vkUpdateDescriptorSets(device, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 
-		// Skybox
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &descriptorSetAllocInfo, &descriptorSets.skyBox));
-		writeDescriptorSets = {			
-			vks::initializers::writeDescriptorSet(descriptorSets.skyBox, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &uniformBuffers.skyBox.descriptor),						// Binding 0: Vertex shader uniform buffer			
-			vks::initializers::writeDescriptorSet(descriptorSets.skyBox, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	1, &textures.cubemap.descriptor),					// Binding 1: Fragment shader texture sampler
-		};
-		vkUpdateDescriptorSets(device, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+    skyCube->updateDescriptorSets(descriptorSetAllocInfo, writeDescriptorSets);
 	}
 
 	void preparePipelines()
@@ -777,13 +759,11 @@ public:
 		pipelineCreateInfo.renderPass = offscreenPass.renderPass;
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.glowPass));
 
-		// Skybox (cubemap)
-		shaderStages[0] = loadShader(getAssetPath() + "shaders/bloom/skybox.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-		shaderStages[1] = loadShader(getAssetPath() + "shaders/bloom/skybox.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-		depthStencilState.depthWriteEnable = VK_FALSE;
-		rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;
-		pipelineCreateInfo.renderPass = renderPass;
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.skyBox));
+    depthStencilState.depthWriteEnable = VK_FALSE;
+    rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;
+    pipelineCreateInfo.renderPass = renderPass;
+
+    skyCube->preparePipeline(pipelineCache, &pipelineCreateInfo);
 	}
 
 	// Prepare and initialize uniform buffer containing shader uniforms
@@ -807,13 +787,13 @@ public:
 		VK_CHECK_RESULT(vulkanDevice->createBuffer(
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			&uniformBuffers.skyBox,
+      &skyCube->uniformBuffer,
 			sizeof(ubos.skyBox)));
 
 		// Map persistent
 		VK_CHECK_RESULT(uniformBuffers.scene.map());
 		VK_CHECK_RESULT(uniformBuffers.blurParams.map());
-		VK_CHECK_RESULT(uniformBuffers.skyBox.map());
+    VK_CHECK_RESULT(skyCube->uniformBuffer.map());
 
 		// Intialize uniform buffers
 		updateUniformBuffersScene();
@@ -838,7 +818,7 @@ public:
 		ubos.skyBox.view = glm::mat4(glm::mat3(camera.matrices.view));
 		ubos.skyBox.model = glm::mat4();
 
-		memcpy(uniformBuffers.skyBox.mapped, &ubos.skyBox, sizeof(ubos.skyBox));
+    memcpy(skyCube->uniformBuffer.mapped, &ubos.skyBox, sizeof(ubos.skyBox));
 	}
 
 	// Update blur pass parameter uniform buffer
@@ -886,8 +866,11 @@ public:
 	void prepare()
 	{
 		VulkanExampleBase::prepare();
+    skyCube = new VikSkyCube(device);
 		loadAssets();
 		setupVertexDescriptions();
+
+
 		prepareUniformBuffers();
 		prepareOffscreen();
 		setupDescriptorSetLayout();
