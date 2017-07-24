@@ -54,18 +54,11 @@ public:
           VikAssets::getAssetPath() + "textures/cubemap_space.ktx", VK_FORMAT_R8G8B8A8_UNORM,
           vulkanDevice,
           queue);
+    initTextureDescriptor();
   }
 
-  void createDescriptorSet(VkDevice& device,
-                           VkDescriptorPool& descriptorPool,
-                           VkDescriptorSetLayout& descriptorSetLayout,
+  void createDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo,
                            VkDescriptorBufferInfo& cameraDescriptor) {
-    VkDescriptorSetAllocateInfo allocInfo =
-        vks::initializers::descriptorSetAllocateInfo(
-          descriptorPool,
-          &descriptorSetLayout,
-          1);
-
     VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
 
     std::vector<VkWriteDescriptorSet> writeDescriptorSets = {

@@ -463,9 +463,13 @@ public:
       cameraDescriptor = vikCamera->uniformBuffer.descriptor;
 
     if (enableSky) {
-      skyDome->initTextureDescriptor();
-      skyDome->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
-                                   cameraDescriptor);
+      VkDescriptorSetAllocateInfo allocInfo =
+          vks::initializers::descriptorSetAllocateInfo(
+            descriptorPool,
+            &descriptorSetLayout,
+            1);
+
+      skyDome->createDescriptorSet(allocInfo, cameraDescriptor);
     }
 
     for (auto& gear : gears)
