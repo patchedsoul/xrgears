@@ -111,9 +111,8 @@ public:
 
     vkDestroyPipeline(device, pipelines.pbr, nullptr);
 
-    if (enableSky) {
+    if (enableSky)
       delete skyBox;
-    }
 
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
