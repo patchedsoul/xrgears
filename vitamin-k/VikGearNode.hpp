@@ -27,7 +27,7 @@
 
 #include "VikMaterial.hpp"
 #include "VikGear.hpp"
-#include "VikSkyDome.hpp"
+#include "VikSkyBox.hpp"
 
 struct GearNodeInfo {
   glm::vec3 pos;
@@ -121,7 +121,7 @@ public:
                            VkDescriptorSetLayout& descriptorSetLayout,
                            VkDescriptorBufferInfo& lightsDescriptor,
                            VkDescriptorBufferInfo& cameraDescriptor,
-                           VikSkyDome *skyDome) {
+                           VikSkyBox *skyDome) {
     VkDescriptorSetAllocateInfo allocInfo =
         vks::initializers::descriptorSetAllocateInfo(
           descriptorPool,

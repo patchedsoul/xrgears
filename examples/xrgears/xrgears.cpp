@@ -26,7 +26,7 @@
 #include "vulkanexamplebase.h"
 #include "VulkanModel.hpp"
 
-#include "VikSkyDome.hpp"
+#include "VikSkyBox.hpp"
 #include "VikDistortion.hpp"
 #include "VikOffscreenPass.hpp"
 #include "VikNode.hpp"
@@ -56,7 +56,7 @@ public:
   bool enableSky = true;
   bool enableHMDCam = false;
 
-  VikSkyDome *skyDome;
+  VikSkyBox *skyBox;
   VikDistortion *hmdDistortion;
   VikOffscreenPass *offscreenPass;
 
@@ -113,7 +113,7 @@ public:
     vkDestroyPipeline(device, pipelines.pbr, nullptr);
 
     if (enableSky) {
-      delete skyDome;
+      delete skyBox;
     }
 
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
@@ -267,7 +267,7 @@ public:
     vkCmdSetLineWidth(cmdBuffer, 1.0f);
 
     if (enableSky)
-      skyDome->draw(cmdBuffer, pipelineLayout);
+      skyBox->draw(cmdBuffer, pipelineLayout);
 
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
     //teapotNode->draw(cmdBuffer, pipelineLayout);
@@ -285,7 +285,7 @@ public:
 
   void loadAssets() {
     if (enableSky)
-      skyDome->loadAssets(vertexLayout, vulkanDevice, queue);
+      skyBox->loadAssets(vertexLayout, vulkanDevice, queue);
 
     teapotNode = new VikNode();
     teapotNode->loadModel("teapot.dae",
@@ -469,14 +469,14 @@ public:
             &descriptorSetLayout,
             1);
 
-      skyDome->createDescriptorSet(allocInfo, cameraDescriptor);
+      skyBox->createDescriptorSet(allocInfo, cameraDescriptor);
     }
 
     for (auto& gear : gears)
       gear->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
                                 uniformBuffers.lights.descriptor,
                                 cameraDescriptor,
-                                skyDome);
+                                skyBox);
 }
 
   void preparePipelines()
@@ -561,7 +561,7 @@ public:
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.pbr));
 
     if (enableSky)
-      skyDome->createPipeline(pipelineCreateInfo, pipelineCache);
+      skyBox->createPipeline(pipelineCreateInfo, pipelineCache);
   }
 
   // Prepare and initialize uniform buffer containing shader uniforms
@@ -675,7 +675,7 @@ public:
     vikCamera = new VikCameraStereo();
 
     if (enableSky)
-      skyDome = new VikSkyDome(device);
+      skyBox = new VikSkyBox(device);
 
     VulkanExampleBase::prepare();
     loadAssets();

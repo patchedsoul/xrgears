@@ -7,7 +7,7 @@
 #include "VikShader.hpp"
 #include "VikBuffer.hpp"
 
-class VikSkyDome
+class VikSkyBox
 {
 private:
   vks::TextureCubeMap cubeMap;
@@ -18,9 +18,9 @@ private:
   VkPipeline pipeline;
 
 public:
-  VikSkyDome(VkDevice device) : device(device) {}
+  VikSkyBox(VkDevice device) : device(device) {}
 
-  ~VikSkyDome() {
+  ~VikSkyBox() {
 		cubeMap.destroy();
     model.destroy();
     vkDestroyPipeline(device, pipeline, nullptr);
