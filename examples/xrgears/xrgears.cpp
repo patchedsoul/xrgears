@@ -155,15 +155,13 @@ public:
 
   void buildCommandBuffers()
   {
-    if (enableDistortion) {
-      printf("Draw command buffers size: %d\n", drawCmdBuffers.size());
+    printf("Draw command buffers size: %d\n", drawCmdBuffers.size());
 
+    if (enableDistortion)
       for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
-        //buildPbrCommandBuffer(drawCmdBuffers[i], frameBuffers[i]);
         buildWarpCommandBuffer(drawCmdBuffers[i], frameBuffers[i]);
-    } else {
+    else
       buildPbrCommandBufferOnScreen();
-    }
   }
 
   void buildWarpCommandBuffer(VkCommandBuffer& cmdBuffer, VkFramebuffer frameBuffer) {
@@ -206,8 +204,7 @@ public:
   }
 
   // Build command buffer for rendering the scene to the offscreen frame buffer attachments
-  void buildOffscreenCommandBuffer()
-  {
+  void buildOffscreenCommandBuffer() {
     if (offScreenCmdBuffer == VK_NULL_HANDLE)
       offScreenCmdBuffer = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 
@@ -216,30 +213,7 @@ public:
     VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &offscreenSemaphore));
 
     buildPbrCommandBufferOffScreen(offScreenCmdBuffer);
-
-    /*
-    VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
-
-    // Clear values for all attachments written in the fragment sahder
-    std::array<VkClearValue,2> clearValues;
-    clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
-    clearValues[1].depthStencil = { 1.0f, 0 };
-
-    VK_CHECK_RESULT(vkBeginCommandBuffer(offScreenCmdBuffer, &cmdBufInfo));
-
-    offscreenPass->beginRenderPass(offScreenCmdBuffer);
-    offscreenPass->setViewPortAndScissor(offScreenCmdBuffer);
-
-    vkCmdBindPipeline(offScreenCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.offscreen);
-
-    drawModel(offScreenCmdBuffer);
-
-    vkCmdEndRenderPass(offScreenCmdBuffer);
-
-    VK_CHECK_RESULT(vkEndCommandBuffer(offScreenCmdBuffer));
-    */
   }
-
 
   void buildPbrCommandBufferOffScreen(VkCommandBuffer cmdBuffer) {
     VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
@@ -300,22 +274,13 @@ public:
   }
 
 
-  void buildPbrCommandBufferOnScreen()
-  {
+  void buildPbrCommandBufferOnScreen() {
     VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
-
-    /*
-    VkClearValue clearValues[2];
-    clearValues[0].color = defaultClearColor;
-    clearValues[1].depthStencil = { 1.0f, 0 };
-    */
-
 
     // Clear values for all attachments written in the fragment sahder
     std::array<VkClearValue,2> clearValues;
     clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
     clearValues[1].depthStencil = { 1.0f, 0 };
-
 
     VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
     renderPassBeginInfo.renderPass = renderPass;
@@ -697,19 +662,12 @@ public:
     memcpy(uniformBuffers.lights.mapped, &uboLights, sizeof(uboLights));
   }
 
-  void draw()
-  {
-    /*
+  void draw() {
     VulkanExampleBase::prepareFrame();
+
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];
-    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
-    VulkanExampleBase::submitFrame();
-    */
 
     if (enableDistortion) {
-      VulkanExampleBase::prepareFrame();
-
       // The scene render command buffer has to wait for the offscreen
       // rendering to be finished before we can use the framebuffer
       // color image for sampling during final rendering
@@ -729,7 +687,7 @@ public:
       submitInfo.pSignalSemaphores = &offscreenSemaphore;
 
       // Submit work
-      submitInfo.commandBufferCount = 1;
+
       submitInfo.pCommandBuffers = &offScreenCmdBuffer;
       VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
 
@@ -739,26 +697,12 @@ public:
       submitInfo.pWaitSemaphores = &offscreenSemaphore;
       // Signal ready with render complete semaphpre
       submitInfo.pSignalSemaphores = &semaphores.renderComplete;
-
-      // Submit work
-      submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];
-      VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
-
-      VulkanExampleBase::submitFrame();
-    } else {
-      VulkanExampleBase::prepareFrame();
-
-      // Command buffer to be sumitted to the queue
-      submitInfo.commandBufferCount = 1;
-      submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];
-
-      // Submit to queue
-      VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
-
-      VulkanExampleBase::submitFrame();
     }
 
-
+    // Submit to queue
+    submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];
+    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+    VulkanExampleBase::submitFrame();
   }
 
   void prepare()
