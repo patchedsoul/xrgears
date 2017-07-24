@@ -32,6 +32,7 @@
 #include "VikSkyDome.hpp"
 #include "VikDistortion.hpp"
 #include "VikOffscreenPass.hpp"
+#include "VikNode.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
@@ -46,7 +47,7 @@ public:
     vks::VERTEX_COMPONENT_COLOR,
   });
 
-  vks::Model teapotModel;
+  VikNode* teapotNode;
 
   bool enableSky = true;
 
@@ -142,7 +143,7 @@ public:
     uniformBuffers.camera.destroy();
     uniformBuffers.lights.destroy();
 
-    //		teapotModel.destroy();
+    delete teapotNode;
 
     for (auto& gear : gears)
       delete(gear);
@@ -310,7 +311,7 @@ public:
       skyDome->draw(cmdBuffer, pipelineLayout, gears[0]->descriptorSet);
 
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
-    drawTeapot(cmdBuffer);
+    //teapotNode->draw(cmdBuffer, pipelineLayout);
 
     for (auto& gear : gears)
       gear->draw(cmdBuffer, pipelineLayout);
@@ -323,25 +324,17 @@ public:
     VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffer));
   }
 
-
-  void drawTeapot(VkCommandBuffer cmdbuffer) {
-    vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &gears[0]->descriptorSet, 0, nullptr);
-    VkDeviceSize offsets[1] = { 0 };
-    vkCmdBindVertexBuffers(cmdbuffer, 0, 1, &teapotModel.vertices.buffer, offsets);
-    vkCmdBindIndexBuffer(cmdbuffer, teapotModel.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-    vkCmdPushConstants(cmdbuffer,
-                       pipelineLayout,
-                       VK_SHADER_STAGE_FRAGMENT_BIT,
-                       sizeof(glm::vec3),
-                       sizeof(Material::PushBlock), &gears[0]->material);
-    vkCmdDrawIndexed(cmdbuffer, teapotModel.indexCount, 1, 0, 0, 0);
-  }
-
-
   void loadAssets() {
     if (enableSky)
       skyDome->loadAssets(vertexLayout, vulkanDevice, queue);
-    teapotModel.loadFromFile(getAssetPath() + "models/teapot.dae", vertexLayout, 0.25f, vulkanDevice, queue);
+
+    teapotNode = new VikNode();
+    teapotNode->loadModel("teapot.dae",
+                          vertexLayout,
+                          0.25f,
+                          vulkanDevice,
+                          queue);
+
   }
 
   void initGears() {
@@ -510,45 +503,12 @@ public:
       skyDome->initTextureDescriptor();
 
     for (auto& gear : gears)
-    {
-      VkDescriptorSetAllocateInfo allocInfo =
-          vks::initializers::descriptorSetAllocateInfo(
-            descriptorPool,
-            &descriptorSetLayout,
-            1);
+      gear->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
+                                uniformBuffers.lights.descriptor,
+                                uniformBuffers.camera.descriptor,
+                                skyDome);
 
-      VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &gear->descriptorSet));
-
-      std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
-
-        // Binding 0 : Vertex shader uniform buffer
-        vks::initializers::writeDescriptorSet(
-        gear->descriptorSet,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        0,
-        &gear->uniformBuffer.descriptor),
-        vks::initializers::writeDescriptorSet(
-        gear->descriptorSet,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        1,
-        &uniformBuffers.lights.descriptor),
-        vks::initializers::writeDescriptorSet(
-        gear->descriptorSet,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        2,
-        &uniformBuffers.camera.descriptor)
-      };
-
-      if (enableSky)
-        writeDescriptorSets.push_back(skyDome->getCubeMapWriteDescriptorSet(3, gear->descriptorSet));
-
-      vkUpdateDescriptorSets(device,
-                             static_cast<uint32_t>(writeDescriptorSets.size()),
-                             writeDescriptorSets.data(),
-                             0,
-                             nullptr);
-    }
-  }
+}
 
   void preparePipelines()
   {

@@ -27,6 +27,7 @@
 
 #include "VikMaterial.hpp"
 #include "VikGear.hpp"
+#include "VikSkyDome.hpp"
 
 struct GearNodeInfo
 {
@@ -55,8 +56,8 @@ private:
   float rotSpeed;
   float rotOffset;
 
-public:
   Material material;
+public:
 
   VkDescriptorSet descriptorSet;
   vks::Buffer uniformBuffer;
@@ -119,5 +120,48 @@ public:
     VK_CHECK_RESULT(uniformBuffer.map());
   }
 
+  void createDescriptorSet(VkDevice& device,
+                           VkDescriptorPool& descriptorPool,
+                           VkDescriptorSetLayout& descriptorSetLayout,
+                           VkDescriptorBufferInfo& lightsDescriptor,
+                           VkDescriptorBufferInfo& cameraDescriptor,
+                           SkyDome *skyDome) {
+    VkDescriptorSetAllocateInfo allocInfo =
+        vks::initializers::descriptorSetAllocateInfo(
+          descriptorPool,
+          &descriptorSetLayout,
+          1);
+
+    VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
+
+    std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
+
+      // Binding 0 : Vertex shader uniform buffer
+      vks::initializers::writeDescriptorSet(
+      descriptorSet,
+      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      0,
+      &uniformBuffer.descriptor),
+      vks::initializers::writeDescriptorSet(
+      descriptorSet,
+      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      1,
+      &lightsDescriptor),
+      vks::initializers::writeDescriptorSet(
+      descriptorSet,
+      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      2,
+      &cameraDescriptor)
+    };
+
+    if (skyDome != nullptr)
+      writeDescriptorSets.push_back(skyDome->getCubeMapWriteDescriptorSet(3, descriptorSet));
+
+    vkUpdateDescriptorSets(device,
+                           static_cast<uint32_t>(writeDescriptorSets.size()),
+                           writeDescriptorSets.data(),
+                           0,
+                           nullptr);
+  }
 };
 

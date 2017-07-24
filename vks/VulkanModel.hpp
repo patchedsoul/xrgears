@@ -87,7 +87,7 @@ namespace vks
 		glm::vec3 scale;
 		glm::vec2 uvscale;
 
-		ModelCreateInfo() {};
+    ModelCreateInfo() {}
 
 		ModelCreateInfo(glm::vec3 scale, glm::vec2 uvscale, glm::vec3 center)
 		{
