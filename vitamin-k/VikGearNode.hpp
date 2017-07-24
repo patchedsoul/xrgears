@@ -121,7 +121,7 @@ public:
                            VkDescriptorSetLayout& descriptorSetLayout,
                            VkDescriptorBufferInfo& lightsDescriptor,
                            VkDescriptorBufferInfo& cameraDescriptor,
-                           SkyDome *skyDome) {
+                           VikSkyDome *skyDome) {
     VkDescriptorSetAllocateInfo allocInfo =
         vks::initializers::descriptorSetAllocateInfo(
           descriptorPool,

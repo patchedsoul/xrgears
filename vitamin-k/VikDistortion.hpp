@@ -16,9 +16,6 @@ private:
   vks::Model quad;
   vks::Buffer uboHandle;
 
-  VkShaderModule vertexShader;
-  VkShaderModule fragmentShader;
-
   struct {
     glm::vec4 hmdWarpParam;
     glm::vec4 aberr;
@@ -43,9 +40,6 @@ public:
 
     quad.destroy();
     uboHandle.destroy();
-
-    vkDestroyShaderModule(device, vertexShader, nullptr);
-    vkDestroyShaderModule(device, fragmentShader, nullptr);
 
     vkDestroyPipeline(device, pipeline, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
@@ -121,20 +115,20 @@ public:
     // Final fullscreen composition pass pipeline
     shaderStages[0] = VikShader::load(device, "hmddistortion/distortion.vert.spv",
                                       VK_SHADER_STAGE_VERTEX_BIT);
-    vertexShader = shaderStages[0].module;
-
     shaderStages[1] = VikShader::load(device,
                                       "hmddistortion/openhmd-distortion-sps.frag.spv",
                                       //"hmddistortion/distortion.frag.spv",
                                       VK_SHADER_STAGE_FRAGMENT_BIT);
     //shaderModules.push_back(shaderStages[1].module);
-    fragmentShader = shaderStages[1].module;
 
 
     VkPipelineVertexInputStateCreateInfo emptyInputState = vks::initializers::pipelineVertexInputStateCreateInfo();
     pipelineCreateInfo.pVertexInputState = &emptyInputState;
     pipelineCreateInfo.layout = pipelineLayout;
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
+
+    vkDestroyShaderModule(device, shaderStages[0].module, nullptr);
+    vkDestroyShaderModule(device, shaderStages[1].module, nullptr);
   }
 
   VkWriteDescriptorSet getUniformWriteDescriptorSet(uint32_t binding) {

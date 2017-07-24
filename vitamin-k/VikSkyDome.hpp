@@ -4,17 +4,19 @@
 #include "../vks/VulkanModel.hpp"
 
 #include "VikAssets.hpp"
+#include "VikShader.hpp"
 
-class SkyDome
+class VikSkyDome
 {
 private:
   vks::TextureCubeMap cubeMap;
 	VkDescriptorSet descriptorSet;
+  VkDevice device;
+  VkDescriptorImageInfo textureDescriptor;
+  vks::Model model;
+  VkPipeline pipeline;
 
 public:
-	VkDescriptorImageInfo textureDescriptor;
-  vks::Model model;
-	VkPipeline pipeline;
   vks::Buffer uniformBuffer;
 
   glm::vec3 pos;
@@ -27,10 +29,16 @@ public:
   };
   UBO ubo;
 
-	~SkyDome() {
+  VikSkyDome(VkDevice device) : device(device) {
+
+  }
+
+  ~VikSkyDome() {
 		cubeMap.destroy();
     model.destroy();
     uniformBuffer.destroy();
+
+    vkDestroyPipeline(device, pipeline, nullptr);
 	}
 
 	void initTextureDescriptor() {
@@ -116,15 +124,9 @@ public:
     vkCmdDrawIndexed(cmdbuffer, model.indexCount, 1, 0, 0, 0);
 	}
 
-  void updateUniformBuffer(StereoView sv, float timer) {
-    ubo.model = glm::mat4();
-
-    ubo.model = glm::translate(ubo.model, pos);
-    float rotation_z = (rotSpeed * timer * 360.0f) + rotOffset;
-    ubo.model = glm::rotate(ubo.model, glm::radians(rotation_z), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    ubo.normal[0] = glm::inverseTranspose(sv.view[0] * ubo.model);
-    ubo.normal[1] = glm::inverseTranspose(sv.view[1] * ubo.model);
+  void updateUniformBuffer() {
+    ubo.normal[0] = glm::mat4();
+    ubo.normal[1] = glm::mat4();
     memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
   }
 
@@ -136,5 +138,33 @@ public:
                       sizeof(ubo)));
     // Map persistent
     VK_CHECK_RESULT(uniformBuffer.map());
+  }
+
+  void createPipeline(VkGraphicsPipelineCreateInfo& pipelineCreateInfo,
+                      VkPipelineCache& pipelineCache) {
+    VkPipelineRasterizationStateCreateInfo rasterizationStateSky =
+        vks::initializers::pipelineRasterizationStateCreateInfo(
+          VK_POLYGON_MODE_FILL,
+          VK_CULL_MODE_BACK_BIT,
+          VK_FRONT_FACE_COUNTER_CLOCKWISE,
+          0);
+
+
+    // Skybox pipeline (background cube)
+    std::array<VkPipelineShaderStageCreateInfo,3> shaderStagesSky;
+
+    shaderStagesSky[0] = VikShader::load(device, "xrgears/sky.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+    shaderStagesSky[1] = VikShader::load(device, "xrgears/sky.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+    shaderStagesSky[2] = VikShader::load(device, "xrgears/sky.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
+
+    pipelineCreateInfo.stageCount = shaderStagesSky.size();
+    pipelineCreateInfo.pStages = shaderStagesSky.data();
+    pipelineCreateInfo.pRasterizationState = &rasterizationStateSky;
+
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
+
+    vkDestroyShaderModule(device, shaderStagesSky[0].module, nullptr);
+    vkDestroyShaderModule(device, shaderStagesSky[1].module, nullptr);
+    vkDestroyShaderModule(device, shaderStagesSky[2].module, nullptr);
   }
 };

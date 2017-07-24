@@ -49,7 +49,6 @@ public:
   });
 
   VikNode* teapotNode;
-
   VikHMD* hmd;
 
   VikCameraStereo* vikCamera;
@@ -57,7 +56,7 @@ public:
   bool enableSky = true;
   bool enableHMDCam = false;
 
-  SkyDome *skyDome;
+  VikSkyDome *skyDome;
   VikDistortion *hmdDistortion;
   VikOffscreenPass *offscreenPass;
 
@@ -114,7 +113,6 @@ public:
     vkDestroyPipeline(device, pipelines.pbr, nullptr);
 
     if (enableSky) {
-      vkDestroyPipeline(device, skyDome->pipeline, nullptr);
       delete skyDome;
     }
 
@@ -560,30 +558,7 @@ public:
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.pbr));
 
     if (enableSky)
-      createSkyDomePipeline(pipelineCreateInfo);
-  }
-
-  void createSkyDomePipeline(VkGraphicsPipelineCreateInfo& pipelineCreateInfo) {
-    VkPipelineRasterizationStateCreateInfo rasterizationStateSky =
-        vks::initializers::pipelineRasterizationStateCreateInfo(
-          VK_POLYGON_MODE_FILL,
-          VK_CULL_MODE_BACK_BIT,
-          VK_FRONT_FACE_COUNTER_CLOCKWISE,
-          0);
-
-
-    // Skybox pipeline (background cube)
-    std::array<VkPipelineShaderStageCreateInfo,3> shaderStagesSky;
-
-    shaderStagesSky[0] = loadShader(getAssetPath() + "shaders/xrgears/sky.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    shaderStagesSky[1] = loadShader(getAssetPath() + "shaders/xrgears/sky.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-    shaderStagesSky[2] = loadShader(getAssetPath() + "shaders/xrgears/sky.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
-
-    pipelineCreateInfo.stageCount = shaderStagesSky.size();
-    pipelineCreateInfo.pStages = shaderStagesSky.data();
-    pipelineCreateInfo.pRasterizationState = &rasterizationStateSky;
-
-    VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &skyDome->pipeline));
+      skyDome->createPipeline(pipelineCreateInfo, pipelineCache);
   }
 
   // Prepare and initialize uniform buffer containing shader uniforms
@@ -619,7 +594,7 @@ public:
       sv.view[1] = vikCamera->uboCamera.view[1];
     }
 
-    skyDome->updateUniformBuffer(sv, timer);
+    skyDome->updateUniformBuffer();
 
     for (auto& gear : gears)
       gear->updateUniformBuffer(sv, timer);
@@ -699,12 +674,10 @@ public:
   {
 
     hmd = new VikHMD();
-    hmd->initOpenHMD();
-
     vikCamera = new VikCameraStereo();
 
     if (enableSky)
-      skyDome = new SkyDome();
+      skyDome = new VikSkyDome(device);
 
     VulkanExampleBase::prepare();
     loadAssets();

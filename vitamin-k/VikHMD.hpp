@@ -12,9 +12,7 @@
 #include "../vks/camera.hpp"
 #include "../vks/VulkanBuffer.hpp"
 
-
 #include "VikCamera.hpp"
-
 #include "VikBuffer.hpp"
 
 class VikHMD {
@@ -28,7 +26,7 @@ public:
     UBOCamera uboCamera;
 
     VikHMD() {
-
+      initOpenHMD();
     }
     ~VikHMD() {
       ohmd_ctx_destroy(openHmdContext);
