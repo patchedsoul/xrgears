@@ -15,7 +15,6 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_FORCE_LEFT_HANDED
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -56,6 +55,7 @@ public:
   VikCameraStereo* vikCamera;
 
   bool enableSky = true;
+  bool enableHMDCam = false;
 
   SkyDome *skyDome;
   VikDistortion *hmdDistortion;
@@ -134,6 +134,7 @@ public:
     vkDestroySemaphore(device, offscreenSemaphore, nullptr);
 
     delete hmd;
+    delete vikCamera;
   }
 
   // Enable physical device features required for this example
@@ -455,17 +456,25 @@ public:
   }
 
   void setupDescriptorSet() {
+
+    VkDescriptorBufferInfo cameraDescriptor;
+
+    if (enableHMDCam)
+      cameraDescriptor = hmd->uniformBuffer.descriptor;
+    else
+      cameraDescriptor = vikCamera->uniformBuffer.descriptor;
+
     if (enableSky) {
       skyDome->initTextureDescriptor();
       skyDome->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
                                    uniformBuffers.lights.descriptor,
-                                   hmd->uniformBuffer.descriptor);
+                                   cameraDescriptor);
     }
 
     for (auto& gear : gears)
       gear->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
                                 uniformBuffers.lights.descriptor,
-                                hmd->uniformBuffer.descriptor,
+                                cameraDescriptor,
                                 skyDome);
 }
 
@@ -583,7 +592,10 @@ public:
     VikBuffer::create(vulkanDevice, &uniformBuffers.lights, sizeof(uboLights));
     //createUniformBuffer(&uniformBuffers.camera, sizeof(uboCamera));
 
-    hmd->prepareUniformBuffers(vulkanDevice);
+    if (enableHMDCam)
+      hmd->prepareUniformBuffers(vulkanDevice);
+    else
+      vikCamera->prepareUniformBuffers(vulkanDevice);
 
     skyDome->prepareUniformBuffer(vulkanDevice);
 
@@ -595,12 +607,17 @@ public:
 
   void updateUniformBuffers()
   {
-    //updateCamera();
-    hmd->updateHMD(camera);
-
     StereoView sv = {};
-    sv.view[0] = hmd->uboCamera.view[0];
-    sv.view[1] = hmd->uboCamera.view[1];
+
+    if (enableHMDCam) {
+      hmd->updateHMD(camera);
+      sv.view[0] = hmd->uboCamera.view[0];
+      sv.view[1] = hmd->uboCamera.view[1];
+    } else {
+      vikCamera->updateCamera(camera, width, height, rotation);
+      sv.view[0] = vikCamera->uboCamera.view[0];
+      sv.view[1] = vikCamera->uboCamera.view[1];
+    }
 
     skyDome->updateUniformBuffer(sv, timer);
 
@@ -683,6 +700,8 @@ public:
 
     hmd = new VikHMD();
     hmd->initOpenHMD();
+
+    vikCamera = new VikCameraStereo();
 
     if (enableSky)
       skyDome = new SkyDome();

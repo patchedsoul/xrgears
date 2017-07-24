@@ -2,19 +2,19 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_FORCE_LEFT_HANDED
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <gli/gli.hpp>
 
-#include "camera.hpp"
+#include <openhmd/openhmd.h>
 
-#include <openhmd.h>
+#include "../vks/camera.hpp"
+#include "../vks/VulkanBuffer.hpp"
+
 
 #include "VikCamera.hpp"
 
-#include "VulkanBuffer.hpp"
 #include "VikBuffer.hpp"
 
 class VikHMD {
@@ -31,8 +31,8 @@ public:
 
     }
     ~VikHMD() {
-	ohmd_ctx_destroy(openHmdContext);
-	uniformBuffer.destroy();
+      ohmd_ctx_destroy(openHmdContext);
+      uniformBuffer.destroy();
     }
 
     void initOpenHMD() {
@@ -42,8 +42,8 @@ public:
       int num_devices = ohmd_ctx_probe(openHmdContext);
 
       if (num_devices < 0){
-	printf("Failed to probe HMD: %s\n", ohmd_ctx_get_error(openHmdContext));
-	return;
+        printf("Failed to probe HMD: %s\n", ohmd_ctx_get_error(openHmdContext));
+        return;
       }
 
       ohmd_device_settings* settings = ohmd_device_settings_create(openHmdContext);
@@ -85,8 +85,8 @@ public:
       ohmd_device_settings_destroy(settings);
 
       if(!openHmdDevice){
-	printf("failed to open device: %s\n", ohmd_ctx_get_error(openHmdContext));
-	return;
+        printf("failed to open device: %s\n", ohmd_ctx_get_error(openHmdContext));
+        return;
       }
 
       printf("viewport_scale: [%0.4f, %0.4f]\n", viewport_scale[0], viewport_scale[1]);
@@ -101,14 +101,14 @@ public:
 
     static inline void
     fix_rotation(glm::mat4& m) {
-	m[0][1] = -m[0][1];
-	m[1][0] = -m[1][0];
-	m[1][2] = -m[1][2];
-	m[2][1] = -m[2][1];
+      m[0][1] = -m[0][1];
+      m[1][0] = -m[1][0];
+      m[1][2] = -m[1][2];
+      m[2][1] = -m[2][1];
     }
 
     void prepareUniformBuffers(vks::VulkanDevice *vulkanDevice) {
-	VikBuffer::create(vulkanDevice, &uniformBuffer, sizeof(uboCamera));
+      VikBuffer::create(vulkanDevice, &uniformBuffer, sizeof(uboCamera));
     }
 
     void updateHMD(Camera camera) {
