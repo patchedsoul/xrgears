@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "../vks/VulkanTools.h"
+#include "../vks/vksTools.hpp"
 
 #include "VikAssets.hpp"
 

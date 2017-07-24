@@ -1,7 +1,7 @@
 #include <glm/glm.hpp>
 
-#include "../vks/VulkanBuffer.hpp"
-#include "../vks/VulkanDevice.hpp"
+#include "../vks/vksBuffer.hpp"
+#include "../vks/vksDevice.hpp"
 
 struct Vertex
 {

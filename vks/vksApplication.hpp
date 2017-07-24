@@ -38,15 +38,14 @@
 
 #include "vulkan/vulkan.h"
 
-#include "keycodes.hpp"
-#include "VulkanTools.h"
-#include "VulkanDebug.h"
-
-#include "VulkanInitializers.hpp"
-#include "VulkanDevice.hpp"
-#include "VulkanSwapChain.hpp"
-#include "VulkanTextOverlay.hpp"
-#include "camera.hpp"
+#include "vksKeyCodes.hpp"
+#include "vksTools.hpp"
+#include "vksDebug.hpp"
+#include "vksInitializers.hpp"
+#include "vksDevice.hpp"
+#include "vksSwapChain.hpp"
+#include "vksTextOverlay.hpp"
+#include "vksCamera.hpp"
 
 class VulkanExampleBase
 {

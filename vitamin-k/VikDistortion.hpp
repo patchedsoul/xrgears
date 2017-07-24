@@ -4,7 +4,7 @@
 
 #include <openhmd/openhmd.h>
 
-#include "../vks/VulkanModel.hpp"
+#include "../vks/vksModel.hpp"
 #include "VikOffscreenPass.hpp"
 #include "VikShader.hpp"
 

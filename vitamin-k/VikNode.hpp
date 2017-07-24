@@ -1,6 +1,6 @@
 #pragma once
 
-#include "VulkanModel.hpp"
+#include "../vks/vksModel.hpp"
 
 #include "VikMaterial.hpp"
 #include "VikAssets.hpp"

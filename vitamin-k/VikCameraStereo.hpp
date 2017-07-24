@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../vks/VulkanBuffer.hpp"
-#include "../vks/camera.hpp"
+#include "../vks/vksBuffer.hpp"
+#include "../vks/vksCamera.hpp"
 
 #include "VikCamera.hpp"
 #include "VikBuffer.hpp"

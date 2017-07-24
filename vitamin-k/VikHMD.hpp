@@ -9,8 +9,8 @@
 
 #include <openhmd/openhmd.h>
 
-#include "../vks/camera.hpp"
-#include "../vks/VulkanBuffer.hpp"
+#include "../vks/vksCamera.hpp"
+#include "../vks/vksBuffer.hpp"
 
 #include "VikCamera.hpp"
 #include "VikBuffer.hpp"

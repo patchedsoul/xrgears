@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../vks/VulkanTexture.hpp"
-#include "../vks/VulkanModel.hpp"
+#include "../vks/vksTexture.hpp"
+#include "../vks/vksModel.hpp"
 
 #include "VikAssets.hpp"
 #include "VikShader.hpp"

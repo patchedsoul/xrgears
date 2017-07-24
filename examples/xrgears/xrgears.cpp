@@ -12,7 +12,6 @@
 #include <assert.h>
 #include <vector>
 
-
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
@@ -22,10 +21,10 @@
 
 #include <vulkan/vulkan.h>
 
-#include "VikGearNode.hpp"
-#include "vulkanexamplebase.h"
-#include "VulkanModel.hpp"
+#include "vksApplication.hpp"
+#include "vksModel.hpp"
 
+#include "VikGearNode.hpp"
 #include "VikSkyBox.hpp"
 #include "VikDistortion.hpp"
 #include "VikOffscreenPass.hpp"

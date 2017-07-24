@@ -21,9 +21,9 @@
 
 #include "vulkan/vulkan.h"
 
-#include "../vks/VulkanTools.h"
-#include "../vks/VulkanBuffer.hpp"
-#include "../vks/camera.hpp"
+#include "../vks/vksTools.hpp"
+#include "../vks/vksBuffer.hpp"
+#include "../vks/vksCamera.hpp"
 
 #include "VikMaterial.hpp"
 #include "VikGear.hpp"

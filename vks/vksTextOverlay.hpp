@@ -17,10 +17,10 @@
 #include <iomanip>
 
 #include <vulkan/vulkan.h>
-#include "VulkanTools.h"
-#include "VulkanDebug.h"
-#include "VulkanBuffer.hpp"
-#include "VulkanDevice.hpp"
+#include "vksTools.hpp"
+#include "vksDebug.hpp"
+#include "vksBuffer.hpp"
+#include "vksDevice.hpp"
 
 #if defined(__ANDROID__)
 #include "VulkanAndroid.h"

@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "../vks/VulkanDevice.hpp"
+#include "../vks/vksDevice.hpp"
 
 // Offscreen frame buffer properties
 #define FB_DIM 2048

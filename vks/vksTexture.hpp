@@ -17,9 +17,9 @@
 
 #include <gli/gli.hpp>
 
-#include "VulkanTools.h"
-#include "VulkanDevice.hpp"
-#include "VulkanBuffer.hpp"
+#include "vksTools.hpp"
+#include "vksDevice.hpp"
+#include "vksBuffer.hpp"
 
 #if defined(__ANDROID__)
 #include <android/asset_manager.h>

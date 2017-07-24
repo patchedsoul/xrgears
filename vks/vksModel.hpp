@@ -24,8 +24,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "VulkanDevice.hpp"
-#include "VulkanBuffer.hpp"
+#include "vksDevice.hpp"
+#include "vksBuffer.hpp"
 
 #if defined(__ANDROID__)
 #include <android/asset_manager.h>

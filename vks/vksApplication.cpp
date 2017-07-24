@@ -6,7 +6,7 @@
 * This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
 */
 
-#include "vulkanexamplebase.h"
+#include "vksApplication.hpp"
 
 std::vector<const char*> VulkanExampleBase::args;
 
