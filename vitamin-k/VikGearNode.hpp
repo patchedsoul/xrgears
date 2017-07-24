@@ -29,8 +29,7 @@
 #include "VikGear.hpp"
 #include "VikSkyDome.hpp"
 
-struct GearNodeInfo
-{
+struct GearNodeInfo {
   glm::vec3 pos;
   float rotSpeed;
   float rotOffset;
@@ -43,8 +42,7 @@ private:
 
   Gear gear;
 
-  struct UBO
-  {
+  struct UBO {
     glm::mat4 normal[2];
     glm::mat4 model;
   };
@@ -57,10 +55,10 @@ private:
   float rotOffset;
 
   Material material;
+  vks::Buffer uniformBuffer;
+  VkDescriptorSet descriptorSet;
 public:
 
-  VkDescriptorSet descriptorSet;
-  vks::Buffer uniformBuffer;
 
   //void setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout, std::vector<VkWriteDescriptorSet> *writeDescriptorSets);
   //glm::mat4 getModelMatrix(glm::vec3 rotation, float timer);
@@ -103,8 +101,6 @@ public:
     float rotation_z = (rotSpeed * timer * 360.0f) + rotOffset;
     ubo.model = glm::rotate(ubo.model, glm::radians(rotation_z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-    /*
-    */
     ubo.normal[0] = glm::inverseTranspose(sv.view[0] * ubo.model);
     ubo.normal[1] = glm::inverseTranspose(sv.view[1] * ubo.model);
     memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));

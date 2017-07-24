@@ -49,7 +49,7 @@ public:
 
   VikNode* teapotNode;
 
-  bool enableSky = false;
+  bool enableSky = true;
 
   SkyDome *skyDome;
   VikDistortion *hmdDistortion;
@@ -274,41 +274,18 @@ public:
   void buildPbrCommandBuffer(VkCommandBuffer cmdBuffer) {
     VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
 
-    /*
-    VkClearValue clearValues[2];
-    clearValues[0].color = defaultClearColor;
-    clearValues[1].depthStencil = { 1.0f, 0 };
-
-
-    VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
-    renderPassBeginInfo.renderPass = renderPass;
-    renderPassBeginInfo.renderArea.offset.x = 0;
-    renderPassBeginInfo.renderArea.offset.y = 0;
-    renderPassBeginInfo.renderArea.extent.width = width;
-    renderPassBeginInfo.renderArea.extent.height = height;
-    renderPassBeginInfo.clearValueCount = 2;
-    renderPassBeginInfo.pClearValues = clearValues;
-    // Set target frame buffer
-    renderPassBeginInfo.framebuffer = frameBuffer;
-    */
-
     VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 
     if (vks::debugmarker::active)
       vks::debugmarker::beginRegion(cmdBuffer, "Pbr offscreen", glm::vec4(0.3f, 0.94f, 1.0f, 1.0f));
 
-    //vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-    //setViewPortAndScissors(cmdBuffer);
-
     offscreenPass->beginRenderPass(cmdBuffer);
-    //offscreenPass->setViewPortAndScissor(cmdBuffer);
     offscreenPass->setViewPortAndScissorStereo(cmdBuffer);
-    //setViewPortAndScissors(cmdBuffer);
 
     vkCmdSetLineWidth(cmdBuffer, 1.0f);
 
     if (enableSky)
-      skyDome->draw(cmdBuffer, pipelineLayout, gears[0]->descriptorSet);
+      skyDome->draw(cmdBuffer, pipelineLayout);
 
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
     //teapotNode->draw(cmdBuffer, pipelineLayout);
@@ -439,7 +416,7 @@ public:
         vks::initializers::descriptorPoolCreateInfo(
           static_cast<uint32_t>(poolSizes.size()),
           poolSizes.data(),
-          4);
+          5);
 
     VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &descriptorPool));
   }
@@ -492,13 +469,15 @@ public:
     pPipelineLayoutCreateInfo.pPushConstantRanges = pushConstantRanges.data();
 
     VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
-
-    //setupDescriptorSetLayoutSky();
   }
 
   void setupDescriptorSet() {
-    if (enableSky)
+    if (enableSky) {
       skyDome->initTextureDescriptor();
+      skyDome->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
+                                   uniformBuffers.lights.descriptor,
+                                   uniformBuffers.camera.descriptor);
+    }
 
     for (auto& gear : gears)
       gear->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
@@ -552,15 +531,6 @@ public:
 
     VkGraphicsPipelineCreateInfo pipelineCreateInfo =
         vks::initializers::pipelineCreateInfo(pipelineLayout, offscreenPass->getRenderPass());
-
-
-    /*
-    VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-        vks::initializers::pipelineCreateInfo(
-          nullptr,
-          offscreenPass->getRenderPass(),
-          0);
-*/
 
     // Vertex bindings an attributes
     std::vector<VkVertexInputBindingDescription> vertexInputBindings = {
@@ -641,6 +611,8 @@ public:
     createUniformBuffer(&uniformBuffers.lights, sizeof(uboLights));
     createUniformBuffer(&uniformBuffers.camera, sizeof(uboCamera));
 
+    skyDome->prepareUniformBuffer(vulkanDevice);
+
     for (auto& gear : gears)
       gear->prepareUniformBuffer();
 
@@ -656,12 +628,12 @@ public:
     sv.view[0] = uboCamera.view[0];
     sv.view[1] = uboCamera.view[1];
 
+    skyDome->updateUniformBuffer(sv, timer);
+
     for (auto& gear : gears)
       gear->updateUniformBuffer(sv, timer);
 
     updateLights();
-
-
   }
 
 
@@ -775,10 +747,6 @@ public:
     uboCamera.position = camera.position * -1.0f;
 
     memcpy(uniformBuffers.camera.mapped, &uboCamera, sizeof(uboCamera));
-  }
-
-  void loadTextures()
-  {
   }
 
   void initOpenHMD() {
@@ -906,7 +874,6 @@ public:
       skyDome = new SkyDome();
 
     VulkanExampleBase::prepare();
-    loadTextures();
     loadAssets();
 
     hmdDistortion = new VikDistortion(device);
