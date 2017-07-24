@@ -5,6 +5,7 @@
 
 #include "VikAssets.hpp"
 #include "VikShader.hpp"
+#include "VikBuffer.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 
@@ -80,13 +81,7 @@ public:
   }
 
   void prepareUniformbuffers(vks::VulkanDevice *vulkanDevice) {
-    // Skybox
-    VK_CHECK_RESULT(vulkanDevice->createBuffer(
-      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-      &uniformBuffer,
-      sizeof(ubo)));
-     VK_CHECK_RESULT(uniformBuffer.map());
+     VikBuffer::create(vulkanDevice, &uniformBuffer, sizeof(ubo));
   }
 
   void updateUniformBuffers(int width, int height, glm::mat4& view) {

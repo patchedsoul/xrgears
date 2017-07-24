@@ -465,7 +465,6 @@ public:
     if (enableSky) {
       skyDome->initTextureDescriptor();
       skyDome->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
-                                   uniformBuffers.lights.descriptor,
                                    cameraDescriptor);
     }
 
@@ -565,14 +564,11 @@ public:
   void prepareUniformBuffers()
   {
     VikBuffer::create(vulkanDevice, &uniformBuffers.lights, sizeof(uboLights));
-    //createUniformBuffer(&uniformBuffers.camera, sizeof(uboCamera));
 
     if (enableHMDCam)
       hmd->prepareUniformBuffers(vulkanDevice);
     else
       vikCamera->prepareUniformBuffers(vulkanDevice);
-
-    skyDome->prepareUniformBuffer(vulkanDevice);
 
     for (auto& gear : gears)
       gear->prepareUniformBuffer();
@@ -593,8 +589,6 @@ public:
       sv.view[0] = vikCamera->uboCamera.view[0];
       sv.view[1] = vikCamera->uboCamera.view[1];
     }
-
-    skyDome->updateUniformBuffer();
 
     for (auto& gear : gears)
       gear->updateUniformBuffer(sv, timer);

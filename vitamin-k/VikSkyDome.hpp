@@ -5,6 +5,7 @@
 
 #include "VikAssets.hpp"
 #include "VikShader.hpp"
+#include "VikBuffer.hpp"
 
 class VikSkyDome
 {
@@ -15,12 +16,6 @@ private:
   VkDescriptorImageInfo textureDescriptor;
   vks::Model model;
   VkPipeline pipeline;
-  vks::Buffer uniformBuffer;
-  struct UBO {
-    glm::mat4 normal[2];
-    glm::mat4 model;
-  };
-  UBO ubo;
 
 public:
   VikSkyDome(VkDevice device) : device(device) {}
@@ -28,7 +23,6 @@ public:
   ~VikSkyDome() {
 		cubeMap.destroy();
     model.destroy();
-    uniformBuffer.destroy();
     vkDestroyPipeline(device, pipeline, nullptr);
 	}
 
@@ -56,7 +50,8 @@ public:
     cubeMap.loadFromFile(
           //VikAssets::getTexturePath() + "cubemap_yokohama_bc3_unorm.ktx", VK_FORMAT_BC2_UNORM_BLOCK,
           //VikAssets::getTexturePath() + "equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT,
-          VikAssets::getTexturePath() + "hdr/pisa_cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT,
+          //VikAssets::getTexturePath() + "hdr/pisa_cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT,
+          VikAssets::getAssetPath() + "textures/cubemap_space.ktx", VK_FORMAT_R8G8B8A8_UNORM,
           vulkanDevice,
           queue);
   }
@@ -64,7 +59,6 @@ public:
   void createDescriptorSet(VkDevice& device,
                            VkDescriptorPool& descriptorPool,
                            VkDescriptorSetLayout& descriptorSetLayout,
-                           VkDescriptorBufferInfo& lightsDescriptor,
                            VkDescriptorBufferInfo& cameraDescriptor) {
     VkDescriptorSetAllocateInfo allocInfo =
         vks::initializers::descriptorSetAllocateInfo(
@@ -75,18 +69,6 @@ public:
     VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
 
     std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
-
-      // Binding 0 : Vertex shader uniform buffer
-      vks::initializers::writeDescriptorSet(
-      descriptorSet,
-      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      0,
-      &uniformBuffer.descriptor),
-      vks::initializers::writeDescriptorSet(
-      descriptorSet,
-      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      1,
-      &lightsDescriptor),
       vks::initializers::writeDescriptorSet(
       descriptorSet,
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -94,7 +76,7 @@ public:
       &cameraDescriptor)
     };
 
-     writeDescriptorSets.push_back(getCubeMapWriteDescriptorSet(3, descriptorSet));
+    writeDescriptorSets.push_back(getCubeMapWriteDescriptorSet(3, descriptorSet));
 
     vkUpdateDescriptorSets(device,
                            static_cast<uint32_t>(writeDescriptorSets.size()),
@@ -114,22 +96,6 @@ public:
 
     vkCmdDrawIndexed(cmdbuffer, model.indexCount, 1, 0, 0, 0);
 	}
-
-  void updateUniformBuffer() {
-    ubo.normal[0] = glm::mat4();
-    ubo.normal[1] = glm::mat4();
-    memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
-  }
-
-  void prepareUniformBuffer(vks::VulkanDevice *vulkanDevice) {
-    VK_CHECK_RESULT(vulkanDevice->createBuffer(
-                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                      &uniformBuffer,
-                      sizeof(ubo)));
-    // Map persistent
-    VK_CHECK_RESULT(uniformBuffer.map());
-  }
 
   void createPipeline(VkGraphicsPipelineCreateInfo& pipelineCreateInfo,
                       VkPipelineCache& pipelineCache) {
