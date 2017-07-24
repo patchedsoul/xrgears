@@ -30,6 +30,7 @@ public:
 	~SkyDome() {
 		cubeMap.destroy();
     model.destroy();
+    uniformBuffer.destroy();
 	}
 
 	void initTextureDescriptor() {
