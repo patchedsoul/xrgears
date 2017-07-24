@@ -9,17 +9,25 @@
 #define VERTEX_BUFFER_BIND_ID 0
 
 class VikSkyCube {
-
 private:
+  VkDevice device;
+  VkPipeline pipeline;
+  VkDescriptorSet descriptorSet;
+
   vks::TextureCubeMap cubemap;
   vks::Model model;
-  VkPipeline pipeline;
+  vks::Buffer uniformBuffer;
+
+  struct UBO {
+    glm::mat4 projection;
+    glm::mat4 view;
+    glm::mat4 model;
+  };
+
+  UBO ubo;
 
 public:
 
-  vks::Buffer uniformBuffer;
-  VkDescriptorSet descriptorSet;
-  VkDevice device;
 
   VikSkyCube(VkDevice d) {
     device = d;
@@ -69,6 +77,24 @@ public:
     vkCmdBindVertexBuffers(cmdBuffer, VERTEX_BUFFER_BIND_ID, 1, &model.vertices.buffer, offsets);
     vkCmdBindIndexBuffer(cmdBuffer, model.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdDrawIndexed(cmdBuffer, model.indexCount, 1, 0, 0, 0);
+  }
+
+  void prepareUniformbuffers(vks::VulkanDevice *vulkanDevice) {
+    // Skybox
+    VK_CHECK_RESULT(vulkanDevice->createBuffer(
+      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+      &uniformBuffer,
+      sizeof(ubo)));
+     VK_CHECK_RESULT(uniformBuffer.map());
+  }
+
+  void updateUniformBuffers(int width, int height, glm::mat4& view) {
+    // Skybox
+    ubo.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 256.0f);
+    ubo.view = glm::mat4(glm::mat3(view));
+    ubo.model = glm::mat4();
+    memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
   }
 
 };

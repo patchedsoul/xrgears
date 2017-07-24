@@ -75,7 +75,7 @@ public:
 	};
 
 	struct {
-		UBO scene, skyBox;
+    UBO scene;
 		UBOBlurParams blurParams;
 	} ubos;
 
@@ -783,17 +783,11 @@ public:
 			&uniformBuffers.blurParams,
 			sizeof(ubos.blurParams)));
 
-		// Skybox
-		VK_CHECK_RESULT(vulkanDevice->createBuffer(
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-      &skyCube->uniformBuffer,
-			sizeof(ubos.skyBox)));
+    skyCube->prepareUniformbuffers(vulkanDevice);
 
 		// Map persistent
 		VK_CHECK_RESULT(uniformBuffers.scene.map());
 		VK_CHECK_RESULT(uniformBuffers.blurParams.map());
-    VK_CHECK_RESULT(skyCube->uniformBuffer.map());
 
 		// Intialize uniform buffers
 		updateUniformBuffersScene();
@@ -813,12 +807,7 @@ public:
 
 		memcpy(uniformBuffers.scene.mapped, &ubos.scene, sizeof(ubos.scene));
 
-		// Skybox
-		ubos.skyBox.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 256.0f);
-		ubos.skyBox.view = glm::mat4(glm::mat3(camera.matrices.view));
-		ubos.skyBox.model = glm::mat4();
-
-    memcpy(skyCube->uniformBuffer.mapped, &ubos.skyBox, sizeof(ubos.skyBox));
+    skyCube->updateUniformBuffers(width, height, camera.matrices.view);
 	}
 
 	// Update blur pass parameter uniform buffer
