@@ -71,10 +71,10 @@ public:
 
   void generate(GearNodeInfo *gearNodeinfo, GearInfo *gearinfo, VkQueue queue) {
     //	this->color = gearinfo->color;
-    this->pos = gearNodeinfo->pos;
-    this->rotOffset = gearNodeinfo->rotOffset;
-    this->rotSpeed = gearNodeinfo->rotSpeed;
-    this->material = gearNodeinfo->material;
+    pos = gearNodeinfo->pos;
+    rotOffset = gearNodeinfo->rotOffset;
+    rotSpeed = gearNodeinfo->rotSpeed;
+    material = gearNodeinfo->material;
 
     gear.generate(vulkanDevice, gearinfo, queue);
   }
@@ -107,13 +107,7 @@ public:
   }
 
   void prepareUniformBuffer() {
-    VK_CHECK_RESULT(vulkanDevice->createBuffer(
-                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                      &uniformBuffer,
-                      sizeof(ubo)));
-    // Map persistent
-    VK_CHECK_RESULT(uniformBuffer.map());
+    VikBuffer::create(vulkanDevice, &uniformBuffer, sizeof(ubo));
   }
 
   void createDescriptorSet(VkDevice& device,

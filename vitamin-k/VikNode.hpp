@@ -4,6 +4,7 @@
 
 #include "VikMaterial.hpp"
 #include "VikAssets.hpp"
+#include "VikBuffer.hpp"
 
 
 class VikNode {
@@ -42,6 +43,10 @@ public:
           queue);
   }
 
+  void setMateral(Material& m) {
+    material = m;
+  }
+
   void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout) {
     vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
     VkDeviceSize offsets[1] = { 0 };
@@ -55,6 +60,50 @@ public:
     vkCmdDrawIndexed(cmdbuffer, model.indexCount, 1, 0, 0, 0);
   }
 
+  void createDescriptorSet(VkDevice& device,
+                           VkDescriptorPool& descriptorPool,
+                           VkDescriptorSetLayout& descriptorSetLayout,
+                           VkDescriptorBufferInfo& lightsDescriptor,
+                           VkDescriptorBufferInfo& cameraDescriptor,
+                           VikSkyBox *skyDome) {
+    VkDescriptorSetAllocateInfo allocInfo =
+        vks::initializers::descriptorSetAllocateInfo(
+          descriptorPool,
+          &descriptorSetLayout,
+          1);
+
+    VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
+
+    std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
+
+      // Binding 0 : Vertex shader uniform buffer
+      vks::initializers::writeDescriptorSet(
+      descriptorSet,
+      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      0,
+      &uniformBuffer.descriptor),
+      vks::initializers::writeDescriptorSet(
+      descriptorSet,
+      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      1,
+      &lightsDescriptor),
+      vks::initializers::writeDescriptorSet(
+      descriptorSet,
+      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      2,
+      &cameraDescriptor)
+    };
+
+    if (skyDome != nullptr)
+      writeDescriptorSets.push_back(skyDome->getCubeMapWriteDescriptorSet(3, descriptorSet));
+
+    vkUpdateDescriptorSets(device,
+                           static_cast<uint32_t>(writeDescriptorSets.size()),
+                           writeDescriptorSets.data(),
+                           0,
+                           nullptr);
+  }
+
   void updateUniformBuffer(StereoView sv, float timer) {
     ubo.model = glm::mat4();
 
@@ -62,20 +111,12 @@ public:
     float rotation_z = (rotSpeed * timer * 360.0f) + rotOffset;
     ubo.model = glm::rotate(ubo.model, glm::radians(rotation_z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-    /*
-      */
     ubo.normal[0] = glm::inverseTranspose(sv.view[0] * ubo.model);
     ubo.normal[1] = glm::inverseTranspose(sv.view[1] * ubo.model);
     memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
   }
 
   void prepareUniformBuffer(vks::VulkanDevice *vulkanDevice) {
-    VK_CHECK_RESULT(vulkanDevice->createBuffer(
-                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                      &uniformBuffer,
-                      sizeof(ubo)));
-    // Map persistent
-    VK_CHECK_RESULT(uniformBuffer.map());
+    VikBuffer::create(vulkanDevice, &uniformBuffer, sizeof(ubo));
   }
 };

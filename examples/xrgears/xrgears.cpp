@@ -329,6 +329,11 @@ public:
   }
 
   void initGears() {
+
+    Material teapotMaterial = Material("Orange", glm::vec3(1.0f, 1.0f, 0.0f), 0.5f, 0.1f);
+
+    teapotNode->setMateral(teapotMaterial);
+
     // Gear definitions
     std::vector<float> innerRadiuses = { 1.0f, 0.5f, 1.3f };
     std::vector<float> outerRadiuses = { 4.0f, 2.0f, 2.0f };
@@ -422,15 +427,15 @@ public:
   {
     // Example uses two ubos
     std::vector<VkDescriptorPoolSize> poolSizes = {
-      vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 13),
-      vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 5)
+      vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16),
+      vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 6)
     };
 
     VkDescriptorPoolCreateInfo descriptorPoolInfo =
         vks::initializers::descriptorPoolCreateInfo(
           static_cast<uint32_t>(poolSizes.size()),
           poolSizes.data(),
-          5);
+          6);
 
     VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &descriptorPool));
   }
@@ -503,6 +508,11 @@ public:
 
       skyBox->createDescriptorSet(allocInfo, cameraDescriptor);
     }
+
+    teapotNode->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
+                              uniformBuffers.lights.descriptor,
+                              cameraDescriptor,
+                              skyBox);
 
     for (auto& gear : gears)
       gear->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
@@ -612,6 +622,8 @@ public:
     else
       vikCamera->prepareUniformBuffers(vulkanDevice);
 
+    teapotNode->prepareUniformBuffer(vulkanDevice);
+
     for (auto& gear : gears)
       gear->prepareUniformBuffer();
 
@@ -631,6 +643,8 @@ public:
       sv.view[0] = vikCamera->uboCamera.view[0];
       sv.view[1] = vikCamera->uboCamera.view[1];
     }
+
+    teapotNode->updateUniformBuffer(sv, timer);
 
     for (auto& gear : gears)
       gear->updateUniformBuffer(sv, timer);
