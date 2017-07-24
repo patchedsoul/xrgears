@@ -54,7 +54,7 @@ public:
 
   bool enableSky = true;
   bool enableHMDCam = false;
-  bool enableDistortion = false;
+  bool enableDistortion = true;
 
   VikSkyBox *skyBox;
   VikDistortion *hmdDistortion;
@@ -226,8 +226,6 @@ public:
     offscreenPass->beginRenderPass(cmdBuffer);
     offscreenPass->setViewPortAndScissorStereo(cmdBuffer);
 
-    vkCmdSetLineWidth(cmdBuffer, 1.0f);
-
     drawScene(cmdBuffer);
 
     vkCmdEndRenderPass(cmdBuffer);
@@ -243,7 +241,7 @@ public:
       skyBox->draw(cmdBuffer, pipelineLayout);
 
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
-    //teapotNode->draw(cmdBuffer, pipelineLayout);
+    teapotNode->draw(cmdBuffer, pipelineLayout);
 
     for (auto& gear : gears)
       gear->draw(cmdBuffer, pipelineLayout);
@@ -513,8 +511,7 @@ public:
                                 skyBox);
 }
 
-  void preparePipelines()
-  {
+  void preparePipelines() {
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
         vks::initializers::pipelineInputAssemblyStateCreateInfo(
           VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
@@ -555,14 +552,15 @@ public:
     // Load shaders
     std::array<VkPipelineShaderStageCreateInfo, 3> shaderStages;
 
-
     VkGraphicsPipelineCreateInfo pipelineCreateInfo;
 
-    if (enableDistortion) {
-      pipelineCreateInfo = vks::initializers::pipelineCreateInfo(pipelineLayout, offscreenPass->getRenderPass());
-    } else
-      pipelineCreateInfo = vks::initializers::pipelineCreateInfo(pipelineLayout, renderPass);
+    VkRenderPass usedPass;
+    if (enableDistortion)
+      usedPass = offscreenPass->getRenderPass();
+    else
+      usedPass = renderPass;
 
+    pipelineCreateInfo = vks::initializers::pipelineCreateInfo(pipelineLayout, usedPass);
 
     // Vertex bindings an attributes
     std::vector<VkVertexInputBindingDescription> vertexInputBindings = {
@@ -591,10 +589,7 @@ public:
     pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
     pipelineCreateInfo.pStages = shaderStages.data();
 
-    if (enableDistortion)
-      pipelineCreateInfo.renderPass = offscreenPass->getRenderPass();
-    else
-      pipelineCreateInfo.renderPass = renderPass;
+    pipelineCreateInfo.renderPass = usedPass;
 
     shaderStages[0] = loadShader(getAssetPath() + "shaders/xrgears/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = loadShader(getAssetPath() + "shaders/xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
