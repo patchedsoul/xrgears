@@ -10,7 +10,7 @@
 
 #define VERTEX_BUFFER_BIND_ID 0
 
-class VikDistortion{
+class VikDistortion {
 private:
   VkDevice device;
   vks::Model quad;

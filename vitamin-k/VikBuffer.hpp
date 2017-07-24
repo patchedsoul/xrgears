@@ -1,7 +1,7 @@
 #pragma once
 
-#include "VulkanBuffer.hpp"
-#include "VulkanDevice.hpp"
+#include "../vks/VulkanBuffer.hpp"
+#include "../vks/VulkanDevice.hpp"
 
 class VikBuffer {
 public:
