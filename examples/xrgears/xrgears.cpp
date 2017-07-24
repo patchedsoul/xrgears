@@ -54,6 +54,7 @@ public:
 
   bool enableSky = true;
   bool enableHMDCam = false;
+  bool enableDistortion = false;
 
   VikSkyBox *skyBox;
   VikDistortion *hmdDistortion;
