@@ -15,29 +15,20 @@ private:
   VkDescriptorImageInfo textureDescriptor;
   vks::Model model;
   VkPipeline pipeline;
-
-public:
   vks::Buffer uniformBuffer;
-
-  glm::vec3 pos;
-  float rotSpeed;
-  float rotOffset;
-
   struct UBO {
     glm::mat4 normal[2];
     glm::mat4 model;
   };
   UBO ubo;
 
-  VikSkyDome(VkDevice device) : device(device) {
-
-  }
+public:
+  VikSkyDome(VkDevice device) : device(device) {}
 
   ~VikSkyDome() {
 		cubeMap.destroy();
     model.destroy();
     uniformBuffer.destroy();
-
     vkDestroyPipeline(device, pipeline, nullptr);
 	}
 
@@ -148,7 +139,6 @@ public:
           VK_CULL_MODE_BACK_BIT,
           VK_FRONT_FACE_COUNTER_CLOCKWISE,
           0);
-
 
     // Skybox pipeline (background cube)
     std::array<VkPipelineShaderStageCreateInfo,3> shaderStagesSky;
