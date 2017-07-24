@@ -155,11 +155,15 @@ public:
 
   void buildCommandBuffers()
   {
-    printf("Draw command buffers size: %d\n", drawCmdBuffers.size());
+    if (enableDistortion) {
+      printf("Draw command buffers size: %d\n", drawCmdBuffers.size());
 
-    for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
-      //buildPbrCommandBuffer(drawCmdBuffers[i], frameBuffers[i]);
-      buildWarpCommandBuffer(drawCmdBuffers[i], frameBuffers[i]);
+      for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
+        //buildPbrCommandBuffer(drawCmdBuffers[i], frameBuffers[i]);
+        buildWarpCommandBuffer(drawCmdBuffers[i], frameBuffers[i]);
+    } else {
+      buildPbrCommandBufferOnScreen();
+    }
   }
 
   void buildWarpCommandBuffer(VkCommandBuffer& cmdBuffer, VkFramebuffer frameBuffer) {
@@ -211,7 +215,7 @@ public:
     VkSemaphoreCreateInfo semaphoreCreateInfo = vks::initializers::semaphoreCreateInfo();
     VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &offscreenSemaphore));
 
-    buildPbrCommandBuffer(offScreenCmdBuffer);
+    buildPbrCommandBufferOffScreen(offScreenCmdBuffer);
 
     /*
     VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
@@ -236,7 +240,50 @@ public:
     */
   }
 
-  void setViewPortAndScissors(VkCommandBuffer cmdBuffer) {
+
+  void buildPbrCommandBufferOffScreen(VkCommandBuffer cmdBuffer) {
+    VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+
+    VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
+
+    if (vks::debugmarker::active)
+      vks::debugmarker::beginRegion(cmdBuffer, "Pbr offscreen", glm::vec4(0.3f, 0.94f, 1.0f, 1.0f));
+
+    offscreenPass->beginRenderPass(cmdBuffer);
+    offscreenPass->setViewPortAndScissorStereo(cmdBuffer);
+
+    vkCmdSetLineWidth(cmdBuffer, 1.0f);
+
+    drawScene(cmdBuffer);
+
+    vkCmdEndRenderPass(cmdBuffer);
+
+    if (vks::debugmarker::active)
+      vks::debugmarker::endRegion(cmdBuffer);
+
+    VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffer));
+  }
+
+  void drawScene(VkCommandBuffer cmdBuffer) {
+    if (enableSky)
+      skyBox->draw(cmdBuffer, pipelineLayout);
+
+    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
+    //teapotNode->draw(cmdBuffer, pipelineLayout);
+
+    for (auto& gear : gears)
+      gear->draw(cmdBuffer, pipelineLayout);
+  }
+
+  void setMonoViewPortAndScissors(VkCommandBuffer cmdBuffer) {
+    VkViewport viewport = vks::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
+    vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor = vks::initializers::rect2D(width, height, 0, 0);
+    vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
+  }
+
+  void setStereoViewPortAndScissors(VkCommandBuffer cmdBuffer) {
     VkViewport viewports[2];
     // Left
     viewports[0] = { 0, 0, (float)width / 2.0f, (float)height, 0.0, 1.0f };
@@ -252,35 +299,58 @@ public:
     vkCmdSetScissor(cmdBuffer, 0, 2, scissorRects);
   }
 
-  void buildPbrCommandBuffer(VkCommandBuffer cmdBuffer) {
+
+  void buildPbrCommandBufferOnScreen()
+  {
     VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
 
-    VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
+    /*
+    VkClearValue clearValues[2];
+    clearValues[0].color = defaultClearColor;
+    clearValues[1].depthStencil = { 1.0f, 0 };
+    */
 
-    if (vks::debugmarker::active)
-      vks::debugmarker::beginRegion(cmdBuffer, "Pbr offscreen", glm::vec4(0.3f, 0.94f, 1.0f, 1.0f));
 
-    offscreenPass->beginRenderPass(cmdBuffer);
-    offscreenPass->setViewPortAndScissorStereo(cmdBuffer);
+    // Clear values for all attachments written in the fragment sahder
+    std::array<VkClearValue,2> clearValues;
+    clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
+    clearValues[1].depthStencil = { 1.0f, 0 };
 
-    vkCmdSetLineWidth(cmdBuffer, 1.0f);
 
-    if (enableSky)
-      skyBox->draw(cmdBuffer, pipelineLayout);
+    VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
+    renderPassBeginInfo.renderPass = renderPass;
+    renderPassBeginInfo.renderArea.offset.x = 0;
+    renderPassBeginInfo.renderArea.offset.y = 0;
+    renderPassBeginInfo.renderArea.extent.width = width;
+    renderPassBeginInfo.renderArea.extent.height = height;
+    renderPassBeginInfo.clearValueCount = 2;
+    renderPassBeginInfo.pClearValues = clearValues.data();
 
-    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
-    //teapotNode->draw(cmdBuffer, pipelineLayout);
+    for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
+    {
+      renderPassBeginInfo.framebuffer = frameBuffers[i];
 
-    for (auto& gear : gears)
-      gear->draw(cmdBuffer, pipelineLayout);
+      VK_CHECK_RESULT(vkBeginCommandBuffer(drawCmdBuffers[i], &cmdBufInfo));
 
-    vkCmdEndRenderPass(cmdBuffer);
+      if (vks::debugmarker::active)
+        vks::debugmarker::beginRegion(drawCmdBuffers[i], "PBR Pass Onscreen", glm::vec4(0.3f, 0.94f, 1.0f, 1.0f));
 
-    if (vks::debugmarker::active)
-      vks::debugmarker::endRegion(cmdBuffer);
+      vkCmdBeginRenderPass(drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffer));
+      //setMonoViewPortAndScissors(drawCmdBuffers[i]);
+      setStereoViewPortAndScissors(drawCmdBuffers[i]);
+
+      drawScene(drawCmdBuffers[i]);
+
+      vkCmdEndRenderPass(drawCmdBuffers[i]);
+
+      if (vks::debugmarker::active)
+        vks::debugmarker::endRegion(drawCmdBuffers[i]);
+
+      VK_CHECK_RESULT(vkEndCommandBuffer(drawCmdBuffers[i]));
+    }
   }
+
 
   void loadAssets() {
     if (enableSky)
@@ -521,8 +591,13 @@ public:
     std::array<VkPipelineShaderStageCreateInfo, 3> shaderStages;
 
 
-    VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-        vks::initializers::pipelineCreateInfo(pipelineLayout, offscreenPass->getRenderPass());
+    VkGraphicsPipelineCreateInfo pipelineCreateInfo;
+
+    if (enableDistortion) {
+      pipelineCreateInfo = vks::initializers::pipelineCreateInfo(pipelineLayout, offscreenPass->getRenderPass());
+    } else
+      pipelineCreateInfo = vks::initializers::pipelineCreateInfo(pipelineLayout, renderPass);
+
 
     // Vertex bindings an attributes
     std::vector<VkVertexInputBindingDescription> vertexInputBindings = {
@@ -550,7 +625,11 @@ public:
     pipelineCreateInfo.pDynamicState = &dynamicState;
     pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
     pipelineCreateInfo.pStages = shaderStages.data();
-    pipelineCreateInfo.renderPass = offscreenPass->getRenderPass();
+
+    if (enableDistortion)
+      pipelineCreateInfo.renderPass = offscreenPass->getRenderPass();
+    else
+      pipelineCreateInfo.renderPass = renderPass;
 
     shaderStages[0] = loadShader(getAssetPath() + "shaders/xrgears/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = loadShader(getAssetPath() + "shaders/xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -628,43 +707,58 @@ public:
     VulkanExampleBase::submitFrame();
     */
 
-    VulkanExampleBase::prepareFrame();
+    if (enableDistortion) {
+      VulkanExampleBase::prepareFrame();
 
-    // The scene render command buffer has to wait for the offscreen
-    // rendering to be finished before we can use the framebuffer
-    // color image for sampling during final rendering
-    // To ensure this we use a dedicated offscreen synchronization
-    // semaphore that will be signaled when offscreen renderin
-    // has been finished
-    // This is necessary as an implementation may start both
-    // command buffers at the same time, there is no guarantee
-    // that command buffers will be executed in the order they
-    // have been submitted by the application
+      // The scene render command buffer has to wait for the offscreen
+      // rendering to be finished before we can use the framebuffer
+      // color image for sampling during final rendering
+      // To ensure this we use a dedicated offscreen synchronization
+      // semaphore that will be signaled when offscreen renderin
+      // has been finished
+      // This is necessary as an implementation may start both
+      // command buffers at the same time, there is no guarantee
+      // that command buffers will be executed in the order they
+      // have been submitted by the application
 
-    // Offscreen rendering
+      // Offscreen rendering
 
-    // Wait for swap chain presentation to finish
-    submitInfo.pWaitSemaphores = &semaphores.presentComplete;
-    // Signal ready with offscreen semaphore
-    submitInfo.pSignalSemaphores = &offscreenSemaphore;
+      // Wait for swap chain presentation to finish
+      submitInfo.pWaitSemaphores = &semaphores.presentComplete;
+      // Signal ready with offscreen semaphore
+      submitInfo.pSignalSemaphores = &offscreenSemaphore;
 
-    // Submit work
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &offScreenCmdBuffer;
-    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+      // Submit work
+      submitInfo.commandBufferCount = 1;
+      submitInfo.pCommandBuffers = &offScreenCmdBuffer;
+      VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
 
-    // Scene rendering
+      // Scene rendering
 
-    // Wait for offscreen semaphore
-    submitInfo.pWaitSemaphores = &offscreenSemaphore;
-    // Signal ready with render complete semaphpre
-    submitInfo.pSignalSemaphores = &semaphores.renderComplete;
+      // Wait for offscreen semaphore
+      submitInfo.pWaitSemaphores = &offscreenSemaphore;
+      // Signal ready with render complete semaphpre
+      submitInfo.pSignalSemaphores = &semaphores.renderComplete;
 
-    // Submit work
-    submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];
-    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+      // Submit work
+      submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];
+      VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
 
-    VulkanExampleBase::submitFrame();
+      VulkanExampleBase::submitFrame();
+    } else {
+      VulkanExampleBase::prepareFrame();
+
+      // Command buffer to be sumitted to the queue
+      submitInfo.commandBufferCount = 1;
+      submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];
+
+      // Submit to queue
+      VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+
+      VulkanExampleBase::submitFrame();
+    }
+
+
   }
 
   void prepare()
@@ -679,31 +773,45 @@ public:
     VulkanExampleBase::prepare();
     loadAssets();
 
-    hmdDistortion = new VikDistortion(device);
-    hmdDistortion->generateQuads(vulkanDevice);
+    if (enableDistortion) {
+      hmdDistortion = new VikDistortion(device);
+      hmdDistortion->generateQuads(vulkanDevice);
+    }
 
     initGears();
     prepareVertices();
 
-    offscreenPass = new VikOffscreenPass(device);
-    offscreenPass->prepareOffscreenFramebuffer(vulkanDevice, physicalDevice);
+    if (enableDistortion) {
+      offscreenPass = new VikOffscreenPass(device);
+      offscreenPass->prepareOffscreenFramebuffer(vulkanDevice, physicalDevice);
+    }
 
     prepareUniformBuffers();
-    hmdDistortion->prepareUniformBuffer(vulkanDevice);
-    hmdDistortion->updateUniformBufferWarp(hmd->openHmdDevice);
+
+    if (enableDistortion) {
+      hmdDistortion->prepareUniformBuffer(vulkanDevice);
+      hmdDistortion->updateUniformBufferWarp(hmd->openHmdDevice);
+    }
 
     setupDescriptorSetLayoutShading();
 
-    hmdDistortion->createDescriptorSetLayout();
-    hmdDistortion->createPipeLineLayout();
-    hmdDistortion->createPipeLine(renderPass, pipelineCache);
+    if (enableDistortion) {
+      hmdDistortion->createDescriptorSetLayout();
+      hmdDistortion->createPipeLineLayout();
+      hmdDistortion->createPipeLine(renderPass, pipelineCache);
+    }
 
     preparePipelines();
     setupDescriptorPool();
-    hmdDistortion->createDescriptorSet(offscreenPass, descriptorPool);
+
+    if (enableDistortion)
+      hmdDistortion->createDescriptorSet(offscreenPass, descriptorPool);
     setupDescriptorSet();
     buildCommandBuffers();
-    buildOffscreenCommandBuffer();
+
+    if (enableDistortion)
+      buildOffscreenCommandBuffer();
+
     prepared = true;
   }
 
