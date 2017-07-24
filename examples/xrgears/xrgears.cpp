@@ -49,7 +49,7 @@ public:
 
   VikNode* teapotNode;
 
-  bool enableSky = true;
+  bool enableSky = false;
 
   SkyDome *skyDome;
   VikDistortion *hmdDistortion;
@@ -496,9 +496,7 @@ public:
     //setupDescriptorSetLayoutSky();
   }
 
-  void setupDescriptorSet()
-  {
-
+  void setupDescriptorSet() {
     if (enableSky)
       skyDome->initTextureDescriptor();
 
@@ -507,7 +505,6 @@ public:
                                 uniformBuffers.lights.descriptor,
                                 uniformBuffers.camera.descriptor,
                                 skyDome);
-
 }
 
   void preparePipelines()
