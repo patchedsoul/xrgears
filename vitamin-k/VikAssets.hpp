@@ -12,4 +12,8 @@ public:
   static const std::string getShaderPath() {
     return getAssetPath() + "shaders/";
   }
+
+  static const std::string getTexturePath() {
+    return getAssetPath() + "textures/";
+  }
 };

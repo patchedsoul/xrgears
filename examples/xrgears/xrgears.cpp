@@ -46,7 +46,7 @@ public:
     vks::VERTEX_COMPONENT_COLOR,
   });
 
-  //vks::Model teapotModel;
+  vks::Model teapotModel;
 
   bool enableSky = true;
 
@@ -310,7 +310,7 @@ public:
       skyDome->draw(cmdBuffer, pipelineLayout, gears[0]->descriptorSet);
 
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
-    //drawTeapot(drawCmdBuffers[i]);
+    drawTeapot(cmdBuffer);
 
     for (auto& gear : gears)
       gear->draw(cmdBuffer, pipelineLayout);
@@ -323,7 +323,7 @@ public:
     VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffer));
   }
 
-  /*
+
   void drawTeapot(VkCommandBuffer cmdbuffer) {
     vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &gears[0]->descriptorSet, 0, nullptr);
     VkDeviceSize offsets[1] = { 0 };
@@ -336,12 +336,12 @@ public:
                        sizeof(Material::PushBlock), &gears[0]->material);
     vkCmdDrawIndexed(cmdbuffer, teapotModel.indexCount, 1, 0, 0, 0);
   }
-  */
+
 
   void loadAssets() {
     if (enableSky)
-      skyDome->loadAssets(getAssetPath(), vertexLayout, vulkanDevice, queue);
-    //teapotModel.loadFromFile(getAssetPath() + "models/sphere.obj", vertexLayout, 0.25f, vulkanDevice, queue);
+      skyDome->loadAssets(vertexLayout, vulkanDevice, queue);
+    teapotModel.loadFromFile(getAssetPath() + "models/teapot.dae", vertexLayout, 0.25f, vulkanDevice, queue);
   }
 
   void initGears() {
@@ -503,39 +503,6 @@ public:
     //setupDescriptorSetLayoutSky();
   }
 
-  /*
-  void setupDescriptorSetLayoutSky()
-  {
-    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
-    {
-      // Binding 0 : Vertex shader uniform buffer
-      vks::initializers::descriptorSetLayoutBinding(
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        VK_SHADER_STAGE_VERTEX_BIT,
-        0),
-      // Binding 1 : Fragment shader image sampler
-      vks::initializers::descriptorSetLayoutBinding(
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        1)
-    };
-
-    VkDescriptorSetLayoutCreateInfo descriptorLayout =
-      vks::initializers::descriptorSetLayoutCreateInfo(
-        setLayoutBindings.data(),
-        setLayoutBindings.size());
-
-    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &descriptorSetLayoutSky));
-
-    VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
-      vks::initializers::pipelineLayoutCreateInfo(
-        &descriptorSetLayoutSky,
-        1);
-
-    VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
-  }
-  */
-
   void setupDescriptorSet()
   {
 
@@ -675,7 +642,6 @@ public:
 
     if (enableSky)
       createSkyDomePipeline(pipelineCreateInfo);
-
   }
 
   void createSkyDomePipeline(VkGraphicsPipelineCreateInfo& pipelineCreateInfo) {
@@ -854,57 +820,8 @@ public:
     memcpy(uniformBuffers.camera.mapped, &uboCamera, sizeof(uboCamera));
   }
 
-  void loadCubemap(std::string filename, VkFormat format)
-  {
-    VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-    skyDome->loadCubemap(device, vulkanDevice, copyCmd, filename, format);
-    VulkanExampleBase::flushCommandBuffer(copyCmd, queue, true);
-    skyDome->deleteStatingBuffer(device);
-    skyDome->createSampler(device, vulkanDevice);
-    skyDome->createImageView(device, format);
-  }
-
-
   void loadTextures()
   {
-
-    /*
-    // Vulkan core supports three different compressed texture formats
-    // As the support differs between implemementations we need to check device features and select a proper format and file
-    std::string filename;
-    VkFormat format;
-    if (deviceFeatures.textureCompressionBC) {
-      filename = "cubemap_yokohama_bc3_unorm.ktx";
-      format = VK_FORMAT_BC2_UNORM_BLOCK;
-    }
-    else if (deviceFeatures.textureCompressionASTC_LDR) {
-      filename = "cubemap_yokohama_astc_8x8_unorm.ktx";
-      format = VK_FORMAT_ASTC_8x8_UNORM_BLOCK;
-    }
-    else if (deviceFeatures.textureCompressionETC2) {
-      filename = "cubemap_yokohama_etc2_unorm.ktx";
-      format = VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
-    }
-    else {
-      vks::tools::exitFatal("Device does not support any compressed texture format!", "Error");
-    }
-
-    printf("Using texture %s\n", filename.c_str());
-
-    loadCubemap(getAssetPath() + "textures/" + filename, format);
-    */
-
-
-    // ==>
-    if (enableSky)
-      //loadCubemap(getAssetPath() + "textures/equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
-
-
-
-    //loadCubemap(getAssetPath() + "textures/hdr/pisa_cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT);
-
-    loadCubemap(getAssetPath() + "textures/cubemap_yokohama_bc3_unorm.ktx", VK_FORMAT_BC2_UNORM_BLOCK);
-
   }
 
   void initOpenHMD() {
