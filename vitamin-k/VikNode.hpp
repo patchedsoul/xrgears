@@ -29,7 +29,7 @@ public:
   VikNode() {
   }
 
-  ~VikNode() {
+  virtual ~VikNode() {
     uniformBuffer.destroy();
   }
 
@@ -107,4 +107,6 @@ public:
   void prepareUniformBuffer(vks::VulkanDevice *vulkanDevice) {
     VikBuffer::create(vulkanDevice, &uniformBuffer, sizeof(ubo));
   }
+
+  virtual void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout) {}
 };

@@ -38,8 +38,7 @@
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
 
-class XRGears : public Application
-{
+class XRGears : public Application {
 public:
   // Vertex layout for the models
   vks::VertexLayout vertexLayout = vks::VertexLayout({
@@ -47,7 +46,6 @@ public:
     vks::VERTEX_COMPONENT_NORMAL
   });
 
-  VikNodeModel* teapotNode;
   VikHMD* hmd;
   VikCamera* vikCamera;
 
@@ -69,7 +67,7 @@ public:
     std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
   } vertices;
 
-  std::vector<VikNodeGear*> gears;
+  std::vector<VikNode*> nodes;
 
   struct UBOLights {
     glm::vec4 lights[4];
@@ -83,7 +81,6 @@ public:
     VkPipeline pbr;
   } pipelines;
 
-
   VkPipelineLayout pipelineLayout;
   VkDescriptorSetLayout descriptorSetLayout;
 
@@ -91,8 +88,7 @@ public:
   // Semaphore used to synchronize between offscreen and final scene rendering
   VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
-  XRGears() : Application(ENABLE_VALIDATION)
-  {
+  XRGears() : Application(ENABLE_VALIDATION) {
     title = "XR Gears";
     enableTextOverlay = true;
     camera.type = Camera::CameraType::firstperson;
@@ -102,7 +98,6 @@ public:
     camera.movementSpeed = 5.0f;
     timerSpeed *= 0.25f;
     //paused = true;
-
   }
 
   ~XRGears()
@@ -122,10 +117,8 @@ public:
     //uniformBuffers.camera.destroy();
     uniformBuffers.lights.destroy();
 
-    delete teapotNode;
-
-    for (auto& gear : gears)
-      delete(gear);
+    for (auto& node : nodes)
+      delete(node);
 
     vkDestroySemaphore(device, offscreenSemaphore, nullptr);
 
@@ -240,10 +233,9 @@ public:
       skyBox->draw(cmdBuffer, pipelineLayout);
 
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
-    teapotNode->draw(cmdBuffer, pipelineLayout);
 
-    for (auto& gear : gears)
-      gear->draw(cmdBuffer, pipelineLayout);
+    for (auto& node : nodes)
+      node->draw(cmdBuffer, pipelineLayout);
   }
 
   void setMonoViewPortAndScissors(VkCommandBuffer cmdBuffer) {
@@ -317,24 +309,9 @@ public:
   void loadAssets() {
     if (enableSky)
       skyBox->loadAssets(vertexLayout, vulkanDevice, queue);
-
-    teapotNode = new VikNodeModel();
-    teapotNode->loadModel("teapot.dae",
-                          vertexLayout,
-                          0.25f,
-                          vulkanDevice,
-                          queue);
-
   }
 
   void initGears() {
-
-    Material teapotMaterial = Material("Cream", glm::vec3(1.0f, 1.0f, 0.7f), 1.0f, 1.0f);
-    teapotNode->setMateral(teapotMaterial);
-
-    glm::vec3 teapotPosition = glm::vec3(-15.0, -5.0, -5.0);
-    teapotNode->setPosition(teapotPosition);
-
     // Gear definitions
     std::vector<float> innerRadiuses = { 1.0f, 0.5f, 1.3f };
     std::vector<float> outerRadiuses = { 4.0f, 2.0f, 2.0f };
@@ -356,8 +333,8 @@ public:
     std::vector<float> rotationSpeeds = { 1.0f, -2.0f, -2.0f };
     std::vector<float> rotationOffsets = { 0.0f, -9.0f, -30.0f };
 
-    gears.resize(positions.size());
-    for (int32_t i = 0; i < gears.size(); ++i)
+    nodes.resize(positions.size());
+    for (int32_t i = 0; i < nodes.size(); ++i)
     {
       VikNode::NodeInfo gearNodeInfo = {};
       GearInfo gearInfo = {};
@@ -372,10 +349,25 @@ public:
       gearNodeInfo.rotOffset = rotationOffsets[i];
       gearNodeInfo.material = materials[i];
 
-      gears[i] = new VikNodeGear();
-      gears[i]->setInfo(&gearNodeInfo);
-      gears[i]->generate(vulkanDevice, &gearInfo, queue);
+      nodes[i] = new VikNodeGear();
+      nodes[i]->setInfo(&gearNodeInfo);
+      ((VikNodeGear*)nodes[i])->generate(vulkanDevice, &gearInfo, queue);
     }
+
+    VikNodeModel* teapotNode = new VikNodeModel();
+    teapotNode->loadModel("teapot.dae",
+                          vertexLayout,
+                          0.25f,
+                          vulkanDevice,
+                          queue);
+
+    Material teapotMaterial = Material("Cream", glm::vec3(1.0f, 1.0f, 0.7f), 1.0f, 1.0f);
+    teapotNode->setMateral(teapotMaterial);
+    nodes.push_back(teapotNode);
+
+    glm::vec3 teapotPosition = glm::vec3(-15.0, -5.0, -5.0);
+    teapotNode->setPosition(teapotPosition);
+
   }
 
   void prepareVertices()
@@ -498,13 +490,8 @@ public:
       skyBox->createDescriptorSet(allocInfo, vikCamera->uniformBuffer.descriptor);
     }
 
-    teapotNode->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
-                              uniformBuffers.lights.descriptor,
-                              vikCamera->uniformBuffer.descriptor,
-                              skyBox);
-
-    for (auto& gear : gears)
-      gear->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
+    for (auto& node : nodes)
+      node->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
                                 uniformBuffers.lights.descriptor,
                                 vikCamera->uniformBuffer.descriptor,
                                 skyBox);
@@ -607,10 +594,9 @@ public:
     VikBuffer::create(vulkanDevice, &uniformBuffers.lights, sizeof(uboLights));
 
     vikCamera->prepareUniformBuffers(vulkanDevice);
-    teapotNode->prepareUniformBuffer(vulkanDevice);
 
-    for (auto& gear : gears)
-      gear->prepareUniformBuffer(vulkanDevice);
+    for (auto& node : nodes)
+      node->prepareUniformBuffer(vulkanDevice);
 
     updateUniformBuffers();
   }
@@ -623,10 +609,8 @@ public:
     sv.view[0] = vikCamera->uboCamera.view[0];
     sv.view[1] = vikCamera->uboCamera.view[1];
 
-    teapotNode->updateUniformBuffer(sv, timer);
-
-    for (auto& gear : gears)
-      gear->updateUniformBuffer(sv, timer);
+    for (auto& node : nodes)
+      node->updateUniformBuffer(sv, timer);
 
     updateLights();
   }
