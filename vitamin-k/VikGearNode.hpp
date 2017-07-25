@@ -36,10 +36,8 @@ struct GearNodeInfo {
   Material material;
 };
 
-class GearNode
-{
+class VikNodeGear {
 private:
-
   Gear gear;
 
   struct UBO {
@@ -57,9 +55,9 @@ private:
   VkDescriptorSet descriptorSet;
 
 public:
-  GearNode() {}
+  VikNodeGear() {}
 
-  ~GearNode() {
+  ~VikNodeGear() {
     uniformBuffer.destroy();
   }
 
