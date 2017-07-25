@@ -239,8 +239,10 @@ public:
 
       vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-      //setMonoViewPortAndScissors(drawCmdBuffers[i]);
-      setStereoViewPortAndScissors(cmdBuffer);
+      if (enableStereo)
+        setStereoViewPortAndScissors(cmdBuffer);
+      else
+        setMonoViewPortAndScissors(cmdBuffer);
     }
 
     drawScene(cmdBuffer);
@@ -500,9 +502,12 @@ public:
     VkPipelineDepthStencilStateCreateInfo depthStencilState =
         vks::initializers::pipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
-    // We use two viewports
-    VkPipelineViewportStateCreateInfo viewportState =
-        vks::initializers::pipelineViewportStateCreateInfo(2, 2, 0);
+    VkPipelineViewportStateCreateInfo viewportState;
+    if (enableStereo)
+      viewportState = vks::initializers::pipelineViewportStateCreateInfo(2, 2, 0);
+    else
+      viewportState = vks::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+
 
     VkPipelineMultisampleStateCreateInfo multisampleState =
         vks::initializers::pipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
