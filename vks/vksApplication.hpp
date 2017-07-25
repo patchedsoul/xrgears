@@ -33,6 +33,10 @@
 #include "vksTextOverlay.hpp"
 #include "vksCamera.hpp"
 
+#include "vksWindowXCB.hpp"
+#include "vksWindowWayland.hpp"
+#include "vksWindowDisplay.hpp"
+
 class Application
 {
 private:	
@@ -55,6 +59,9 @@ private:
 	bool resizing = false;
 	// Called if the window is resized and some resources have to be recreatesd
 	void windowResize();
+
+  vksWindowXCB * windowXCB;
+
 protected:
 	// Frame counter to display fps
 	uint32_t frameCounter = 0;
