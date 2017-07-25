@@ -24,7 +24,7 @@
 #include "vksApplication.hpp"
 #include "vksModel.hpp"
 
-#include "VikGearNode.hpp"
+#include "VikNodeGear.hpp"
 #include "VikSkyBox.hpp"
 #include "VikDistortion.hpp"
 #include "VikOffscreenPass.hpp"
@@ -70,7 +70,7 @@ public:
     std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
   } vertices;
 
-  std::vector<GearNode*> gears;
+  std::vector<VikNodeGear*> gears;
 
   struct UBOLights {
     glm::vec4 lights[4];
@@ -373,7 +373,7 @@ public:
       gearNodeInfo.rotOffset = rotationOffsets[i];
       gearNodeInfo.material = materials[i];
 
-      gears[i] = new GearNode();
+      gears[i] = new VikNodeGear();
       gears[i]->generate(vulkanDevice, &gearNodeInfo, &gearInfo, queue);
     }
   }
