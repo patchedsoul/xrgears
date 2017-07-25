@@ -83,15 +83,10 @@ const std::string Application::getAssetPath() {
 	return "./data/";
 }
 
-bool Application::checkCommandBuffers()
-{
+bool Application::checkCommandBuffers() {
 	for (auto& cmdBuffer : drawCmdBuffers)
-	{
 		if (cmdBuffer == VK_NULL_HANDLE)
-		{
 			return false;
-		}
-	}
 	return true;
 }
 
@@ -130,8 +125,7 @@ VkCommandBuffer Application::createCommandBuffer(VkCommandBufferLevel level, boo
 	VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, &cmdBuffer));
 
 	// If requested, also start the new command buffer
-	if (begin)
-	{
+  if (begin) {
 		VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
 		VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 	}
