@@ -330,7 +330,7 @@ public:
 
   void initGears() {
 
-    Material teapotMaterial = Material("Cream", glm::vec3(1.0f, 1.0f, 0.5f), 0.5f, 0.1f);
+    Material teapotMaterial = Material("Cream", glm::vec3(1.0f, 1.0f, 0.7f), 1.0f, 1.0f);
     teapotNode->setMateral(teapotMaterial);
 
     glm::vec3 teapotPosition = glm::vec3(-15.0, -5.0, -5.0);
@@ -342,11 +342,6 @@ public:
     std::vector<float> widths = { 1.0f, 2.0f, 0.5f };
     std::vector<int32_t> toothCount = { 20, 10, 10 };
     std::vector<float> toothDepth = { 0.7f, 0.7f, 0.7f };
-    std::vector<glm::vec3> colors = {
-      glm::vec3(1.0f, 0.0f, 0.0f),
-      glm::vec3(0.0f, 1.0f, 0.2f),
-      glm::vec3(0.0f, 0.0f, 1.0f)
-    };
     std::vector<glm::vec3> positions = {
       glm::vec3(-3.0, 0.0, 0.0),
       glm::vec3(3.1, 0.0, 0.0),
@@ -378,8 +373,8 @@ public:
       gearNodeInfo.rotOffset = rotationOffsets[i];
       gearNodeInfo.material = materials[i];
 
-      gears[i] = new GearNode(vulkanDevice);
-      gears[i]->generate(&gearNodeInfo, &gearInfo, queue);
+      gears[i] = new GearNode();
+      gears[i]->generate(vulkanDevice, &gearNodeInfo, &gearInfo, queue);
     }
   }
 
@@ -627,7 +622,7 @@ public:
     teapotNode->prepareUniformBuffer(vulkanDevice);
 
     for (auto& gear : gears)
-      gear->prepareUniformBuffer();
+      gear->prepareUniformBuffer(vulkanDevice);
 
     updateUniformBuffers();
   }

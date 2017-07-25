@@ -48,8 +48,6 @@ private:
   };
   UBO ubo;
 
-  vks::VulkanDevice *vulkanDevice;
-
   glm::vec3 pos;
   float rotSpeed;
   float rotOffset;
@@ -63,13 +61,13 @@ public:
   //void setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout, std::vector<VkWriteDescriptorSet> *writeDescriptorSets);
   //glm::mat4 getModelMatrix(glm::vec3 rotation, float timer);
 
-  GearNode(vks::VulkanDevice *vulkanDevice) : vulkanDevice(vulkanDevice) {}
+  GearNode() {}
 
   ~GearNode() {
     uniformBuffer.destroy();
   }
 
-  void generate(GearNodeInfo *gearNodeinfo, GearInfo *gearinfo, VkQueue queue) {
+  void generate(vks::VulkanDevice *vulkanDevice, GearNodeInfo *gearNodeinfo, GearInfo *gearinfo, VkQueue queue) {
     //	this->color = gearinfo->color;
     pos = gearNodeinfo->pos;
     rotOffset = gearNodeinfo->rotOffset;
@@ -106,7 +104,7 @@ public:
     memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
   }
 
-  void prepareUniformBuffer() {
+  void prepareUniformBuffer(vks::VulkanDevice *vulkanDevice) {
     VikBuffer::create(vulkanDevice, &uniformBuffer, sizeof(ubo));
   }
 
