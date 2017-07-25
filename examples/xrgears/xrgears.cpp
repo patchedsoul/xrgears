@@ -50,8 +50,9 @@ public:
   VikCamera* vikCamera;
 
   bool enableSky = true;
-  bool enableHMDCam = true;
+  bool enableHMDCam = false;
   bool enableDistortion = true;
+  bool enableStereo = false;
 
   VikSkyBox *skyBox;
   VikDistortion *hmdDistortion;
@@ -145,31 +146,35 @@ public:
     }
   }
 
-  void buildCommandBuffers()
-  {
+  void buildCommandBuffers() {
     printf("Draw command buffers size: %d\n", drawCmdBuffers.size());
 
     if (enableDistortion)
       for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
         buildWarpCommandBuffer(drawCmdBuffers[i], frameBuffers[i]);
     else
-      buildPbrCommandBufferOnScreen();
+      for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
+        buildPbrCommandBuffer(drawCmdBuffers[i], frameBuffers[i], false);
   }
 
-  void buildWarpCommandBuffer(VkCommandBuffer& cmdBuffer, VkFramebuffer frameBuffer) {
-
-    VkClearValue clearValues[2];
-    clearValues[0].color = { { 0.0f, 0.0f, 0.2f, 0.0f } };
-    clearValues[1].depthStencil = { 1.0f, 0 };
-
+  inline VkRenderPassBeginInfo defaultRenderPassBeginInfo() {
     VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
     renderPassBeginInfo.renderPass = renderPass;
     renderPassBeginInfo.renderArea.offset.x = 0;
     renderPassBeginInfo.renderArea.offset.y = 0;
     renderPassBeginInfo.renderArea.extent.width = width;
     renderPassBeginInfo.renderArea.extent.height = height;
-    renderPassBeginInfo.clearValueCount = 2;
-    renderPassBeginInfo.pClearValues = clearValues;
+    return renderPassBeginInfo;
+  }
+
+  void buildWarpCommandBuffer(VkCommandBuffer& cmdBuffer, VkFramebuffer frameBuffer) {
+    std::array<VkClearValue,2> clearValues;
+    clearValues[0].color = { { 0.0f, 0.0f, 0.2f, 0.0f } };
+    clearValues[1].depthStencil = { 1.0f, 0 };
+
+    VkRenderPassBeginInfo renderPassBeginInfo = defaultRenderPassBeginInfo();
+    renderPassBeginInfo.clearValueCount = clearValues.size();
+    renderPassBeginInfo.pClearValues = clearValues.data();
 
     // Set target frame buffer
     renderPassBeginInfo.framebuffer = frameBuffer;
@@ -204,19 +209,39 @@ public:
     VkSemaphoreCreateInfo semaphoreCreateInfo = vks::initializers::semaphoreCreateInfo();
     VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &offscreenSemaphore));
 
-    buildPbrCommandBufferOffScreen(offScreenCmdBuffer);
+    VkFramebuffer unused;
+
+    buildPbrCommandBuffer(offScreenCmdBuffer, unused, true);
   }
 
-  void buildPbrCommandBufferOffScreen(VkCommandBuffer cmdBuffer) {
-    VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+  void buildPbrCommandBuffer(VkCommandBuffer& cmdBuffer, VkFramebuffer& framebuffer, bool offScreen) {
 
+    VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
     VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 
     if (vks::debugmarker::active)
-      vks::debugmarker::beginRegion(cmdBuffer, "Pbr offscreen", glm::vec4(0.3f, 0.94f, 1.0f, 1.0f));
+      vks::debugmarker::beginRegion(cmdBuffer,
+                                    offScreen ? "Pbr offscreen" : "PBR Pass Onscreen",
+                                    glm::vec4(0.3f, 0.94f, 1.0f, 1.0f));
 
-    offscreenPass->beginRenderPass(cmdBuffer);
-    offscreenPass->setViewPortAndScissorStereo(cmdBuffer);
+    if (offScreen) {
+      offscreenPass->beginRenderPass(cmdBuffer);
+      offscreenPass->setViewPortAndScissorStereo(cmdBuffer);
+    } else {
+      std::array<VkClearValue,2> clearValues;
+      clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
+      clearValues[1].depthStencil = { 1.0f, 0 };
+
+      VkRenderPassBeginInfo renderPassBeginInfo = defaultRenderPassBeginInfo();
+      renderPassBeginInfo.clearValueCount = clearValues.size();
+      renderPassBeginInfo.pClearValues = clearValues.data();
+      renderPassBeginInfo.framebuffer = framebuffer;
+
+      vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+      //setMonoViewPortAndScissors(drawCmdBuffers[i]);
+      setStereoViewPortAndScissors(cmdBuffer);
+    }
 
     drawScene(cmdBuffer);
 
@@ -261,50 +286,6 @@ public:
     };
     vkCmdSetScissor(cmdBuffer, 0, 2, scissorRects);
   }
-
-
-  void buildPbrCommandBufferOnScreen() {
-    VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
-
-    // Clear values for all attachments written in the fragment sahder
-    std::array<VkClearValue,2> clearValues;
-    clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
-    clearValues[1].depthStencil = { 1.0f, 0 };
-
-    VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
-    renderPassBeginInfo.renderPass = renderPass;
-    renderPassBeginInfo.renderArea.offset.x = 0;
-    renderPassBeginInfo.renderArea.offset.y = 0;
-    renderPassBeginInfo.renderArea.extent.width = width;
-    renderPassBeginInfo.renderArea.extent.height = height;
-    renderPassBeginInfo.clearValueCount = 2;
-    renderPassBeginInfo.pClearValues = clearValues.data();
-
-    for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
-    {
-      renderPassBeginInfo.framebuffer = frameBuffers[i];
-
-      VK_CHECK_RESULT(vkBeginCommandBuffer(drawCmdBuffers[i], &cmdBufInfo));
-
-      if (vks::debugmarker::active)
-        vks::debugmarker::beginRegion(drawCmdBuffers[i], "PBR Pass Onscreen", glm::vec4(0.3f, 0.94f, 1.0f, 1.0f));
-
-      vkCmdBeginRenderPass(drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-      //setMonoViewPortAndScissors(drawCmdBuffers[i]);
-      setStereoViewPortAndScissors(drawCmdBuffers[i]);
-
-      drawScene(drawCmdBuffers[i]);
-
-      vkCmdEndRenderPass(drawCmdBuffers[i]);
-
-      if (vks::debugmarker::active)
-        vks::debugmarker::endRegion(drawCmdBuffers[i]);
-
-      VK_CHECK_RESULT(vkEndCommandBuffer(drawCmdBuffers[i]));
-    }
-  }
-
 
   void loadAssets() {
     if (enableSky)
@@ -429,7 +410,7 @@ public:
     VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &descriptorPool));
   }
 
-  void setupDescriptorSetLayoutShading()
+  void setupDescriptorSetLayout()
   {
     std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
     {
@@ -690,30 +671,18 @@ public:
 
     Application::prepare();
     loadAssets();
-
-    if (enableDistortion) {
-      hmdDistortion = new VikDistortion(device);
-      hmdDistortion->generateQuads(vulkanDevice);
-    }
-
     initGears();
     prepareVertices();
+    prepareUniformBuffers();
+    setupDescriptorSetLayout();
 
     if (enableDistortion) {
       offscreenPass = new VikOffscreenPass(device);
       offscreenPass->prepareOffscreenFramebuffer(vulkanDevice, physicalDevice);
-    }
-
-    prepareUniformBuffers();
-
-    if (enableDistortion) {
+      hmdDistortion = new VikDistortion(device);
+      hmdDistortion->generateQuads(vulkanDevice);
       hmdDistortion->prepareUniformBuffer(vulkanDevice);
       hmdDistortion->updateUniformBufferWarp(hmd->openHmdDevice);
-    }
-
-    setupDescriptorSetLayoutShading();
-
-    if (enableDistortion) {
       hmdDistortion->createDescriptorSetLayout();
       hmdDistortion->createPipeLineLayout();
       hmdDistortion->createPipeLine(renderPass, pipelineCache);
