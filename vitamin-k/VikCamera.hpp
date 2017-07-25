@@ -8,9 +8,27 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <gli/gli.hpp>
 
-struct UBOCamera {
-  glm::mat4 projection[2];
-  glm::mat4 view[2];
-  glm::mat4 skyView[2];
-  glm::vec3 position;
+#include "VikBuffer.hpp"
+
+class VikCamera {
+
+public:
+  vks::Buffer uniformBuffer;
+
+  struct UBOCamera {
+    glm::mat4 projection[2];
+    glm::mat4 view[2];
+    glm::mat4 skyView[2];
+    glm::vec3 position;
+  } uboCamera;
+
+  ~VikCamera () {
+    uniformBuffer.destroy();
+  }
+
+  virtual void update(Camera camera) {}
+
+  void prepareUniformBuffers(vks::VulkanDevice *vulkanDevice) {
+    VikBuffer::create(vulkanDevice, &uniformBuffer, sizeof(uboCamera));
+  }
 };

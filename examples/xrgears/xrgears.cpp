@@ -50,8 +50,7 @@ public:
 
   VikNodeModel* teapotNode;
   VikHMD* hmd;
-  VikCameraHMD* cameraHMD;
-  VikCameraStereo* cameraStereo;
+  VikCamera* vikCamera;
 
   bool enableSky = true;
   bool enableHMDCam = true;
@@ -131,8 +130,7 @@ public:
 
     vkDestroySemaphore(device, offscreenSemaphore, nullptr);
 
-    delete cameraStereo;
-    delete cameraHMD;
+    delete vikCamera;
     delete hmd;
   }
 
@@ -491,14 +489,6 @@ public:
   }
 
   void setupDescriptorSet() {
-
-    VkDescriptorBufferInfo cameraDescriptor;
-
-    if (enableHMDCam)
-      cameraDescriptor = cameraHMD->uniformBuffer.descriptor;
-    else
-      cameraDescriptor = cameraStereo->uniformBuffer.descriptor;
-
     if (enableSky) {
       VkDescriptorSetAllocateInfo allocInfo =
           vks::initializers::descriptorSetAllocateInfo(
@@ -506,18 +496,18 @@ public:
             &descriptorSetLayout,
             1);
 
-      skyBox->createDescriptorSet(allocInfo, cameraDescriptor);
+      skyBox->createDescriptorSet(allocInfo, vikCamera->uniformBuffer.descriptor);
     }
 
     teapotNode->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
                               uniformBuffers.lights.descriptor,
-                              cameraDescriptor,
+                              vikCamera->uniformBuffer.descriptor,
                               skyBox);
 
     for (auto& gear : gears)
       gear->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
                                 uniformBuffers.lights.descriptor,
-                                cameraDescriptor,
+                                vikCamera->uniformBuffer.descriptor,
                                 skyBox);
 }
 
@@ -617,11 +607,7 @@ public:
   {
     VikBuffer::create(vulkanDevice, &uniformBuffers.lights, sizeof(uboLights));
 
-    if (enableHMDCam)
-      cameraHMD->prepareUniformBuffers(vulkanDevice);
-    else
-      cameraStereo->prepareUniformBuffers(vulkanDevice);
-
+    vikCamera->prepareUniformBuffers(vulkanDevice);
     teapotNode->prepareUniformBuffer(vulkanDevice);
 
     for (auto& gear : gears)
@@ -632,17 +618,11 @@ public:
 
   void updateUniformBuffers()
   {
-    StereoView sv = {};
+    vikCamera->update(camera);
 
-    if (enableHMDCam) {
-      cameraHMD->updateHMD(camera);
-      sv.view[0] = cameraHMD->uboCamera.view[0];
-      sv.view[1] = cameraHMD->uboCamera.view[1];
-    } else {
-      cameraStereo->updateCamera(camera, width, height, rotation);
-      sv.view[0] = cameraStereo->uboCamera.view[0];
-      sv.view[1] = cameraStereo->uboCamera.view[1];
-    }
+    StereoView sv = {};
+    sv.view[0] = vikCamera->uboCamera.view[0];
+    sv.view[1] = vikCamera->uboCamera.view[1];
 
     teapotNode->updateUniformBuffer(sv, timer);
 
@@ -714,12 +694,13 @@ public:
     Application::submitFrame();
   }
 
-  void prepare()
-  {
-
+  void prepare() {
     hmd = new VikHMD();
-    cameraStereo = new VikCameraStereo();
-    cameraHMD = new VikCameraHMD(hmd);
+
+    if (enableHMDCam)
+      vikCamera = new VikCameraHMD(hmd);
+    else
+      vikCamera = new VikCameraStereo(width, height);
 
     if (enableSky)
       skyBox = new VikSkyBox(device);
@@ -790,7 +771,8 @@ public:
 
   void changeEyeSeparation(float delta)
   {
-    cameraStereo->changeEyeSeparation(delta);
+    if (!enableHMDCam)
+      ((VikCameraStereo*)vikCamera)->changeEyeSeparation(delta);
     updateUniformBuffers();
   }
 

@@ -6,18 +6,12 @@
 #include "VikBuffer.hpp"
 #include "VikHMD.hpp"
 
-class VikCameraHMD {
+class VikCameraHMD : public VikCamera {
 public:
-  vks::Buffer uniformBuffer;
-  UBOCamera uboCamera;
+
   VikHMD* hmd;
 
-  VikCameraHMD (VikHMD* h) : hmd(h) {
-  }
-
-  ~VikCameraHMD () {
-    uniformBuffer.destroy();
-  }
+  VikCameraHMD (VikHMD* h) : hmd(h) {}
 
   static inline void
   fix_handedness(glm::mat4& m) {
@@ -27,11 +21,7 @@ public:
     m[2][1] = -m[2][1];
   }
 
-  void prepareUniformBuffers(vks::VulkanDevice *vulkanDevice) {
-    VikBuffer::create(vulkanDevice, &uniformBuffer, sizeof(uboCamera));
-  }
-
-  void updateHMD(Camera camera) {
+  void update(Camera camera) {
 
     glm::mat4 hmdProjectionLeft, hmdProjectionRight;
     glm::mat4 hmdViewLeft, hmdViewRight;
@@ -56,5 +46,4 @@ public:
 
     memcpy(uniformBuffer.mapped, &uboCamera, sizeof(uboCamera));
   }
-
 };

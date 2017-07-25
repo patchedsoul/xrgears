@@ -6,12 +6,8 @@
 #include "VikCamera.hpp"
 #include "VikBuffer.hpp"
 
-class VikCameraStereo {
+class VikCameraStereo : public VikCamera {
 public:
-
-    UBOCamera uboCamera;
-    vks::Buffer uniformBuffer;
-
     // Camera and view properties
     float eyeSeparation = 0.08f;
     const float focalLength = 0.5f;
@@ -19,24 +15,15 @@ public:
     const float zNear = 0.1f;
     const float zFar = 256.0f;
 
-    VikCameraStereo() {
+    int width, height;
 
-    }
+    VikCameraStereo(int w, int h) : width(w), height(h) {}
 
-    ~VikCameraStereo() {
-      uniformBuffer.destroy();
-    }
-
-    void changeEyeSeparation(float delta)
-    {
+    void changeEyeSeparation(float delta) {
       eyeSeparation += delta;
     }
 
-    void prepareUniformBuffers(vks::VulkanDevice *vulkanDevice) {
-      VikBuffer::create(vulkanDevice, &uniformBuffer, sizeof(uboCamera));
-    }
-
-    void updateCamera(Camera camera, int width, int height, glm::vec3& rotation) {
+    void update(Camera camera) {
       // Geometry shader matrices for the two viewports
       // See http://paulbourke.net/stereographics/stereorender/
 
@@ -49,7 +36,7 @@ public:
       float bottom = -wd2;
 
       glm::vec3 camFront;
-      //glm::vec3 rotation = glm::vec3();
+      glm::vec3 rotation = glm::vec3();
       camFront.x = -cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
       camFront.y = sin(glm::radians(rotation.x));
       camFront.z = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
