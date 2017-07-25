@@ -68,7 +68,7 @@ public:
 
       uboCamera.projection[1] = glm::frustum(left, right, bottom, top, zNear, zFar);
       uboCamera.view[1] = rotM * transM;
-      uboCamera.skyView[1] = rotM * glm::translate(glm::mat4(), camRight * (eyeSeparation / 2.0f));;
+      uboCamera.skyView[1] = rotM * glm::translate(glm::mat4(), camRight * (eyeSeparation / 2.0f));
 
       uboCamera.position = camera.position * -1.0f;
 

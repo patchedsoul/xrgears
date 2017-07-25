@@ -51,8 +51,8 @@ public:
 
   bool enableSky = true;
   bool enableHMDCam = false;
-  bool enableDistortion = false;
-  bool enableStereo = false;
+  bool enableDistortion = true;
+  bool enableStereo = true;
 
   VikSkyBox *skyBox;
   VikDistortion *hmdDistortion;
@@ -95,6 +95,7 @@ public:
     camera.type = Camera::CameraType::firstperson;
     camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
     camera.setTranslation(glm::vec3(2.2f, 3.2f, -7.6));
+    camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
 
     camera.movementSpeed = 5.0f;
     timerSpeed *= 0.25f;
@@ -666,10 +667,14 @@ public:
   void prepare() {
     hmd = new VikHMD();
 
-    if (enableHMDCam)
-      vikCamera = new VikCameraHMD(hmd);
-    else
-      vikCamera = new VikCameraStereo(width, height);
+    if (enableStereo) {
+      if (enableHMDCam)
+        vikCamera = new VikCameraHMD(hmd);
+      else
+        vikCamera = new VikCameraStereo(width, height);
+    } else {
+      vikCamera = new VikCamera();
+    }
 
     if (enableSky)
       skyBox = new VikSkyBox(device);
