@@ -55,12 +55,8 @@ private:
   Material material;
   vks::Buffer uniformBuffer;
   VkDescriptorSet descriptorSet;
+
 public:
-
-
-  //void setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout, std::vector<VkWriteDescriptorSet> *writeDescriptorSets);
-  //glm::mat4 getModelMatrix(glm::vec3 rotation, float timer);
-
   GearNode() {}
 
   ~GearNode() {

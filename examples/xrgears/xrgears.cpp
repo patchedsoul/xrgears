@@ -28,7 +28,7 @@
 #include "VikSkyBox.hpp"
 #include "VikDistortion.hpp"
 #include "VikOffscreenPass.hpp"
-#include "VikNode.hpp"
+#include "VikNodeModel.hpp"
 #include "VikCamera.hpp"
 #include "VikHMD.hpp"
 #include "VikBuffer.hpp"
@@ -47,7 +47,7 @@ public:
     vks::VERTEX_COMPONENT_COLOR,
   });
 
-  VikNode* teapotNode;
+  VikNodeModel* teapotNode;
   VikHMD* hmd;
 
   VikCameraStereo* vikCamera;
@@ -319,7 +319,7 @@ public:
     if (enableSky)
       skyBox->loadAssets(vertexLayout, vulkanDevice, queue);
 
-    teapotNode = new VikNode();
+    teapotNode = new VikNodeModel();
     teapotNode->loadModel("teapot.dae",
                           vertexLayout,
                           0.25f,
