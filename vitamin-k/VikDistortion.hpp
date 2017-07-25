@@ -117,10 +117,8 @@ public:
                                       VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = VikShader::load(device,
                                       "hmddistortion/openhmd-distortion-sps.frag.spv",
-                                      //"hmddistortion/distortion.frag.spv",
+                                      //"hmddistortion/ph5-distortion.frag.spv",
                                       VK_SHADER_STAGE_FRAGMENT_BIT);
-    //shaderModules.push_back(shaderStages[1].module);
-
 
     VkPipelineVertexInputStateCreateInfo emptyInputState = vks::initializers::pipelineVertexInputStateCreateInfo();
     pipelineCreateInfo.pVertexInputState = &emptyInputState;
