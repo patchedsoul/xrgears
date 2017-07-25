@@ -51,7 +51,7 @@ public:
 
   bool enableSky = true;
   bool enableHMDCam = false;
-  bool enableDistortion = true;
+  bool enableDistortion = false;
   bool enableStereo = false;
 
   VikSkyBox *skyBox;
@@ -674,6 +674,7 @@ public:
     initGears();
     prepareVertices();
     prepareUniformBuffers();
+    setupDescriptorPool();
     setupDescriptorSetLayout();
 
     if (enableDistortion) {
@@ -686,18 +687,16 @@ public:
       hmdDistortion->createDescriptorSetLayout();
       hmdDistortion->createPipeLineLayout();
       hmdDistortion->createPipeLine(renderPass, pipelineCache);
+      hmdDistortion->createDescriptorSet(offscreenPass, descriptorPool);
     }
 
     preparePipelines();
-    setupDescriptorPool();
-
-    if (enableDistortion)
-      hmdDistortion->createDescriptorSet(offscreenPass, descriptorPool);
     setupDescriptorSet();
     buildCommandBuffers();
 
     if (enableDistortion)
       buildOffscreenCommandBuffer();
+
 
     prepared = true;
   }
