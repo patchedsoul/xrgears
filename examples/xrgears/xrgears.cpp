@@ -33,6 +33,7 @@
 #include "VikHMD.hpp"
 #include "VikBuffer.hpp"
 #include "VikCameraStereo.hpp"
+#include "VikCameraHMD.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
@@ -49,11 +50,11 @@ public:
 
   VikNodeModel* teapotNode;
   VikHMD* hmd;
-
-  VikCameraStereo* vikCamera;
+  VikCameraHMD* cameraHMD;
+  VikCameraStereo* cameraStereo;
 
   bool enableSky = true;
-  bool enableHMDCam = false;
+  bool enableHMDCam = true;
   bool enableDistortion = true;
 
   VikSkyBox *skyBox;
@@ -130,8 +131,9 @@ public:
 
     vkDestroySemaphore(device, offscreenSemaphore, nullptr);
 
+    delete cameraStereo;
+    delete cameraHMD;
     delete hmd;
-    delete vikCamera;
   }
 
   // Enable physical device features required for this example
@@ -493,9 +495,9 @@ public:
     VkDescriptorBufferInfo cameraDescriptor;
 
     if (enableHMDCam)
-      cameraDescriptor = hmd->uniformBuffer.descriptor;
+      cameraDescriptor = cameraHMD->uniformBuffer.descriptor;
     else
-      cameraDescriptor = vikCamera->uniformBuffer.descriptor;
+      cameraDescriptor = cameraStereo->uniformBuffer.descriptor;
 
     if (enableSky) {
       VkDescriptorSetAllocateInfo allocInfo =
@@ -616,9 +618,9 @@ public:
     VikBuffer::create(vulkanDevice, &uniformBuffers.lights, sizeof(uboLights));
 
     if (enableHMDCam)
-      hmd->prepareUniformBuffers(vulkanDevice);
+      cameraHMD->prepareUniformBuffers(vulkanDevice);
     else
-      vikCamera->prepareUniformBuffers(vulkanDevice);
+      cameraStereo->prepareUniformBuffers(vulkanDevice);
 
     teapotNode->prepareUniformBuffer(vulkanDevice);
 
@@ -633,13 +635,13 @@ public:
     StereoView sv = {};
 
     if (enableHMDCam) {
-      hmd->updateHMD(camera);
-      sv.view[0] = hmd->uboCamera.view[0];
-      sv.view[1] = hmd->uboCamera.view[1];
+      cameraHMD->updateHMD(camera);
+      sv.view[0] = cameraHMD->uboCamera.view[0];
+      sv.view[1] = cameraHMD->uboCamera.view[1];
     } else {
-      vikCamera->updateCamera(camera, width, height, rotation);
-      sv.view[0] = vikCamera->uboCamera.view[0];
-      sv.view[1] = vikCamera->uboCamera.view[1];
+      cameraStereo->updateCamera(camera, width, height, rotation);
+      sv.view[0] = cameraStereo->uboCamera.view[0];
+      sv.view[1] = cameraStereo->uboCamera.view[1];
     }
 
     teapotNode->updateUniformBuffer(sv, timer);
@@ -716,7 +718,8 @@ public:
   {
 
     hmd = new VikHMD();
-    vikCamera = new VikCameraStereo();
+    cameraStereo = new VikCameraStereo();
+    cameraHMD = new VikCameraHMD(hmd);
 
     if (enableSky)
       skyBox = new VikSkyBox(device);
@@ -787,7 +790,7 @@ public:
 
   void changeEyeSeparation(float delta)
   {
-    vikCamera->changeEyeSeparation(delta);
+    cameraStereo->changeEyeSeparation(delta);
     updateUniformBuffers();
   }
 
