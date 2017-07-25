@@ -13,8 +13,7 @@ public:
   struct UBO {
     glm::mat4 normal[2];
     glm::mat4 model;
-  };
-  UBO ubo;
+  } ubo;
 
   Material material;
   VkDescriptorSet descriptorSet;
