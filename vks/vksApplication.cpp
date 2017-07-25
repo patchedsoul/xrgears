@@ -8,9 +8,9 @@
 
 #include "vksApplication.hpp"
 
-std::vector<const char*> VulkanExampleBase::args;
+std::vector<const char*> Application::args;
 
-VkResult VulkanExampleBase::createInstance(bool enableValidation)
+VkResult Application::createInstance(bool enableValidation)
 {
 	this->settings.validation = enableValidation;
 
@@ -71,7 +71,7 @@ VkResult VulkanExampleBase::createInstance(bool enableValidation)
 	return vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
 }
 
-std::string VulkanExampleBase::getWindowTitle()
+std::string Application::getWindowTitle()
 {
 	std::string device(deviceProperties.deviceName);
 	std::string windowTitle;
@@ -83,7 +83,7 @@ std::string VulkanExampleBase::getWindowTitle()
 	return windowTitle;
 }
 
-const std::string VulkanExampleBase::getAssetPath()
+const std::string Application::getAssetPath()
 {
 #if defined(__ANDROID__)
 	return "";
@@ -93,7 +93,7 @@ const std::string VulkanExampleBase::getAssetPath()
 #endif
 }
 
-bool VulkanExampleBase::checkCommandBuffers()
+bool Application::checkCommandBuffers()
 {
 	for (auto& cmdBuffer : drawCmdBuffers)
 	{
@@ -105,7 +105,7 @@ bool VulkanExampleBase::checkCommandBuffers()
 	return true;
 }
 
-void VulkanExampleBase::createCommandBuffers()
+void Application::createCommandBuffers()
 {
 	// Create one command buffer for each swap chain image and reuse for rendering
 
@@ -122,12 +122,12 @@ void VulkanExampleBase::createCommandBuffers()
 	VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, drawCmdBuffers.data()));
 }
 
-void VulkanExampleBase::destroyCommandBuffers()
+void Application::destroyCommandBuffers()
 {
 	vkFreeCommandBuffers(device, cmdPool, static_cast<uint32_t>(drawCmdBuffers.size()), drawCmdBuffers.data());
 }
 
-VkCommandBuffer VulkanExampleBase::createCommandBuffer(VkCommandBufferLevel level, bool begin)
+VkCommandBuffer Application::createCommandBuffer(VkCommandBufferLevel level, bool begin)
 {
 	VkCommandBuffer cmdBuffer;
 
@@ -149,7 +149,7 @@ VkCommandBuffer VulkanExampleBase::createCommandBuffer(VkCommandBufferLevel leve
 	return cmdBuffer;
 }
 
-void VulkanExampleBase::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free)
+void Application::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free)
 {
 	if (commandBuffer == VK_NULL_HANDLE)
 		return;
@@ -168,14 +168,14 @@ void VulkanExampleBase::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueu
 		vkFreeCommandBuffers(device, cmdPool, 1, &commandBuffer);
 }
 
-void VulkanExampleBase::createPipelineCache()
+void Application::createPipelineCache()
 {
 	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
 	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 	VK_CHECK_RESULT(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
 }
 
-void VulkanExampleBase::prepare()
+void Application::prepare()
 {
 	if (vulkanDevice->enableDebugMarkers)
 	{
@@ -209,7 +209,7 @@ void VulkanExampleBase::prepare()
 	}
 }
 
-VkPipelineShaderStageCreateInfo VulkanExampleBase::loadShader(std::string fileName, VkShaderStageFlagBits stage)
+VkPipelineShaderStageCreateInfo Application::loadShader(std::string fileName, VkShaderStageFlagBits stage)
 {
 	VkPipelineShaderStageCreateInfo shaderStage = {};
 	shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -225,7 +225,7 @@ VkPipelineShaderStageCreateInfo VulkanExampleBase::loadShader(std::string fileNa
 	return shaderStage;
 }
 
-void VulkanExampleBase::renderLoop()
+void Application::renderLoop()
 {
 	destWidth = width;
 	destHeight = height;
@@ -536,7 +536,7 @@ void VulkanExampleBase::renderLoop()
 	vkDeviceWaitIdle(device);
 }
 
-void VulkanExampleBase::updateTextOverlay()
+void Application::updateTextOverlay()
 {
 	if (!enableTextOverlay)
 		return;
@@ -560,9 +560,9 @@ void VulkanExampleBase::updateTextOverlay()
 	textOverlay->endTextUpdate();
 }
 
-void VulkanExampleBase::getOverlayText(VulkanTextOverlay*) {}
+void Application::getOverlayText(VulkanTextOverlay*) {}
 
-void VulkanExampleBase::prepareFrame()
+void Application::prepareFrame()
 {
 	// Acquire the next image from the swap chain
 	VkResult err = swapChain.acquireNextImage(semaphores.presentComplete, &currentBuffer);
@@ -575,7 +575,7 @@ void VulkanExampleBase::prepareFrame()
 	}
 }
 
-void VulkanExampleBase::submitFrame()
+void Application::submitFrame()
 {
 	bool submitTextOverlay = enableTextOverlay && textOverlay->visible;
 
@@ -614,7 +614,7 @@ void VulkanExampleBase::submitFrame()
 	VK_CHECK_RESULT(vkQueueWaitIdle(queue));
 }
 
-VulkanExampleBase::VulkanExampleBase(bool enableValidation)
+Application::Application(bool enableValidation)
 {
 #if !defined(__ANDROID__)
 	// Check for a valid asset path
@@ -684,7 +684,7 @@ VulkanExampleBase::VulkanExampleBase(bool enableValidation)
 #endif
 }
 
-VulkanExampleBase::~VulkanExampleBase()
+Application::~Application()
 {
 	// Clean up Vulkan resources
 	swapChain.cleanup();
@@ -766,7 +766,7 @@ exit(1);                                                        \
 }
 */
 
-void VulkanExampleBase::printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDevice physicalDevice) {
+void Application::printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDevice physicalDevice) {
 	GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceProperties2KHR);
 	GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceFeatures2KHR);
 
@@ -815,7 +815,7 @@ void VulkanExampleBase::printMultiviewProperties(VkDevice logicalDevice, VkPhysi
 }
 
 
-void VulkanExampleBase::initVulkan()
+void Application::initVulkan()
 {
 	VkResult err;
 
@@ -1720,7 +1720,7 @@ static inline xcb_intern_atom_reply_t* intern_atom_helper(xcb_connection_t *conn
 }
 
 // Set up a window using XCB and request event types
-xcb_window_t VulkanExampleBase::setupWindow()
+xcb_window_t Application::setupWindow()
 {
 	uint32_t value_mask, value_list[32];
 
@@ -1785,7 +1785,7 @@ xcb_window_t VulkanExampleBase::setupWindow()
 }
 
 // Initialize XCB connection
-void VulkanExampleBase::initxcbConnection()
+void Application::initxcbConnection()
 {
 	const xcb_setup_t *setup;
 	xcb_screen_iterator_t iter;
@@ -1805,7 +1805,7 @@ void VulkanExampleBase::initxcbConnection()
 	screen = iter.data;
 }
 
-void VulkanExampleBase::handleEvent(const xcb_generic_event_t *event)
+void Application::handleEvent(const xcb_generic_event_t *event)
 {
 	switch (event->response_type & 0x7f)
 	{
@@ -1941,13 +1941,13 @@ void VulkanExampleBase::handleEvent(const xcb_generic_event_t *event)
 }
 #endif
 
-void VulkanExampleBase::viewChanged() {}
+void Application::viewChanged() {}
 
-void VulkanExampleBase::keyPressed(uint32_t) {}
+void Application::keyPressed(uint32_t) {}
 
-void VulkanExampleBase::buildCommandBuffers() {}
+void Application::buildCommandBuffers() {}
 
-void VulkanExampleBase::createCommandPool()
+void Application::createCommandPool()
 {
 	VkCommandPoolCreateInfo cmdPoolInfo = {};
 	cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -1956,7 +1956,7 @@ void VulkanExampleBase::createCommandPool()
 	VK_CHECK_RESULT(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
 }
 
-void VulkanExampleBase::setupDepthStencil()
+void Application::setupDepthStencil()
 {
 	VkImageCreateInfo image = {};
 	image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -2003,7 +2003,7 @@ void VulkanExampleBase::setupDepthStencil()
 	VK_CHECK_RESULT(vkCreateImageView(device, &depthStencilView, nullptr, &depthStencil.view));
 }
 
-void VulkanExampleBase::setupFrameBuffer()
+void Application::setupFrameBuffer()
 {
 	VkImageView attachments[2];
 
@@ -2029,7 +2029,7 @@ void VulkanExampleBase::setupFrameBuffer()
 	}
 }
 
-void VulkanExampleBase::setupRenderPass()
+void Application::setupRenderPass()
 {
 	std::array<VkAttachmentDescription, 2> attachments = {};
 	// Color attachment
@@ -2123,12 +2123,12 @@ void VulkanExampleBase::setupRenderPass()
 	VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass));
 }
 
-void VulkanExampleBase::getEnabledFeatures()
+void Application::getEnabledFeatures()
 {
 	// Can be overriden in derived class
 }
 
-void VulkanExampleBase::windowResize()
+void Application::windowResize()
 {
 	if (!prepared)
 	{
@@ -2180,12 +2180,12 @@ void VulkanExampleBase::windowResize()
 	prepared = true;
 }
 
-void VulkanExampleBase::windowResized()
+void Application::windowResized()
 {
 	// Can be overriden in derived class
 }
 
-void VulkanExampleBase::initSwapchain()
+void Application::initSwapchain()
 {
 #if defined(_WIN32)
 	swapChain.initSurface(windowInstance, window);
@@ -2200,7 +2200,7 @@ void VulkanExampleBase::initSwapchain()
 #endif
 }
 
-void VulkanExampleBase::setupSwapChain()
+void Application::setupSwapChain()
 {
 	swapChain.create(&width, &height, settings.vsync);
 }

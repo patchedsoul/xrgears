@@ -37,7 +37,7 @@
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
 
-class VulkanExample : public VulkanExampleBase
+class XRGears : public Application
 {
 public:
   // Vertex layout for the models
@@ -92,7 +92,7 @@ public:
   // Semaphore used to synchronize between offscreen and final scene rendering
   VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
-  VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+  XRGears() : Application(ENABLE_VALIDATION)
   {
     title = "XR Gears";
     enableTextOverlay = true;
@@ -106,7 +106,7 @@ public:
 
   }
 
-  ~VulkanExample()
+  ~XRGears()
   {
     delete offscreenPass;
 
@@ -206,7 +206,7 @@ public:
   // Build command buffer for rendering the scene to the offscreen frame buffer attachments
   void buildOffscreenCommandBuffer() {
     if (offScreenCmdBuffer == VK_NULL_HANDLE)
-      offScreenCmdBuffer = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+      offScreenCmdBuffer = Application::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 
     // Create a semaphore used to synchronize offscreen rendering and usage
     VkSemaphoreCreateInfo semaphoreCreateInfo = vks::initializers::semaphoreCreateInfo();
@@ -669,7 +669,7 @@ public:
   }
 
   void draw() {
-    VulkanExampleBase::prepareFrame();
+    Application::prepareFrame();
 
     submitInfo.commandBufferCount = 1;
 
@@ -708,7 +708,7 @@ public:
     // Submit to queue
     submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];
     VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
-    VulkanExampleBase::submitFrame();
+    Application::submitFrame();
   }
 
   void prepare()
@@ -720,7 +720,7 @@ public:
     if (enableSky)
       skyBox = new VikSkyBox(device);
 
-    VulkanExampleBase::prepare();
+    Application::prepare();
     loadAssets();
 
     if (enableDistortion) {
