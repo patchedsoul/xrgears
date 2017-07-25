@@ -30,25 +30,12 @@
 #include "VikSkyBox.hpp"
 #include "VikNode.hpp"
 
-struct GearNodeInfo {
-  glm::vec3 pos;
-  float rotSpeed;
-  float rotOffset;
-  Material material;
-};
-
 class VikNodeGear : public VikNode {
 private:
   Gear gear;
 
 public:
-  void generate(vks::VulkanDevice *vulkanDevice, GearNodeInfo *gearNodeinfo, GearInfo *gearinfo, VkQueue queue) {
-    //	this->color = gearinfo->color;
-    pos = gearNodeinfo->pos;
-    rotOffset = gearNodeinfo->rotOffset;
-    rotSpeed = gearNodeinfo->rotSpeed;
-    material = gearNodeinfo->material;
-
+  void generate(vks::VulkanDevice *vulkanDevice, GearInfo *gearinfo, VkQueue queue) {
     gear.generate(vulkanDevice, gearinfo, queue);
   }
 
@@ -62,7 +49,7 @@ public:
                        pipelineLayout,
                        VK_SHADER_STAGE_FRAGMENT_BIT,
                        sizeof(glm::vec3),
-                       sizeof(Material::PushBlock), &material);
+                       sizeof(Material::PushBlock), &info.material);
 
     vkCmdDrawIndexed(cmdbuffer, gear.indexCount, 1, 0, 0, 1);
   }

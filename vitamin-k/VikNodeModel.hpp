@@ -28,7 +28,7 @@ public:
                        pipelineLayout,
                        VK_SHADER_STAGE_FRAGMENT_BIT,
                        sizeof(glm::vec3),
-                       sizeof(Material::PushBlock), &material);
+                       sizeof(Material::PushBlock), &info.material);
     vkCmdDrawIndexed(cmdbuffer, model.indexCount, 1, 0, 0, 0);
   }
 };

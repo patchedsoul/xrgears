@@ -360,7 +360,7 @@ public:
     gears.resize(positions.size());
     for (int32_t i = 0; i < gears.size(); ++i)
     {
-      GearNodeInfo gearNodeInfo = {};
+      VikNode::NodeInfo gearNodeInfo = {};
       GearInfo gearInfo = {};
       gearInfo.innerRadius = innerRadiuses[i];
       gearInfo.outerRadius = outerRadiuses[i];
@@ -374,7 +374,8 @@ public:
       gearNodeInfo.material = materials[i];
 
       gears[i] = new VikNodeGear();
-      gears[i]->generate(vulkanDevice, &gearNodeInfo, &gearInfo, queue);
+      gears[i]->setInfo(&gearNodeInfo);
+      gears[i]->generate(vulkanDevice, &gearInfo, queue);
     }
   }
 

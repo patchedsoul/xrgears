@@ -15,12 +15,14 @@ public:
     glm::mat4 model;
   } ubo;
 
-  Material material;
   VkDescriptorSet descriptorSet;
 
-  glm::vec3 pos;
-  float rotSpeed;
-  float rotOffset;
+  struct NodeInfo {
+    glm::vec3 pos;
+    float rotSpeed;
+    float rotOffset;
+    Material material;
+  } info;
 
   vks::Buffer uniformBuffer;
 
@@ -32,11 +34,18 @@ public:
   }
 
   void setMateral(Material& m) {
-    material = m;
+    info.material = m;
   }
 
   void setPosition(glm::vec3& p) {
-    pos = p;
+    info.pos = p;
+  }
+
+  void setInfo(NodeInfo *nodeinfo) {
+    info.pos = nodeinfo->pos;
+    info.rotOffset = nodeinfo->rotOffset;
+    info.rotSpeed = nodeinfo->rotSpeed;
+    info.material = nodeinfo->material;
   }
 
   void createDescriptorSet(VkDevice& device,
@@ -86,8 +95,8 @@ public:
   void updateUniformBuffer(StereoView sv, float timer) {
     ubo.model = glm::mat4();
 
-    ubo.model = glm::translate(ubo.model, pos);
-    float rotation_z = (rotSpeed * timer * 360.0f) + rotOffset;
+    ubo.model = glm::translate(ubo.model, info.pos);
+    float rotation_z = (info.rotSpeed * timer * 360.0f) + info.rotOffset;
     ubo.model = glm::rotate(ubo.model, glm::radians(rotation_z), glm::vec3(0.0f, 0.0f, 1.0f));
 
     ubo.normal[0] = glm::inverseTranspose(sv.view[0] * ubo.model);
