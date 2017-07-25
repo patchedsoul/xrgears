@@ -62,7 +62,7 @@ SET_TARGET_PROPERTIES(vitamin-k  PROPERTIES LINKER_LANGUAGE CXX)
 include_directories(vks)
 include_directories(vitamin-k)
 
-target_link_libraries(vks vulkan xcb assimp)
+target_link_libraries(vks vulkan xcb assimp wayland-client)
 
 INCLUDE_DIRECTORIES(/usr/include/openhmd/)
 
@@ -86,17 +86,10 @@ endforeach(SHADER)
 # Function for building single example
 function(buildExample EXAMPLE_NAME)
 	file(GLOB EXAMPLE_SRC examples/${EXAMPLE_NAME}/*.cpp)
-	if(WIN32)
-        add_executable(${EXAMPLE_NAME} WIN32 ${EXAMPLE_SRC})
-        target_link_libraries(${EXAMPLE_NAME}
-          ${Vulkan_LIBRARY} ${ASSIMP_LIBRARIES}
-	  ${WINLIBS} vks)
-	else(WIN32)
         add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
         target_link_libraries(${EXAMPLE_NAME}
           ${Vulkan_LIBRARY} ${ASSIMP_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES}
           ${CMAKE_THREAD_LIBS_INIT} ${XCB_LIBRARIES} dl glfw openhmd vks)
-	endif(WIN32)
 endfunction(buildExample)
 
 # build examples

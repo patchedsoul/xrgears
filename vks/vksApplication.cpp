@@ -23,11 +23,7 @@ VkResult Application::createInstance(bool enableValidation)
 	std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
 
 	// Enable surface extensions depending on os
-#if defined(_WIN32)
-	instanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-#elif defined(__ANDROID__)
-	instanceExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
-#elif defined(_DIRECT2DISPLAY)
+#if defined(_DIRECT2DISPLAY)
 	instanceExtensions.push_back(VK_KHR_DISPLAY_EXTENSION_NAME);
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
 	instanceExtensions.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
@@ -225,312 +221,161 @@ VkPipelineShaderStageCreateInfo Application::loadShader(std::string fileName, Vk
 	return shaderStage;
 }
 
+
+void Application::directDisplayRenderLoop() {
+  while (!quit)
+  {
+    auto tStart = std::chrono::high_resolution_clock::now();
+    if (viewUpdated)
+    {
+      viewUpdated = false;
+      viewChanged();
+    }
+    render();
+    frameCounter++;
+    auto tEnd = std::chrono::high_resolution_clock::now();
+    auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+    frameTimer = tDiff / 1000.0f;
+    camera.update(frameTimer);
+    if (camera.moving())
+    {
+      viewUpdated = true;
+    }
+    // Convert to clamped timer value
+    if (!paused)
+    {
+      timer += timerSpeed * frameTimer;
+      if (timer > 1.0)
+      {
+        timer -= 1.0f;
+      }
+    }
+    fpsTimer += (float)tDiff;
+    if (fpsTimer > 1000.0f)
+    {
+      lastFPS = frameCounter;
+      updateTextOverlay();
+      fpsTimer = 0.0f;
+      frameCounter = 0;
+    }
+  }
+}
+
+void Application::waylandRenderLoop() {
+  while (!quit)
+  {
+    auto tStart = std::chrono::high_resolution_clock::now();
+    if (viewUpdated)
+    {
+      viewUpdated = false;
+      viewChanged();
+    }
+
+    while (wl_display_prepare_read(display) != 0)
+      wl_display_dispatch_pending(display);
+    wl_display_flush(display);
+    wl_display_read_events(display);
+    wl_display_dispatch_pending(display);
+
+    render();
+    frameCounter++;
+    auto tEnd = std::chrono::high_resolution_clock::now();
+    auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+    frameTimer = tDiff / 1000.0f;
+    camera.update(frameTimer);
+    if (camera.moving())
+    {
+      viewUpdated = true;
+    }
+    // Convert to clamped timer value
+    if (!paused)
+    {
+      timer += timerSpeed * frameTimer;
+      if (timer > 1.0)
+      {
+        timer -= 1.0f;
+      }
+    }
+    fpsTimer += (float)tDiff;
+    if (fpsTimer > 1000.0f)
+    {
+      if (!enableTextOverlay)
+      {
+        std::string windowTitle = getWindowTitle();
+        wl_shell_surface_set_title(shell_surface, windowTitle.c_str());
+      }
+      lastFPS = frameCounter;
+      updateTextOverlay();
+      fpsTimer = 0.0f;
+      frameCounter = 0;
+    }
+  }
+}
+
+void Application::xcbRenderLoop() {
+  xcb_flush(connection);
+  while (!quit)
+  {
+    auto tStart = std::chrono::high_resolution_clock::now();
+    if (viewUpdated)
+    {
+      viewUpdated = false;
+      viewChanged();
+    }
+    xcb_generic_event_t *event;
+    while ((event = xcb_poll_for_event(connection)))
+    {
+      handleEvent(event);
+      free(event);
+    }
+    render();
+    frameCounter++;
+    auto tEnd = std::chrono::high_resolution_clock::now();
+    auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+    frameTimer = tDiff / 1000.0f;
+    camera.update(frameTimer);
+    if (camera.moving())
+    {
+      viewUpdated = true;
+    }
+    // Convert to clamped timer value
+    if (!paused)
+    {
+      timer += timerSpeed * frameTimer;
+      if (timer > 1.0)
+      {
+        timer -= 1.0f;
+      }
+    }
+    fpsTimer += (float)tDiff;
+    if (fpsTimer > 1000.0f)
+    {
+      if (!enableTextOverlay)
+      {
+        std::string windowTitle = getWindowTitle();
+        xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
+          window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+          windowTitle.size(), windowTitle.c_str());
+      }
+      lastFPS = frameCounter;
+      updateTextOverlay();
+      fpsTimer = 0.0f;
+      frameCounter = 0;
+    }
+  }
+}
+
 void Application::renderLoop()
 {
 	destWidth = width;
 	destHeight = height;
-#if defined(_WIN32)
-	MSG msg;
-	while (TRUE)
-	{
-		auto tStart = std::chrono::high_resolution_clock::now();
-		if (viewUpdated)
-		{
-			viewUpdated = false;
-			viewChanged();
-		}
 
-		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
-		if (msg.message == WM_QUIT)
-		{
-			break;
-		}
-
-		render();
-		frameCounter++;
-		auto tEnd = std::chrono::high_resolution_clock::now();
-		auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-		frameTimer = (float)tDiff / 1000.0f;
-		camera.update(frameTimer);
-		if (camera.moving())
-		{
-			viewUpdated = true;
-		}
-		// Convert to clamped timer value
-		if (!paused)
-		{
-			timer += timerSpeed * frameTimer;
-			if (timer > 1.0)
-			{
-				timer -= 1.0f;
-			}
-		}
-		fpsTimer += (float)tDiff;
-		if (fpsTimer > 1000.0f)
-		{
-			if (!enableTextOverlay)
-			{
-				std::string windowTitle = getWindowTitle();
-				SetWindowText(window, windowTitle.c_str());
-			}
-			lastFPS = static_cast<uint32_t>(1.0f / frameTimer);
-			updateTextOverlay();
-			fpsTimer = 0.0f;
-			frameCounter = 0;
-		}
-	}
-#elif defined(__ANDROID__)
-	while (1)
-	{
-		int ident;
-		int events;
-		struct android_poll_source* source;
-		bool destroy = false;
-
-		focused = true;
-
-		while ((ident = ALooper_pollAll(focused ? 0 : -1, NULL, &events, (void**)&source)) >= 0)
-		{
-			if (source != NULL)
-			{
-				source->process(androidApp, source);
-			}
-			if (androidApp->destroyRequested != 0)
-			{
-				LOGD("Android app destroy requested");
-				destroy = true;
-				break;
-			}
-		}
-
-		// App destruction requested
-		// Exit loop, example will be destroyed in application main
-		if (destroy)
-		{
-			break;
-		}
-
-		// Render frame
-		if (prepared)
-		{
-			auto tStart = std::chrono::high_resolution_clock::now();
-			render();
-			frameCounter++;
-			auto tEnd = std::chrono::high_resolution_clock::now();
-			auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-			frameTimer = tDiff / 1000.0f;
-			camera.update(frameTimer);
-			// Convert to clamped timer value
-			if (!paused)
-			{
-				timer += timerSpeed * frameTimer;
-				if (timer > 1.0)
-				{
-					timer -= 1.0f;
-				}
-			}
-			fpsTimer += (float)tDiff;
-			if (fpsTimer > 1000.0f)
-			{
-				lastFPS = frameCounter;
-				updateTextOverlay();
-				fpsTimer = 0.0f;
-				frameCounter = 0;
-			}
-
-			bool updateView = false;
-
-			// Check touch state (for movement)
-			if (touchDown) {
-				touchTimer += frameTimer;
-			}
-			if (touchTimer >= 1.0) {
-				camera.keys.up = true;
-				viewChanged();
-			}
-
-			// Check gamepad state
-			const float deadZone = 0.0015f;
-			// todo : check if gamepad is present
-			// todo : time based and relative axis positions
-			if (camera.type != Camera::CameraType::firstperson)
-			{
-				// Rotate
-				if (std::abs(gamePadState.axisLeft.x) > deadZone)
-				{
-					rotation.y += gamePadState.axisLeft.x * 0.5f * rotationSpeed;
-					camera.rotate(glm::vec3(0.0f, gamePadState.axisLeft.x * 0.5f, 0.0f));
-					updateView = true;
-				}
-				if (std::abs(gamePadState.axisLeft.y) > deadZone)
-				{
-					rotation.x -= gamePadState.axisLeft.y * 0.5f * rotationSpeed;
-					camera.rotate(glm::vec3(gamePadState.axisLeft.y * 0.5f, 0.0f, 0.0f));
-					updateView = true;
-				}
-				// Zoom
-				if (std::abs(gamePadState.axisRight.y) > deadZone)
-				{
-					zoom -= gamePadState.axisRight.y * 0.01f * zoomSpeed;
-					updateView = true;
-				}
-				if (updateView)
-				{
-					viewChanged();
-				}
-			}
-			else
-			{
-				updateView = camera.updatePad(gamePadState.axisLeft, gamePadState.axisRight, frameTimer);
-				if (updateView)
-				{
-					viewChanged();
-				}
-			}
-		}
-	}
-#elif defined(_DIRECT2DISPLAY)
-	while (!quit)
-	{
-		auto tStart = std::chrono::high_resolution_clock::now();
-		if (viewUpdated)
-		{
-			viewUpdated = false;
-			viewChanged();
-		}
-		render();
-		frameCounter++;
-		auto tEnd = std::chrono::high_resolution_clock::now();
-		auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-		frameTimer = tDiff / 1000.0f;
-		camera.update(frameTimer);
-		if (camera.moving())
-		{
-			viewUpdated = true;
-		}
-		// Convert to clamped timer value
-		if (!paused)
-		{
-			timer += timerSpeed * frameTimer;
-			if (timer > 1.0)
-			{
-				timer -= 1.0f;
-			}
-		}
-		fpsTimer += (float)tDiff;
-		if (fpsTimer > 1000.0f)
-		{
-			lastFPS = frameCounter;
-			updateTextOverlay();
-			fpsTimer = 0.0f;
-			frameCounter = 0;
-		}
-	}
+#if defined(_DIRECT2DISPLAY)
+  directDisplayRenderLoop();
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-	while (!quit)
-	{
-		auto tStart = std::chrono::high_resolution_clock::now();
-		if (viewUpdated)
-		{
-			viewUpdated = false;
-			viewChanged();
-		}
-
-		while (wl_display_prepare_read(display) != 0)
-			wl_display_dispatch_pending(display);
-		wl_display_flush(display);
-		wl_display_read_events(display);
-		wl_display_dispatch_pending(display);
-
-		render();
-		frameCounter++;
-		auto tEnd = std::chrono::high_resolution_clock::now();
-		auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-		frameTimer = tDiff / 1000.0f;
-		camera.update(frameTimer);
-		if (camera.moving())
-		{
-			viewUpdated = true;
-		}
-		// Convert to clamped timer value
-		if (!paused)
-		{
-			timer += timerSpeed * frameTimer;
-			if (timer > 1.0)
-			{
-				timer -= 1.0f;
-			}
-		}
-		fpsTimer += (float)tDiff;
-		if (fpsTimer > 1000.0f)
-		{
-			if (!enableTextOverlay)
-			{
-				std::string windowTitle = getWindowTitle();
-				wl_shell_surface_set_title(shell_surface, windowTitle.c_str());
-			}
-			lastFPS = frameCounter;
-			updateTextOverlay();
-			fpsTimer = 0.0f;
-			frameCounter = 0;
-		}
-	}
+  waylandRenderLoop();
 #elif defined(__linux__)
-	xcb_flush(connection);
-	while (!quit)
-	{
-		auto tStart = std::chrono::high_resolution_clock::now();
-		if (viewUpdated)
-		{
-			viewUpdated = false;
-			viewChanged();
-		}
-		xcb_generic_event_t *event;
-		while ((event = xcb_poll_for_event(connection)))
-		{
-			handleEvent(event);
-			free(event);
-		}
-		render();
-		frameCounter++;
-		auto tEnd = std::chrono::high_resolution_clock::now();
-		auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-		frameTimer = tDiff / 1000.0f;
-		camera.update(frameTimer);
-		if (camera.moving())
-		{
-			viewUpdated = true;
-		}
-		// Convert to clamped timer value
-		if (!paused)
-		{
-			timer += timerSpeed * frameTimer;
-			if (timer > 1.0)
-			{
-				timer -= 1.0f;
-			}
-		}
-		fpsTimer += (float)tDiff;
-		if (fpsTimer > 1000.0f)
-		{
-			if (!enableTextOverlay)
-			{
-				std::string windowTitle = getWindowTitle();
-				xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-					window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-					windowTitle.size(), windowTitle.c_str());
-			}
-			lastFPS = frameCounter;
-			updateTextOverlay();
-			fpsTimer = 0.0f;
-			frameCounter = 0;
-		}
-	}
+   xcbRenderLoop();
 #endif
 	// Flush device to make sure all resources can be freed 
 	vkDeviceWaitIdle(device);
@@ -550,9 +395,6 @@ void Application::updateTextOverlay()
 	textOverlay->addText(ss.str(), 5.0f, 25.0f, VulkanTextOverlay::alignLeft);
 
 	std::string deviceName(deviceProperties.deviceName);
-#if defined(__ANDROID__)	
-	deviceName += " (" + androidProduct + ")";
-#endif
 	textOverlay->addText(deviceName, 5.0f, 45.0f, VulkanTextOverlay::alignLeft);
 
 	getOverlayText(textOverlay);
@@ -616,20 +458,13 @@ void Application::submitFrame()
 
 Application::Application(bool enableValidation)
 {
-#if !defined(__ANDROID__)
 	// Check for a valid asset path
 	struct stat info;
 	if (stat(getAssetPath().c_str(), &info) != 0)
 	{
-#if defined(_WIN32)
-		std::string msg = "Could not locate asset path in \"" + getAssetPath() + "\" !";
-		MessageBox(NULL, msg.c_str(), "Fatal error", MB_OK | MB_ICONERROR);
-#else
 		std::cerr << "Error: Could not find asset path in " << getAssetPath() << std::endl;
-#endif
 		exit(-1);
 	}
-#endif
 
 	settings.validation = enableValidation;
 
@@ -662,25 +497,10 @@ Application::Application(bool enableValidation)
 		}
 	}
 	
-#if defined(__ANDROID__)
-	// Vulkan library is loaded dynamically on Android
-	bool libLoaded = vks::android::loadVulkanLibrary();
-	assert(libLoaded);
-#elif defined(_DIRECT2DISPLAY)
-
-#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
 	initWaylandConnection();
 #elif defined(__linux__)
 	initxcbConnection();
-#endif
-
-#if defined(_WIN32)
-	// Enable console if validation is active
-	// Debug message callback will output to it
-	if (this->settings.validation)
-	{
-		setupConsole("Vulkan validation output");
-	}
 #endif
 }
 
@@ -730,41 +550,31 @@ Application::~Application()
 	vkDestroyInstance(instance, nullptr);
 
 #if defined(_DIRECT2DISPLAY)
-
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-	wl_shell_surface_destroy(shell_surface);
-	wl_surface_destroy(surface);
-	if (keyboard)
-		wl_keyboard_destroy(keyboard);
-	if (pointer)
-		wl_pointer_destroy(pointer);
-	wl_seat_destroy(seat);
-	wl_shell_destroy(shell);
-	wl_compositor_destroy(compositor);
-	wl_registry_destroy(registry);
-	wl_display_disconnect(display);
+  deleteWayland();
 #elif defined(__linux)
-#if defined(__ANDROID__)
-	// todo : android cleanup (if required)
-#else
-	xcb_destroy_window(connection, window);
-	xcb_disconnect(connection);
-#endif
+  deleteXcb();
 #endif
 }
 
-/*
-// Macro to get a procedure address based on a vulkan instance
-#define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                        \
-{                                                                       \
-	fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetInstanceProcAddr(inst, "vk"#entrypoint)); \
-	if (fp##entrypoint == NULL)                                         \
-	{																    \
-printf("it is null!");\
-exit(1);                                                        \
-	}                                                                   \
+void Application::deleteWayland() {
+  wl_shell_surface_destroy(shell_surface);
+  wl_surface_destroy(surface);
+  if (keyboard)
+    wl_keyboard_destroy(keyboard);
+  if (pointer)
+    wl_pointer_destroy(pointer);
+  wl_seat_destroy(seat);
+  wl_shell_destroy(shell);
+  wl_compositor_destroy(compositor);
+  wl_registry_destroy(registry);
+  wl_display_disconnect(display);
 }
-*/
+
+void Application::deleteXcb() {
+  xcb_destroy_window(connection, window);
+  xcb_disconnect(connection);
+}
 
 void Application::printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDevice physicalDevice) {
 	GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceProperties2KHR);
@@ -826,10 +636,6 @@ void Application::initVulkan()
 		vks::tools::exitFatal("Could not create Vulkan instance : \n" + vks::tools::errorString(err), "Fatal error");
 	}
 
-#if defined(__ANDROID__)
-	vks::android::loadVulkanFunctions(instance);
-#endif
-
 	// If requested, we enable the default validation layers for debugging
 	if (settings.validation)
 	{
@@ -859,7 +665,7 @@ void Application::initVulkan()
 	// Defaults to the first device unless specified by command line
 	uint32_t selectedDevice = 0;
 
-#if !defined(__ANDROID__)	
+
 	// GPU selection via command line argument
 	for (size_t i = 0; i < args.size(); i++)
 	{
@@ -907,7 +713,6 @@ void Application::initVulkan()
 			}
 		}
 	}
-#endif
 
 	physicalDevice = physicalDevices[selectedDevice];
 
@@ -963,483 +768,43 @@ void Application::initVulkan()
 	submitInfo.pWaitSemaphores = &semaphores.presentComplete;
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = &semaphores.renderComplete;
-
-#if defined(__ANDROID__)
-	// Get Android device name and manufacturer (to display along GPU name)
-	androidProduct = "";
-	char prop[PROP_VALUE_MAX+1];
-	int len = __system_property_get("ro.product.manufacturer", prop);
-	if (len > 0) {
-		androidProduct += std::string(prop) + " ";
-	};
-	len = __system_property_get("ro.product.model", prop);
-	if (len > 0) {
-		androidProduct += std::string(prop);
-	};
-	LOGD("androidProduct = %s", androidProduct.c_str());
-#endif	
 }
 
-#if defined(_WIN32)
-// Win32 : Sets up a console window and redirects standard output to it
-void VulkanExampleBase::setupConsole(std::string title)
-{
-	AllocConsole();
-	AttachConsole(GetCurrentProcessId());
-	FILE *stream;
-	freopen_s(&stream, "CONOUT$", "w+", stdout);
-	freopen_s(&stream, "CONOUT$", "w+", stderr);
-	SetConsoleTitle(TEXT(title.c_str()));
-}
 
-HWND VulkanExampleBase::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
-{
-	this->windowInstance = hinstance;
-
-	WNDCLASSEX wndClass;
-
-	wndClass.cbSize = sizeof(WNDCLASSEX);
-	wndClass.style = CS_HREDRAW | CS_VREDRAW;
-	wndClass.lpfnWndProc = wndproc;
-	wndClass.cbClsExtra = 0;
-	wndClass.cbWndExtra = 0;
-	wndClass.hInstance = hinstance;
-	wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-	wndClass.lpszMenuName = NULL;
-	wndClass.lpszClassName = name.c_str();
-	wndClass.hIconSm = LoadIcon(NULL, IDI_WINLOGO);
-
-	if (!RegisterClassEx(&wndClass))
-	{
-		std::cout << "Could not register window class!\n";
-		fflush(stdout);
-		exit(1);
-	}
-
-	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
-	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
-
-	if (settings.fullscreen)
-	{
-		DEVMODE dmScreenSettings;
-		memset(&dmScreenSettings, 0, sizeof(dmScreenSettings));
-		dmScreenSettings.dmSize = sizeof(dmScreenSettings);
-		dmScreenSettings.dmPelsWidth = screenWidth;
-		dmScreenSettings.dmPelsHeight = screenHeight;
-		dmScreenSettings.dmBitsPerPel = 32;
-		dmScreenSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-
-		if ((width != (uint32_t)screenWidth) && (height != (uint32_t)screenHeight))
-		{
-			if (ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
-			{
-				if (MessageBox(NULL, "Fullscreen Mode not supported!\n Switch to window mode?", "Error", MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
-				{
-					settings.fullscreen = false;
-				}
-				else
-				{
-					return nullptr;
-				}
-			}
-		}
-
-	}
-
-	DWORD dwExStyle;
-	DWORD dwStyle;
-
-	if (settings.fullscreen)
-	{
-		dwExStyle = WS_EX_APPWINDOW;
-		dwStyle = WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
-	}
-	else
-	{
-		dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
-		dwStyle = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
-	}
-
-	RECT windowRect;
-	windowRect.left = 0L;
-	windowRect.top = 0L;
-	windowRect.right = settings.fullscreen ? (long)screenWidth : (long)width;
-	windowRect.bottom = settings.fullscreen ? (long)screenHeight : (long)height;
-
-	AdjustWindowRectEx(&windowRect, dwStyle, FALSE, dwExStyle);
-
-	std::string windowTitle = getWindowTitle();
-	window = CreateWindowEx(0,
-		name.c_str(),
-		windowTitle.c_str(),
-		dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-		0,
-		0,
-		windowRect.right - windowRect.left,
-		windowRect.bottom - windowRect.top,
-		NULL,
-		NULL,
-		hinstance,
-		NULL);
-
-	if (!settings.fullscreen)
-	{
-		// Center on screen
-		uint32_t x = (GetSystemMetrics(SM_CXSCREEN) - windowRect.right) / 2;
-		uint32_t y = (GetSystemMetrics(SM_CYSCREEN) - windowRect.bottom) / 2;
-		SetWindowPos(window, 0, x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
-	}
-
-	if (!window)
-	{
-		printf("Could not create window!\n");
-		fflush(stdout);
-		return nullptr;
-		exit(1);
-	}
-
-	ShowWindow(window, SW_SHOW);
-	SetForegroundWindow(window);
-	SetFocus(window);
-
-	return window;
-}
-
-void VulkanExampleBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg)
-	{
-	case WM_CLOSE:
-		prepared = false;
-		DestroyWindow(hWnd);
-		PostQuitMessage(0);
-		break;
-	case WM_PAINT:
-		ValidateRect(window, NULL);
-		break;
-	case WM_KEYDOWN:
-		switch (wParam)
-		{
-		case KEY_P:
-			paused = !paused;
-			break;
-		case KEY_F1:
-			if (enableTextOverlay)
-			{
-				textOverlay->visible = !textOverlay->visible;
-			}
-			break;
-		case KEY_ESCAPE:
-			PostQuitMessage(0);
-			break;
-		}
-
-		if (camera.firstperson)
-		{
-			switch (wParam)
-			{
-			case KEY_W:
-				camera.keys.up = true;
-				break;
-			case KEY_S:
-				camera.keys.down = true;
-				break;
-			case KEY_A:
-				camera.keys.left = true;
-				break;
-			case KEY_D:
-				camera.keys.right = true;
-				break;
-			}
-		}
-
-		keyPressed((uint32_t)wParam);
-		break;
-	case WM_KEYUP:
-		if (camera.firstperson)
-		{
-			switch (wParam)
-			{
-			case KEY_W:
-				camera.keys.up = false;
-				break;
-			case KEY_S:
-				camera.keys.down = false;
-				break;
-			case KEY_A:
-				camera.keys.left = false;
-				break;
-			case KEY_D:
-				camera.keys.right = false;
-				break;
-			}
-		}
-		break;
-	case WM_RBUTTONDOWN:
-	case WM_LBUTTONDOWN:
-	case WM_MBUTTONDOWN:
-		mousePos.x = (float)LOWORD(lParam);
-		mousePos.y = (float)HIWORD(lParam);
-		break;
-	case WM_MOUSEWHEEL:
-	{
-		short wheelDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-		zoom += (float)wheelDelta * 0.005f * zoomSpeed;
-		camera.translate(glm::vec3(0.0f, 0.0f, (float)wheelDelta * 0.005f * zoomSpeed));
-		viewUpdated = true;
-		break;
-	}
-	case WM_MOUSEMOVE:
-		if (wParam & MK_RBUTTON)
-		{
-			int32_t posx = LOWORD(lParam);
-			int32_t posy = HIWORD(lParam);
-			zoom += (mousePos.y - (float)posy) * .005f * zoomSpeed;
-			camera.translate(glm::vec3(-0.0f, 0.0f, (mousePos.y - (float)posy) * .005f * zoomSpeed));
-			mousePos = glm::vec2((float)posx, (float)posy);
-			viewUpdated = true;
-		}
-		if (wParam & MK_LBUTTON)
-		{
-			int32_t posx = LOWORD(lParam);
-			int32_t posy = HIWORD(lParam);
-			rotation.x += (mousePos.y - (float)posy) * 1.25f * rotationSpeed;
-			rotation.y -= (mousePos.x - (float)posx) * 1.25f * rotationSpeed;
-			camera.rotate(glm::vec3((mousePos.y - (float)posy) * camera.rotationSpeed, -(mousePos.x - (float)posx) * camera.rotationSpeed, 0.0f));
-			mousePos = glm::vec2((float)posx, (float)posy);
-			viewUpdated = true;
-		}
-		if (wParam & MK_MBUTTON)
-		{
-			int32_t posx = LOWORD(lParam);
-			int32_t posy = HIWORD(lParam);
-			cameraPos.x -= (mousePos.x - (float)posx) * 0.01f;
-			cameraPos.y -= (mousePos.y - (float)posy) * 0.01f;
-			camera.translate(glm::vec3(-(mousePos.x - (float)posx) * 0.01f, -(mousePos.y - (float)posy) * 0.01f, 0.0f));
-			viewUpdated = true;
-			mousePos.x = (float)posx;
-			mousePos.y = (float)posy;
-		}
-		break;
-	case WM_SIZE:
-		if ((prepared) && (wParam != SIZE_MINIMIZED))
-		{
-			if ((resizing) || ((wParam == SIZE_MAXIMIZED) || (wParam == SIZE_RESTORED)))
-			{
-				destWidth = LOWORD(lParam);
-				destHeight = HIWORD(lParam);
-				windowResize();
-			}
-		}
-		break;
-	case WM_ENTERSIZEMOVE:
-		resizing = true;
-		break;
-	case WM_EXITSIZEMOVE:
-		resizing = false;
-		break;
-	}
-}
-#elif defined(__ANDROID__)
-int32_t VulkanExampleBase::handleAppInput(struct android_app* app, AInputEvent* event)
-{
-	VulkanExampleBase* vulkanExample = reinterpret_cast<VulkanExampleBase*>(app->userData);
-	if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION)
-	{
-		int32_t eventSource = AInputEvent_getSource(event);
-		switch (eventSource) {
-			case AINPUT_SOURCE_JOYSTICK: {
-				// Left thumbstick
-				vulkanExample->gamePadState.axisLeft.x = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_X, 0);
-				vulkanExample->gamePadState.axisLeft.y = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Y, 0);
-				// Right thumbstick
-				vulkanExample->gamePadState.axisRight.x = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Z, 0);
-				vulkanExample->gamePadState.axisRight.y = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RZ, 0);
-				break;
-			}
-
-			case AINPUT_SOURCE_TOUCHSCREEN: {
-				int32_t action = AMotionEvent_getAction(event);
-
-				switch (action) {
-					case AMOTION_EVENT_ACTION_UP: {
-						vulkanExample->lastTapTime = AMotionEvent_getEventTime(event);
-						vulkanExample->touchPos.x = AMotionEvent_getX(event, 0);
-						vulkanExample->touchPos.y = AMotionEvent_getY(event, 0);
-						vulkanExample->touchTimer = 0.0;
-						vulkanExample->touchDown = false;
-						vulkanExample->camera.keys.up = false;
-						return 1;
-						break;
-					}
-					case AMOTION_EVENT_ACTION_DOWN: {
-						// Detect double tap
-						int64_t eventTime = AMotionEvent_getEventTime(event);
-						if (eventTime - vulkanExample->lastTapTime <= vks::android::DOUBLE_TAP_TIMEOUT) {
-							float deadZone = (160.f / vks::android::screenDensity) * vks::android::DOUBLE_TAP_SLOP * vks::android::DOUBLE_TAP_SLOP;
-							float x = AMotionEvent_getX(event, 0) - vulkanExample->touchPos.x;
-							float y = AMotionEvent_getY(event, 0) - vulkanExample->touchPos.y;
-							if ((x * x + y * y) < deadZone) {
-								vulkanExample->keyPressed(TOUCH_DOUBLE_TAP);
-								vulkanExample->touchDown = false;
-							}
-						}
-						else {
-							vulkanExample->touchDown = true;
-						}
-						vulkanExample->touchPos.x = AMotionEvent_getX(event, 0);
-						vulkanExample->touchPos.y = AMotionEvent_getY(event, 0);
-						break;
-					}
-					case AMOTION_EVENT_ACTION_MOVE: {
-						int32_t eventX = AMotionEvent_getX(event, 0);
-						int32_t eventY = AMotionEvent_getY(event, 0);
-
-						float deltaX = (float)(vulkanExample->touchPos.y - eventY) * vulkanExample->rotationSpeed * 0.5f;
-						float deltaY = (float)(vulkanExample->touchPos.x - eventX) * vulkanExample->rotationSpeed * 0.5f;
-
-						vulkanExample->camera.rotate(glm::vec3(deltaX, 0.0f, 0.0f));
-						vulkanExample->camera.rotate(glm::vec3(0.0f, -deltaY, 0.0f));
-
-						vulkanExample->rotation.x += deltaX;
-						vulkanExample->rotation.y -= deltaY;
-
-						vulkanExample->viewChanged();
-
-						vulkanExample->touchPos.x = eventX;
-						vulkanExample->touchPos.y = eventY;
-						break;
-					}
-					default:
-						return 1;
-						break;
-				}
-			}
-
-			return 1;
-		}
-	}
-
-	if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_KEY)
-	{
-		int32_t keyCode = AKeyEvent_getKeyCode((const AInputEvent*)event);
-		int32_t action = AKeyEvent_getAction((const AInputEvent*)event);
-		int32_t button = 0;
-
-		if (action == AKEY_EVENT_ACTION_UP)
-			return 0;
-
-		switch (keyCode)
-		{
-		case AKEYCODE_BUTTON_A:
-			vulkanExample->keyPressed(GAMEPAD_BUTTON_A);
-			break;
-		case AKEYCODE_BUTTON_B:
-			vulkanExample->keyPressed(GAMEPAD_BUTTON_B);
-			break;
-		case AKEYCODE_BUTTON_X:
-			vulkanExample->keyPressed(GAMEPAD_BUTTON_X);
-			break;
-		case AKEYCODE_BUTTON_Y:
-			vulkanExample->keyPressed(GAMEPAD_BUTTON_Y);
-			break;
-		case AKEYCODE_BUTTON_L1:
-			vulkanExample->keyPressed(GAMEPAD_BUTTON_L1);
-			break;
-		case AKEYCODE_BUTTON_R1:
-			vulkanExample->keyPressed(GAMEPAD_BUTTON_R1);
-			break;
-		case AKEYCODE_BUTTON_START:
-			vulkanExample->paused = !vulkanExample->paused;
-			break;
-		};
-
-		LOGD("Button %d pressed", keyCode);
-	}
-
-	return 0;
-}
-
-void VulkanExampleBase::handleAppCommand(android_app * app, int32_t cmd)
-{
-	assert(app->userData != NULL);
-	VulkanExampleBase* vulkanExample = reinterpret_cast<VulkanExampleBase*>(app->userData);
-	switch (cmd)
-	{
-	case APP_CMD_SAVE_STATE:
-		LOGD("APP_CMD_SAVE_STATE");
-		/*
-		vulkanExample->app->savedState = malloc(sizeof(struct saved_state));
-		*((struct saved_state*)vulkanExample->app->savedState) = vulkanExample->state;
-		vulkanExample->app->savedStateSize = sizeof(struct saved_state);
-		*/
-		break;
-	case APP_CMD_INIT_WINDOW:
-		LOGD("APP_CMD_INIT_WINDOW");
-		if (androidApp->window != NULL)
-		{
-			vulkanExample->initVulkan();
-			vulkanExample->initSwapchain();
-			vulkanExample->prepare();
-			assert(vulkanExample->prepared);
-		}
-		else
-		{
-			LOGE("No window assigned!");
-		}
-		break;
-	case APP_CMD_LOST_FOCUS:
-		LOGD("APP_CMD_LOST_FOCUS");
-		vulkanExample->focused = false;
-		break;
-	case APP_CMD_GAINED_FOCUS:
-		LOGD("APP_CMD_GAINED_FOCUS");
-		vulkanExample->focused = true;
-		break;
-	case APP_CMD_TERM_WINDOW:
-		// Window is hidden or closed, clean up resources
-		LOGD("APP_CMD_TERM_WINDOW");
-		vulkanExample->swapChain.cleanup();
-		break;
-	}
-}
-#elif defined(_DIRECT2DISPLAY)
-#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-/*static*/void VulkanExampleBase::registryGlobalCb(void *data,
+// wayland
+/*static*/void Application::registryGlobalCb(void *data,
 		wl_registry *registry, uint32_t name, const char *interface,
 		uint32_t version)
 {
-	VulkanExampleBase *self = reinterpret_cast<VulkanExampleBase *>(data);
+  Application *self = reinterpret_cast<Application *>(data);
 	self->registryGlobal(registry, name, interface, version);
 }
 
-/*static*/void VulkanExampleBase::seatCapabilitiesCb(void *data, wl_seat *seat,
+/*static*/void Application::seatCapabilitiesCb(void *data, wl_seat *seat,
 		uint32_t caps)
 {
-	VulkanExampleBase *self = reinterpret_cast<VulkanExampleBase *>(data);
+  Application *self = reinterpret_cast<Application *>(data);
 	self->seatCapabilities(seat, caps);
 }
 
-/*static*/void VulkanExampleBase::pointerEnterCb(void *data,
+/*static*/void Application::pointerEnterCb(void *data,
 		wl_pointer *pointer, uint32_t serial, wl_surface *surface,
 		wl_fixed_t sx, wl_fixed_t sy)
 {
 }
 
-/*static*/void VulkanExampleBase::pointerLeaveCb(void *data,
+/*static*/void Application::pointerLeaveCb(void *data,
 		wl_pointer *pointer, uint32_t serial, wl_surface *surface)
 {
 }
 
-/*static*/void VulkanExampleBase::pointerMotionCb(void *data,
+/*static*/void Application::pointerMotionCb(void *data,
 		wl_pointer *pointer, uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
 {
-	VulkanExampleBase *self = reinterpret_cast<VulkanExampleBase *>(data);
+  Application *self = reinterpret_cast<Application *>(data);
 	self->pointerMotion(pointer, time, sx, sy);
 }
-void VulkanExampleBase::pointerMotion(wl_pointer *pointer, uint32_t time,
+void Application::pointerMotion(wl_pointer *pointer, uint32_t time,
 		wl_fixed_t sx, wl_fixed_t sy)
 {
 	double x = wl_fixed_to_double(sx);
@@ -1474,15 +839,15 @@ void VulkanExampleBase::pointerMotion(wl_pointer *pointer, uint32_t time,
 	mousePos = glm::vec2(x, y);
 }
 
-/*static*/void VulkanExampleBase::pointerButtonCb(void *data,
+/*static*/void Application::pointerButtonCb(void *data,
 		wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button,
 		uint32_t state)
 {
-	VulkanExampleBase *self = reinterpret_cast<VulkanExampleBase *>(data);
+  Application *self = reinterpret_cast<Application *>(data);
 	self->pointerButton(pointer, serial, time, button, state);
 }
 
-void VulkanExampleBase::pointerButton(struct wl_pointer *pointer,
+void Application::pointerButton(struct wl_pointer *pointer,
 		uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
 {
 	switch (button)
@@ -1501,15 +866,15 @@ void VulkanExampleBase::pointerButton(struct wl_pointer *pointer,
 	}
 }
 
-/*static*/void VulkanExampleBase::pointerAxisCb(void *data,
+/*static*/void Application::pointerAxisCb(void *data,
 		wl_pointer *pointer, uint32_t time, uint32_t axis,
 		wl_fixed_t value)
 {
-	VulkanExampleBase *self = reinterpret_cast<VulkanExampleBase *>(data);
+  Application *self = reinterpret_cast<Application *>(data);
 	self->pointerAxis(pointer, time, axis, value);
 }
 
-void VulkanExampleBase::pointerAxis(wl_pointer *pointer, uint32_t time,
+void Application::pointerAxis(wl_pointer *pointer, uint32_t time,
 		uint32_t axis, wl_fixed_t value)
 {
 	double d = wl_fixed_to_double(value);
@@ -1525,32 +890,32 @@ void VulkanExampleBase::pointerAxis(wl_pointer *pointer, uint32_t time,
 	}
 }
 
-/*static*/void VulkanExampleBase::keyboardKeymapCb(void *data,
+/*static*/void Application::keyboardKeymapCb(void *data,
 		struct wl_keyboard *keyboard, uint32_t format, int fd, uint32_t size)
 {
 }
 
-/*static*/void VulkanExampleBase::keyboardEnterCb(void *data,
+/*static*/void Application::keyboardEnterCb(void *data,
 		struct wl_keyboard *keyboard, uint32_t serial,
 		struct wl_surface *surface, struct wl_array *keys)
 {
 }
 
-/*static*/void VulkanExampleBase::keyboardLeaveCb(void *data,
+/*static*/void Application::keyboardLeaveCb(void *data,
 		struct wl_keyboard *keyboard, uint32_t serial,
 		struct wl_surface *surface)
 {
 }
 
-/*static*/void VulkanExampleBase::keyboardKeyCb(void *data,
+/*static*/void Application::keyboardKeyCb(void *data,
 		struct wl_keyboard *keyboard, uint32_t serial, uint32_t time,
 		uint32_t key, uint32_t state)
 {
-	VulkanExampleBase *self = reinterpret_cast<VulkanExampleBase *>(data);
+  Application *self = reinterpret_cast<Application *>(data);
 	self->keyboardKey(keyboard, serial, time, key, state);
 }
 
-void VulkanExampleBase::keyboardKey(struct wl_keyboard *keyboard,
+void Application::keyboardKey(struct wl_keyboard *keyboard,
 		uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
 {
 	switch (key)
@@ -1584,13 +949,13 @@ void VulkanExampleBase::keyboardKey(struct wl_keyboard *keyboard,
 		keyPressed(key);
 }
 
-/*static*/void VulkanExampleBase::keyboardModifiersCb(void *data,
+/*static*/void Application::keyboardModifiersCb(void *data,
 		struct wl_keyboard *keyboard, uint32_t serial, uint32_t mods_depressed,
 		uint32_t mods_latched, uint32_t mods_locked, uint32_t group)
 {
 }
 
-void VulkanExampleBase::seatCapabilities(wl_seat *seat, uint32_t caps)
+void Application::seatCapabilities(wl_seat *seat, uint32_t caps)
 {
 	if ((caps & WL_SEAT_CAPABILITY_POINTER) && !pointer)
 	{
@@ -1621,7 +986,7 @@ void VulkanExampleBase::seatCapabilities(wl_seat *seat, uint32_t caps)
 	}
 }
 
-void VulkanExampleBase::registryGlobal(wl_registry *registry, uint32_t name,
+void Application::registryGlobal(wl_registry *registry, uint32_t name,
 		const char *interface, uint32_t version)
 {
 	if (strcmp(interface, "wl_compositor") == 0)
@@ -1645,12 +1010,12 @@ void VulkanExampleBase::registryGlobal(wl_registry *registry, uint32_t name,
 	}
 }
 
-/*static*/void VulkanExampleBase::registryGlobalRemoveCb(void *data,
+/*static*/void Application::registryGlobalRemoveCb(void *data,
 		struct wl_registry *registry, uint32_t name)
 {
 }
 
-void VulkanExampleBase::initWaylandConnection()
+void Application::initWaylandConnection()
 {
 	display = wl_display_connect(NULL);
 	if (!display)
@@ -1696,7 +1061,7 @@ static void PopupDoneCb(void *data, struct wl_shell_surface *shell_surface)
 {
 }
 
-wl_shell_surface *VulkanExampleBase::setupWindow()
+wl_shell_surface *Application::setupWaylandWindow()
 {
 	surface = wl_compositor_create_surface(compositor);
 	shell_surface = wl_shell_get_shell_surface(shell, surface);
@@ -1711,7 +1076,7 @@ wl_shell_surface *VulkanExampleBase::setupWindow()
 	return shell_surface;
 }
 
-#elif defined(__linux__)
+// XCB
 
 static inline xcb_intern_atom_reply_t* intern_atom_helper(xcb_connection_t *conn, bool only_if_exists, const char *str)
 {
@@ -1720,7 +1085,7 @@ static inline xcb_intern_atom_reply_t* intern_atom_helper(xcb_connection_t *conn
 }
 
 // Set up a window using XCB and request event types
-xcb_window_t Application::setupWindow()
+xcb_window_t Application::setupXCBWindow()
 {
 	uint32_t value_mask, value_list[32];
 
@@ -1939,7 +1304,6 @@ void Application::handleEvent(const xcb_generic_event_t *event)
 		break;
 	}
 }
-#endif
 
 void Application::viewChanged() {}
 

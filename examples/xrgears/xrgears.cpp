@@ -754,4 +754,43 @@ public:
 
 };
 
-VULKAN_EXAMPLE_MAIN()
+XRGears *app;
+/*
+static void handleEvent(const xcb_generic_event_t *event) {
+  if (app != NULL)
+    app->handleEvent(event);
+}
+*/
+
+void xcbMain() {
+  app->setupXCBWindow();
+}
+
+void waylandMain() {
+  app->setupWaylandWindow();
+}
+
+void directDisplayMain() {
+}
+
+int main(const int argc, const char *argv[]) {
+  for (size_t i = 0; i < argc; i++) { XRGears::args.push_back(argv[i]); };
+  app = new XRGears();
+  app->initVulkan();
+
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+  waylandMain();
+#elif defined(_DIRECT2DISPLAY)
+  directDisplayMain();
+#elif defined(VK_USE_PLATFORM_XCB_KHR)
+//#elif defined(__linux__)
+  xcbMain();
+#endif
+
+  app->initSwapchain();
+  app->prepare();
+  app->renderLoop();
+  delete(app);
+
+  return 0;
+}
