@@ -20,7 +20,7 @@ public:
   }
 
   static inline void
-  fix_rotation(glm::mat4& m) {
+  fix_handedness(glm::mat4& m) {
     m[0][1] = -m[0][1];
     m[1][0] = -m[1][0];
     m[1][2] = -m[1][2];
@@ -39,8 +39,8 @@ public:
     hmd->getTransformation(&hmdProjectionLeft, &hmdProjectionRight,
                            &hmdViewLeft, &hmdViewRight);
 
-    fix_rotation(hmdViewLeft);
-    fix_rotation(hmdViewRight);
+    fix_handedness(hmdViewLeft);
+    fix_handedness(hmdViewRight);
 
     glm::mat4 translationMatrix = glm::translate(glm::mat4(), camera.position);
 
