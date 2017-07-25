@@ -47,7 +47,7 @@
 #include "vksTextOverlay.hpp"
 #include "vksCamera.hpp"
 
-class VulkanExampleBase
+class Application
 {
 private:	
 
@@ -244,10 +244,10 @@ public:
 #endif
 
 	// Default ctor
-	VulkanExampleBase(bool enableValidation);
+  Application(bool enableValidation);
 
 	// dtor
-	virtual ~VulkanExampleBase();
+  virtual ~Application();
 
 	// Setup the vulkan instance, enable required extensions and connect to the physical device (GPU)
 	void initVulkan();
@@ -470,7 +470,7 @@ int main(const int argc, const char *argv[])													    \
 #elif defined(__linux__)
 // Linux entry point
 #define VULKAN_EXAMPLE_MAIN()																		\
-VulkanExample *vulkanExample;																		\
+XRGears *vulkanExample;																		\
 static void handleEvent(const xcb_generic_event_t *event)											\
 {																									\
 	if (vulkanExample != NULL)																		\
@@ -480,8 +480,8 @@ static void handleEvent(const xcb_generic_event_t *event)											\
 }																									\
 int main(const int argc, const char *argv[])													    \
 {																									\
-	for (size_t i = 0; i < argc; i++) { VulkanExample::args.push_back(argv[i]); };  				\
-	vulkanExample = new VulkanExample();															\
+  for (size_t i = 0; i < argc; i++) { XRGears::args.push_back(argv[i]); };  				\
+  vulkanExample = new XRGears();															\
 	vulkanExample->initVulkan();																	\
 	vulkanExample->setupWindow();					 												\
 	vulkanExample->initSwapchain();																	\
