@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <wayland-client.h>
-#include <xcb/xcb.h>
+
+
 
 #include <iostream>
 #include <chrono>
@@ -24,7 +24,6 @@
 
 #include "vulkan/vulkan.h"
 
-#include "vksKeyCodes.hpp"
 #include "vksTools.hpp"
 #include "vksDebug.hpp"
 #include "vksInitializers.hpp"
@@ -33,13 +32,9 @@
 #include "vksTextOverlay.hpp"
 #include "vksCamera.hpp"
 
-#include "vksWindowXCB.hpp"
-#include "vksWindowWayland.hpp"
-#include "vksWindowDisplay.hpp"
-
 class Application
 {
-private:	
+protected:
 
 
 	PFN_vkGetPhysicalDeviceFeatures2KHR fpGetPhysicalDeviceFeatures2KHR;
@@ -59,8 +54,6 @@ private:
 	bool resizing = false;
 	// Called if the window is resized and some resources have to be recreatesd
 	void windowResize();
-
-  vksWindowXCB * windowXCB;
 
 protected:
 	// Frame counter to display fps
@@ -148,13 +141,6 @@ public:
 
 	VkClearColorValue defaultClearColor = { { 0.025f, 0.025f, 0.025f, 1.0f } };
 
-  void directDisplayRenderLoop();
-  void waylandRenderLoop();
-  void xcbRenderLoop();
-
-  void deleteWayland();
-  void deleteXcb();
-
 	float zoom = 0;
 
 	static std::vector<const char*> args;
@@ -184,6 +170,15 @@ public:
 	std::string title = "Vulkan Example";
 	std::string name = "vulkanExample";
 
+  bool quit = false;
+  struct {
+    bool left = false;
+    bool right = false;
+    bool middle = false;
+  } mouseButtons;
+
+  virtual std::string requiredExtensionName() {}
+
 	struct 
 	{
 		VkImage image;
@@ -198,37 +193,6 @@ public:
 		glm::vec2 axisRight = glm::vec2(0.0f);
 	} gamePadState;
 
-	// OS specific 
-  // wayland
-	wl_display *display = nullptr;
-	wl_registry *registry = nullptr;
-	wl_compositor *compositor = nullptr;
-	wl_shell *shell = nullptr;
-	wl_seat *seat = nullptr;
-	wl_pointer *pointer = nullptr;
-	wl_keyboard *keyboard = nullptr;
-	wl_surface *surface = nullptr;
-	wl_shell_surface *shell_surface = nullptr;
-	bool quit = false;
-	struct {
-		bool left = false;
-		bool right = false;
-		bool middle = false;
-	} mouseButtons;
-  // xcb
-  /*
-	struct {
-		bool left = false;
-		bool right = false;
-		bool middle = false;
-	} mouseButtons;
-	bool quit = false;
-  */
-	xcb_connection_t *connection;
-	xcb_screen_t *screen;
-	xcb_window_t window;
-	xcb_intern_atom_reply_t *atom_wm_delete_window;
-
 	// Default ctor
   Application(bool enableValidation);
 
@@ -237,53 +201,6 @@ public:
 
 	// Setup the vulkan instance, enable required extensions and connect to the physical device (GPU)
 	void initVulkan();
-
-  //wayland
-  wl_shell_surface *setupWaylandWindow();
-	void initWaylandConnection();
-	static void registryGlobalCb(void *data, struct wl_registry *registry,
-			uint32_t name, const char *interface, uint32_t version);
-	void registryGlobal(struct wl_registry *registry, uint32_t name,
-			const char *interface, uint32_t version);
-	static void registryGlobalRemoveCb(void *data, struct wl_registry *registry,
-			uint32_t name);
-	static void seatCapabilitiesCb(void *data, wl_seat *seat, uint32_t caps);
-	void seatCapabilities(wl_seat *seat, uint32_t caps);
-	static void pointerEnterCb(void *data, struct wl_pointer *pointer,
-			uint32_t serial, struct wl_surface *surface, wl_fixed_t sx,
-			wl_fixed_t sy);
-	static void pointerLeaveCb(void *data, struct wl_pointer *pointer,
-			uint32_t serial, struct wl_surface *surface);
-	static void pointerMotionCb(void *data, struct wl_pointer *pointer,
-			uint32_t time, wl_fixed_t sx, wl_fixed_t sy);
-	void pointerMotion(struct wl_pointer *pointer,
-			uint32_t time, wl_fixed_t sx, wl_fixed_t sy);
-	static void pointerButtonCb(void *data, struct wl_pointer *wl_pointer,
-			uint32_t serial, uint32_t time, uint32_t button, uint32_t state);
-	void pointerButton(struct wl_pointer *wl_pointer,
-			uint32_t serial, uint32_t time, uint32_t button, uint32_t state);
-	static void pointerAxisCb(void *data, struct wl_pointer *wl_pointer,
-			uint32_t time, uint32_t axis, wl_fixed_t value);
-	void pointerAxis(struct wl_pointer *wl_pointer,
-			uint32_t time, uint32_t axis, wl_fixed_t value);
-	static void keyboardKeymapCb(void *data, struct wl_keyboard *keyboard,
-			uint32_t format, int fd, uint32_t size);
-	static void keyboardEnterCb(void *data, struct wl_keyboard *keyboard,
-			uint32_t serial, struct wl_surface *surface, struct wl_array *keys);
-	static void keyboardLeaveCb(void *data, struct wl_keyboard *keyboard,
-			uint32_t serial, struct wl_surface *surface);
-	static void keyboardKeyCb(void *data, struct wl_keyboard *keyboard,
-			uint32_t serial, uint32_t time, uint32_t key, uint32_t state);
-	void keyboardKey(struct wl_keyboard *keyboard,
-			uint32_t serial, uint32_t time, uint32_t key, uint32_t state);
-	static void keyboardModifiersCb(void *data, struct wl_keyboard *keyboard,
-			uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched,
-			uint32_t mods_locked, uint32_t group);
-
-  // xcb
-  xcb_window_t setupXCBWindow();
-	void initxcbConnection();
-	void handleEvent(const xcb_generic_event_t *event);
 
 	/**
 	* Create the application wide Vulkan instance
@@ -324,7 +241,7 @@ public:
 	virtual void getEnabledFeatures();
 
 	// Connect and prepare the swap chain
-	void initSwapchain();
+  virtual void initSwapChain() {}
 	// Create swap chain images
 	void setupSwapChain();
 
@@ -353,7 +270,7 @@ public:
 	VkPipelineShaderStageCreateInfo loadShader(std::string fileName, VkShaderStageFlagBits stage);
 	
 	// Start the main render loop
-	void renderLoop();
+  void renderLoopWrap();
 
 	void updateTextOverlay();
 
@@ -368,5 +285,7 @@ public:
 	// Submit the frames' workload 
 	// - Submits the text overlay (if enabled)
 	void submitFrame();
+
+  virtual void renderLoop() {}
 
 };

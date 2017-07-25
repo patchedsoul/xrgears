@@ -1,6 +1,11 @@
 #pragma once
 
+#include <string>
+
 class vksWindow {
+public:
+
+
   vksWindow() {
 
   }
@@ -8,5 +13,7 @@ class vksWindow {
   ~vksWindow() {
 
   }
+
+
 
 };

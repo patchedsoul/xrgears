@@ -34,11 +34,12 @@
 #include "VikBuffer.hpp"
 #include "VikCameraStereo.hpp"
 #include "VikCameraHMD.hpp"
+#include "../vks/vksWindowXCB.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
 
-class XRGears : public Application {
+class XRGears : public ApplicationXCB {
 public:
   // Vertex layout for the models
   vks::VertexLayout vertexLayout = vks::VertexLayout({
@@ -89,7 +90,7 @@ public:
   // Semaphore used to synchronize between offscreen and final scene rendering
   VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
-  XRGears() : Application(ENABLE_VALIDATION) {
+  XRGears() : ApplicationXCB(ENABLE_VALIDATION) {
     title = "XR Gears";
     enableTextOverlay = true;
     camera.type = Camera::CameraType::firstperson;
@@ -742,11 +743,9 @@ public:
     switch (keyCode)
     {
       case KEY_KPADD:
-      case GAMEPAD_BUTTON_R1:
         changeEyeSeparation(0.005);
         break;
       case KEY_KPSUB:
-      case GAMEPAD_BUTTON_L1:
         changeEyeSeparation(-0.005);
         break;
     }
@@ -762,16 +761,6 @@ static void handleEvent(const xcb_generic_event_t *event) {
 }
 */
 
-void xcbMain() {
-  app->setupXCBWindow();
-}
-
-void waylandMain() {
-  app->setupWaylandWindow();
-}
-
-void directDisplayMain() {
-}
 
 int main(const int argc, const char *argv[]) {
   for (size_t i = 0; i < argc; i++) { XRGears::args.push_back(argv[i]); };
@@ -779,17 +768,16 @@ int main(const int argc, const char *argv[]) {
   app->initVulkan();
 
 #if defined(VK_USE_PLATFORM_WAYLAND_KHR)
-  waylandMain();
+   app->setupWaylandWindow();
 #elif defined(_DIRECT2DISPLAY)
-  directDisplayMain();
 #elif defined(VK_USE_PLATFORM_XCB_KHR)
 //#elif defined(__linux__)
-  xcbMain();
+  app->setupXCBWindow();
 #endif
 
-  app->initSwapchain();
+  app->initSwapChain();
   app->prepare();
-  app->renderLoop();
+  app->renderLoopWrap();
   delete(app);
 
   return 0;
