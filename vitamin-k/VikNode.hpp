@@ -47,6 +47,10 @@ public:
     material = m;
   }
 
+  void setPosition(glm::vec3& p) {
+    pos = p;
+  }
+
   void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout) {
     vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
     VkDeviceSize offsets[1] = { 0 };

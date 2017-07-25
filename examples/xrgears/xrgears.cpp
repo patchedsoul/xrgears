@@ -330,9 +330,11 @@ public:
 
   void initGears() {
 
-    Material teapotMaterial = Material("Orange", glm::vec3(1.0f, 1.0f, 0.0f), 0.5f, 0.1f);
-
+    Material teapotMaterial = Material("Cream", glm::vec3(1.0f, 1.0f, 0.8f), 0.5f, 0.1f);
     teapotNode->setMateral(teapotMaterial);
+
+    glm::vec3 teapotPosition = glm::vec3(-15.0, -5.0, -5.0);
+    teapotNode->setPosition(teapotPosition);
 
     // Gear definitions
     std::vector<float> innerRadiuses = { 1.0f, 0.5f, 1.3f };
