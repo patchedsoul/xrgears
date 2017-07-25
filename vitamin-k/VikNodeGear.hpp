@@ -32,7 +32,7 @@
 
 class VikNodeGear : public VikNode {
 private:
-  Gear gear;
+  VikGear gear;
 
 public:
   void generate(vks::VulkanDevice *vulkanDevice, GearInfo *gearinfo, VkQueue queue) {

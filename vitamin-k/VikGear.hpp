@@ -7,16 +7,12 @@ struct Vertex
 {
   float pos[3];
   float normal[3];
-  float color[3];
 
-  Vertex(const glm::vec3& p, const glm::vec3& n, const glm::vec3& c)
+  Vertex(const glm::vec3& p, const glm::vec3& n)
   {
     pos[0] = p.x;
     pos[1] = p.y;
     pos[2] = p.z;
-    color[0] = c.x;
-    color[1] = c.y;
-    color[2] = c.z;
     normal[0] = n.x;
     normal[1] = n.y;
     normal[2] = n.z;
@@ -32,7 +28,7 @@ struct GearInfo
   float toothDepth;
 };
 
-class Gear
+class VikGear
 {
 public:
 
@@ -40,7 +36,7 @@ public:
   vks::Buffer indexBuffer;
   uint32_t indexCount;
 
-  ~Gear() {
+  ~VikGear() {
     // Clean up vulkan resources
     vertexBuffer.destroy();
     indexBuffer.destroy();
@@ -48,7 +44,7 @@ public:
 
   int32_t newVertex(std::vector<Vertex> *vBuffer, float x, float y, float z, const glm::vec3& normal)
   {
-    Vertex v(glm::vec3(x, y, z), normal, glm::vec3());
+    Vertex v(glm::vec3(x, y, z), normal);
     vBuffer->push_back(v);
     return static_cast<int32_t>(vBuffer->size()) - 1;
   }

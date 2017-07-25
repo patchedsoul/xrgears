@@ -44,8 +44,7 @@ public:
   // Vertex layout for the models
   vks::VertexLayout vertexLayout = vks::VertexLayout({
     vks::VERTEX_COMPONENT_POSITION,
-    vks::VERTEX_COMPONENT_NORMAL,
-    vks::VERTEX_COMPONENT_COLOR,
+    vks::VERTEX_COMPONENT_NORMAL
   });
 
   VikNodeModel* teapotNode;
