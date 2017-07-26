@@ -42,7 +42,7 @@ private:
   VkDescriptorSet descriptorSet;
 
 public:
-  VikDistortion(VkDevice& d) {
+  explicit VikDistortion(const VkDevice& d) {
     device = d;
   }
 

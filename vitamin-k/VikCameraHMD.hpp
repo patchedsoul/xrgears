@@ -22,7 +22,7 @@ public:
 
   VikHMD* hmd;
 
-  VikCameraHMD (VikHMD* h) : hmd(h) {}
+  explicit VikCameraHMD (VikHMD* h) : hmd(h) {}
 
   static inline void
   fix_handedness(glm::mat4& m) {

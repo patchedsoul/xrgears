@@ -59,7 +59,7 @@ struct VulkanDevice
     *
     * @param physicalDevice Physical device that is to be used
     */
-  VulkanDevice(VkPhysicalDevice physicalDevice)
+  explicit VulkanDevice(VkPhysicalDevice physicalDevice)
   {
     assert(physicalDevice);
     this->physicalDevice = physicalDevice;

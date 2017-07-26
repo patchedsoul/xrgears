@@ -29,7 +29,7 @@ private:
   VkPipeline pipeline;
 
 public:
-  VikSkyBox(VkDevice device) : device(device) {}
+  explicit VikSkyBox(VkDevice device) : device(device) {}
 
   ~VikSkyBox() {
     cubeMap.destroy();

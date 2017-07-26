@@ -46,7 +46,7 @@ class ApplicationXCB : public Application {
   xcb_intern_atom_reply_t *atom_wm_delete_window;
 
 public:
-  ApplicationXCB(bool enableValidation) : Application(enableValidation) {
+  explicit ApplicationXCB(bool enableValidation) : Application(enableValidation) {
     const xcb_setup_t *setup;
     xcb_screen_iterator_t iter;
     int scr;

@@ -37,7 +37,7 @@ class ApplicationWayland : public Application {
   wl_shell_surface *shell_surface = nullptr;
 
 public:
-  ApplicationWayland(bool enableValidation) : Application(enableValidation) {
+  explicit ApplicationWayland(bool enableValidation) : Application(enableValidation) {
     display = wl_display_connect(NULL);
     if (!display)
     {

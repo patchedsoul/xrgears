@@ -51,7 +51,7 @@ public:
   /** @brief Components used to generate vertices from */
   std::vector<Component> components;
 
-  VertexLayout(std::vector<Component> components)
+  explicit VertexLayout(std::vector<Component> components)
   {
     this->components = std::move(components);
   }

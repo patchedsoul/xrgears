@@ -101,7 +101,7 @@ public:
     *
     * @param vulkanDevice Pointer to a valid VulkanDevice
     */
-  Framebuffer(vks::VulkanDevice *vulkanDevice)
+  explicit Framebuffer(vks::VulkanDevice *vulkanDevice)
   {
     assert(vulkanDevice);
     this->vulkanDevice = vulkanDevice;

@@ -43,7 +43,7 @@ private:
   } offScreenFrameBuf;
 
 public:
-  VikOffscreenPass(const VkDevice& d) {
+  explicit VikOffscreenPass(const VkDevice& d) {
     device = d;
   }
 

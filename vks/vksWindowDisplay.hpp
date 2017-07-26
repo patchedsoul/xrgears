@@ -17,7 +17,7 @@
 
 class ApplicationDisplay  : public Application {
 public:
-  ApplicationDisplay(bool enableValidation) : Application(enableValidation) {}
+  explicit ApplicationDisplay(bool enableValidation) : Application(enableValidation) {}
   ~ApplicationDisplay() {}
 
   const char* requiredExtensionName() {

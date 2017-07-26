@@ -191,7 +191,7 @@ public:
   } gamePadState;
 
   // Default ctor
-  Application(bool enableValidation);
+  explicit Application(bool enableValidation);
 
   // dtor
   virtual ~Application();
