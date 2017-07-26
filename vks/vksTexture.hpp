@@ -21,10 +21,6 @@
 #include "vksDevice.hpp"
 #include "vksBuffer.hpp"
 
-#if defined(__ANDROID__)
-#include <android/asset_manager.h>
-#endif
-
 namespace vks
 {
 /** @brief Vulkan texture base class */
@@ -88,27 +84,11 @@ public:
       VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
       bool forceLinear = false)
   {
-#if defined(__ANDROID__)
-    // Textures are stored inside the apk on Android (compressed)
-    // So they need to be loaded via the asset manager
-    AAsset* asset = AAssetManager_open(androidApp->activity->assetManager, filename.c_str(), AASSET_MODE_STREAMING);
-    assert(asset);
-    size_t size = AAsset_getLength(asset);
-    assert(size > 0);
-
-    void *textureData = malloc(size);
-    AAsset_read(asset, textureData, size);
-    AAsset_close(asset);
-
-    gli::texture2d tex2D(gli::load((const char*)textureData, size));
-
-    free(textureData);
-#else
     if (!vks::tools::fileExists(filename)) {
       vks::tools::exitFatal("Could not load texture from " + filename, "File not found");
     }
     gli::texture2d tex2D(gli::load(filename.c_str()));
-#endif		
+
     assert(!tex2D.empty());
 
     this->device = device;
@@ -565,27 +545,12 @@ public:
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
       VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
   {
-#if defined(__ANDROID__)
-    // Textures are stored inside the apk on Android (compressed)
-    // So they need to be loaded via the asset manager
-    AAsset* asset = AAssetManager_open(androidApp->activity->assetManager, filename.c_str(), AASSET_MODE_STREAMING);
-    assert(asset);
-    size_t size = AAsset_getLength(asset);
-    assert(size > 0);
 
-    void *textureData = malloc(size);
-    AAsset_read(asset, textureData, size);
-    AAsset_close(asset);
-
-    gli::texture2d_array tex2DArray(gli::load((const char*)textureData, size));
-
-    free(textureData);
-#else
     if (!vks::tools::fileExists(filename)) {
       vks::tools::exitFatal("Could not load texture from " + filename, "File not found");
     }
     gli::texture2d_array tex2DArray(gli::load(filename));
-#endif	
+
     assert(!tex2DArray.empty());
 
     this->device = device;
@@ -774,27 +739,12 @@ public:
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
       VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
   {
-#if defined(__ANDROID__)
-    // Textures are stored inside the apk on Android (compressed)
-    // So they need to be loaded via the asset manager
-    AAsset* asset = AAssetManager_open(androidApp->activity->assetManager, filename.c_str(), AASSET_MODE_STREAMING);
-    assert(asset);
-    size_t size = AAsset_getLength(asset);
-    assert(size > 0);
 
-    void *textureData = malloc(size);
-    AAsset_read(asset, textureData, size);
-    AAsset_close(asset);
-
-    gli::texture_cube texCube(gli::load((const char*)textureData, size));
-
-    free(textureData);
-#else
     if (!vks::tools::fileExists(filename)) {
       vks::tools::exitFatal("Could not load texture from " + filename, "File not found");
     }
     gli::texture_cube texCube(gli::load(filename));
-#endif	
+
     assert(!texCube.empty());
 
     this->device = device;

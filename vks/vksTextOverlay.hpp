@@ -25,10 +25,6 @@
 #include "vksBuffer.hpp"
 #include "vksDevice.hpp"
 
-#if defined(__ANDROID__)
-#include "VulkanAndroid.h"
-#endif
-
 #include "../data/stb_font_consolas_24_latin1.inl"
 
 // Defines for the STB font used
@@ -122,20 +118,6 @@ public:
 
     this->frameBufferWidth = framebufferwidth;
     this->frameBufferHeight = framebufferheight;
-
-#if defined(__ANDROID__)		
-    // Scale text on Android devices with high DPI
-    if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_XXHIGH) {
-      LOGD("XXHIGH");
-      scale = 2.0f;
-    } else if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_XHIGH) {
-      LOGD("XHIGH");
-      scale = 1.5f;
-    } else if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_HIGH) {
-      LOGD("HIGH");
-      scale = 1.25f;
-    }
-#endif
 
     cmdBuffers.resize(framebuffers->size());
     prepareResources();

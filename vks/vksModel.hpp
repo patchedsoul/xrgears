@@ -29,10 +29,6 @@
 #include "vksDevice.hpp"
 #include "vksBuffer.hpp"
 
-#if defined(__ANDROID__)
-#include <android/asset_manager.h>
-#endif
-
 namespace vks
 {
 /** @brief Vertex layout components */
@@ -163,30 +159,7 @@ struct Model {
     const aiScene* pScene;
 
     // Load file
-#if defined(__ANDROID__)
-    // Meshes are stored inside the apk on Android (compressed)
-    // So they need to be loaded via the asset manager
-
-    AAsset* asset = AAssetManager_open(androidApp->activity->assetManager, filename.c_str(), AASSET_MODE_STREAMING);
-    if (!asset) {
-      LOGE("Could not load mesh from \"%s\"!", filename.c_str());
-      return false;
-    }
-    assert(asset);
-    size_t size = AAsset_getLength(asset);
-
-    assert(size > 0);
-
-    void *meshData = malloc(size);
-    AAsset_read(asset, meshData, size);
-    AAsset_close(asset);
-
-    pScene = Importer.ReadFileFromMemory(meshData, size, flags);
-
-    free(meshData);
-#else
     pScene = Importer.ReadFile(filename.c_str(), flags);
-#endif
 
     if (pScene)
     {
@@ -368,9 +341,6 @@ struct Model {
     else
     {
       printf("Error parsing '%s': '%s'\n", filename.c_str(), Importer.GetErrorString());
-#if defined(__ANDROID__)
-      LOGE("Error parsing '%s': '%s'", filename.c_str(), Importer.GetErrorString());
-#endif
       return false;
     }
   };

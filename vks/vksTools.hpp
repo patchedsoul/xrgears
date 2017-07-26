@@ -53,17 +53,7 @@
   }
 
 // Macro to check and display Vulkan return results
-#if defined(__ANDROID__)
-#define VK_CHECK_RESULT(f)																				\
-{																										\
-  VkResult res = (f);																					\
-  if (res != VK_SUCCESS)																				\
-{																									\
-  LOGE("Fatal : VkResult is \" %s \" in %s at line %d", vks::tools::errorString(res).c_str(), __FILE__, __LINE__); \
-  assert(res == VK_SUCCESS);																		\
-  }																									\
-  }
-#else
+
 #define VK_CHECK_RESULT(f)																				\
 {																										\
   VkResult res = (f);																					\
@@ -73,13 +63,8 @@
   assert(res == VK_SUCCESS);																		\
   }																									\
   }
-#endif
 
-#if defined(__ANDROID__)
-#define ASSET_PATH ""
-#else
 #define ASSET_PATH "./data/"
-#endif
 
 namespace vks
 {
@@ -130,11 +115,7 @@ void insertImageMemoryBarrier(
 void exitFatal(std::string message, std::string caption);
 
 // Load a SPIR-V shader (binary)
-#if defined(__ANDROID__)
-VkShaderModule loadShader(AAssetManager* assetManager, const char *fileName, VkDevice device);
-#else
 VkShaderModule loadShader(const char *fileName, VkDevice device);
-#endif
 
 // Load a GLSL shader (text)
 // Note: GLSL support requires vendor-specific extensions to be enabled and is not a core-feature of Vulkan
