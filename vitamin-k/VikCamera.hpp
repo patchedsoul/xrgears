@@ -24,8 +24,7 @@
 #include "VikBuffer.hpp"
 
 class VikCamera {
-
-public:
+ public:
   vks::Buffer uniformBuffer;
 
   struct UBOCamera {
@@ -35,7 +34,7 @@ public:
     glm::vec3 position;
   } uboCamera;
 
-  ~VikCamera () {
+  ~VikCamera() {
     uniformBuffer.destroy();
   }
 

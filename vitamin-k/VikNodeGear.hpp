@@ -32,10 +32,10 @@
 #include "VikNode.hpp"
 
 class VikNodeGear : public VikNode {
-private:
+ private:
   VikGear gear;
 
-public:
+ public:
   void generate(vks::VulkanDevice *vulkanDevice, GearInfo *gearinfo, VkQueue queue) {
     gear.generate(vulkanDevice, gearinfo, queue);
   }

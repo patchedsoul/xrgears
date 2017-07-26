@@ -21,8 +21,7 @@
 #define FB_DIM 2048
 
 class VikOffscreenPass {
-
-private:
+ private:
   VkDevice device;
 
   // One sampler for the frame buffer color attachments
@@ -44,7 +43,7 @@ private:
     VkRenderPass renderPass;
   } offScreenFrameBuf;
 
-public:
+ public:
   explicit VikOffscreenPass(const VkDevice& d) {
     device = d;
   }
@@ -65,7 +64,6 @@ public:
     vkDestroyFramebuffer(device, offScreenFrameBuf.frameBuffer, nullptr);
 
     vkDestroyRenderPass(device, offScreenFrameBuf.renderPass, nullptr);
-
   }
 
   // Create a frame buffer attachment
@@ -73,20 +71,18 @@ public:
       vks::VulkanDevice *vulkanDevice,
       VkFormat format,
       VkImageUsageFlagBits usage,
-      FrameBufferAttachment *attachment)
-  {
+      FrameBufferAttachment *attachment) {
     VkImageAspectFlags aspectMask = 0;
     VkImageLayout imageLayout;
 
     attachment->format = format;
 
-    if (usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-    {
+    if (usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) {
       aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
       imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     }
-    if (usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-    {
+
+    if (usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
       aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
       imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     }
@@ -129,13 +125,11 @@ public:
   }
 
   // Prepare a new framebuffer and attachments for offscreen rendering (G-Buffer)
-  void prepareOffscreenFramebuffer(vks::VulkanDevice *vulkanDevice, const VkPhysicalDevice& physicalDevice)
-  {
+  void prepareOffscreenFramebuffer(vks::VulkanDevice *vulkanDevice, const VkPhysicalDevice& physicalDevice) {
     offScreenFrameBuf.width = FB_DIM;
     offScreenFrameBuf.height = FB_DIM;
 
     // Color attachments
-
     // (World space) Positions
     createAttachment(
           vulkanDevice,
@@ -144,7 +138,6 @@ public:
           &offScreenFrameBuf.diffuseColor);
 
     // Depth attachment
-
     // Find a suitable depth format
     VkFormat attDepthFormat;
     VkBool32 validDepthFormat = vks::tools::getSupportedDepthFormat(physicalDevice, &attDepthFormat);
@@ -160,20 +153,16 @@ public:
     std::array<VkAttachmentDescription, 2> attachmentDescs = {};
 
     // Init attachment properties
-    for (uint32_t i = 0; i < 2; ++i)
-    {
+    for (uint32_t i = 0; i < 2; ++i) {
       attachmentDescs[i].samples = VK_SAMPLE_COUNT_1_BIT;
       attachmentDescs[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
       attachmentDescs[i].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
       attachmentDescs[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
       attachmentDescs[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-      if (i == 1)
-      {
+      if (i == 1) {
         attachmentDescs[i].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         attachmentDescs[i].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-      }
-      else
-      {
+      } else {
         attachmentDescs[i].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         attachmentDescs[i].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
       }
@@ -226,7 +215,7 @@ public:
 
     VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &offScreenFrameBuf.renderPass));
 
-    std::array<VkImageView,2> attachments;
+    std::array<VkImageView, 2> attachments;
     attachments[0] = offScreenFrameBuf.diffuseColor.view;
     attachments[1] = offScreenFrameBuf.depth.view;
 
@@ -275,7 +264,7 @@ public:
 
   void beginRenderPass(const VkCommandBuffer& cmdBuffer) {
     // Clear values for all attachments written in the fragment sahder
-    std::array<VkClearValue,2> clearValues;
+    std::array<VkClearValue, 2> clearValues;
     clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
     clearValues[1].depthStencil = { 1.0f, 0 };
 

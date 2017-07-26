@@ -31,11 +31,8 @@
 #include "vksTextOverlay.hpp"
 #include "vksCamera.hpp"
 
-class Application
-{
-protected:
-
-
+class Application {
+ protected:
   PFN_vkGetPhysicalDeviceFeatures2KHR fpGetPhysicalDeviceFeatures2KHR;
   PFN_vkGetPhysicalDeviceProperties2KHR fpGetPhysicalDeviceProperties2KHR;
 
@@ -54,7 +51,7 @@ protected:
   // Called if the window is resized and some resources have to be recreatesd
   void windowResize();
 
-protected:
+ protected:
   // Frame counter to display fps
   uint32_t frameCounter = 0;
   uint32_t lastFPS = 0;
@@ -115,7 +112,8 @@ protected:
     // Text overlay submission and execution
     VkSemaphore textOverlayComplete;
   } semaphores;
-public: 
+
+ public:
   bool prepared = false;
   uint32_t width = 1080*2;
   uint32_t height = 1200;
@@ -178,16 +176,14 @@ public:
 
   virtual const char* requiredExtensionName() {}
 
-  struct
-  {
+  struct {
     VkImage image;
     VkDeviceMemory mem;
     VkImageView view;
   } depthStencil;
 
   // Gamepad state (only one pad supported)
-  struct
-  {
+  struct {
     glm::vec2 axisLeft = glm::vec2(0.0f);
     glm::vec2 axisRight = glm::vec2(0.0f);
   } gamePadState;
@@ -286,5 +282,4 @@ public:
   void submitFrame();
 
   virtual void renderLoop() {}
-
 };

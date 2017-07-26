@@ -13,8 +13,7 @@
 
 std::vector<const char*> Application::args;
 
-VkResult Application::createInstance(bool enableValidation)
-{
+VkResult Application::createInstance(bool enableValidation) {
   this->settings.validation = enableValidation;
 
   VkApplicationInfo appInfo = {};
@@ -28,27 +27,21 @@ VkResult Application::createInstance(bool enableValidation)
   // Enable surface extensions depending on os
   instanceExtensions.push_back(requiredExtensionName());
 
-
-  //instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-
-  //enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
-  //enabledExtensions.push_back(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
-
-  //enabledExtensions.push_back(VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME);
-
-  //enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-  //enabledExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-
-
+  /*
+  instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+  enabledExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+  enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
+  enabledExtensions.push_back(VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME);
+  enabledExtensions.push_back(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
+  enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+  */
 
   VkInstanceCreateInfo instanceCreateInfo = {};
   instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   instanceCreateInfo.pNext = NULL;
   instanceCreateInfo.pApplicationInfo = &appInfo;
-  if (instanceExtensions.size() > 0)
-  {
-    if (settings.validation)
-    {
+  if (instanceExtensions.size() > 0) {
+    if (settings.validation) {
       printf("Enabling VK_EXT_DEBUG_REPORT_EXTENSION_NAME\n");
       instanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
     } else {
@@ -57,21 +50,18 @@ VkResult Application::createInstance(bool enableValidation)
     instanceCreateInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
     instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
   }
-  if (settings.validation)
-  {
+  if (settings.validation) {
     instanceCreateInfo.enabledLayerCount = vks::debug::validationLayerCount;
     instanceCreateInfo.ppEnabledLayerNames = vks::debug::validationLayerNames;
   }
   return vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
 }
 
-std::string Application::getWindowTitle()
-{
+std::string Application::getWindowTitle() {
   std::string device(deviceProperties.deviceName);
   std::string windowTitle;
   windowTitle = title + " - " + device;
-  if (!enableTextOverlay)
-  {
+  if (!enableTextOverlay) {
     windowTitle += " - " + std::to_string(frameCounter) + " fps";
   }
   return windowTitle;
@@ -88,8 +78,7 @@ bool Application::checkCommandBuffers() {
   return true;
 }
 
-void Application::createCommandBuffers()
-{
+void Application::createCommandBuffers() {
   // Create one command buffer for each swap chain image and reuse for rendering
 
   printf("Swapchain image count %d\n", swapChain.imageCount);
@@ -105,13 +94,11 @@ void Application::createCommandBuffers()
   VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, drawCmdBuffers.data()));
 }
 
-void Application::destroyCommandBuffers()
-{
+void Application::destroyCommandBuffers() {
   vkFreeCommandBuffers(device, cmdPool, static_cast<uint32_t>(drawCmdBuffers.size()), drawCmdBuffers.data());
 }
 
-VkCommandBuffer Application::createCommandBuffer(VkCommandBufferLevel level, bool begin)
-{
+VkCommandBuffer Application::createCommandBuffer(VkCommandBufferLevel level, bool begin) {
   VkCommandBuffer cmdBuffer;
 
   VkCommandBufferAllocateInfo cmdBufAllocateInfo =
@@ -131,8 +118,7 @@ VkCommandBuffer Application::createCommandBuffer(VkCommandBufferLevel level, boo
   return cmdBuffer;
 }
 
-void Application::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free)
-{
+void Application::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free) {
   if (commandBuffer == VK_NULL_HANDLE)
     return;
 
@@ -150,19 +136,15 @@ void Application::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queu
     vkFreeCommandBuffers(device, cmdPool, 1, &commandBuffer);
 }
 
-void Application::createPipelineCache()
-{
+void Application::createPipelineCache() {
   VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
   pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
   VK_CHECK_RESULT(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
 }
 
-void Application::prepare()
-{
+void Application::prepare() {
   if (vulkanDevice->enableDebugMarkers)
-  {
     vks::debugmarker::setup(device);
-  }
   createCommandPool();
   setupSwapChain();
   createCommandBuffers();
@@ -171,8 +153,7 @@ void Application::prepare()
   createPipelineCache();
   setupFrameBuffer();
 
-  if (enableTextOverlay)
-  {
+  if (enableTextOverlay) {
     // Load the text rendering shaders
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
     shaderStages.push_back(loadShader(getAssetPath() + "shaders/base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
@@ -190,21 +171,19 @@ void Application::prepare()
   }
 }
 
-VkPipelineShaderStageCreateInfo Application::loadShader(std::string fileName, VkShaderStageFlagBits stage)
-{
+VkPipelineShaderStageCreateInfo Application::loadShader(std::string fileName, VkShaderStageFlagBits stage) {
   VkPipelineShaderStageCreateInfo shaderStage = {};
   shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
   shaderStage.stage = stage;
   shaderStage.module = vks::tools::loadShader(fileName.c_str(), device);
-  shaderStage.pName = "main"; // todo : make param
+  shaderStage.pName = "main";
   assert(shaderStage.module != VK_NULL_HANDLE);
   shaderModules.push_back(shaderStage.module);
   return shaderStage;
 }
 
 
-void Application::renderLoopWrap()
-{
+void Application::renderLoopWrap() {
   destWidth = width;
   destHeight = height;
 
@@ -214,8 +193,7 @@ void Application::renderLoopWrap()
   vkDeviceWaitIdle(device);
 }
 
-void Application::updateTextOverlay()
-{
+void Application::updateTextOverlay() {
   if (!enableTextOverlay)
     return;
 
@@ -237,8 +215,7 @@ void Application::updateTextOverlay()
 
 void Application::getOverlayText(VulkanTextOverlay*) {}
 
-void Application::prepareFrame()
-{
+void Application::prepareFrame() {
   // Acquire the next image from the swap chain
   VkResult err = swapChain.acquireNextImage(semaphores.presentComplete, &currentBuffer);
   // Recreate the swapchain if it's no longer compatible with the surface (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
@@ -248,12 +225,10 @@ void Application::prepareFrame()
     VK_CHECK_RESULT(err);
 }
 
-void Application::submitFrame()
-{
+void Application::submitFrame() {
   bool submitTextOverlay = enableTextOverlay && textOverlay->visible;
 
-  if (submitTextOverlay)
-  {
+  if (submitTextOverlay) {
     // Wait for color attachment output to finish before rendering the text overlay
     VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     submitInfo.pWaitDstStageMask = &stageFlags;
@@ -287,14 +262,10 @@ void Application::submitFrame()
   VK_CHECK_RESULT(vkQueueWaitIdle(queue));
 }
 
-Application::Application(bool enableValidation)
-{
-  printf("Application()\n");
-
+Application::Application(bool enableValidation) {
   // Check for a valid asset path
   struct stat info;
-  if (stat(getAssetPath().c_str(), &info) != 0)
-  {
+  if (stat(getAssetPath().c_str(), &info) != 0) {
     std::cerr << "Error: Could not find asset path in " << getAssetPath() << std::endl;
     exit(-1);
   }
@@ -302,28 +273,19 @@ Application::Application(bool enableValidation)
   settings.validation = enableValidation;
 
   // Parse command line arguments
-  for (size_t i = 0; i < args.size(); i++)
-  {
+  for (size_t i = 0; i < args.size(); i++) {
     if (args[i] == std::string("-validation"))
-    {
       settings.validation = true;
-    }
     if (args[i] == std::string("-vsync"))
-    {
       settings.vsync = true;
-    }
     if (args[i] == std::string("-fullscreen"))
-    {
       settings.fullscreen = true;
-    }
-    if ((args[i] == std::string("-w")) || (args[i] == std::string("-width")))
-    {
+    if ((args[i] == std::string("-w")) || (args[i] == std::string("-width"))) {
       char* endptr;
       uint32_t w = strtol(args[i + 1], &endptr, 10);
       if (endptr != args[i + 1]) width = w;
     }
-    if ((args[i] == std::string("-h")) || (args[i] == std::string("-height")))
-    {
+    if ((args[i] == std::string("-h")) || (args[i] == std::string("-height"))) {
       char* endptr;
       uint32_t h = strtol(args[i + 1], &endptr, 10);
       if (endptr != args[i + 1]) height = h;
@@ -331,23 +293,19 @@ Application::Application(bool enableValidation)
   }
 }
 
-Application::~Application()
-{
+Application::~Application() {
   // Clean up Vulkan resources
   swapChain.cleanup();
-  if (descriptorPool != VK_NULL_HANDLE)
-  {
+  if (descriptorPool != VK_NULL_HANDLE) {
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
   }
   destroyCommandBuffers();
   vkDestroyRenderPass(device, renderPass, nullptr);
-  for (uint32_t i = 0; i < frameBuffers.size(); i++)
-  {
+  for (uint32_t i = 0; i < frameBuffers.size(); i++) {
     vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
   }
 
-  for (auto& shaderModule : shaderModules)
-  {
+  for (auto& shaderModule : shaderModules) {
     vkDestroyShaderModule(device, shaderModule, nullptr);
   }
   vkDestroyImageView(device, depthStencil.view, nullptr);
@@ -363,16 +321,12 @@ Application::~Application()
   vkDestroySemaphore(device, semaphores.textOverlayComplete, nullptr);
 
   if (enableTextOverlay)
-  {
     delete textOverlay;
-  }
 
   delete vulkanDevice;
 
   if (settings.validation)
-  {
     vks::debug::freeDebugCallback(instance);
-  }
 
   vkDestroyInstance(instance, nullptr);
 }
@@ -380,12 +334,6 @@ Application::~Application()
 void Application::printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDevice physicalDevice) {
   GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceProperties2KHR);
   GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceFeatures2KHR);
-
-  if (physicalDevice == nullptr) {
-    printf("physical deivce is empthy!\n");
-  } else {
-    printf("physical deivce is NOT empthy! %p\n", physicalDevice);
-  }
 
   if (fpGetPhysicalDeviceFeatures2KHR) {
     VkPhysicalDeviceFeatures2KHR deviceFeatures2{};
@@ -395,7 +343,7 @@ void Application::printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDev
     deviceFeatures2.pNext = &multiViewFeatures;
     fpGetPhysicalDeviceFeatures2KHR(physicalDevice, &deviceFeatures2);
 
-    //vkGetPhysicalDeviceFeatures2KHR(physicalDevice, &deviceFeatures2);
+    // vkGetPhysicalDeviceFeatures2KHR(physicalDevice, &deviceFeatures2);
 
     printf("multiview %d\n", multiViewFeatures.multiview);
     printf("multiviewGeometryShader %d\n", multiViewFeatures.multiviewGeometryShader);
@@ -426,20 +374,16 @@ void Application::printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDev
 }
 
 
-void Application::initVulkan()
-{
+void Application::initVulkan() {
   VkResult err;
 
   // Vulkan instance
   err = createInstance(settings.validation);
   if (err)
-  {
     vks::tools::exitFatal("Could not create Vulkan instance : \n" + vks::tools::errorString(err), "Fatal error");
-  }
 
   // If requested, we enable the default validation layers for debugging
-  if (settings.validation)
-  {
+  if (settings.validation) {
     // The report flags determine what type of messages for the layers will be displayed
     // For validating (debugging) an appplication the error and warning bits should suffice
     VkDebugReportFlagsEXT debugReportFlags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
@@ -456,9 +400,7 @@ void Application::initVulkan()
   std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
   err = vkEnumeratePhysicalDevices(instance, &gpuCount, physicalDevices.data());
   if (err)
-  {
     vks::tools::exitFatal("Could not enumerate physical devices : \n" + vks::tools::errorString(err), "Fatal error");
-  }
 
   // GPU selection
 
@@ -466,40 +408,29 @@ void Application::initVulkan()
   // Defaults to the first device unless specified by command line
   uint32_t selectedDevice = 0;
 
-
   // GPU selection via command line argument
-  for (size_t i = 0; i < args.size(); i++)
-  {
+  for (size_t i = 0; i < args.size(); i++) {
     // Select GPU
-    if ((args[i] == std::string("-g")) || (args[i] == std::string("-gpu")))
-    {
+    if ((args[i] == std::string("-g")) || (args[i] == std::string("-gpu"))) {
       char* endptr;
       uint32_t index = strtol(args[i + 1], &endptr, 10);
-      if (endptr != args[i + 1])
-      {
-        if (index > gpuCount - 1)
-        {
+      if (endptr != args[i + 1]) {
+        if (index > gpuCount - 1) {
           std::cerr << "Selected device index " << index << " is out of range, reverting to device 0 (use -listgpus to show available Vulkan devices)" << std::endl;
-        }
-        else
-        {
+        } else {
           std::cout << "Selected Vulkan device " << index << std::endl;
           selectedDevice = index;
         }
-      };
+      }
       break;
     }
     // List available GPUs
-    if (args[i] == std::string("-listgpus"))
-    {
+    if (args[i] == std::string("-listgpus")) {
       uint32_t gpuCount = 0;
       VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &gpuCount, nullptr));
-      if (gpuCount == 0)
-      {
+      if (gpuCount == 0) {
         std::cerr << "No Vulkan devices found!" << std::endl;
-      }
-      else
-      {
+      } else {
         // Enumerate devices
         std::cout << "Available Vulkan devices" << std::endl;
         std::vector<VkPhysicalDevice> devices(gpuCount);
@@ -530,13 +461,12 @@ void Application::initVulkan()
   // and encapsulates functions related to a device
   vulkanDevice = new vks::VulkanDevice(physicalDevice);
   VkResult res = vulkanDevice->createLogicalDevice(enabledFeatures, enabledExtensions);
-  if (res != VK_SUCCESS) {
+  if (res != VK_SUCCESS)
     vks::tools::exitFatal("Could not create Vulkan device: \n" + vks::tools::errorString(res), "Fatal error");
-  }
+
   device = vulkanDevice->logicalDevice;
 
-  //printMultiviewProperties(device, physicalDevice);
-
+  // printMultiviewProperties(device, physicalDevice);
 
   // Get a graphics queue from the device
   vkGetDeviceQueue(device, vulkanDevice->queueFamilyIndices.graphics, 0, &queue);
@@ -578,8 +508,7 @@ void Application::keyPressed(uint32_t) {}
 
 void Application::buildCommandBuffers() {}
 
-void Application::createCommandPool()
-{
+void Application::createCommandPool() {
   VkCommandPoolCreateInfo cmdPoolInfo = {};
   cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
   cmdPoolInfo.queueFamilyIndex = swapChain.queueNodeIndex;
@@ -587,8 +516,7 @@ void Application::createCommandPool()
   VK_CHECK_RESULT(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
 }
 
-void Application::setupDepthStencil()
-{
+void Application::setupDepthStencil() {
   VkImageCreateInfo image = {};
   image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   image.pNext = NULL;
@@ -634,8 +562,7 @@ void Application::setupDepthStencil()
   VK_CHECK_RESULT(vkCreateImageView(device, &depthStencilView, nullptr, &depthStencil.view));
 }
 
-void Application::setupFrameBuffer()
-{
+void Application::setupFrameBuffer() {
   VkImageView attachments[2];
 
   // Depth/Stencil attachment is the same for all frame buffers
@@ -653,15 +580,13 @@ void Application::setupFrameBuffer()
 
   // Create frame buffers for every swap chain image
   frameBuffers.resize(swapChain.imageCount);
-  for (uint32_t i = 0; i < frameBuffers.size(); i++)
-  {
+  for (uint32_t i = 0; i < frameBuffers.size(); i++) {
     attachments[0] = swapChain.buffers[i].view;
     VK_CHECK_RESULT(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
   }
 }
 
-void Application::setupRenderPass()
-{
+void Application::setupRenderPass() {
   std::array<VkAttachmentDescription, 2> attachments = {};
   // Color attachment
   attachments[0].format = swapChain.colorFormat;
@@ -754,17 +679,11 @@ void Application::setupRenderPass()
   VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass));
 }
 
-void Application::getEnabledFeatures()
-{
-  // Can be overriden in derived class
-}
+void Application::getEnabledFeatures() {}
 
-void Application::windowResize()
-{
+void Application::windowResize() {
   if (!prepared)
-  {
     return;
-  }
   prepared = false;
 
   // Ensure all operations on the device have been finished before destroying resources
@@ -783,9 +702,7 @@ void Application::windowResize()
   setupDepthStencil();
 
   for (uint32_t i = 0; i < frameBuffers.size(); i++)
-  {
     vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
-  }
   setupFrameBuffer();
 
   // Command buffers need to be recreated as they may store
@@ -796,8 +713,7 @@ void Application::windowResize()
 
   vkDeviceWaitIdle(device);
 
-  if (enableTextOverlay)
-  {
+  if (enableTextOverlay) {
     textOverlay->reallocateCommandBuffers();
     updateTextOverlay();
   }
@@ -811,12 +727,10 @@ void Application::windowResize()
   prepared = true;
 }
 
-void Application::windowResized()
-{
+void Application::windowResized() {
   // Can be overriden in derived class
 }
 
-void Application::setupSwapChain()
-{
+void Application::setupSwapChain() {
   swapChain.create(&width, &height, settings.vsync);
 }

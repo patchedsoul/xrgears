@@ -18,11 +18,10 @@
 #include "VikHMD.hpp"
 
 class VikCameraHMD : public VikCamera {
-public:
-
+ public:
   VikHMD* hmd;
 
-  explicit VikCameraHMD (VikHMD* h) : hmd(h) {}
+  explicit VikCameraHMD(VikHMD* h) : hmd(h) {}
 
   static inline void
   fix_handedness(glm::mat4& m) {
@@ -33,7 +32,6 @@ public:
   }
 
   void update(Camera camera) {
-
     glm::mat4 hmdProjectionLeft, hmdProjectionRight;
     glm::mat4 hmdViewLeft, hmdViewRight;
 

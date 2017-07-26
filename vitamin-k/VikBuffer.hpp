@@ -15,7 +15,7 @@
 #include "../vks/vksDevice.hpp"
 
 class VikBuffer {
-public:
+ public:
   static void create(vks::VulkanDevice *vulkanDevice, vks::Buffer *buffer,  VkDeviceSize size) {
     VK_CHECK_RESULT(vulkanDevice->createBuffer(
                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,

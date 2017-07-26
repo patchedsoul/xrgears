@@ -18,7 +18,7 @@
 #include "VikBuffer.hpp"
 
 class VikCameraStereo : public VikCamera {
-public:
+ public:
   // Camera and view properties
   float eyeSeparation = 0.08f;
   const float focalLength = 0.5f;

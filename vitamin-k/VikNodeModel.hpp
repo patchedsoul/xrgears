@@ -17,7 +17,7 @@
 class VikNodeModel : public VikNode {
   vks::Model model;
 
-public:
+ public:
   ~VikNodeModel() {
     model.destroy();
   }

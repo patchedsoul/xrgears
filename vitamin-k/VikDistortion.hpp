@@ -23,7 +23,7 @@
 #define VERTEX_BUFFER_BIND_ID 0
 
 class VikDistortion {
-private:
+ private:
   VkDevice device;
   vks::Model quad;
   vks::Buffer uboHandle;
@@ -42,7 +42,7 @@ private:
   VkDescriptorSetLayout descriptorSetLayout;
   VkDescriptorSet descriptorSet;
 
-public:
+ public:
   explicit VikDistortion(const VkDevice& d) {
     device = d;
   }
@@ -58,7 +58,6 @@ public:
   }
 
   void createPipeLine(const VkRenderPass& renderPass, const VkPipelineCache& pipelineCache) {
-
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
         vks::initializers::pipelineInputAssemblyStateCreateInfo(
           VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
@@ -129,7 +128,7 @@ public:
                                       VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = VikShader::load(device,
                                       "hmddistortion/openhmd-distortion-sps.frag.spv",
-                                      //"hmddistortion/ph5-distortion.frag.spv",
+                                      // "hmddistortion/ph5-distortion.frag.spv",
                                       VK_SHADER_STAGE_FRAGMENT_BIT);
 
     VkPipelineVertexInputStateCreateInfo emptyInputState = vks::initializers::pipelineVertexInputStateCreateInfo();
@@ -171,13 +170,11 @@ public:
     };
 
     vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
-
   }
 
   void createDescriptorSetLayout() {
     // Deferred shading layout
-    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
-    {
+    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
       // Binding 0 : Render texture target
       vks::initializers::descriptorSetLayoutBinding(
       VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -208,7 +205,6 @@ public:
                                            &pPipelineLayoutCreateInfo,
                                            nullptr,
                                            &pipelineLayout));
-
   }
 
   void drawQuad(const VkCommandBuffer& commandBuffer) {
@@ -220,10 +216,12 @@ public:
                             &descriptorSet, 0, NULL);
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-    //vkCmdBindVertexBuffers(commandBuffer, VERTEX_BUFFER_BIND_ID, 1, &quad.vertices.buffer, offsets);
-    //vkCmdBindIndexBuffer(commandBuffer, quad.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-    //vkCmdDrawIndexed(commandBuffer, 6, 1, 0, 0, 1);
-
+    // TODO(lubosz): Use vertex buffer
+    /*
+    vkCmdBindVertexBuffers(commandBuffer, VERTEX_BUFFER_BIND_ID, 1, &quad.vertices.buffer, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, quad.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexed(commandBuffer, 6, 1, 0, 0, 1);
+    */
     vkCmdDraw(commandBuffer, 12, 1, 0, 0);
   }
 
@@ -252,7 +250,7 @@ public:
                       vertexBuffer.data()));
 
     // Setup indices
-    std::vector<uint32_t> indexBuffer = { 0,1,2, 2,3,0 };
+    std::vector<uint32_t> indexBuffer = { 0, 1, 2, 2, 3, 0 };
 
     quad.indexCount = static_cast<uint32_t>(indexBuffer.size());
 
@@ -275,28 +273,27 @@ public:
     float sep;
     float left_lens_center[4];
     float right_lens_center[4];
-    //viewport is half the screen
+    // viewport is half the screen
     ohmd_device_getf(openHmdDevice, OHMD_SCREEN_HORIZONTAL_SIZE, &(viewport_scale[0]));
     viewport_scale[0] /= 2.0f;
     ohmd_device_getf(openHmdDevice, OHMD_SCREEN_VERTICAL_SIZE, &(viewport_scale[1]));
-    //distortion coefficients
+    // distortion coefficients
     ohmd_device_getf(openHmdDevice, OHMD_UNIVERSAL_DISTORTION_K, &(distortion_coeffs[0]));
     ohmd_device_getf(openHmdDevice, OHMD_UNIVERSAL_ABERRATION_K, &(aberr_scale[0]));
     aberr_scale[3] = 0;
 
-    //calculate lens centers (assuming the eye separation is the distance betweenteh lense centers)
+    // calculate lens centers (assuming the eye separation is the distance betweenteh lense centers)
     ohmd_device_getf(openHmdDevice, OHMD_LENS_HORIZONTAL_SEPARATION, &sep);
     ohmd_device_getf(openHmdDevice, OHMD_LENS_VERTICAL_POSITION, &(left_lens_center[1]));
     ohmd_device_getf(openHmdDevice, OHMD_LENS_VERTICAL_POSITION, &(right_lens_center[1]));
     left_lens_center[0] = viewport_scale[0] - sep/2.0f;
     right_lens_center[0] = sep/2.0f;
-    //asume calibration was for lens view to which ever edge of screen is further away from lens center
+    // asume calibration was for lens view to which ever edge of screen is further away from lens center
 
     uboData.lensCenter[0] = glm::make_vec4(left_lens_center);
     uboData.lensCenter[1] = glm::make_vec4(right_lens_center);
 
     uboData.viewportScale = glm::make_vec2(viewport_scale);
-    //uboData.viewportScale.x *= 2.0f;
 
     uboData.warpScale = (left_lens_center[0] > right_lens_center[0]) ? left_lens_center[0] : right_lens_center[0];
 

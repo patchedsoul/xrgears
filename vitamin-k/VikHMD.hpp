@@ -27,11 +27,10 @@
 #include "VikBuffer.hpp"
 
 class VikHMD {
-
-private:
+ private:
   ohmd_context* openHmdContext;
 
-public:
+ public:
   ohmd_device* openHmdDevice;
 
   VikHMD() {
@@ -40,7 +39,7 @@ public:
     openHmdContext = ohmd_ctx_create();
     int num_devices = ohmd_ctx_probe(openHmdContext);
 
-    if (num_devices < 0){
+    if (num_devices < 0) {
       printf("Failed to probe HMD: %s\n", ohmd_ctx_get_error(openHmdContext));
       return;
     }
@@ -64,26 +63,26 @@ public:
     float sep;
     float left_lens_center[2];
     float right_lens_center[2];
-    //viewport is half the screen
+    // viewport is half the screen
     ohmd_device_getf(openHmdDevice, OHMD_SCREEN_HORIZONTAL_SIZE, &(viewport_scale[0]));
     viewport_scale[0] /= 2.0f;
     ohmd_device_getf(openHmdDevice, OHMD_SCREEN_VERTICAL_SIZE, &(viewport_scale[1]));
-    //distortion coefficients
+    // distortion coefficients
     ohmd_device_getf(openHmdDevice, OHMD_UNIVERSAL_DISTORTION_K, &(distortion_coeffs[0]));
     ohmd_device_getf(openHmdDevice, OHMD_UNIVERSAL_ABERRATION_K, &(aberr_scale[0]));
-    //calculate lens centers (assuming the eye separation is the distance betweenteh lense centers)
+    // calculate lens centers (assuming the eye separation is the distance betweenteh lense centers)
     ohmd_device_getf(openHmdDevice, OHMD_LENS_HORIZONTAL_SEPARATION, &sep);
     ohmd_device_getf(openHmdDevice, OHMD_LENS_VERTICAL_POSITION, &(left_lens_center[1]));
     ohmd_device_getf(openHmdDevice, OHMD_LENS_VERTICAL_POSITION, &(right_lens_center[1]));
     left_lens_center[0] = viewport_scale[0] - sep/2.0f;
     right_lens_center[0] = sep/2.0f;
-    //asume calibration was for lens view to which ever edge of screen is further away from lens center
+    // asume calibration was for lens view to which ever edge of screen is further away from lens center
     float warp_scale = (left_lens_center[0] > right_lens_center[0]) ? left_lens_center[0] : right_lens_center[0];
     float warp_adj = 1.0f;
 
     ohmd_device_settings_destroy(settings);
 
-    if(!openHmdDevice){
+    if (!openHmdDevice) {
       printf("failed to open device: %s\n", ohmd_ctx_get_error(openHmdContext));
       return;
     }
@@ -119,5 +118,4 @@ public:
     ohmd_device_getf(openHmdDevice, OHMD_RIGHT_EYE_GL_MODELVIEW_MATRIX, mat);
     *hmdViewRight = glm::make_mat4(mat);
   }
-
 };

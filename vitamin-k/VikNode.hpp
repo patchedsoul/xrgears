@@ -21,8 +21,7 @@
 
 
 class VikNode {
-
-public:
+ public:
   struct UBO {
     glm::mat4 normal[2];
     glm::mat4 model;
@@ -76,7 +75,6 @@ public:
     VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
 
     std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
-
       // Binding 0 : Vertex shader uniform buffer
       vks::initializers::writeDescriptorSet(
       descriptorSet,

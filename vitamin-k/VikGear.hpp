@@ -16,13 +16,11 @@
 #include "../vks/vksBuffer.hpp"
 #include "../vks/vksDevice.hpp"
 
-struct Vertex
-{
+struct Vertex {
   float pos[3];
   float normal[3];
 
-  Vertex(const glm::vec3& p, const glm::vec3& n)
-  {
+  Vertex(const glm::vec3& p, const glm::vec3& n) {
     pos[0] = p.x;
     pos[1] = p.y;
     pos[2] = p.z;
@@ -32,8 +30,7 @@ struct Vertex
   }
 };
 
-struct GearInfo
-{
+struct GearInfo {
   float innerRadius;
   float outerRadius;
   float width;
@@ -41,10 +38,8 @@ struct GearInfo
   float toothDepth;
 };
 
-class VikGear
-{
-public:
-
+class VikGear {
+ public:
   vks::Buffer vertexBuffer;
   vks::Buffer indexBuffer;
   uint32_t indexCount;
@@ -55,22 +50,19 @@ public:
     indexBuffer.destroy();
   }
 
-  int32_t newVertex(std::vector<Vertex> *vBuffer, float x, float y, float z, const glm::vec3& normal)
-  {
+  int32_t newVertex(std::vector<Vertex> *vBuffer, float x, float y, float z, const glm::vec3& normal) {
     Vertex v(glm::vec3(x, y, z), normal);
     vBuffer->push_back(v);
     return static_cast<int32_t>(vBuffer->size()) - 1;
   }
 
-  void newFace(std::vector<uint32_t> *iBuffer, int a, int b, int c)
-  {
+  void newFace(std::vector<uint32_t> *iBuffer, int a, int b, int c) {
     iBuffer->push_back(a);
     iBuffer->push_back(b);
     iBuffer->push_back(c);
   }
 
-  void generate(vks::VulkanDevice *vulkanDevice, GearInfo *gearinfo, VkQueue queue)
-  {
+  void generate(vks::VulkanDevice *vulkanDevice, GearInfo *gearinfo, VkQueue queue) {
     std::vector<Vertex> vBuffer;
     std::vector<uint32_t> iBuffer;
 
@@ -89,8 +81,7 @@ public:
 
     glm::vec3 normal;
 
-    for (i = 0; i < gearinfo->numTeeth; i++)
-    {
+    for (i = 0; i < gearinfo->numTeeth; i++) {
       ta = i * 2.0f * M_PI / gearinfo->numTeeth;
 
       cos_ta = cos(ta);
@@ -203,8 +194,7 @@ public:
 
     bool useStaging = true;
 
-    if (useStaging)
-    {
+    if (useStaging) {
       vks::Buffer vertexStaging, indexStaging;
 
       // Create staging buffers
@@ -264,9 +254,7 @@ public:
       vkFreeMemory(vulkanDevice->logicalDevice, vertexStaging.memory, nullptr);
       vkDestroyBuffer(vulkanDevice->logicalDevice, indexStaging.buffer, nullptr);
       vkFreeMemory(vulkanDevice->logicalDevice, indexStaging.memory, nullptr);
-    }
-    else
-    {
+    } else {
       // Vertex buffer
       vulkanDevice->createBuffer(
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,

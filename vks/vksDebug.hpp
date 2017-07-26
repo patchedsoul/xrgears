@@ -28,10 +28,8 @@
 #include <vector>
 #include <sstream>
 
-namespace vks
-{
-namespace debug
-{
+namespace vks {
+namespace debug {
 // Default validation layers
 extern int validationLayerCount;
 extern const char *validationLayerNames[];
@@ -55,15 +53,14 @@ void setupDebugging(
     VkDebugReportCallbackEXT callBack);
 // Clear debug callback
 void freeDebugCallback(VkInstance instance);
-} // namespace debug
+}  // namespace debug
 
 // Setup and functions for the VK_EXT_debug_marker_extension
 // Extension spec can be found at https://github.com/KhronosGroup/Vulkan-Docs/blob/1.0-VK_EXT_debug_marker/doc/specs/vulkan/appendices/VK_EXT_debug_marker.txt
 // Note that the extension will only be present if run from an offline debugging application
 // The actual check for extension presence and enabling it on the device is done in the example base class
 // See VulkanExampleBase::createInstance and VulkanExampleBase::createDevice (base/vulkanexamplebase.cpp)
-namespace debugmarker
-{
+namespace debugmarker {
 // Set to true if function pointer for the debug marker are available
 extern bool active;
 
@@ -104,5 +101,5 @@ void setDescriptorSetName(VkDevice device, VkDescriptorSet descriptorSet, const 
 void setSemaphoreName(VkDevice device, VkSemaphore semaphore, const char * name);
 void setFenceName(VkDevice device, VkFence fence, const char * name);
 void setEventName(VkDevice device, VkEvent _event, const char * name);
-} // namespace debugmarker
-} // namespace vks
+}  // namespace debugmarker
+}  // namespace vks

@@ -20,9 +20,8 @@
 #include "VikShader.hpp"
 #include "VikBuffer.hpp"
 
-class VikSkyBox
-{
-private:
+class VikSkyBox {
+ private:
   vks::TextureCubeMap cubeMap;
   VkDescriptorSet descriptorSet;
   VkDevice device;
@@ -30,7 +29,7 @@ private:
   vks::Model model;
   VkPipeline pipeline;
 
-public:
+ public:
   explicit VikSkyBox(VkDevice device) : device(device) {}
 
   ~VikSkyBox() {
@@ -49,7 +48,6 @@ public:
   }
 
   VkWriteDescriptorSet getCubeMapWriteDescriptorSet(unsigned binding, VkDescriptorSet ds) {
-
     return vks::initializers::writeDescriptorSet(
           ds,
           VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -62,9 +60,9 @@ public:
     model.loadFromFile(VikAssets::getAssetPath() + "models/cube.obj", vertexLayout, 10.0f, vulkanDevice, queue);
     cubeMap.loadFromFile(
           VikAssets::getTexturePath() + "cubemap_yokohama_bc3_unorm.ktx", VK_FORMAT_BC2_UNORM_BLOCK,
-          //VikAssets::getTexturePath() + "equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT,
-          //VikAssets::getTexturePath() + "hdr/pisa_cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT,
-          //VikAssets::getAssetPath() + "textures/cubemap_space.ktx", VK_FORMAT_R8G8B8A8_UNORM,
+          // VikAssets::getTexturePath() + "equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT,
+          // VikAssets::getTexturePath() + "hdr/pisa_cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT,
+          // VikAssets::getAssetPath() + "textures/cubemap_space.ktx", VK_FORMAT_R8G8B8A8_UNORM,
           vulkanDevice,
           queue);
     initTextureDescriptor();
@@ -113,7 +111,7 @@ public:
           0);
 
     // Skybox pipeline (background cube)
-    std::array<VkPipelineShaderStageCreateInfo,3> shaderStagesSky;
+    std::array<VkPipelineShaderStageCreateInfo, 3> shaderStagesSky;
 
     shaderStagesSky[0] = VikShader::load(device, "xrgears/sky.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
     shaderStagesSky[1] = VikShader::load(device, "xrgears/sky.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);

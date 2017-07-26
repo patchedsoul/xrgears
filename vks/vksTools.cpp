@@ -11,14 +11,10 @@
 
 #include "vksTools.hpp"
 
-namespace vks
-{
-namespace tools
-{
-std::string errorString(VkResult errorCode)
-{
-  switch (errorCode)
-  {
+namespace vks {
+namespace tools {
+std::string errorString(VkResult errorCode) {
+  switch (errorCode) {
 #define STR(r) case VK_ ##r: return #r
     STR(NOT_READY);
     STR(TIMEOUT);
@@ -49,10 +45,8 @@ std::string errorString(VkResult errorCode)
   }
 }
 
-std::string physicalDeviceTypeString(VkPhysicalDeviceType type)
-{
-  switch (type)
-  {
+std::string physicalDeviceTypeString(VkPhysicalDeviceType type) {
+  switch (type) {
 #define STR(r) case VK_PHYSICAL_DEVICE_TYPE_ ##r: return #r
     STR(OTHER);
     STR(INTEGRATED_GPU);
@@ -63,8 +57,7 @@ std::string physicalDeviceTypeString(VkPhysicalDeviceType type)
   }
 }
 
-VkBool32 getSupportedDepthFormat(VkPhysicalDevice physicalDevice, VkFormat *depthFormat)
-{
+VkBool32 getSupportedDepthFormat(VkPhysicalDevice physicalDevice, VkFormat *depthFormat) {
   // Since all depth formats may be optional, we need to find a suitable depth format to use
   // Start with the highest precision packed format
   std::vector<VkFormat> depthFormats = {
@@ -75,18 +68,15 @@ VkBool32 getSupportedDepthFormat(VkPhysicalDevice physicalDevice, VkFormat *dept
     VK_FORMAT_D16_UNORM
   };
 
-  for (auto& format : depthFormats)
-  {
+  for (auto& format : depthFormats) {
     VkFormatProperties formatProps;
     vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProps);
     // Format must support depth stencil attachment for optimal tiling
-    if (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
-    {
+    if (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
       *depthFormat = format;
       return true;
     }
   }
-
   return false;
 }
 
@@ -101,8 +91,7 @@ void setImageLayout(
     VkImageLayout newImageLayout,
     VkImageSubresourceRange subresourceRange,
     VkPipelineStageFlags srcStageMask,
-    VkPipelineStageFlags dstStageMask)
-{
+    VkPipelineStageFlags dstStageMask) {
   // Create an image barrier object
   VkImageMemoryBarrier imageMemoryBarrier = vks::initializers::imageMemoryBarrier();
   imageMemoryBarrier.oldLayout = oldImageLayout;
@@ -113,8 +102,7 @@ void setImageLayout(
   // Source layouts (old)
   // Source access mask controls actions that have to be finished on the old layout
   // before it will be transitioned to the new layout
-  switch (oldImageLayout)
-  {
+  switch (oldImageLayout) {
     case VK_IMAGE_LAYOUT_UNDEFINED:
       // Image layout is undefined (or does not matter)
       // Only valid as initial layout
@@ -165,8 +153,7 @@ void setImageLayout(
 
   // Target layouts (new)
   // Destination access mask controls the dependency for the new image layout
-  switch (newImageLayout)
-  {
+  switch (newImageLayout) {
     case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
       // Image will be used as a transfer destination
       // Make sure any writes to the image have been finished
@@ -195,9 +182,7 @@ void setImageLayout(
       // Image will be read in a shader (sampler, input attachment)
       // Make sure any writes to the image have been finished
       if (imageMemoryBarrier.srcAccessMask == 0)
-      {
         imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
-      }
       imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
       break;
     default:
@@ -224,8 +209,7 @@ void setImageLayout(
     VkImageLayout oldImageLayout,
     VkImageLayout newImageLayout,
     VkPipelineStageFlags srcStageMask,
-    VkPipelineStageFlags dstStageMask)
-{
+    VkPipelineStageFlags dstStageMask) {
   VkImageSubresourceRange subresourceRange = {};
   subresourceRange.aspectMask = aspectMask;
   subresourceRange.baseMipLevel = 0;
@@ -243,8 +227,7 @@ void insertImageMemoryBarrier(
     VkImageLayout newImageLayout,
     VkPipelineStageFlags srcStageMask,
     VkPipelineStageFlags dstStageMask,
-    VkImageSubresourceRange subresourceRange)
-{
+    VkImageSubresourceRange subresourceRange) {
   VkImageMemoryBarrier imageMemoryBarrier = vks::initializers::imageMemoryBarrier();
   imageMemoryBarrier.srcAccessMask = srcAccessMask;
   imageMemoryBarrier.dstAccessMask = dstAccessMask;
@@ -263,14 +246,12 @@ void insertImageMemoryBarrier(
         1, &imageMemoryBarrier);
 }
 
-void exitFatal(std::string message, std::string caption)
-{
+void exitFatal(std::string message, std::string caption) {
   std::cerr << message << "\n";
   exit(1);
 }
 
-std::string readTextFile(const char *fileName)
-{
+std::string readTextFile(const char *fileName) {
   std::string fileContent;
   std::ifstream fileStream(fileName, std::ios::in);
   if (!fileStream.is_open()) {
@@ -286,12 +267,10 @@ std::string readTextFile(const char *fileName)
   return fileContent;
 }
 
-VkShaderModule loadShader(const char *fileName, VkDevice device)
-{
+VkShaderModule loadShader(const char *fileName, VkDevice device) {
   std::ifstream is(fileName, std::ios::binary | std::ios::in | std::ios::ate);
 
-  if (is.is_open())
-  {
+  if (is.is_open()) {
     size_t size = is.tellg();
     is.seekg(0, std::ios::beg);
     char* shaderCode = new char[size];
@@ -311,16 +290,13 @@ VkShaderModule loadShader(const char *fileName, VkDevice device)
     delete[] shaderCode;
 
     return shaderModule;
-  }
-  else
-  {
+  } else {
     std::cerr << "Error: Could not open shader file \"" << fileName << "\"" << std::endl;
     return VK_NULL_HANDLE;
   }
 }
 
-VkShaderModule loadShaderGLSL(const char *fileName, VkDevice device, VkShaderStageFlagBits stage)
-{
+VkShaderModule loadShaderGLSL(const char *fileName, VkDevice device, VkShaderStageFlagBits stage) {
   std::string shaderSrc = readTextFile(fileName);
   const char *shaderCode = shaderSrc.c_str();
   size_t size = strlen(shaderCode);
@@ -345,10 +321,9 @@ VkShaderModule loadShaderGLSL(const char *fileName, VkDevice device, VkShaderSta
   return shaderModule;
 }
 
-bool fileExists(const std::string &filename)
-{
+bool fileExists(const std::string &filename) {
   std::ifstream f(filename.c_str());
   return !f.fail();
 }
-} // namespace tools
-} // namespace vks
+}  // namespace tools
+}  // namespace vks

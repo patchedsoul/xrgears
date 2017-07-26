@@ -14,8 +14,7 @@
 #include <string>
 
 class VikAssets {
-public:
-
+ public:
   static const std::string getAssetPath() {
     return "./data/";
   }

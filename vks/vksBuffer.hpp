@@ -16,14 +16,12 @@
 
 #include "vksTools.hpp"
 
-namespace vks
-{	
+namespace vks {
 /**
   * @brief Encapsulates access to a Vulkan buffer backed up by device memory
   * @note To be filled by an external source like the VulkanDevice
   */
-struct Buffer
-{
+struct Buffer {
   VkDevice device;
   VkBuffer buffer = VK_NULL_HANDLE;
   VkDeviceMemory memory = VK_NULL_HANDLE;
@@ -45,8 +43,7 @@ struct Buffer
     *
     * @return VkResult of the buffer mapping call
     */
-  VkResult map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0)
-  {
+  VkResult map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
     return vkMapMemory(device, memory, offset, size, 0, &mapped);
   }
 
@@ -55,10 +52,8 @@ struct Buffer
     *
     * @note Does not return a result as vkUnmapMemory can't fail
     */
-  void unmap()
-  {
-    if (mapped)
-    {
+  void unmap() {
+    if (mapped) {
       vkUnmapMemory(device, memory);
       mapped = nullptr;
     }
@@ -71,8 +66,7 @@ struct Buffer
     *
     * @return VkResult of the bindBufferMemory call
     */
-  VkResult bind(VkDeviceSize offset = 0)
-  {
+  VkResult bind(VkDeviceSize offset = 0) {
     return vkBindBufferMemory(device, buffer, memory, offset);
   }
 
@@ -83,8 +77,7 @@ struct Buffer
     * @param offset (Optional) Byte offset from beginning
     *
     */
-  void setupDescriptor(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0)
-  {
+  void setupDescriptor(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
     descriptor.offset = offset;
     descriptor.buffer = buffer;
     descriptor.range = size;
@@ -97,8 +90,7 @@ struct Buffer
     * @param size Size of the data to copy in machine units
     *
     */
-  void copyTo(void* data, VkDeviceSize size)
-  {
+  void copyTo(void* data, VkDeviceSize size) {
     assert(mapped);
     memcpy(mapped, data, size);
   }
@@ -113,8 +105,7 @@ struct Buffer
     *
     * @return VkResult of the flush call
     */
-  VkResult flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0)
-  {
+  VkResult flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
     VkMappedMemoryRange mappedRange = {};
     mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
     mappedRange.memory = memory;
@@ -133,8 +124,7 @@ struct Buffer
     *
     * @return VkResult of the invalidate call
     */
-  VkResult invalidate(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0)
-  {
+  VkResult invalidate(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
     VkMappedMemoryRange mappedRange = {};
     mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
     mappedRange.memory = memory;
@@ -146,17 +136,11 @@ struct Buffer
   /**
     * Release all Vulkan resources held by this buffer
     */
-  void destroy()
-  {
+  void destroy() {
     if (buffer)
-    {
       vkDestroyBuffer(device, buffer, nullptr);
-    }
     if (memory)
-    {
       vkFreeMemory(device, memory, nullptr);
-    }
   }
-
 };
-} // namespace vks
+}  // namespace vks
