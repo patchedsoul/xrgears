@@ -60,7 +60,18 @@ public:
   }
 
   void initSwapChain() {
-      swapChain.initSurface(connection, window);
+      VkResult err = VK_SUCCESS;
+
+      VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
+      surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+      surfaceCreateInfo.connection = connection;
+      surfaceCreateInfo.window = window;
+      err = vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &swapChain.surface);
+
+      if (err != VK_SUCCESS)
+        vks::tools::exitFatal("Could not create surface!", "Fatal error");
+      else
+        swapChain.initSurfaceCommon();
   }
 
   void renderLoop() {

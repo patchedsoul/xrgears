@@ -40,8 +40,6 @@ private:
 	PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR; 
 	PFN_vkGetPhysicalDeviceSurfaceFormatsKHR fpGetPhysicalDeviceSurfaceFormatsKHR;
 	PFN_vkGetPhysicalDeviceSurfacePresentModesKHR fpGetPhysicalDeviceSurfacePresentModesKHR;
-
-
 	PFN_vkCreateSwapchainKHR fpCreateSwapchainKHR;
 	PFN_vkDestroySwapchainKHR fpDestroySwapchainKHR;
 	PFN_vkGetSwapchainImagesKHR fpGetSwapchainImagesKHR;
@@ -58,34 +56,6 @@ public:
 	// Index of the deteced graphics and presenting device queue
 	/** @brief Queue family index of the detected graphics and presenting device queue */
 	uint32_t queueNodeIndex = UINT32_MAX;
-
-	// Creates an os specific surface
-	/**
-	* Create the surface object, an abstraction for the native platform window
-	*
-	* @pre Linux (XCB)
-	* @param connection xcb connection to the X Server
-	* @param window The xcb window to create the surface for
-	* @note Targets other than XCB ar not yet supported
-	*/
-  void initSurface(xcb_connection_t* connection, xcb_window_t window) {
-    VkResult err = VK_SUCCESS;
-
-    VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-    surfaceCreateInfo.connection = connection;
-    surfaceCreateInfo.window = window;
-    err = vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
-
-    if (err != VK_SUCCESS)
-      vks::tools::exitFatal("Could not create surface!", "Fatal error");
-    else
-      initSurfaceCommon();
-  }
-
-  void initSurface(uint32_t width, uint32_t height) {
-
-  }
 
   void initSurfaceCommon() {
 		// Get available queue family properties
