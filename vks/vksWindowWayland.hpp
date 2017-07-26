@@ -1,6 +1,7 @@
 #pragma once
 
 #include <wayland-client.h>
+
 #include <vulkan/vulkan.h>
 
 #include "vksWindow.hpp"
@@ -9,8 +10,8 @@
 #include <linux/input.h>
 
 // TODO: hack for +/- keys
-#define KEY_KPADD KEY_KPPLUS
-#define KEY_KPSUB KEY_KPMINUS
+//#define KEY_KPADD KEY_KPPLUS
+//#define KEY_KPSUB KEY_KPMINUS
 
 class ApplicationWayland : public Application {
 
@@ -25,7 +26,7 @@ class ApplicationWayland : public Application {
   wl_shell_surface *shell_surface = nullptr;
 
 public:
-  ApplicationWayland() {
+  ApplicationWayland(bool enableValidation) : Application(enableValidation) {
     display = wl_display_connect(NULL);
     if (!display)
     {
@@ -121,40 +122,51 @@ public:
   }
 
   void initSwapChain() {
-      swapChain.initSurface(display, surface);
+    VkResult err = VK_SUCCESS;
+
+    VkWaylandSurfaceCreateInfoKHR surfaceCreateInfo = {};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+    surfaceCreateInfo.display = display;
+    surfaceCreateInfo.surface = surface;
+    err = vkCreateWaylandSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &swapChain.surface);
+
+    if (err != VK_SUCCESS)
+      vks::tools::exitFatal("Could not create surface!", "Fatal error");
+    else
+      swapChain.initSurfaceCommon();
   }
 
   // wayland
-  /*static*/void registryGlobalCb(void *data,
+  static void registryGlobalCb(void *data,
       wl_registry *registry, uint32_t name, const char *interface,
       uint32_t version)
   {
-    Application *self = reinterpret_cast<Application *>(data);
+    ApplicationWayland *self = reinterpret_cast<ApplicationWayland *>(data);
     self->registryGlobal(registry, name, interface, version);
   }
 
-  /*static*/void seatCapabilitiesCb(void *data, wl_seat *seat,
+  static void seatCapabilitiesCb(void *data, wl_seat *seat,
       uint32_t caps)
   {
-    Application *self = reinterpret_cast<Application *>(data);
+    ApplicationWayland *self = reinterpret_cast<ApplicationWayland *>(data);
     self->seatCapabilities(seat, caps);
   }
 
-  /*static*/void pointerEnterCb(void *data,
+  static void pointerEnterCb(void *data,
       wl_pointer *pointer, uint32_t serial, wl_surface *surface,
       wl_fixed_t sx, wl_fixed_t sy)
   {
   }
 
-  /*static*/void pointerLeaveCb(void *data,
+  static void pointerLeaveCb(void *data,
       wl_pointer *pointer, uint32_t serial, wl_surface *surface)
   {
   }
 
-  /*static*/void pointerMotionCb(void *data,
+  static void pointerMotionCb(void *data,
       wl_pointer *pointer, uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
   {
-    Application *self = reinterpret_cast<Application *>(data);
+    ApplicationWayland *self = reinterpret_cast<ApplicationWayland *>(data);
     self->pointerMotion(pointer, time, sx, sy);
   }
   void pointerMotion(wl_pointer *pointer, uint32_t time,
@@ -192,11 +204,11 @@ public:
     mousePos = glm::vec2(x, y);
   }
 
-  /*static*/void pointerButtonCb(void *data,
+  static void pointerButtonCb(void *data,
       wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button,
       uint32_t state)
   {
-    Application *self = reinterpret_cast<Application *>(data);
+    ApplicationWayland *self = reinterpret_cast<ApplicationWayland *>(data);
     self->pointerButton(pointer, serial, time, button, state);
   }
 
@@ -219,11 +231,11 @@ public:
     }
   }
 
-  /*static*/void pointerAxisCb(void *data,
+  static void pointerAxisCb(void *data,
       wl_pointer *pointer, uint32_t time, uint32_t axis,
       wl_fixed_t value)
   {
-    Application *self = reinterpret_cast<Application *>(data);
+    ApplicationWayland *self = reinterpret_cast<ApplicationWayland *>(data);
     self->pointerAxis(pointer, time, axis, value);
   }
 
@@ -243,28 +255,28 @@ public:
     }
   }
 
-  /*static*/void keyboardKeymapCb(void *data,
+  static void keyboardKeymapCb(void *data,
       struct wl_keyboard *keyboard, uint32_t format, int fd, uint32_t size)
   {
   }
 
-  /*static*/void keyboardEnterCb(void *data,
+  static void keyboardEnterCb(void *data,
       struct wl_keyboard *keyboard, uint32_t serial,
       struct wl_surface *surface, struct wl_array *keys)
   {
   }
 
-  /*static*/void keyboardLeaveCb(void *data,
+  static void keyboardLeaveCb(void *data,
       struct wl_keyboard *keyboard, uint32_t serial,
       struct wl_surface *surface)
   {
   }
 
-  /*static*/void keyboardKeyCb(void *data,
+  static void keyboardKeyCb(void *data,
       struct wl_keyboard *keyboard, uint32_t serial, uint32_t time,
       uint32_t key, uint32_t state)
   {
-    Application *self = reinterpret_cast<Application *>(data);
+    ApplicationWayland *self = reinterpret_cast<ApplicationWayland *>(data);
     self->keyboardKey(keyboard, serial, time, key, state);
   }
 
@@ -302,7 +314,7 @@ public:
       keyPressed(key);
   }
 
-  /*static*/void keyboardModifiersCb(void *data,
+  static void keyboardModifiersCb(void *data,
       struct wl_keyboard *keyboard, uint32_t serial, uint32_t mods_depressed,
       uint32_t mods_latched, uint32_t mods_locked, uint32_t group)
   {
@@ -363,7 +375,7 @@ public:
     }
   }
 
-  /*static*/void Application::registryGlobalRemoveCb(void *data,
+  static void registryGlobalRemoveCb(void *data,
       struct wl_registry *registry, uint32_t name)
   {
   }
@@ -400,7 +412,7 @@ public:
     return shell_surface;
   }
 
-  std::string requiredExtensionName() {
+  const char* requiredExtensionName() {
     return VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
   }
 

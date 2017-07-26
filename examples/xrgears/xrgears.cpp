@@ -35,11 +35,12 @@
 #include "VikCameraStereo.hpp"
 #include "VikCameraHMD.hpp"
 #include "../vks/vksWindowXCB.hpp"
+#include "../vks/vksWindowWayland.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
 
-class XRGears : public ApplicationXCB {
+class XRGears : public ApplicationWayland {
 public:
   // Vertex layout for the models
   vks::VertexLayout vertexLayout = vks::VertexLayout({
@@ -90,7 +91,7 @@ public:
   // Semaphore used to synchronize between offscreen and final scene rendering
   VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
-  XRGears() : ApplicationXCB(ENABLE_VALIDATION) {
+  XRGears() : ApplicationWayland(ENABLE_VALIDATION) {
     title = "XR Gears";
     enableTextOverlay = true;
     camera.type = Camera::CameraType::firstperson;

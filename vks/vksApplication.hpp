@@ -8,9 +8,6 @@
 
 #pragma once
 
-
-
-
 #include <iostream>
 #include <chrono>
 #include <sys/stat.h>
@@ -177,7 +174,7 @@ public:
     bool middle = false;
   } mouseButtons;
 
-  virtual std::string requiredExtensionName() {}
+  virtual const char* requiredExtensionName() {}
 
 	struct 
 	{

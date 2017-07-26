@@ -16,19 +16,11 @@
 #include <assert.h>
 #include <stdio.h>
 #include <vector>
-#ifdef _WIN32
-#include <windows.h>
-#include <fcntl.h>
-#include <io.h>
-#else
-#endif
+
+#include <wayland-client.h>
 
 #include <vulkan/vulkan.h>
 #include "vksTools.hpp"
-
-#ifdef __ANDROID__
-#include "VulkanAndroid.h"
-#endif
 
 typedef struct _SwapChainBuffers {
 	VkImage image;
@@ -37,11 +29,12 @@ typedef struct _SwapChainBuffers {
 
 class VulkanSwapChain
 {
+public:
+  VkSurfaceKHR surface;
 private: 
 	VkInstance instance;
 	VkDevice device;
 	VkPhysicalDevice physicalDevice;
-	VkSurfaceKHR surface;
 	// Function pointers
 	PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR;
 	PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR; 
@@ -70,78 +63,32 @@ public:
 	/**
 	* Create the surface object, an abstraction for the native platform window
 	*
-	* @pre Windows
-	* @param platformHandle HINSTANCE of the window to create the surface for
-	* @param platformWindow HWND of the window to create the surface for
-	*
-	* @pre Android 
-	* @param window A native platform window
-	*
 	* @pre Linux (XCB)
 	* @param connection xcb connection to the X Server
 	* @param window The xcb window to create the surface for
 	* @note Targets other than XCB ar not yet supported
 	*/
-	void initSurface(
-#ifdef _WIN32
-		void* platformHandle, void* platformWindow
-#else
-#ifdef __ANDROID__
-		ANativeWindow* window
-#else
-#ifdef _DIRECT2DISPLAY
-	uint32_t width, uint32_t height
-#else
-#ifdef VK_USE_PLATFORM_WAYLAND_KHR
-	wl_display *display, wl_surface *window
-#else
-	xcb_connection_t* connection, xcb_window_t window
-#endif
-#endif
-#endif
-#endif
-	)
-	{
-		VkResult err = VK_SUCCESS;
+  void initSurface(xcb_connection_t* connection, xcb_window_t window) {
+    VkResult err = VK_SUCCESS;
 
-		// Create the os-specific surface
-#ifdef _WIN32
-		VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
-		surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-		surfaceCreateInfo.hinstance = (HINSTANCE)platformHandle;
-		surfaceCreateInfo.hwnd = (HWND)platformWindow;
-		err = vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
-#else
-#ifdef __ANDROID__
-		VkAndroidSurfaceCreateInfoKHR surfaceCreateInfo = {};
-		surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
-		surfaceCreateInfo.window = window;
-		err = vkCreateAndroidSurfaceKHR(instance, &surfaceCreateInfo, NULL, &surface);
-#else
-#if defined(_DIRECT2DISPLAY)
-		createDirect2DisplaySurface(width, height);
-#else
-#ifdef VK_USE_PLATFORM_WAYLAND_KHR
-		VkWaylandSurfaceCreateInfoKHR surfaceCreateInfo = {};
-		surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
-		surfaceCreateInfo.display = display;
-		surfaceCreateInfo.surface = window;
-		err = vkCreateWaylandSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
-#else
-		VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
-		surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-		surfaceCreateInfo.connection = connection;
-		surfaceCreateInfo.window = window;
-		err = vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
-#endif
-#endif
-#endif
-#endif
+    VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+    surfaceCreateInfo.connection = connection;
+    surfaceCreateInfo.window = window;
+    err = vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
 
-		if (err != VK_SUCCESS) {
-			vks::tools::exitFatal("Could not create surface!", "Fatal error");
-		}
+    if (err != VK_SUCCESS)
+      vks::tools::exitFatal("Could not create surface!", "Fatal error");
+    else
+      initSurfaceCommon();
+  }
 
+  void initSurface(uint32_t width, uint32_t height) {
+    createDirect2DisplaySurface(width, height);
+    initSurfaceCommon();
+  }
+
+void initSurfaceCommon() {
 		// Get available queue family properties
 		uint32_t queueCount;
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, NULL);
@@ -519,7 +466,7 @@ public:
 		swapChain = VK_NULL_HANDLE;
 	}
 
-#if defined(_DIRECT2DISPLAY)
+
 	/**
 	* Create direct to display surface
 	*/	
@@ -654,5 +601,4 @@ public:
 		delete[] pDisplayProperties;
 		delete[] pPlaneProperties;
 	}
-#endif 
 };

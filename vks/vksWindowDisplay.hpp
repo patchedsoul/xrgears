@@ -18,7 +18,7 @@ public:
 
   }
 
-  std::string requiredExtensionName() {
+  const char* requiredExtensionName() {
     return VK_KHR_DISPLAY_EXTENSION_NAME;
   }
 

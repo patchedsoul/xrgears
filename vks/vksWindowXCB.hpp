@@ -325,7 +325,7 @@ public:
     }
   }
 
-  std::string requiredExtensionName() {
+  const char* requiredExtensionName() {
     return VK_KHR_XCB_SURFACE_EXTENSION_NAME;
   }
 

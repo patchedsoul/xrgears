@@ -20,6 +20,8 @@ endfunction(add_cxxflag)
 #warnings for strict ISO C and ISO C++
 #add_cxxflag("-pedantic")
 
+add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
+
 function(add_verbose_warnings)
     add_cxxflag("-Werror")
     add_cxxflag("-Wall")
