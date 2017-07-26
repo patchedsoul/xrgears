@@ -44,11 +44,11 @@ public:
     uniformBuffer.destroy();
   }
 
-  void setMateral(Material& m) {
+  void setMateral(const Material& m) {
     info.material = m;
   }
 
-  void setPosition(glm::vec3& p) {
+  void setPosition(const glm::vec3& p) {
     info.pos = p;
   }
 
@@ -59,11 +59,11 @@ public:
     info.material = nodeinfo->material;
   }
 
-  void createDescriptorSet(VkDevice& device,
-                           VkDescriptorPool& descriptorPool,
-                           VkDescriptorSetLayout& descriptorSetLayout,
-                           VkDescriptorBufferInfo& lightsDescriptor,
-                           VkDescriptorBufferInfo& cameraDescriptor,
+  void createDescriptorSet(const VkDevice& device,
+                           const VkDescriptorPool& descriptorPool,
+                           const VkDescriptorSetLayout& descriptorSetLayout,
+                           VkDescriptorBufferInfo* lightsDescriptor,
+                           VkDescriptorBufferInfo* cameraDescriptor,
                            VikSkyBox *skyDome) {
     VkDescriptorSetAllocateInfo allocInfo =
         vks::initializers::descriptorSetAllocateInfo(
@@ -85,12 +85,12 @@ public:
       descriptorSet,
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       1,
-      &lightsDescriptor),
+      lightsDescriptor),
       vks::initializers::writeDescriptorSet(
       descriptorSet,
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       2,
-      &cameraDescriptor)
+      cameraDescriptor)
     };
 
     if (skyDome != nullptr)

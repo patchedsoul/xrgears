@@ -43,7 +43,7 @@ private:
   } offScreenFrameBuf;
 
 public:
-  VikOffscreenPass(VkDevice& d) {
+  VikOffscreenPass(const VkDevice& d) {
     device = d;
   }
 
@@ -127,7 +127,7 @@ public:
   }
 
   // Prepare a new framebuffer and attachments for offscreen rendering (G-Buffer)
-  void prepareOffscreenFramebuffer(vks::VulkanDevice *vulkanDevice, VkPhysicalDevice& physicalDevice)
+  void prepareOffscreenFramebuffer(vks::VulkanDevice *vulkanDevice, const VkPhysicalDevice& physicalDevice)
   {
     offScreenFrameBuf.width = FB_DIM;
     offScreenFrameBuf.height = FB_DIM;
@@ -263,7 +263,7 @@ public:
           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
 
-  VkWriteDescriptorSet getImageWriteDescriptorSet(VkDescriptorSet& descriptorSet, VkDescriptorImageInfo *texDescriptorPosition, uint32_t binding) {
+  VkWriteDescriptorSet getImageWriteDescriptorSet(const VkDescriptorSet& descriptorSet, VkDescriptorImageInfo *texDescriptorPosition, uint32_t binding) {
     return vks::initializers::writeDescriptorSet(
           descriptorSet,
           VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -271,7 +271,7 @@ public:
           texDescriptorPosition);
   }
 
-  void beginRenderPass(VkCommandBuffer& cmdBuffer) {
+  void beginRenderPass(const VkCommandBuffer& cmdBuffer) {
     // Clear values for all attachments written in the fragment sahder
     std::array<VkClearValue,2> clearValues;
     clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
@@ -288,7 +288,7 @@ public:
     vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
   }
 
-  void setViewPortAndScissor(VkCommandBuffer& cmdBuffer) {
+  void setViewPortAndScissor(const VkCommandBuffer& cmdBuffer) {
     VkViewport viewport =
         vks::initializers::viewport(
           (float)offScreenFrameBuf.width,
@@ -304,7 +304,7 @@ public:
     vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
   }
 
-  void setViewPortAndScissorStereo(VkCommandBuffer& cmdBuffer) {
+  void setViewPortAndScissorStereo(const VkCommandBuffer& cmdBuffer) {
     VkViewport viewports[2];
 
     int32_t w = offScreenFrameBuf.width, h = offScreenFrameBuf.height;

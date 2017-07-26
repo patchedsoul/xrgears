@@ -19,7 +19,7 @@
 
 class VikShader {
 public:
-  static VkPipelineShaderStageCreateInfo load(VkDevice& device, std::string fileName, VkShaderStageFlagBits stage)
+  static VkPipelineShaderStageCreateInfo load(const VkDevice& device, std::string fileName, VkShaderStageFlagBits stage)
   {
     VkPipelineShaderStageCreateInfo shaderStage = {};
     shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

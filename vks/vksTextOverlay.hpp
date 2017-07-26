@@ -97,7 +97,7 @@ public:
   VulkanTextOverlay(
       vks::VulkanDevice *vulkanDevice,
       VkQueue queue,
-      std::vector<VkFramebuffer> &framebuffers,
+      std::vector<VkFramebuffer> *framebuffers,
       VkFormat colorformat,
       VkFormat depthformat,
       uint32_t *framebufferwidth,
@@ -109,10 +109,10 @@ public:
     this->colorFormat = colorformat;
     this->depthFormat = depthformat;
 
-    this->frameBuffers.resize(framebuffers.size());
-    for (uint32_t i = 0; i < framebuffers.size(); i++)
+    this->frameBuffers.resize(framebuffers->size());
+    for (uint32_t i = 0; i < framebuffers->size(); i++)
     {
-      this->frameBuffers[i] = &framebuffers[i];
+      this->frameBuffers[i] = &framebuffers->at(i);
     }
 
     this->shaderStages = shaderstages;
@@ -136,7 +136,7 @@ public:
     };
 #endif
 
-    cmdBuffers.resize(framebuffers.size());
+    cmdBuffers.resize(framebuffers->size());
     prepareResources();
     prepareRenderPass();
     preparePipeline();

@@ -177,13 +177,12 @@ void Application::prepare()
     textOverlay = new VulkanTextOverlay(
           vulkanDevice,
           queue,
-          frameBuffers,
+          &frameBuffers,
           swapChain.colorFormat,
           depthFormat,
           &width,
           &height,
-          shaderStages
-          );
+          shaderStages);
     updateTextOverlay();
   }
 }

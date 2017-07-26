@@ -477,13 +477,13 @@ public:
             &descriptorSetLayout,
             1);
 
-      skyBox->createDescriptorSet(allocInfo, vikCamera->uniformBuffer.descriptor);
+      skyBox->createDescriptorSet(allocInfo, &vikCamera->uniformBuffer.descriptor);
     }
 
     for (auto& node : nodes)
       node->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
-                                uniformBuffers.lights.descriptor,
-                                vikCamera->uniformBuffer.descriptor,
+                                &uniformBuffers.lights.descriptor,
+                                &vikCamera->uniformBuffer.descriptor,
                                 skyBox);
 }
 
@@ -578,7 +578,7 @@ public:
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.pbr));
 
     if (enableSky)
-      skyBox->createPipeline(pipelineCreateInfo, pipelineCache);
+      skyBox->createPipeline(&pipelineCreateInfo, pipelineCache);
   }
 
   // Prepare and initialize uniform buffer containing shader uniforms

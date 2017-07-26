@@ -68,8 +68,8 @@ public:
     initTextureDescriptor();
   }
 
-  void createDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo,
-                           VkDescriptorBufferInfo& cameraDescriptor) {
+  void createDescriptorSet(const VkDescriptorSetAllocateInfo& allocInfo,
+                           VkDescriptorBufferInfo* cameraDescriptor) {
     VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
 
     std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
@@ -77,7 +77,7 @@ public:
       descriptorSet,
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       2,
-      &cameraDescriptor)
+      cameraDescriptor)
     };
 
     writeDescriptorSets.push_back(getCubeMapWriteDescriptorSet(3, descriptorSet));
@@ -101,8 +101,8 @@ public:
     vkCmdDrawIndexed(cmdbuffer, model.indexCount, 1, 0, 0, 0);
   }
 
-  void createPipeline(VkGraphicsPipelineCreateInfo& pipelineCreateInfo,
-                      VkPipelineCache& pipelineCache) {
+  void createPipeline(VkGraphicsPipelineCreateInfo* pipelineCreateInfo,
+                      const VkPipelineCache& pipelineCache) {
     VkPipelineRasterizationStateCreateInfo rasterizationStateSky =
         vks::initializers::pipelineRasterizationStateCreateInfo(
           VK_POLYGON_MODE_FILL,
@@ -117,11 +117,11 @@ public:
     shaderStagesSky[1] = VikShader::load(device, "xrgears/sky.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
     shaderStagesSky[2] = VikShader::load(device, "xrgears/sky.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 
-    pipelineCreateInfo.stageCount = shaderStagesSky.size();
-    pipelineCreateInfo.pStages = shaderStagesSky.data();
-    pipelineCreateInfo.pRasterizationState = &rasterizationStateSky;
+    pipelineCreateInfo->stageCount = shaderStagesSky.size();
+    pipelineCreateInfo->pStages = shaderStagesSky.data();
+    pipelineCreateInfo->pRasterizationState = &rasterizationStateSky;
 
-    VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, pipelineCreateInfo, nullptr, &pipeline));
 
     vkDestroyShaderModule(device, shaderStagesSky[0].module, nullptr);
     vkDestroyShaderModule(device, shaderStagesSky[1].module, nullptr);

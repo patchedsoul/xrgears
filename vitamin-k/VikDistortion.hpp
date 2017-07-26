@@ -56,7 +56,7 @@ public:
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
   }
 
-  void createPipeLine(VkRenderPass& renderPass, VkPipelineCache& pipelineCache) {
+  void createPipeLine(const VkRenderPass& renderPass, const VkPipelineCache& pipelineCache) {
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
         vks::initializers::pipelineInputAssemblyStateCreateInfo(
@@ -148,7 +148,7 @@ public:
           &uboHandle.descriptor);
   }
 
-  void createDescriptorSet(VikOffscreenPass *offscreenPass, VkDescriptorPool& descriptorPool) {
+  void createDescriptorSet(VikOffscreenPass *offscreenPass, const VkDescriptorPool& descriptorPool) {
     std::vector<VkWriteDescriptorSet> writeDescriptorSets;
 
     // Textured quad descriptor set
@@ -210,7 +210,7 @@ public:
 
   }
 
-  void drawQuad(VkCommandBuffer& commandBuffer) {
+  void drawQuad(const VkCommandBuffer& commandBuffer) {
     VkDeviceSize offsets[1] = { 0 };
 
     vkCmdBindDescriptorSets(commandBuffer,
