@@ -36,6 +36,7 @@
 #include "VikCameraHMD.hpp"
 #include "../vks/vksWindowXCB.hpp"
 #include "../vks/vksWindowWayland.hpp"
+#include "../vks/vksWindowDisplay.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
