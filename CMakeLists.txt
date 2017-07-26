@@ -95,7 +95,8 @@ function(buildExample EXAMPLE_NAME)
 
         target_link_libraries(${EXAMPLE_NAME}
           ${Vulkan_LIBRARY} ${ASSIMP_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES}
-          ${CMAKE_THREAD_LIBS_INIT} ${XCB_LIBRARIES} dl glfw openhmd vks)
+	  ${CMAKE_THREAD_LIBS_INIT} ${XCB_LIBRARIES} dl glfw openhmd
+	  vks)
 endfunction(buildExample)
 
 # build examples
