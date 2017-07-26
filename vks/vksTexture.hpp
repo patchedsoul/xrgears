@@ -964,4 +964,4 @@ public:
   }
 };
 
-}
+} // namespace vks

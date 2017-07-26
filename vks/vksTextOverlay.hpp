@@ -128,15 +128,13 @@ public:
     if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_XXHIGH) {
       LOGD("XXHIGH");
       scale = 2.0f;
-    }
-    else if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_XHIGH) {
+    } else if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_XHIGH) {
       LOGD("XHIGH");
       scale = 1.5f;
-    }
-    else if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_HIGH) {
+    } else if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_HIGH) {
       LOGD("HIGH");
       scale = 1.25f;
-    };
+    }
 #endif
 
     cmdBuffers.resize(framebuffers->size());
@@ -578,7 +576,7 @@ public:
 
     if (align == alignLeft) {
       x *= scale;
-    };
+    }
 
     y *= scale;
 

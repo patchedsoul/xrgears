@@ -578,5 +578,5 @@ inline VkSpecializationInfo specializationInfo(uint32_t mapEntryCount, const VkS
   specializationInfo.pData = data;
   return specializationInfo;
 }
-}
-}
+} // namespace initializers
+} // namespace vks

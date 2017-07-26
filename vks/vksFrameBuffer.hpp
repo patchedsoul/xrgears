@@ -362,4 +362,4 @@ public:
     return VK_SUCCESS;
   }
 };
-}
+} // namespace vks

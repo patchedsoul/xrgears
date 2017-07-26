@@ -289,7 +289,7 @@ public:
       if (surfCaps.supportedCompositeAlpha & compositeAlphaFlag) {
         compositeAlpha = compositeAlphaFlag;
         break;
-      };
+      }
     }
 
     VkSwapchainCreateInfoKHR swapchainCI = {};

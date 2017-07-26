@@ -159,4 +159,4 @@ struct Buffer
   }
 
 };
-}
+} // namespace vks

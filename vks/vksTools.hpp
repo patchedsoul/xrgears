@@ -142,5 +142,5 @@ VkShaderModule loadShaderGLSL(const char *fileName, VkDevice device, VkShaderSta
 
 /** @brief Checks if a file exists */
 bool fileExists(const std::string &filename);
-}
-}
+} // namespace tools
+} // namespace vks

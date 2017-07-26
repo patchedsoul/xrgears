@@ -20,11 +20,6 @@
 #include "vksWindow.hpp"
 #include "vksApplication.hpp"
 
-
-// TODO: hack for +/- keys
-//#define KEY_KPADD KEY_KPPLUS
-//#define KEY_KPSUB KEY_KPMINUS
-
 class ApplicationWayland : public Application {
 
   wl_display *display = nullptr;

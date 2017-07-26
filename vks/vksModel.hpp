@@ -275,7 +275,7 @@ struct Model {
                 vertexBuffer.push_back(0.0f);
                 vertexBuffer.push_back(0.0f);
                 break;
-            };
+            }
           }
 
           dim.max.x = fmax(pPos->x, dim.max.x);
@@ -391,4 +391,4 @@ struct Model {
     return loadFromFile(filename, layout, &modelCreateInfo, device, copyQueue, flags);
   }
 };
-};
+} // namespace vks

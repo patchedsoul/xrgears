@@ -90,15 +90,13 @@ VkBool32 messageCallback(
 #if defined(__ANDROID__)
   if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
     LOGE("%s", debugMessage.str().c_str());
-  }
-  else {
+  } else {
     LOGD("%s", debugMessage.str().c_str());
   }
 #else
   if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
     std::cerr << debugMessage.str() << "\n";
-  }
-  else {
+  } else {
     std::cout << debugMessage.str() << "\n";
   }
 #endif
@@ -140,7 +138,7 @@ void freeDebugCallback(VkInstance instance)
     DestroyDebugReportCallback(instance, msgCallback, nullptr);
   }
 }
-}
+} // namespace debug
 
 namespace debugmarker
 {
@@ -308,6 +306,6 @@ void setEventName(VkDevice device, VkEvent _event, const char * name)
 {
   setObjectName(device, (uint64_t)_event, VK_DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT, name);
 }
-};
-}
+} // namespace debugmarker
+} // namespace vks
 

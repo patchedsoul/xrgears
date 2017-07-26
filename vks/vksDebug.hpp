@@ -55,7 +55,7 @@ void setupDebugging(
     VkDebugReportCallbackEXT callBack);
 // Clear debug callback
 void freeDebugCallback(VkInstance instance);
-}
+} // namespace debug
 
 // Setup and functions for the VK_EXT_debug_marker_extension
 // Extension spec can be found at https://github.com/KhronosGroup/Vulkan-Docs/blob/1.0-VK_EXT_debug_marker/doc/specs/vulkan/appendices/VK_EXT_debug_marker.txt
@@ -104,5 +104,5 @@ void setDescriptorSetName(VkDevice device, VkDescriptorSet descriptorSet, const 
 void setSemaphoreName(VkDevice device, VkSemaphore semaphore, const char * name);
 void setFenceName(VkDevice device, VkFence fence, const char * name);
 void setEventName(VkDevice device, VkEvent _event, const char * name);
-};
-}
+} // namespace debugmarker
+} // namespace vks

@@ -593,4 +593,4 @@ struct VulkanDevice
   }
 
 };
-}
+} // namespace vks
