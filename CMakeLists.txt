@@ -84,11 +84,15 @@ foreach(SHADER ${SHADER_GLOB})
     )
 endforeach(SHADER)
 
+set(LINT_SOURCES ${VITAMINK_SRC} ${VKS_SRC})
 
 # Function for building single example
 function(buildExample EXAMPLE_NAME)
 	file(GLOB EXAMPLE_SRC examples/${EXAMPLE_NAME}/*.cpp)
         add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
+
+	set(LINT_SOURCES ${LINT_SOURCES} ${EXAMPLE_SRC})
+
         target_link_libraries(${EXAMPLE_NAME}
           ${Vulkan_LIBRARY} ${ASSIMP_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES}
           ${CMAKE_THREAD_LIBS_INIT} ${XCB_LIBRARIES} dl glfw openhmd vks)
@@ -108,3 +112,9 @@ endforeach(EXAMPLE)
 #        #clean and compile with 1 thread per core
 #	COMMAND glslc -o gears.vert.spv gears.vert
 #)
+
+
+set(IGNORE "-build/header_guard,-readability/streams,-readability/casting,-whitespace/line_length")
+add_custom_target(style
+    COMMAND python2 scripts/cpplint.py --headers=hpp --filter=${IGNORE} ${LINT_SOURCES}
+)
