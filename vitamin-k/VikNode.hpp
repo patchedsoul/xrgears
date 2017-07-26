@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include "../vks/vksModel.hpp"
 
 #include "VikMaterial.hpp"

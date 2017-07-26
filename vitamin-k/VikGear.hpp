@@ -11,6 +11,8 @@
 
 #include <glm/glm.hpp>
 
+#include <vector>
+
 #include "../vks/vksBuffer.hpp"
 #include "../vks/vksDevice.hpp"
 

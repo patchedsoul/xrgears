@@ -14,6 +14,8 @@
 #include <xcb/xcb.h>
 #include <vulkan/vulkan.h>
 
+#include <string>
+
 #include "vksApplication.hpp"
 
 #define KEY_ESCAPE 0x9

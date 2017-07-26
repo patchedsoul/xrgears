@@ -11,14 +11,15 @@
 
 #pragma once
 
+#include <linux/input.h>
 #include <wayland-client.h>
-
 #include <vulkan/vulkan.h>
+
+#include <string>
 
 #include "vksWindow.hpp"
 #include "vksApplication.hpp"
 
-#include <linux/input.h>
 
 // TODO: hack for +/- keys
 //#define KEY_KPADD KEY_KPPLUS

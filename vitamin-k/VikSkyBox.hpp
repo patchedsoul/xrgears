@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include "../vks/vksTexture.hpp"
 #include "../vks/vksModel.hpp"
 

@@ -11,15 +11,16 @@
 #pragma once
 
 #include <stdlib.h>
-#include <string>
-#include <fstream>
 #include <assert.h>
 #include <stdio.h>
-#include <vector>
 
 #include <wayland-client.h>
-
 #include <vulkan/vulkan.h>
+
+#include <string>
+#include <fstream>
+#include <vector>
+
 #include "vksTools.hpp"
 
 typedef struct _SwapChainBuffers {

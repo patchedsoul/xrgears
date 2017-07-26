@@ -9,13 +9,13 @@
 #pragma once
 
 #include <stdlib.h>
+
+#include <vulkan/vulkan.h>
+#include <gli/gli.hpp>
+
 #include <string>
 #include <fstream>
 #include <vector>
-
-#include "vulkan/vulkan.h"
-
-#include <gli/gli.hpp>
 
 #include "vksTools.hpp"
 #include "vksDevice.hpp"

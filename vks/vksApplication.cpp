@@ -6,6 +6,9 @@
 * This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
 */
 
+#include <vector>
+#include <string>
+
 #include "vksApplication.hpp"
 
 std::vector<const char*> Application::args;

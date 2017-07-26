@@ -13,6 +13,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <string>
+
 #include "../vks/vksTools.hpp"
 
 #include "VikAssets.hpp"

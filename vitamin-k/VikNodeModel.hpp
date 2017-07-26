@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "VikNode.hpp"
 
 class VikNodeModel : public VikNode {

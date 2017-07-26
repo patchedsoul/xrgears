@@ -13,6 +13,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <vector>
+
 #include "../vks/vksDevice.hpp"
 
 // Offscreen frame buffer properties

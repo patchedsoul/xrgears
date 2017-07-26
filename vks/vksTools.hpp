@@ -8,28 +8,21 @@
 
 #pragma once
 
-#include "vulkan/vulkan.h"
-#include "vksInitializers.hpp"
-
 #include <math.h>
 #include <stdlib.h>
+#include <assert.h>
+#include <stdio.h>
+
+#include <vulkan/vulkan.h>
+
 #include <string>
 #include <cstring>
 #include <fstream>
-#include <assert.h>
-#include <stdio.h>
 #include <vector>
 #include <iostream>
 #include <stdexcept>
-#include <fstream>
-#if defined(_WIN32)
-#include <windows.h>
-#include <fcntl.h>
-#include <io.h>
-#elif defined(__ANDROID__)
-#include "VulkanAndroid.h"
-#include <android/asset_manager.h>
-#endif
+
+#include "vksInitializers.hpp"
 
 // Custom define for better code readability
 #define VK_FLAGS_NONE 0

@@ -12,8 +12,9 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-
 #include <openhmd/openhmd.h>
+
+#include <vector>
 
 #include "../vks/vksModel.hpp"
 #include "VikOffscreenPass.hpp"

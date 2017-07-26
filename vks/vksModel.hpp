@@ -9,20 +9,22 @@
 #pragma once
 
 #include <stdlib.h>
-#include <string>
-#include <fstream>
-#include <vector>
 
-#include "vulkan/vulkan.h"
+#include <vulkan/vulkan.h>
 
-#include <assimp/Importer.hpp> 
-#include <assimp/scene.h>     
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/cimport.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include <string>
+#include <fstream>
+#include <vector>
+#include <utility>
 
 #include "vksDevice.hpp"
 #include "vksBuffer.hpp"
