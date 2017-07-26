@@ -138,39 +138,39 @@ public:
 
   // wayland
   static void registryGlobalCb(void *data,
-      wl_registry *registry, uint32_t name, const char *interface,
-      uint32_t version)
+                               wl_registry *registry, uint32_t name, const char *interface,
+                               uint32_t version)
   {
     ApplicationWayland *self = reinterpret_cast<ApplicationWayland *>(data);
     self->registryGlobal(registry, name, interface, version);
   }
 
   static void seatCapabilitiesCb(void *data, wl_seat *seat,
-      uint32_t caps)
+                                 uint32_t caps)
   {
     ApplicationWayland *self = reinterpret_cast<ApplicationWayland *>(data);
     self->seatCapabilities(seat, caps);
   }
 
   static void pointerEnterCb(void *data,
-      wl_pointer *pointer, uint32_t serial, wl_surface *surface,
-      wl_fixed_t sx, wl_fixed_t sy)
+                             wl_pointer *pointer, uint32_t serial, wl_surface *surface,
+                             wl_fixed_t sx, wl_fixed_t sy)
   {
   }
 
   static void pointerLeaveCb(void *data,
-      wl_pointer *pointer, uint32_t serial, wl_surface *surface)
+                             wl_pointer *pointer, uint32_t serial, wl_surface *surface)
   {
   }
 
   static void pointerMotionCb(void *data,
-      wl_pointer *pointer, uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
+                              wl_pointer *pointer, uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
   {
     ApplicationWayland *self = reinterpret_cast<ApplicationWayland *>(data);
     self->pointerMotion(pointer, time, sx, sy);
   }
   void pointerMotion(wl_pointer *pointer, uint32_t time,
-      wl_fixed_t sx, wl_fixed_t sy)
+                     wl_fixed_t sx, wl_fixed_t sy)
   {
     double x = wl_fixed_to_double(sx);
     double y = wl_fixed_to_double(sy);
@@ -183,9 +183,9 @@ public:
       rotation.x += dy * 1.25f * rotationSpeed;
       rotation.y -= dx * 1.25f * rotationSpeed;
       camera.rotate(glm::vec3(
-          dy * camera.rotationSpeed,
-          -dx * camera.rotationSpeed,
-          0.0f));
+                      dy * camera.rotationSpeed,
+                      -dx * camera.rotationSpeed,
+                      0.0f));
       viewUpdated = true;
     }
     if (mouseButtons.right)
@@ -205,109 +205,109 @@ public:
   }
 
   static void pointerButtonCb(void *data,
-      wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button,
-      uint32_t state)
+                              wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button,
+                              uint32_t state)
   {
     ApplicationWayland *self = reinterpret_cast<ApplicationWayland *>(data);
     self->pointerButton(pointer, serial, time, button, state);
   }
 
   void pointerButton(struct wl_pointer *pointer,
-      uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
+                     uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
   {
     switch (button)
     {
-    case BTN_LEFT:
-      mouseButtons.left = !!state;
-      break;
-    case BTN_MIDDLE:
-      mouseButtons.middle = !!state;
-      break;
-    case BTN_RIGHT:
-      mouseButtons.right = !!state;
-      break;
-    default:
-      break;
+      case BTN_LEFT:
+        mouseButtons.left = !!state;
+        break;
+      case BTN_MIDDLE:
+        mouseButtons.middle = !!state;
+        break;
+      case BTN_RIGHT:
+        mouseButtons.right = !!state;
+        break;
+      default:
+        break;
     }
   }
 
   static void pointerAxisCb(void *data,
-      wl_pointer *pointer, uint32_t time, uint32_t axis,
-      wl_fixed_t value)
+                            wl_pointer *pointer, uint32_t time, uint32_t axis,
+                            wl_fixed_t value)
   {
     ApplicationWayland *self = reinterpret_cast<ApplicationWayland *>(data);
     self->pointerAxis(pointer, time, axis, value);
   }
 
   void pointerAxis(wl_pointer *pointer, uint32_t time,
-      uint32_t axis, wl_fixed_t value)
+                   uint32_t axis, wl_fixed_t value)
   {
     double d = wl_fixed_to_double(value);
     switch (axis)
     {
-    case REL_X:
-      zoom += d * 0.005f * zoomSpeed;
-      camera.translate(glm::vec3(0.0f, 0.0f, d * 0.005f * zoomSpeed));
-      viewUpdated = true;
-      break;
-    default:
-      break;
+      case REL_X:
+        zoom += d * 0.005f * zoomSpeed;
+        camera.translate(glm::vec3(0.0f, 0.0f, d * 0.005f * zoomSpeed));
+        viewUpdated = true;
+        break;
+      default:
+        break;
     }
   }
 
   static void keyboardKeymapCb(void *data,
-      struct wl_keyboard *keyboard, uint32_t format, int fd, uint32_t size)
+                               struct wl_keyboard *keyboard, uint32_t format, int fd, uint32_t size)
   {
   }
 
   static void keyboardEnterCb(void *data,
-      struct wl_keyboard *keyboard, uint32_t serial,
-      struct wl_surface *surface, struct wl_array *keys)
+                              struct wl_keyboard *keyboard, uint32_t serial,
+                              struct wl_surface *surface, struct wl_array *keys)
   {
   }
 
   static void keyboardLeaveCb(void *data,
-      struct wl_keyboard *keyboard, uint32_t serial,
-      struct wl_surface *surface)
+                              struct wl_keyboard *keyboard, uint32_t serial,
+                              struct wl_surface *surface)
   {
   }
 
   static void keyboardKeyCb(void *data,
-      struct wl_keyboard *keyboard, uint32_t serial, uint32_t time,
-      uint32_t key, uint32_t state)
+                            struct wl_keyboard *keyboard, uint32_t serial, uint32_t time,
+                            uint32_t key, uint32_t state)
   {
     ApplicationWayland *self = reinterpret_cast<ApplicationWayland *>(data);
     self->keyboardKey(keyboard, serial, time, key, state);
   }
 
   void keyboardKey(struct wl_keyboard *keyboard,
-      uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
+                   uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
   {
     switch (key)
     {
-    case KEY_W:
-      camera.keys.up = !!state;
-      break;
-    case KEY_S:
-      camera.keys.down = !!state;
-      break;
-    case KEY_A:
-      camera.keys.left = !!state;
-      break;
-    case KEY_D:
-      camera.keys.right = !!state;
-      break;
-    case KEY_P:
-      if (state)
-        paused = !paused;
-      break;
-    case KEY_F1:
-      if (state && enableTextOverlay)
-        textOverlay->visible = !textOverlay->visible;
-      break;
-    case KEY_ESC:
-      quit = true;
-      break;
+      case KEY_W:
+        camera.keys.up = !!state;
+        break;
+      case KEY_S:
+        camera.keys.down = !!state;
+        break;
+      case KEY_A:
+        camera.keys.left = !!state;
+        break;
+      case KEY_D:
+        camera.keys.right = !!state;
+        break;
+      case KEY_P:
+        if (state)
+          paused = !paused;
+        break;
+      case KEY_F1:
+        if (state && enableTextOverlay)
+          textOverlay->visible = !textOverlay->visible;
+        break;
+      case KEY_ESC:
+        quit = true;
+        break;
     }
 
     if (state)
@@ -315,8 +315,8 @@ public:
   }
 
   static void keyboardModifiersCb(void *data,
-      struct wl_keyboard *keyboard, uint32_t serial, uint32_t mods_depressed,
-      uint32_t mods_latched, uint32_t mods_locked, uint32_t group)
+                                  struct wl_keyboard *keyboard, uint32_t serial, uint32_t mods_depressed,
+                                  uint32_t mods_latched, uint32_t mods_locked, uint32_t group)
   {
   }
 
@@ -327,7 +327,7 @@ public:
       pointer = wl_seat_get_pointer(seat);
       static const struct wl_pointer_listener pointer_listener =
       { pointerEnterCb, pointerLeaveCb, pointerMotionCb, pointerButtonCb,
-          pointerAxisCb, };
+            pointerAxisCb, };
       wl_pointer_add_listener(pointer, &pointer_listener, this);
     }
     else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && pointer)
@@ -341,7 +341,7 @@ public:
       keyboard = wl_seat_get_keyboard(seat);
       static const struct wl_keyboard_listener keyboard_listener =
       { keyboardKeymapCb, keyboardEnterCb, keyboardLeaveCb, keyboardKeyCb,
-          keyboardModifiersCb, };
+            keyboardModifiersCb, };
       wl_keyboard_add_listener(keyboard, &keyboard_listener, this);
     }
     else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && keyboard)
@@ -352,22 +352,22 @@ public:
   }
 
   void registryGlobal(wl_registry *registry, uint32_t name,
-      const char *interface, uint32_t version)
+                      const char *interface, uint32_t version)
   {
     if (strcmp(interface, "wl_compositor") == 0)
     {
       compositor = (wl_compositor *) wl_registry_bind(registry, name,
-          &wl_compositor_interface, 3);
+                                                      &wl_compositor_interface, 3);
     }
     else if (strcmp(interface, "wl_shell") == 0)
     {
       shell = (wl_shell *) wl_registry_bind(registry, name,
-          &wl_shell_interface, 1);
+                                            &wl_shell_interface, 1);
     }
     else if (strcmp(interface, "wl_seat") == 0)
     {
       seat = (wl_seat *) wl_registry_bind(registry, name, &wl_seat_interface,
-          1);
+                                          1);
 
       static const struct wl_seat_listener seat_listener =
       { seatCapabilitiesCb, };
@@ -376,20 +376,20 @@ public:
   }
 
   static void registryGlobalRemoveCb(void *data,
-      struct wl_registry *registry, uint32_t name)
+                                     struct wl_registry *registry, uint32_t name)
   {
   }
 
 
 
   static void PingCb(void *data, struct wl_shell_surface *shell_surface,
-      uint32_t serial)
+                     uint32_t serial)
   {
     wl_shell_surface_pong(shell_surface, serial);
   }
 
   static void ConfigureCb(void *data, struct wl_shell_surface *shell_surface,
-      uint32_t edges, int32_t width, int32_t height)
+                          uint32_t edges, int32_t width, int32_t height)
   {
   }
 

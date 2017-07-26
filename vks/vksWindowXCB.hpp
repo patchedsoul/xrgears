@@ -60,18 +60,18 @@ public:
   }
 
   void initSwapChain() {
-      VkResult err = VK_SUCCESS;
+    VkResult err = VK_SUCCESS;
 
-      VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
-      surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-      surfaceCreateInfo.connection = connection;
-      surfaceCreateInfo.window = window;
-      err = vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &swapChain.surface);
+    VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+    surfaceCreateInfo.connection = connection;
+    surfaceCreateInfo.window = window;
+    err = vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &swapChain.surface);
 
-      if (err != VK_SUCCESS)
-        vks::tools::exitFatal("Could not create surface!", "Fatal error");
-      else
-        swapChain.initSurfaceCommon();
+    if (err != VK_SUCCESS)
+      vks::tools::exitFatal("Could not create surface!", "Fatal error");
+    else
+      swapChain.initSurfaceCommon();
   }
 
   void renderLoop() {
@@ -116,8 +116,8 @@ public:
         {
           std::string windowTitle = getWindowTitle();
           xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-            window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-            windowTitle.size(), windowTitle.c_str());
+                              window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+                              windowTitle.size(), windowTitle.c_str());
         }
         lastFPS = frameCounter;
         updateTextOverlay();
@@ -146,13 +146,13 @@ public:
     value_mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
     value_list[0] = screen->black_pixel;
     value_list[1] =
-      XCB_EVENT_MASK_KEY_RELEASE |
-      XCB_EVENT_MASK_KEY_PRESS |
-      XCB_EVENT_MASK_EXPOSURE |
-      XCB_EVENT_MASK_STRUCTURE_NOTIFY |
-      XCB_EVENT_MASK_POINTER_MOTION |
-      XCB_EVENT_MASK_BUTTON_PRESS |
-      XCB_EVENT_MASK_BUTTON_RELEASE;
+        XCB_EVENT_MASK_KEY_RELEASE |
+        XCB_EVENT_MASK_KEY_PRESS |
+        XCB_EVENT_MASK_EXPOSURE |
+        XCB_EVENT_MASK_STRUCTURE_NOTIFY |
+        XCB_EVENT_MASK_POINTER_MOTION |
+        XCB_EVENT_MASK_BUTTON_PRESS |
+        XCB_EVENT_MASK_BUTTON_RELEASE;
 
     if (settings.fullscreen)
     {
@@ -161,25 +161,25 @@ public:
     }
 
     xcb_create_window(connection,
-      XCB_COPY_FROM_PARENT,
-      window, screen->root,
-      0, 0, width, height, 0,
-      XCB_WINDOW_CLASS_INPUT_OUTPUT,
-      screen->root_visual,
-      value_mask, value_list);
+                      XCB_COPY_FROM_PARENT,
+                      window, screen->root,
+                      0, 0, width, height, 0,
+                      XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                      screen->root_visual,
+                      value_mask, value_list);
 
     /* Magic code that will send notification when window is destroyed */
     xcb_intern_atom_reply_t* reply = intern_atom_helper(connection, true, "WM_PROTOCOLS");
     atom_wm_delete_window = intern_atom_helper(connection, false, "WM_DELETE_WINDOW");
 
     xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-      window, (*reply).atom, 4, 32, 1,
-      &(*atom_wm_delete_window).atom);
+                        window, (*reply).atom, 4, 32, 1,
+                        &(*atom_wm_delete_window).atom);
 
     std::string windowTitle = getWindowTitle();
     xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-      window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-      title.size(), windowTitle.c_str());
+                        window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+                        title.size(), windowTitle.c_str());
 
     free(reply);
 
@@ -188,10 +188,10 @@ public:
       xcb_intern_atom_reply_t *atom_wm_state = intern_atom_helper(connection, false, "_NET_WM_STATE");
       xcb_intern_atom_reply_t *atom_wm_fullscreen = intern_atom_helper(connection, false, "_NET_WM_STATE_FULLSCREEN");
       xcb_change_property(connection,
-          XCB_PROP_MODE_REPLACE,
-          window, atom_wm_state->atom,
-          XCB_ATOM_ATOM, 32, 1,
-          &(atom_wm_fullscreen->atom));
+                          XCB_PROP_MODE_REPLACE,
+                          window, atom_wm_state->atom,
+                          XCB_ATOM_ATOM, 32, 1,
+                          &(atom_wm_fullscreen->atom));
       free(atom_wm_fullscreen);
       free(atom_wm_state);
     }
@@ -205,134 +205,134 @@ public:
   {
     switch (event->response_type & 0x7f)
     {
-    case XCB_CLIENT_MESSAGE:
-      if ((*(xcb_client_message_event_t*)event).data.data32[0] ==
-        (*atom_wm_delete_window).atom) {
-        quit = true;
-      }
-      break;
-    case XCB_MOTION_NOTIFY:
-    {
-      xcb_motion_notify_event_t *motion = (xcb_motion_notify_event_t *)event;
-      if (mouseButtons.left)
-      {
-        rotation.x += (mousePos.y - (float)motion->event_y) * 1.25f;
-        rotation.y -= (mousePos.x - (float)motion->event_x) * 1.25f;
-        camera.rotate(glm::vec3((mousePos.y - (float)motion->event_y) * camera.rotationSpeed, -(mousePos.x - (float)motion->event_x) * camera.rotationSpeed, 0.0f));
-        viewUpdated = true;
-      }
-      if (mouseButtons.right)
-      {
-        zoom += (mousePos.y - (float)motion->event_y) * .005f;
-        camera.translate(glm::vec3(-0.0f, 0.0f, (mousePos.y - (float)motion->event_y) * .005f * zoomSpeed));
-        viewUpdated = true;
-      }
-      if (mouseButtons.middle)
-      {
-        cameraPos.x -= (mousePos.x - (float)motion->event_x) * 0.01f;
-        cameraPos.y -= (mousePos.y - (float)motion->event_y) * 0.01f;
-        camera.translate(glm::vec3(-(mousePos.x - (float)(float)motion->event_x) * 0.01f, -(mousePos.y - (float)motion->event_y) * 0.01f, 0.0f));
-        viewUpdated = true;
-        mousePos.x = (float)motion->event_x;
-        mousePos.y = (float)motion->event_y;
-      }
-      mousePos = glm::vec2((float)motion->event_x, (float)motion->event_y);
-    }
-    break;
-    case XCB_BUTTON_PRESS:
-    {
-      xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
-      if (press->detail == XCB_BUTTON_INDEX_1)
-        mouseButtons.left = true;
-      if (press->detail == XCB_BUTTON_INDEX_2)
-        mouseButtons.middle = true;
-      if (press->detail == XCB_BUTTON_INDEX_3)
-        mouseButtons.right = true;
-    }
-    break;
-    case XCB_BUTTON_RELEASE:
-    {
-      xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
-      if (press->detail == XCB_BUTTON_INDEX_1)
-        mouseButtons.left = false;
-      if (press->detail == XCB_BUTTON_INDEX_2)
-        mouseButtons.middle = false;
-      if (press->detail == XCB_BUTTON_INDEX_3)
-        mouseButtons.right = false;
-    }
-    break;
-    case XCB_KEY_PRESS:
-    {
-      const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
-      switch (keyEvent->detail)
-      {
-        case KEY_W:
-          camera.keys.up = true;
-          break;
-        case KEY_S:
-          camera.keys.down = true;
-          break;
-        case KEY_A:
-          camera.keys.left = true;
-          break;
-        case KEY_D:
-          camera.keys.right = true;
-          break;
-        case KEY_P:
-          paused = !paused;
-          break;
-        case KEY_F1:
-          if (enableTextOverlay)
-          {
-            textOverlay->visible = !textOverlay->visible;
-          }
-          break;
-      }
-    }
-    break;
-    case XCB_KEY_RELEASE:
-    {
-      const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
-      switch (keyEvent->detail)
-      {
-        case KEY_W:
-          camera.keys.up = false;
-          break;
-        case KEY_S:
-          camera.keys.down = false;
-          break;
-        case KEY_A:
-          camera.keys.left = false;
-          break;
-        case KEY_D:
-          camera.keys.right = false;
-          break;
-        case KEY_ESCAPE:
+      case XCB_CLIENT_MESSAGE:
+        if ((*(xcb_client_message_event_t*)event).data.data32[0] ==
+            (*atom_wm_delete_window).atom) {
           quit = true;
-          break;
-      }
-      keyPressed(keyEvent->detail);
-    }
-    break;
-    case XCB_DESTROY_NOTIFY:
-      quit = true;
-      break;
-    case XCB_CONFIGURE_NOTIFY:
-    {
-      const xcb_configure_notify_event_t *cfgEvent = (const xcb_configure_notify_event_t *)event;
-      if ((prepared) && ((cfgEvent->width != width) || (cfgEvent->height != height)))
+        }
+        break;
+      case XCB_MOTION_NOTIFY:
       {
+        xcb_motion_notify_event_t *motion = (xcb_motion_notify_event_t *)event;
+        if (mouseButtons.left)
+        {
+          rotation.x += (mousePos.y - (float)motion->event_y) * 1.25f;
+          rotation.y -= (mousePos.x - (float)motion->event_x) * 1.25f;
+          camera.rotate(glm::vec3((mousePos.y - (float)motion->event_y) * camera.rotationSpeed, -(mousePos.x - (float)motion->event_x) * camera.rotationSpeed, 0.0f));
+          viewUpdated = true;
+        }
+        if (mouseButtons.right)
+        {
+          zoom += (mousePos.y - (float)motion->event_y) * .005f;
+          camera.translate(glm::vec3(-0.0f, 0.0f, (mousePos.y - (float)motion->event_y) * .005f * zoomSpeed));
+          viewUpdated = true;
+        }
+        if (mouseButtons.middle)
+        {
+          cameraPos.x -= (mousePos.x - (float)motion->event_x) * 0.01f;
+          cameraPos.y -= (mousePos.y - (float)motion->event_y) * 0.01f;
+          camera.translate(glm::vec3(-(mousePos.x - (float)(float)motion->event_x) * 0.01f, -(mousePos.y - (float)motion->event_y) * 0.01f, 0.0f));
+          viewUpdated = true;
+          mousePos.x = (float)motion->event_x;
+          mousePos.y = (float)motion->event_y;
+        }
+        mousePos = glm::vec2((float)motion->event_x, (float)motion->event_y);
+      }
+        break;
+      case XCB_BUTTON_PRESS:
+      {
+        xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
+        if (press->detail == XCB_BUTTON_INDEX_1)
+          mouseButtons.left = true;
+        if (press->detail == XCB_BUTTON_INDEX_2)
+          mouseButtons.middle = true;
+        if (press->detail == XCB_BUTTON_INDEX_3)
+          mouseButtons.right = true;
+      }
+        break;
+      case XCB_BUTTON_RELEASE:
+      {
+        xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
+        if (press->detail == XCB_BUTTON_INDEX_1)
+          mouseButtons.left = false;
+        if (press->detail == XCB_BUTTON_INDEX_2)
+          mouseButtons.middle = false;
+        if (press->detail == XCB_BUTTON_INDEX_3)
+          mouseButtons.right = false;
+      }
+        break;
+      case XCB_KEY_PRESS:
+      {
+        const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
+        switch (keyEvent->detail)
+        {
+          case KEY_W:
+            camera.keys.up = true;
+            break;
+          case KEY_S:
+            camera.keys.down = true;
+            break;
+          case KEY_A:
+            camera.keys.left = true;
+            break;
+          case KEY_D:
+            camera.keys.right = true;
+            break;
+          case KEY_P:
+            paused = !paused;
+            break;
+          case KEY_F1:
+            if (enableTextOverlay)
+            {
+              textOverlay->visible = !textOverlay->visible;
+            }
+            break;
+        }
+      }
+        break;
+      case XCB_KEY_RELEASE:
+      {
+        const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
+        switch (keyEvent->detail)
+        {
+          case KEY_W:
+            camera.keys.up = false;
+            break;
+          case KEY_S:
+            camera.keys.down = false;
+            break;
+          case KEY_A:
+            camera.keys.left = false;
+            break;
+          case KEY_D:
+            camera.keys.right = false;
+            break;
+          case KEY_ESCAPE:
+            quit = true;
+            break;
+        }
+        keyPressed(keyEvent->detail);
+      }
+        break;
+      case XCB_DESTROY_NOTIFY:
+        quit = true;
+        break;
+      case XCB_CONFIGURE_NOTIFY:
+      {
+        const xcb_configure_notify_event_t *cfgEvent = (const xcb_configure_notify_event_t *)event;
+        if ((prepared) && ((cfgEvent->width != width) || (cfgEvent->height != height)))
+        {
           destWidth = cfgEvent->width;
           destHeight = cfgEvent->height;
           if ((destWidth > 0) && (destHeight > 0))
           {
             windowResize();
           }
+        }
       }
-    }
-    break;
-    default:
-      break;
+        break;
+      default:
+        break;
     }
   }
 

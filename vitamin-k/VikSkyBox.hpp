@@ -11,7 +11,7 @@ class VikSkyBox
 {
 private:
   vks::TextureCubeMap cubeMap;
-	VkDescriptorSet descriptorSet;
+  VkDescriptorSet descriptorSet;
   VkDevice device;
   VkDescriptorImageInfo textureDescriptor;
   vks::Model model;
@@ -21,31 +21,31 @@ public:
   VikSkyBox(VkDevice device) : device(device) {}
 
   ~VikSkyBox() {
-		cubeMap.destroy();
+    cubeMap.destroy();
     model.destroy();
     vkDestroyPipeline(device, pipeline, nullptr);
-	}
+  }
 
-	void initTextureDescriptor() {
-		// Image descriptor for the cube map texture
-		textureDescriptor =
-				vks::initializers::descriptorImageInfo(
-					cubeMap.sampler,
-					cubeMap.view,
-					cubeMap.imageLayout);
-	}
+  void initTextureDescriptor() {
+    // Image descriptor for the cube map texture
+    textureDescriptor =
+        vks::initializers::descriptorImageInfo(
+          cubeMap.sampler,
+          cubeMap.view,
+          cubeMap.imageLayout);
+  }
 
-	VkWriteDescriptorSet getCubeMapWriteDescriptorSet(unsigned binding, VkDescriptorSet ds) {
+  VkWriteDescriptorSet getCubeMapWriteDescriptorSet(unsigned binding, VkDescriptorSet ds) {
 
-		return vks::initializers::writeDescriptorSet(
-					ds,
-					VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-					binding,
-					&textureDescriptor);
-	}
+    return vks::initializers::writeDescriptorSet(
+          ds,
+          VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+          binding,
+          &textureDescriptor);
+  }
 
   void loadAssets(vks::VertexLayout vertexLayout, vks::VulkanDevice *vulkanDevice, VkQueue queue) {
-		// Skybox
+    // Skybox
     model.loadFromFile(VikAssets::getAssetPath() + "models/cube.obj", vertexLayout, 10.0f, vulkanDevice, queue);
     cubeMap.loadFromFile(
           VikAssets::getTexturePath() + "cubemap_yokohama_bc3_unorm.ktx", VK_FORMAT_BC2_UNORM_BLOCK,
@@ -79,16 +79,16 @@ public:
   }
 
   void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout) {
-		VkDeviceSize offsets[1] = { 0 };
+    VkDeviceSize offsets[1] = { 0 };
 
-		vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+    vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
     vkCmdBindVertexBuffers(cmdbuffer, 0, 1, &model.vertices.buffer, offsets);
     vkCmdBindIndexBuffer(cmdbuffer, model.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
 
-		vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
     vkCmdDrawIndexed(cmdbuffer, model.indexCount, 1, 0, 0, 0);
-	}
+  }
 
   void createPipeline(VkGraphicsPipelineCreateInfo& pipelineCreateInfo,
                       VkPipelineCache& pipelineCache) {

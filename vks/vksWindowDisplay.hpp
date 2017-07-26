@@ -14,8 +14,8 @@ public:
   }
 
   void initSwapChain() {
-      createDirect2DisplaySurface(width, height);
-      swapChain.initSurfaceCommon();
+    createDirect2DisplaySurface(width, height);
+    swapChain.initSurfaceCommon();
   }
 
   void renderLoop() {

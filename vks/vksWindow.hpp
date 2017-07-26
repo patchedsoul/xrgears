@@ -4,16 +4,6 @@
 
 class vksWindow {
 public:
-
-
-  vksWindow() {
-
-  }
-
-  ~vksWindow() {
-
-  }
-
-
-
+  vksWindow() {}
+  ~vksWindow() {}
 };
