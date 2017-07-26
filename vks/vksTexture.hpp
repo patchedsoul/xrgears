@@ -21,11 +21,10 @@
 #include "vksDevice.hpp"
 #include "vksBuffer.hpp"
 
-namespace vks
-{
+namespace vks {
 /** @brief Vulkan texture base class */
 class Texture {
-public:
+ public:
   vks::VulkanDevice *device;
   VkImage image;
   VkImageLayout imageLayout;
@@ -40,29 +39,25 @@ public:
   VkSampler sampler;
 
   /** @brief Update image descriptor from current sampler, view and image layout */
-  void updateDescriptor()
-  {
+  void updateDescriptor() {
     descriptor.sampler = sampler;
     descriptor.imageView = view;
     descriptor.imageLayout = imageLayout;
   }
 
   /** @brief Release all Vulkan resources held by this texture */
-  void destroy()
-  {
+  void destroy() {
     vkDestroyImageView(device->logicalDevice, view, nullptr);
     vkDestroyImage(device->logicalDevice, image, nullptr);
     if (sampler)
-    {
       vkDestroySampler(device->logicalDevice, sampler, nullptr);
-    }
     vkFreeMemory(device->logicalDevice, deviceMemory, nullptr);
   }
 };
 
 /** @brief 2D texture */
 class Texture2D : public Texture {
-public:
+ public:
   /**
     * Load a 2D texture including all mip levels
     *
@@ -82,11 +77,9 @@ public:
       VkQueue copyQueue,
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
       VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-      bool forceLinear = false)
-  {
-    if (!vks::tools::fileExists(filename)) {
+      bool forceLinear = false) {
+    if (!vks::tools::fileExists(filename))
       vks::tools::exitFatal("Could not load texture from " + filename, "File not found");
-    }
     gli::texture2d tex2D(gli::load(filename.c_str()));
 
     assert(!tex2D.empty());
@@ -113,8 +106,7 @@ public:
     // Use a separate command buffer for texture loading
     VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
-    if (useStaging)
-    {
+    if (useStaging) {
       // Create a host-visible staging buffer that contains the raw image data
       VkBuffer stagingBuffer;
       VkDeviceMemory stagingMemory;
@@ -147,8 +139,7 @@ public:
       std::vector<VkBufferImageCopy> bufferCopyRegions;
       uint32_t offset = 0;
 
-      for (uint32_t i = 0; i < mipLevels; i++)
-      {
+      for (uint32_t i = 0; i < mipLevels; i++) {
         VkBufferImageCopy bufferCopyRegion = {};
         bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         bufferCopyRegion.imageSubresource.mipLevel = i;
@@ -178,9 +169,7 @@ public:
       imageCreateInfo.usage = imageUsageFlags;
       // Ensure that the TRANSFER_DST bit is set for staging
       if (!(imageCreateInfo.usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT))
-      {
         imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-      }
       VK_CHECK_RESULT(vkCreateImage(device->logicalDevice, &imageCreateInfo, nullptr, &image));
 
       vkGetImageMemoryRequirements(device->logicalDevice, image, &memReqs);
@@ -213,8 +202,7 @@ public:
             image,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             static_cast<uint32_t>(bufferCopyRegions.size()),
-            bufferCopyRegions.data()
-            );
+            bufferCopyRegions.data());
 
       // Change texture image layout to shader read after all mip levels have been copied
       this->imageLayout = imageLayout;
@@ -230,9 +218,7 @@ public:
       // Clean up staging resources
       vkFreeMemory(device->logicalDevice, stagingMemory, nullptr);
       vkDestroyBuffer(device->logicalDevice, stagingBuffer, nullptr);
-    }
-    else
-    {
+    } else {
       // Prefer using optimal tiling, as linear tiling
       // may support only a small set of features
       // depending on implementation (e.g. no mip maps, only one layer, etc.)
@@ -370,8 +356,7 @@ public:
       VkQueue copyQueue,
       VkFilter filter = VK_FILTER_LINEAR,
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
-      VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-  {
+      VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
     assert(buffer);
 
     this->device = device;
@@ -437,9 +422,7 @@ public:
     imageCreateInfo.usage = imageUsageFlags;
     // Ensure that the TRANSFER_DST bit is set for staging
     if (!(imageCreateInfo.usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT))
-    {
       imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    }
     VK_CHECK_RESULT(vkCreateImage(device->logicalDevice, &imageCreateInfo, nullptr, &image));
 
     vkGetImageMemoryRequirements(device->logicalDevice, image, &memReqs);
@@ -472,8 +455,7 @@ public:
           image,
           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
           1,
-          &bufferCopyRegion
-          );
+          &bufferCopyRegion);
 
     // Change texture image layout to shader read after all mip levels have been copied
     this->imageLayout = imageLayout;
@@ -520,12 +502,11 @@ public:
     // Update descriptor image info member that can be used for setting up descriptor sets
     updateDescriptor();
   }
-
 };
 
 /** @brief 2D array texture */
 class Texture2DArray : public Texture {
-public:
+ public:
   /**
     * Load a 2D texture array including all mip levels
     *
@@ -543,12 +524,10 @@ public:
       vks::VulkanDevice *device,
       VkQueue copyQueue,
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
-      VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-  {
-
-    if (!vks::tools::fileExists(filename)) {
+      VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+    if (!vks::tools::fileExists(filename))
       vks::tools::exitFatal("Could not load texture from " + filename, "File not found");
-    }
+
     gli::texture2d_array tex2DArray(gli::load(filename));
 
     assert(!tex2DArray.empty());
@@ -594,10 +573,8 @@ public:
     std::vector<VkBufferImageCopy> bufferCopyRegions;
     size_t offset = 0;
 
-    for (uint32_t layer = 0; layer < layerCount; layer++)
-    {
-      for (uint32_t level = 0; level < mipLevels; level++)
-      {
+    for (uint32_t layer = 0; layer < layerCount; layer++) {
+      for (uint32_t level = 0; level < mipLevels; level++) {
         VkBufferImageCopy bufferCopyRegion = {};
         bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         bufferCopyRegion.imageSubresource.mipLevel = level;
@@ -627,9 +604,7 @@ public:
     imageCreateInfo.usage = imageUsageFlags;
     // Ensure that the TRANSFER_DST bit is set for staging
     if (!(imageCreateInfo.usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT))
-    {
       imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    }
     imageCreateInfo.arrayLayers = layerCount;
     imageCreateInfo.mipLevels = mipLevels;
 
@@ -719,7 +694,7 @@ public:
 
 /** @brief Cube map texture */
 class TextureCubeMap : public Texture {
-public:
+ public:
   /**
     * Load a cubemap texture including all mip levels from a single file
     *
@@ -737,12 +712,9 @@ public:
       vks::VulkanDevice *device,
       VkQueue copyQueue,
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
-      VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-  {
-
-    if (!vks::tools::fileExists(filename)) {
+      VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+    if (!vks::tools::fileExists(filename))
       vks::tools::exitFatal("Could not load texture from " + filename, "File not found");
-    }
     gli::texture_cube texCube(gli::load(filename));
 
     assert(!texCube.empty());
@@ -787,10 +759,8 @@ public:
     std::vector<VkBufferImageCopy> bufferCopyRegions;
     size_t offset = 0;
 
-    for (uint32_t face = 0; face < 6; face++)
-    {
-      for (uint32_t level = 0; level < mipLevels; level++)
-      {
+    for (uint32_t face = 0; face < 6; face++) {
+      for (uint32_t level = 0; level < mipLevels; level++) {
         VkBufferImageCopy bufferCopyRegion = {};
         bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         bufferCopyRegion.imageSubresource.mipLevel = level;
@@ -821,9 +791,7 @@ public:
     imageCreateInfo.usage = imageUsageFlags;
     // Ensure that the TRANSFER_DST bit is set for staging
     if (!(imageCreateInfo.usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT))
-    {
       imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    }
     // Cube faces count as array layers in Vulkan
     imageCreateInfo.arrayLayers = 6;
     // This flag is required for cube map images
@@ -913,5 +881,4 @@ public:
     updateDescriptor();
   }
 };
-
-} // namespace vks
+}  // namespace vks

@@ -31,7 +31,7 @@
 // STB font files can be found at http://nothings.org/stb/font/
 #define STB_FONT_NAME stb_font_consolas_24_latin1
 #define STB_FONT_WIDTH STB_FONT_consolas_24_latin1_BITMAP_WIDTH
-#define STB_FONT_HEIGHT STB_FONT_consolas_24_latin1_BITMAP_HEIGHT 
+#define STB_FONT_HEIGHT STB_FONT_consolas_24_latin1_BITMAP_HEIGHT
 #define STB_FIRST_CHAR STB_FONT_consolas_24_latin1_FIRST_CHAR
 #define STB_NUM_CHARS STB_FONT_consolas_24_latin1_NUM_CHARS
 
@@ -42,9 +42,8 @@
 * @brief Mostly self-contained text overlay class
 * @note Will only work with compatible render passes
 */ 
-class VulkanTextOverlay
-{
-private:
+class VulkanTextOverlay {
+ private:
   vks::VulkanDevice *vulkanDevice;
 
   VkQueue queue;
@@ -77,8 +76,7 @@ private:
   stb_fontchar stbFontData[STB_NUM_CHARS];
   uint32_t numLetters;
 
-public:
-
+ public:
   enum TextAlign { alignLeft, alignCenter, alignRight };
 
   bool visible = true;
@@ -101,8 +99,7 @@ public:
       VkFormat depthformat,
       uint32_t *framebufferwidth,
       uint32_t *framebufferheight,
-      std::vector<VkPipelineShaderStageCreateInfo> shaderstages)
-  {
+      std::vector<VkPipelineShaderStageCreateInfo> shaderstages) {
     this->vulkanDevice = vulkanDevice;
     this->queue = queue;
     this->colorFormat = colorformat;
@@ -110,9 +107,7 @@ public:
 
     this->frameBuffers.resize(framebuffers->size());
     for (uint32_t i = 0; i < framebuffers->size(); i++)
-    {
       this->frameBuffers[i] = &framebuffers->at(i);
-    }
 
     this->shaderStages = shaderstages;
 
@@ -128,8 +123,7 @@ public:
   /**
   * Default destructor, frees up all Vulkan resources acquired by the text overlay
   */
-  ~VulkanTextOverlay()
-  {
+  ~VulkanTextOverlay() {
     // Free up all Vulkan resources requested by the text overlay
     vertexBuffer.destroy();
     vkDestroySampler(vulkanDevice->logicalDevice, sampler, nullptr);
@@ -151,8 +145,7 @@ public:
   * Prepare all vulkan resources required to render the font
   * The text overlay uses separate resources for descriptors (pool, sets, layouts), pipelines and command buffers
   */
-  void prepareResources()
-  {
+  void prepareResources() {
     static unsigned char font24pixels[STB_FONT_HEIGHT][STB_FONT_WIDTH];
     STB_FONT_NAME(stbFontData, font24pixels, STB_FONT_HEIGHT);
 
@@ -217,7 +210,8 @@ public:
                       allocInfo.allocationSize));
 
     stagingBuffer.map();
-    memcpy(stagingBuffer.mapped, &font24pixels[0][0], STB_FONT_WIDTH * STB_FONT_HEIGHT);	// Only one channel, so data size = W * H (*R8)
+    // Only one channel, so data size = W * H (*R8)
+    memcpy(stagingBuffer.mapped, &font24pixels[0][0], STB_FONT_WIDTH * STB_FONT_HEIGHT);
     stagingBuffer.unmap();
 
     // Copy to image
@@ -250,8 +244,7 @@ public:
           image,
           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
           1,
-          &bufferCopyRegion
-          );
+          &bufferCopyRegion);
 
     // Prepare for shader read
     vks::tools::setImageLayout(
@@ -278,7 +271,7 @@ public:
     imageViewInfo.image = image;
     imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
     imageViewInfo.format = imageInfo.format;
-    imageViewInfo.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B,	VK_COMPONENT_SWIZZLE_A };
+    imageViewInfo.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
     imageViewInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
     VK_CHECK_RESULT(vkCreateImageView(vulkanDevice->logicalDevice, &imageViewInfo, nullptr, &view));
 
@@ -361,8 +354,7 @@ public:
   /**
   * Prepare a separate pipeline for the font rendering decoupled from the main application
   */
-  void preparePipeline()
-  {
+  void preparePipeline() {
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
         vks::initializers::pipelineInputAssemblyStateCreateInfo(
           VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
@@ -457,8 +449,7 @@ public:
   /**
   * Prepare a separate render pass for rendering the text as an overlay
   */
-  void prepareRenderPass()
-  {
+  void prepareRenderPass() {
     VkAttachmentDescription attachments[2] = {};
 
     // Color attachment
@@ -538,8 +529,7 @@ public:
   /**
   * Maps the buffer, resets letter count
   */
-  void beginTextUpdate()
-  {
+  void beginTextUpdate() {
     mappedLocal = (glm::vec4*)vertexBuffer.mapped;
     numLetters = 0;
   }
@@ -552,8 +542,7 @@ public:
   * @param y y position of the text to add in window coordinate space
   * @param align Alignment for the new text (left, right, center)
   */
-  void addText(std::string text, float x, float y, TextAlign align)
-  {
+  void addText(std::string text, float x, float y, TextAlign align) {
     assert(vertexBuffer.mapped != nullptr);
 
     if (align == alignLeft) {
@@ -572,14 +561,12 @@ public:
 
     // Calculate text width
     float textWidth = 0;
-    for (auto letter : text)
-    {
+    for (auto letter : text) {
       stb_fontchar *charData = &stbFontData[(uint32_t)letter - STB_FIRST_CHAR];
       textWidth += charData->advance * charW;
     }
 
-    switch (align)
-    {
+    switch (align) {
       case alignRight:
         x -= textWidth;
         break;
@@ -591,8 +578,7 @@ public:
     }
 
     // Generate a uv mapped quad per char in the new text
-    for (auto letter : text)
-    {
+    for (auto letter : text) {
       stb_fontchar *charData = &stbFontData[(uint32_t)letter - STB_FIRST_CHAR];
 
       mappedLocal->x = (x + (float)charData->x0 * charW);
@@ -628,16 +614,14 @@ public:
   /**
   * Unmap buffer and update command buffers
   */
-  void endTextUpdate()
-  {
+  void endTextUpdate() {
     updateCommandBuffers();
   }
 
   /**
   * Update the command buffers to reflect text changes
   */
-  void updateCommandBuffers()
-  {
+  void updateCommandBuffers() {
     VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
 
     VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
@@ -648,16 +632,13 @@ public:
     renderPassBeginInfo.clearValueCount = 0;
     renderPassBeginInfo.pClearValues = nullptr;
 
-    for (size_t i = 0; i < cmdBuffers.size(); ++i)
-    {
+    for (size_t i = 0; i < cmdBuffers.size(); ++i) {
       renderPassBeginInfo.framebuffer = *frameBuffers[i];
 
       VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffers[i], &cmdBufInfo));
 
       if (vks::debugmarker::active)
-      {
         vks::debugmarker::beginRegion(cmdBuffers[i], "Text overlay", glm::vec4(1.0f, 0.94f, 0.3f, 1.0f));
-      }
 
       vkCmdBeginRenderPass(cmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -674,16 +655,12 @@ public:
       vkCmdBindVertexBuffers(cmdBuffers[i], 0, 1, &vertexBuffer.buffer, &offsets);
       vkCmdBindVertexBuffers(cmdBuffers[i], 1, 1, &vertexBuffer.buffer, &offsets);
       for (uint32_t j = 0; j < numLetters; j++)
-      {
         vkCmdDraw(cmdBuffers[i], 4, 1, j * 4, 0);
-      }
 
       vkCmdEndRenderPass(cmdBuffers[i]);
 
       if (vks::debugmarker::active)
-      {
         vks::debugmarker::endRegion(cmdBuffers[i]);
-      }
 
       VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffers[i]));
     }
@@ -692,12 +669,9 @@ public:
   /**
   * Submit the text command buffers to a queue
   */
-  void submit(VkQueue queue, uint32_t bufferindex, VkSubmitInfo submitInfo)
-  {
+  void submit(VkQueue queue, uint32_t bufferindex, VkSubmitInfo submitInfo) {
     if (!visible)
-    {
       return;
-    }
 
     submitInfo.pCommandBuffers = &cmdBuffers[bufferindex];
     submitInfo.commandBufferCount = 1;
@@ -712,8 +686,7 @@ public:
   * Reallocate command buffers for the text overlay
   * @note Frees the existing command buffers
   */
-  void reallocateCommandBuffers()
-  {
+  void reallocateCommandBuffers() {
     vkFreeCommandBuffers(vulkanDevice->logicalDevice, commandPool, static_cast<uint32_t>(cmdBuffers.size()), cmdBuffers.data());
 
     VkCommandBufferAllocateInfo cmdBufAllocateInfo =
@@ -724,5 +697,4 @@ public:
 
     VK_CHECK_RESULT(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &cmdBufAllocateInfo, cmdBuffers.data()));
   }
-
 };

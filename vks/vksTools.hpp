@@ -29,47 +29,37 @@
 // Default fence timeout in nanoseconds
 #define DEFAULT_FENCE_TIMEOUT 100000000000
 
-
 // Macro to get a procedure address based on a vulkan instance
-#define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                        \
-{                                                                       \
-  fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetInstanceProcAddr(inst, "vk"#entrypoint)); \
-  if (fp##entrypoint == NULL)                                         \
-{																    \
-  printf("GET_INSTANCE_PROC_ADDR vk"#entrypoint" is null!\n");\
-  exit(1);                                                        \
-  }                                                                   \
-  }
+#define GET_INSTANCE_PROC_ADDR(inst, entrypoint) {\
+  fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetInstanceProcAddr(inst, "vk"#entrypoint));\
+  if (fp##entrypoint == NULL) {\
+    printf("GET_INSTANCE_PROC_ADDR vk"#entrypoint" is null!\n");\
+    exit(1);\
+  }\
+}
 
 // Macro to get a procedure address based on a vulkan device
-#define GET_DEVICE_PROC_ADDR(dev, entrypoint)                           \
-{                                                                       \
-  fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetDeviceProcAddr(dev, "vk"#entrypoint));   \
-  if (fp##entrypoint == NULL)                                         \
-{																    \
-  printf("GET_DEVICE_PROC_ADDR vk"#entrypoint" is null!\n");\
-  exit(1);                                                        \
-  }                                                                   \
-  }
+#define GET_DEVICE_PROC_ADDR(dev, entrypoint) {\
+  fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetDeviceProcAddr(dev, "vk"#entrypoint));\
+  if (fp##entrypoint == NULL) {\
+    printf("GET_DEVICE_PROC_ADDR vk"#entrypoint" is null!\n");\
+    exit(1);\
+  }\
+}
 
 // Macro to check and display Vulkan return results
-
-#define VK_CHECK_RESULT(f)																				\
-{																										\
-  VkResult res = (f);																					\
-  if (res != VK_SUCCESS)																				\
-{																									\
-  std::cout << "Fatal : VkResult is \"" << vks::tools::errorString(res) << "\" in " << __FILE__ << " at line " << __LINE__ << std::endl; \
-  assert(res == VK_SUCCESS);																		\
-  }																									\
-  }
+#define VK_CHECK_RESULT(f) {\
+  VkResult res = (f);\
+  if (res != VK_SUCCESS) {\
+    std::cout << "Fatal : VkResult is \"" << vks::tools::errorString(res) << "\" in " << __FILE__ << " at line " << __LINE__ << std::endl;\
+    assert(res == VK_SUCCESS);\
+  }\
+}
 
 #define ASSET_PATH "./data/"
 
-namespace vks
-{
-namespace tools
-{
+namespace vks {
+namespace tools {
 /** @brief Returns an error code as a string */
 std::string errorString(VkResult errorCode);
 
@@ -123,5 +113,5 @@ VkShaderModule loadShaderGLSL(const char *fileName, VkDevice device, VkShaderSta
 
 /** @brief Checks if a file exists */
 bool fileExists(const std::string &filename);
-} // namespace tools
-} // namespace vks
+}  // namespace tools
+}  // namespace vks

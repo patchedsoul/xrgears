@@ -29,8 +29,7 @@
 #include "vksDevice.hpp"
 #include "vksBuffer.hpp"
 
-namespace vks
-{
+namespace vks {
 /** @brief Vertex layout components */
 typedef enum Component {
   VERTEX_COMPONENT_POSITION = 0x0,
@@ -45,22 +44,18 @@ typedef enum Component {
 
 /** @brief Stores vertex layout components for model loading and Vulkan vertex input and atribute bindings  */
 struct VertexLayout {
-public:
+ public:
   /** @brief Components used to generate vertices from */
   std::vector<Component> components;
 
-  explicit VertexLayout(std::vector<Component> components)
-  {
+  explicit VertexLayout(std::vector<Component> components) {
     this->components = std::move(components);
   }
 
-  uint32_t stride()
-  {
+  uint32_t stride() {
     uint32_t res = 0;
-    for (auto& component : components)
-    {
-      switch (component)
-      {
+    for (auto& component : components) {
+      switch (component) {
         case VERTEX_COMPONENT_UV:
           res += 2 * sizeof(float);
           break;
@@ -87,20 +82,17 @@ struct ModelCreateInfo {
 
   ModelCreateInfo() {}
 
-  ModelCreateInfo(glm::vec3 scale, glm::vec2 uvscale, glm::vec3 center)
-  {
+  ModelCreateInfo(glm::vec3 scale, glm::vec2 uvscale, glm::vec3 center) {
     this->center = center;
     this->scale = scale;
     this->uvscale = uvscale;
   }
 
-  ModelCreateInfo(float scale, float uvscale, float center)
-  {
+  ModelCreateInfo(float scale, float uvscale, float center) {
     this->center = glm::vec3(center);
     this->scale = glm::vec3(scale);
     this->uvscale = glm::vec2(uvscale);
   }
-
 };
 
 struct Model {
@@ -121,21 +113,18 @@ struct Model {
 
   static const int defaultFlags = aiProcess_FlipWindingOrder | aiProcess_Triangulate | aiProcess_PreTransformVertices | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals;
 
-  struct Dimension
-  {
+  struct Dimension {
     glm::vec3 min = glm::vec3(FLT_MAX);
     glm::vec3 max = glm::vec3(-FLT_MAX);
     glm::vec3 size;
   } dim;
 
   /** @brief Release all Vulkan resources of this model */
-  void destroy()
-  {
+  void destroy() {
     assert(device);
     vkDestroyBuffer(device, vertices.buffer, nullptr);
     vkFreeMemory(device, vertices.memory, nullptr);
-    if (indices.buffer != VK_NULL_HANDLE)
-    {
+    if (indices.buffer != VK_NULL_HANDLE) {
       vkDestroyBuffer(device, indices.buffer, nullptr);
       vkFreeMemory(device, indices.memory, nullptr);
     }
@@ -151,8 +140,7 @@ struct Model {
     * @param copyQueue Queue used for the memory staging copy commands (must support transfer)
     * @param (Optional) flags ASSIMP model loading flags
     */
-  bool loadFromFile(const std::string& filename, vks::VertexLayout layout, vks::ModelCreateInfo *createInfo, vks::VulkanDevice *device, VkQueue copyQueue, const int flags = defaultFlags)
-  {
+  bool loadFromFile(const std::string& filename, vks::VertexLayout layout, vks::ModelCreateInfo *createInfo, vks::VulkanDevice *device, VkQueue copyQueue, const int flags = defaultFlags) {
     this->device = device->logicalDevice;
 
     Assimp::Importer Importer;
@@ -161,16 +149,14 @@ struct Model {
     // Load file
     pScene = Importer.ReadFile(filename.c_str(), flags);
 
-    if (pScene)
-    {
+    if (pScene) {
       parts.clear();
       parts.resize(pScene->mNumMeshes);
 
       glm::vec3 scale(1.0f);
       glm::vec2 uvscale(1.0f);
       glm::vec3 center(0.0f);
-      if (createInfo)
-      {
+      if (createInfo) {
         scale = createInfo->scale;
         uvscale = createInfo->uvscale;
         center = createInfo->center;
@@ -183,8 +169,7 @@ struct Model {
       indexCount = 0;
 
       // Load meshes
-      for (unsigned int i = 0; i < pScene->mNumMeshes; i++)
-      {
+      for (unsigned int i = 0; i < pScene->mNumMeshes; i++) {
         const aiMesh* paiMesh = pScene->mMeshes[i];
 
         parts[i] = {};
@@ -198,16 +183,14 @@ struct Model {
 
         const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
 
-        for (unsigned int j = 0; j < paiMesh->mNumVertices; j++)
-        {
+        for (unsigned int j = 0; j < paiMesh->mNumVertices; j++) {
           const aiVector3D* pPos = &(paiMesh->mVertices[j]);
           const aiVector3D* pNormal = &(paiMesh->mNormals[j]);
           const aiVector3D* pTexCoord = (paiMesh->HasTextureCoords(0)) ? &(paiMesh->mTextureCoords[0][j]) : &Zero3D;
           const aiVector3D* pTangent = (paiMesh->HasTangentsAndBitangents()) ? &(paiMesh->mTangents[j]) : &Zero3D;
           const aiVector3D* pBiTangent = (paiMesh->HasTangentsAndBitangents()) ? &(paiMesh->mBitangents[j]) : &Zero3D;
 
-          for (auto& component : layout.components)
-          {
+          for (auto& component : layout.components) {
             switch (component) {
               case VERTEX_COMPONENT_POSITION:
                 vertexBuffer.push_back(pPos->x * scale.x + center.x);
@@ -265,8 +248,7 @@ struct Model {
         parts[i].vertexCount = paiMesh->mNumVertices;
 
         uint32_t indexBase = static_cast<uint32_t>(indexBuffer.size());
-        for (unsigned int j = 0; j < paiMesh->mNumFaces; j++)
-        {
+        for (unsigned int j = 0; j < paiMesh->mNumFaces; j++) {
           const aiFace& Face = paiMesh->mFaces[j];
           if (Face.mNumIndices != 3)
             continue;
@@ -337,13 +319,11 @@ struct Model {
       vkFreeMemory(device->logicalDevice, indexStaging.memory, nullptr);
 
       return true;
-    }
-    else
-    {
+    } else {
       printf("Error parsing '%s': '%s'\n", filename.c_str(), Importer.GetErrorString());
       return false;
     }
-  };
+  }
 
   /**
     * Loads a 3D model from a file into Vulkan buffers
@@ -355,10 +335,9 @@ struct Model {
     * @param copyQueue Queue used for the memory staging copy commands (must support transfer)
     * @param (Optional) flags ASSIMP model loading flags
     */
-  bool loadFromFile(const std::string& filename, vks::VertexLayout layout, float scale, vks::VulkanDevice *device, VkQueue copyQueue, const int flags = defaultFlags)
-  {
+  bool loadFromFile(const std::string& filename, vks::VertexLayout layout, float scale, vks::VulkanDevice *device, VkQueue copyQueue, const int flags = defaultFlags) {
     vks::ModelCreateInfo modelCreateInfo(scale, 1.0f, 0.0f);
     return loadFromFile(filename, layout, &modelCreateInfo, device, copyQueue, flags);
   }
 };
-} // namespace vks
+}  // namespace vks

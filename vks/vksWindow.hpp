@@ -14,7 +14,7 @@
 #include <string>
 
 class vksWindow {
-public:
+ public:
   vksWindow() {}
   ~vksWindow() {}
 };

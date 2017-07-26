@@ -16,7 +16,7 @@
 #include "vksApplication.hpp"
 
 class ApplicationDisplay  : public Application {
-public:
+ public:
   explicit ApplicationDisplay(bool enableValidation) : Application(enableValidation) {}
   ~ApplicationDisplay() {}
 
@@ -79,7 +79,7 @@ public:
     VkDisplayModePropertiesKHR* pModeProperties;
     bool foundMode = false;
 
-    for(uint32_t i = 0; i < displayPropertyCount;++i) {
+    for (uint32_t i = 0; i < displayPropertyCount; ++i) {
       display = pDisplayProperties[i].display;
       uint32_t modeCount;
       vkGetDisplayModePropertiesKHR(physicalDevice, display, &modeCount, NULL);
@@ -109,7 +109,7 @@ public:
     uint32_t bestPlaneIndex = UINT32_MAX;
     VkDisplayKHR* pDisplays = NULL;
     for (uint32_t i = 0; i < planePropertyCount; i++) {
-      uint32_t planeIndex=i;
+      uint32_t planeIndex = i;
       uint32_t displayCount;
       vkGetDisplayPlaneSupportedDisplaysKHR(physicalDevice, planeIndex, &displayCount, NULL);
       if (pDisplays)
