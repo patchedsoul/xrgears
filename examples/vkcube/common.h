@@ -7,15 +7,10 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <drm_fourcc.h>
-#include <png.h>
 
 #include <xcb/xcb.h>
 
-#include <wayland-client.h>
-#include "xdg-shell-unstable-v6-client-protocol.h"
-
 #define VK_USE_PLATFORM_XCB_KHR
-#define VK_USE_PLATFORM_WAYLAND_KHR
 #define VK_PROTOTYPES
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_intel.h>
