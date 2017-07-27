@@ -411,7 +411,11 @@ restore_vt(void)
    ioctl(STDIN_FILENO, KDSETMODE, KD_TEXT);
 }
 
-
+static void
+handle_signal(int sig)
+{
+   restore_vt();
+}
 
 static int
 init_vt(struct vkcube *vc)
@@ -481,8 +485,6 @@ init_kms(struct vkcube *vc)
       connector and the crtc driving it in the mode it's currently running. */
    resources = drmModeGetResources(vc->fd);
    fail_if(!resources, "drmModeGetResources failed: %s\n", strerror(errno));
-   
-   printf("We have %d connectors.\n", resources->count_connectors);
 
    for (i = 0; i < resources->count_connectors; i++) {
       connector = drmModeGetConnector(vc->fd, resources->connectors[i]);
@@ -614,11 +616,7 @@ mainloop_vt(struct vkcube *vc)
 static VkFormat
 choose_surface_format(struct vkcube *vc)
 {
-
-    printf("choose_surface_format\n");
-
    uint32_t num_formats = 0;
-   
    vkGetPhysicalDeviceSurfaceFormatsKHR(vc->physical_device, vc->surface,
                                         &num_formats, NULL);
    assert(num_formats > 0);
@@ -655,9 +653,6 @@ static void
 create_swapchain(struct vkcube *vc)
 {
    VkSurfaceCapabilitiesKHR surface_caps;
-   
-   printf("create_swapchain\n");
-   
    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vc->physical_device, vc->surface,
                                              &surface_caps);
    assert(surface_caps.supportedCompositeAlpha &
@@ -796,8 +791,6 @@ init_xcb(struct vkcube *vc)
                                                      iter.data->root_visual)) {
       fail("Vulkan not supported on given X window");
    }
-   
-   printf("Creating XCB surface.\n");
 
    vkCreateXcbSurfaceKHR(vc->instance,
       &(VkXcbSurfaceCreateInfoKHR) {
@@ -1112,10 +1105,6 @@ init_wayland(struct vkcube *vc)
                                          vc->wl.display)) {
       fail("Vulkan not supported on given Wayland surface");
    }
-
-
-   printf("Creating wayland surface.\n");
-
 
    create_wayland_surface(vc->instance,
                           &(VkWaylandSurfaceCreateInfoKHR) {

@@ -1,13 +1,13 @@
 
 cmake_minimum_required(VERSION 3.8)
-project(xrgears CXX)
+project(xrgears)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
 
 # use XCB
 
 function(add_cxxflag FLAG)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}" PARENT_SCOPE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}" PARENT_SCOPE)
 endfunction(add_cxxflag)
 
 #add_cxxflag("-Wconversion")
@@ -85,32 +85,55 @@ foreach(SHADER ${SHADER_GLOB})
     execute_process(
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/data/shaders
 	COMMAND glslc -o ${SHADER}.spv ${SHADER}
-    )
+	)
 endforeach(SHADER)
 
 set(LINT_SOURCES ${VITAMINK_SRC} ${VKS_SRC})
 
 # Function for building single example
 function(buildExample EXAMPLE_NAME)
-	file(GLOB EXAMPLE_SRC examples/${EXAMPLE_NAME}/*.cpp)
-        add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
+
+    file(GLOB EXAMPLE_SRC examples/${EXAMPLE_NAME}/*.cpp)
+
+    if (EXAMPLE_SRC STREQUAL "")
+
+	file(GLOB EXAMPLE_SRC examples/${EXAMPLE_NAME}/*.c)
+
+	message("Found c sources: ${EXAMPLE_SRC}")
+	add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
+
+
+	#set_target_properties(${EXAMPLE_NAME} PROPERTIES LINKER_LANGUAGE C)
+	target_link_libraries(${EXAMPLE_NAME} vulkan m wayland-client png drm gbm xcb)
+
+    else()
+	message("Found cpp sources: ${EXAMPLE_SRC}")
+	add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
 
 	set(LINT_SOURCES ${LINT_SOURCES} ${EXAMPLE_SRC})
 
-        target_link_libraries(${EXAMPLE_NAME}
-          ${Vulkan_LIBRARY} ${ASSIMP_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES}
-	  ${CMAKE_THREAD_LIBS_INIT} ${XCB_LIBRARIES} dl glfw openhmd
-	  vks)
+
+	target_link_libraries(${EXAMPLE_NAME}
+	    ${Vulkan_LIBRARY} ${ASSIMP_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES}
+	    ${CMAKE_THREAD_LIBS_INIT} ${XCB_LIBRARIES} dl glfw openhmd
+	    vks)
+
+    endif()
+
+
+
+
+
 endfunction(buildExample)
 
 # build examples
 FILE(GLOB EXAMPLE_DIRS RELATIVE
-  ${CMAKE_SOURCE_DIR}/examples
-  ${CMAKE_SOURCE_DIR}/examples/*)
+    ${CMAKE_SOURCE_DIR}/examples
+    ${CMAKE_SOURCE_DIR}/examples/*)
 
 # Build all examples
 foreach(EXAMPLE ${EXAMPLE_DIRS})
-	buildExample(${EXAMPLE})
+    buildExample(${EXAMPLE})
 endforeach(EXAMPLE)
 
 #add_custom_target(shaders
@@ -123,4 +146,4 @@ endforeach(EXAMPLE)
 set(IGNORE "-build/header_guard,-build/c++11,-readability/casting")
 add_custom_target(style
     COMMAND python2 ${CMAKE_SOURCE_DIR}/scripts/cpplint.py --headers=hpp --filter=${IGNORE} ${LINT_SOURCES}
-)
+    )
