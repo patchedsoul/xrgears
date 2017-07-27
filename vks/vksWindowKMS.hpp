@@ -92,14 +92,69 @@ public:
   ~ApplicationKMS() {}
 
   const char* requiredExtensionName() {
-    return VK_KHR_DISPLAY_EXTENSION_NAME;
+    return VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
   }
 
   void initSwapChain() {
     //createDirect2DisplaySurface(width, height);
-    swapChain.initSurfaceCommon();
+    //swapChain.initSurfaceCommon();
   }
 
+  void renderLoop() {
+    int len, ret;
+    char buf[16];
+    struct pollfd pfd[2];
+    struct vkcube_buffer *b;
+
+    pfd[0].fd = STDIN_FILENO;
+    pfd[0].events = POLLIN;
+    pfd[1].fd = fd;
+    pfd[1].events = POLLIN;
+
+    drmEventContext evctx = {
+      .version = 2,
+      .vblank_handler = NULL,
+      .page_flip_handler = page_flip_handler,
+      .page_flip_handler2 = NULL
+    };
+
+    ret = drmModeSetCrtc(fd, crtc->crtc_id, buffers[0].fb,
+        0, 0, &connector->connector_id, 1, &crtc->mode);
+    fail_if(ret < 0, "modeset failed: %m\n");
+
+
+    ret = drmModePageFlip(fd, crtc->crtc_id, buffers[0].fb,
+        DRM_MODE_PAGE_FLIP_EVENT, NULL);
+    fail_if(ret < 0, "pageflip failed: %m\n");
+
+    while (1) {
+      ret = poll(pfd, 2, -1);
+      fail_if(ret == -1, "poll failed\n");
+      if (pfd[0].revents & POLLIN) {
+        len = read(STDIN_FILENO, buf, sizeof(buf));
+        switch (buf[0]) {
+          case 'q':
+            return;
+          case '\e':
+            if (len == 1)
+              return;
+        }
+      }
+      if (pfd[1].revents & POLLIN) {
+        drmHandleEvent(fd, &evctx);
+        b = &buffers[current & 1];
+
+        //model.render(vc, b);
+        render();
+
+        ret = drmModePageFlip(fd, crtc->crtc_id, b->fb,
+                              DRM_MODE_PAGE_FLIP_EVENT, NULL);
+        fail_if(ret < 0, "pageflip failed: %m\n");
+        current++;
+      }
+    }
+  }
+/*
   void renderLoop() {
     while (!quit) {
       auto tStart = std::chrono::high_resolution_clock::now();
@@ -130,7 +185,7 @@ public:
       }
     }
   }
-
+*/
   static void restore_vt(void) {
     struct vt_mode mode = { .mode = VT_AUTO };
     ioctl(STDIN_FILENO, VT_SETMODE, &mode);
@@ -233,60 +288,6 @@ public:
     if (condition) {
       printf(msg);
       exit(0);
-    }
-  }
-
-  void mainloop_vt() {
-    int len, ret;
-    char buf[16];
-    struct pollfd pfd[2];
-    struct vkcube_buffer *b;
-
-    pfd[0].fd = STDIN_FILENO;
-    pfd[0].events = POLLIN;
-    pfd[1].fd = fd;
-    pfd[1].events = POLLIN;
-
-    drmEventContext evctx = {
-      .version = 2,
-      .vblank_handler = NULL,
-      .page_flip_handler = page_flip_handler,
-      .page_flip_handler2 = NULL
-    };
-
-    ret = drmModeSetCrtc(fd, crtc->crtc_id, buffers[0].fb,
-        0, 0, &connector->connector_id, 1, &crtc->mode);
-    fail_if(ret < 0, "modeset failed: %m\n");
-
-
-    ret = drmModePageFlip(fd, crtc->crtc_id, buffers[0].fb,
-        DRM_MODE_PAGE_FLIP_EVENT, NULL);
-    fail_if(ret < 0, "pageflip failed: %m\n");
-
-    while (1) {
-      ret = poll(pfd, 2, -1);
-      fail_if(ret == -1, "poll failed\n");
-      if (pfd[0].revents & POLLIN) {
-        len = read(STDIN_FILENO, buf, sizeof(buf));
-        switch (buf[0]) {
-          case 'q':
-            return;
-          case '\e':
-            if (len == 1)
-              return;
-        }
-      }
-      if (pfd[1].revents & POLLIN) {
-        drmHandleEvent(fd, &evctx);
-        b = &buffers[current & 1];
-
-        //model.render(vc, b);
-
-        ret = drmModePageFlip(fd, crtc->crtc_id, b->fb,
-                              DRM_MODE_PAGE_FLIP_EVENT, NULL);
-        fail_if(ret < 0, "pageflip failed: %m\n");
-        current++;
-      }
     }
   }
 
