@@ -364,8 +364,8 @@ public:
       close(fd);
 
       b->stride = gbm_bo_get_stride(b->gbm_bo);
-      uint32_t bo_handles[4] = { gbm_bo_get_handle(b->gbm_bo).s32, };
-      uint32_t pitches[4] = { stride, };
+      uint32_t bo_handles[4] = { (uint32_t) gbm_bo_get_handle(b->gbm_bo).s32, };
+      uint32_t pitches[4] = { (uint32_t) stride, };
       uint32_t offsets[4] = { 0, };
       ret = drmModeAddFB2(fd, width, height,
                           DRM_FORMAT_XRGB8888, bo_handles,
