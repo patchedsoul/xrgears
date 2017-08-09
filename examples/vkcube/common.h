@@ -6,13 +6,16 @@
 #include <stdbool.h>
 #include <string.h>
 
+
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <drm_fourcc.h>
 
-#include <xcb/xcb.h>
 
+#ifndef VK_USE_PLATFORM_XCB_KHR
 #define VK_USE_PLATFORM_XCB_KHR
+#endif
+
 #define VK_PROTOTYPES
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_intel.h>
@@ -20,8 +23,6 @@
 #include <gbm.h>
 
 #include "esUtil.h"
-
-#define printflike(a, b) __attribute__((format(printf, (a), (b))))
 
 #define MAX_NUM_IMAGES 4
 
@@ -37,6 +38,12 @@ struct vkcube_buffer {
 
 struct vkcube;
 
+enum display_mode {
+   DISPLAY_MODE_AUTO = 0,
+   DISPLAY_MODE_KMS,
+   DISPLAY_MODE_XCB,
+};
+
 struct model {
    void (*init)(struct vkcube *vc);
    void (*render)(struct vkcube *vc, struct vkcube_buffer *b);
@@ -45,8 +52,7 @@ struct model {
 struct vkcube {
    struct model model;
 
-   int fd;
-   struct gbm_device *gbm_device;
+
 
    struct {
       xcb_connection_t *conn;
@@ -56,21 +62,15 @@ struct vkcube {
    } xcb;
 
    struct {
-      struct wl_display *display;
-      struct wl_compositor *compositor;
-      struct zxdg_shell_v6 *shell;
-      struct wl_keyboard *keyboard;
-      struct wl_seat *seat;
-      struct wl_surface *surface;
-      struct zxdg_surface_v6 *xdg_surface;
-      struct zxdg_toplevel_v6 *xdg_toplevel;
-      bool wait_for_configure;
-   } wl;
+     int fd;
+     struct gbm_device *gbm_device;
+     drmModeCrtc *crtc;
+     drmModeConnector *connector;
+   } kms;
 
    VkSwapchainKHR swap_chain;
 
-   drmModeCrtc *crtc;
-   drmModeConnector *connector;
+
    uint32_t width, height;
 
    VkInstance instance;
@@ -98,12 +98,4 @@ struct vkcube {
    int current;
 };
 
-void noreturn failv(const char *format, va_list args);
-void noreturn fail(const char *format, ...) printflike(1, 2) ;
-void fail_if(int cond, const char *format, ...) printflike(2, 3);
 
-static inline bool
-streq(const char *a, const char *b)
-{
-   return strcmp(a, b) == 0;
-}

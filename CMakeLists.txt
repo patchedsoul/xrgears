@@ -94,41 +94,17 @@ set(LINT_SOURCES ${VITAMINK_SRC} ${VKS_SRC})
 function(buildExample EXAMPLE_NAME)
 
     file(GLOB EXAMPLE_SRC examples/${EXAMPLE_NAME}/*.cpp)
+    add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
 
     if (EXAMPLE_NAME STREQUAL "vkcube")
-
-	#if(EXAMPLE_NAME STREQUAL "vkcube")
-	#else()
-
-
-	file(GLOB EXAMPLE_SRC examples/${EXAMPLE_NAME}/*.c)
-
-	message("Found c sources: ${EXAMPLE_SRC}")
-	add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
-
-
-	#set_target_properties(${EXAMPLE_NAME} PROPERTIES LINKER_LANGUAGE C)
 	target_link_libraries(${EXAMPLE_NAME} vulkan m wayland-client png drm gbm xcb)
-
-	#endif()
-
     else()
-	message("Found cpp sources: ${EXAMPLE_SRC}")
-	add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
-
 	set(LINT_SOURCES ${LINT_SOURCES} ${EXAMPLE_SRC})
-
-
 	target_link_libraries(${EXAMPLE_NAME}
 	    ${Vulkan_LIBRARY} ${ASSIMP_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES}
 	    ${CMAKE_THREAD_LIBS_INIT} ${XCB_LIBRARIES} dl glfw openhmd
 	    vks)
-
     endif()
-
-
-
-
 
 endfunction(buildExample)
 

@@ -12,6 +12,7 @@
 #pragma once
 
 //#include <vulkan/vulkan.h>
+#include <sys/sysmacros.h>
 
 #include <stdlib.h>
 #include <stdio.h>
