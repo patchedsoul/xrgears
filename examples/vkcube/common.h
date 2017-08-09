@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdarg.h>
 #include <stdnoreturn.h>
 #include <sys/time.h>
