@@ -128,25 +128,22 @@ init_display(struct vkcube *vc, enum display_mode *mode)
       fprintf(stderr, "failed to initialize wayland, falling back "
                       "to xcb\n");
       *mode = DISPLAY_MODE_XCB;
-      display_xcb = new VikDisplayModeXCB();
       if (display_xcb->init(vc) == -1) {
         fprintf(stderr, "failed to initialize xcb, falling back "
                         "to kms\n");
         *mode = DISPLAY_MODE_KMS;
-        display_kms = new VikDisplayModeKMS();
         if (display_kms->init(vc) == -1) {
           fprintf(stderr, "failed to initialize kms\n");
         }
       }
       break;
     case DISPLAY_MODE_KMS:
-      display_kms = new VikDisplayModeKMS();
       if (display_kms->init(vc) == -1)
         fail("failed to initialize kms");
       break;
     case DISPLAY_MODE_XCB:
-      display_xcb = new VikDisplayModeXCB();
       if (display_xcb->init(vc) == -1)
+        printf("failed to initialize xcb\n");
         fail("failed to initialize xcb");
       break;
   }
@@ -175,6 +172,9 @@ int main(int argc, char *argv[])
   struct vkcube vc;
 
   parse_args(argc, argv);
+
+  display_xcb = new VikDisplayModeXCB();
+  display_kms = new VikDisplayModeKMS();
 
   vc.model = cube_model;
   vc.width = 1024;
