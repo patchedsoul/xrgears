@@ -3,8 +3,8 @@
 #include "VikRenderer.hpp"
 #include "cube.hpp"
 
-VikRenderer::VikRenderer() {
-
+VikRenderer::VikRenderer(uint32_t w, uint32_t h) : width(w), height(h) {
+  gettimeofday(&start_tv, NULL);
 }
 
 VikRenderer::~VikRenderer() {

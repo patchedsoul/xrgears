@@ -35,9 +35,7 @@
  * to configure when configuring vkcube
  */
 
-#include <getopt.h>
 #include <assert.h>
-#include <stdio.h>
 
 #include "xcb.hpp"
 #include "kms.hpp"
@@ -114,7 +112,6 @@ parse_args(int argc, char *argv[])
 }
 
 
-//
 void
 init_display(CubeApplication *vc, VikRenderer* renderer, enum display_mode_type *mode)
 {
@@ -160,7 +157,7 @@ mainloop(CubeApplication *vc, enum display_mode_type mode)
       break;
     case DISPLAY_MODE_XCB:
     case DISPLAY_MODE_KMS:
-      display->main_loop(vc, &vc->renderer);
+      display->main_loop(vc, vc->renderer);
       break;
   }
 }
@@ -169,16 +166,11 @@ mainloop(CubeApplication *vc, enum display_mode_type mode)
 
 int main(int argc, char *argv[])
 {
-  CubeApplication vc;
+  CubeApplication vc(1280, 720);
 
   parse_args(argc, argv);
 
-  //vc.model = cube_model;
-  vc.renderer.width = 1024;
-  vc.renderer.height = 768;
-  gettimeofday(&vc.renderer.start_tv, NULL);
-
-  init_display(&vc, &vc.renderer, &my_display_mode);
+  init_display(&vc, vc.renderer, &my_display_mode);
   printf("Starting main loop\n");
   mainloop(&vc, my_display_mode);
 

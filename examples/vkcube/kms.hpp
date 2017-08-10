@@ -1,29 +1,23 @@
 #pragma once
 
-#include <sys/sysmacros.h>
-
-#include <stdlib.h>
-#include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <signal.h>
-#include <linux/kd.h>
-#include <linux/vt.h>
-#include <linux/major.h>
 #include <termios.h>
 #include <poll.h>
-#include <math.h>
-#include <assert.h>
-#include <sys/mman.h>
-#include <linux/input.h>
+#include <signal.h>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <drm_fourcc.h>
+
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/sysmacros.h>
+
+#include <linux/kd.h>
+#include <linux/vt.h>
+#include <linux/major.h>
 
 #include <vulkan/vulkan_intel.h>
 

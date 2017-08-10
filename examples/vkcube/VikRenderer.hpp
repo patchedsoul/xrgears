@@ -46,7 +46,7 @@ public:
     uint32_t image_count;
     int current;
 
-    VikRenderer() ;
+    VikRenderer(uint32_t w, uint32_t h) ;
 
     ~VikRenderer() ;
 

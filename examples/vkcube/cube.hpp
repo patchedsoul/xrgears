@@ -27,7 +27,6 @@
 #include <string.h>
 
 #include "esUtil.h"
-//#include "common.h"
 #include "silo.h"
 
 #include "VikRenderer.hpp"
