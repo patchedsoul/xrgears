@@ -54,7 +54,6 @@ struct vkcube {
 
    struct {
      int fd;
-     struct gbm_device *gbm_device;
    } kms;
 
    VkSwapchainKHR swap_chain;

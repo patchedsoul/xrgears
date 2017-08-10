@@ -33,8 +33,13 @@ class VikDisplayModeKMS {
     drmModeCrtc *crtc;
     drmModeConnector *connector;
 
+    struct gbm_device *gbm_device;
+
 public:
-    VikDisplayModeKMS() {}
+    VikDisplayModeKMS() {
+	  gbm_device = NULL;
+    }
+
     ~VikDisplayModeKMS() {}
 
     static void
@@ -199,7 +204,7 @@ public:
 	vc->width = crtc->mode.hdisplay;
 	vc->height = crtc->mode.vdisplay;
 
-	vc->kms.gbm_device = gbm_create_device(vc->kms.fd);
+	gbm_device = gbm_create_device(vc->kms.fd);
 
 	init_vk(vc, NULL);
 	vc->image_format = VK_FORMAT_R8G8B8A8_SRGB;
@@ -212,7 +217,7 @@ public:
 	    struct vkcube_buffer *b = &vc->buffers[i];
 	    int fd, stride, ret;
 
-	    b->gbm_bo = gbm_bo_create(vc->kms.gbm_device, vc->width, vc->height,
+	    b->gbm_bo = gbm_bo_create(gbm_device, vc->width, vc->height,
 	                              GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
 
 	    fd = gbm_bo_get_fd(b->gbm_bo);
