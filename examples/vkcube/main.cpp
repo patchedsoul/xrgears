@@ -45,7 +45,7 @@
 
 extern struct model cube_model;
 
-static display_mode my_display_mode = DISPLAY_MODE_AUTO;
+static display_mode_type my_display_mode = DISPLAY_MODE_AUTO;
 
 VikDisplayMode *display;
 
@@ -56,7 +56,7 @@ streq(const char *a, const char *b)
 }
 
 static bool
-display_mode_from_string(const char *s, enum display_mode *mode)
+display_mode_from_string(const char *s, enum display_mode_type *mode)
 {
   if (streq(s, "auto")) {
     *mode = DISPLAY_MODE_AUTO;
@@ -119,7 +119,7 @@ parse_args(int argc, char *argv[])
 
 //
 void
-init_display(struct vkcube *vc, enum display_mode *mode)
+init_display(struct vkcube *vc, enum display_mode_type *mode)
 {
   switch (*mode) {
     case DISPLAY_MODE_AUTO:
@@ -155,7 +155,7 @@ init_display(struct vkcube *vc, enum display_mode *mode)
 }
 
 void
-mainloop(struct vkcube *vc, enum display_mode mode)
+mainloop(struct vkcube *vc, enum display_mode_type mode)
 {
   switch (mode) {
     case DISPLAY_MODE_AUTO:

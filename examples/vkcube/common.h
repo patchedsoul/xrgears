@@ -19,11 +19,6 @@ struct vkcube_buffer {
 
 struct vkcube;
 
-enum display_mode {
-   DISPLAY_MODE_AUTO = 0,
-   DISPLAY_MODE_KMS,
-   DISPLAY_MODE_XCB,
-};
 
 struct model {
    void (*init)(struct vkcube *vc);
