@@ -53,9 +53,7 @@ public:
 
     ~VikDisplayModeKMS() {}
 
-    static void
-    restore_vt(void)
-    {
+    static void restore_vt(void) {
 	struct vt_mode mode = { .mode = VT_AUTO };
 	ioctl(STDIN_FILENO, VT_SETMODE, &mode);
 
@@ -63,9 +61,7 @@ public:
 	ioctl(STDIN_FILENO, KDSETMODE, KD_TEXT);
     }
 
-    static void
-    handle_signal(int sig)
-    {
+    static void handle_signal(int sig) {
 	restore_vt();
     }
 
@@ -120,12 +116,7 @@ public:
 	}
     }
 
-    int
-    init_vt(struct vkcube *vc)
-    {
-
-	printf("kms init vt\n");
-
+    int init_vt(struct vkcube *vc) {
 	struct termios tio;
 	struct stat buf;
 	int ret;
@@ -175,12 +166,7 @@ public:
     }
 
     // Return -1 on failure.
-    int
-    init(struct vkcube *vc)
-    {
-
-	printf("kms init\n");
-
+    int init(struct vkcube *vc) {
 	drmModeRes *resources;
 	drmModeEncoder *encoder;
 	int i;
