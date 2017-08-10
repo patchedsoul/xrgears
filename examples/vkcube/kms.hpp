@@ -25,6 +25,8 @@
 #include <xf86drmMode.h>
 #include <drm_fourcc.h>
 
+#include <vulkan/vulkan_intel.h>
+
 static void
 page_flip_handler(int fd, unsigned int frame,
                   unsigned int sec, unsigned int usec, void *data)

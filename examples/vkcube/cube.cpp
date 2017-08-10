@@ -23,6 +23,10 @@
  * IN THE SOFTWARE.
  */
 
+#include <sys/time.h>
+#include <string.h>
+
+#include "esUtil.h"
 #include "common.h"
 #include "silo.h"
 
@@ -80,7 +84,7 @@ init_cube(struct vkcube *vc)
                          NULL,
                          &vc->pipeline_layout);
 
-  VkVertexInputBindingDescription foo[] = {
+  VkVertexInputBindingDescription vertexBinding[] = {
     {
       .binding = 0,
       .stride = 3 * sizeof(float),
@@ -98,7 +102,7 @@ init_cube(struct vkcube *vc)
     }
   };
 
-  VkVertexInputAttributeDescription bar[] = {
+  VkVertexInputAttributeDescription vertexAttribute[] = {
     {
       .location = 0,
       .binding = 0,
@@ -123,9 +127,9 @@ init_cube(struct vkcube *vc)
   VkPipelineVertexInputStateCreateInfo vi_create_info = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
     .vertexBindingDescriptionCount = 3,
-    .pVertexBindingDescriptions = foo,
+    .pVertexBindingDescriptions = vertexBinding,
     .vertexAttributeDescriptionCount = 3,
-    .pVertexAttributeDescriptions = bar
+    .pVertexAttributeDescriptions = vertexAttribute
   };
 
   VkShaderModule vs_module;
@@ -215,7 +219,7 @@ init_cube(struct vkcube *vc)
     .pAttachments = attachments
   };
 
-  VkDynamicState dynamicstates []  = {
+  VkDynamicState dynamicStates []  = {
     VK_DYNAMIC_STATE_VIEWPORT,
     VK_DYNAMIC_STATE_SCISSOR,
   };
@@ -223,7 +227,7 @@ init_cube(struct vkcube *vc)
   VkPipelineDynamicStateCreateInfo dynamicinfo =  {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
     .dynamicStateCount = 2,
-    .pDynamicStates = dynamicstates,
+    .pDynamicStates = dynamicStates,
   };
 
   VkPipeline basehandle = { 0 };
@@ -403,8 +407,8 @@ init_cube(struct vkcube *vc)
       .descriptorCount = 1
     }      };
 
-  VkDescriptorPool desc_pool;
-  const VkDescriptorPoolCreateInfo create_info = {
+  VkDescriptorPool descriptorPool;
+  const VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {
     .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
@@ -413,26 +417,25 @@ init_cube(struct vkcube *vc)
     .pPoolSizes = poolsizes,
   };
 
-  vkCreateDescriptorPool(vc->device, &create_info, NULL, &desc_pool);
+  vkCreateDescriptorPool(vc->device, &descriptorPoolCreateInfo, NULL, &descriptorPool);
 
-  VkDescriptorSetAllocateInfo allocateinfo2 = {
+  VkDescriptorSetAllocateInfo descriptorAllocateInfo = {
     .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-    .descriptorPool = desc_pool,
+    .descriptorPool = descriptorPool,
     .descriptorSetCount = 1,
     .pSetLayouts = &set_layout,
   };
 
-  vkAllocateDescriptorSets(vc->device,
-                           &allocateinfo2, &vc->descriptor_set);
+  vkAllocateDescriptorSets(vc->device, &descriptorAllocateInfo, &vc->descriptor_set);
 
-  VkDescriptorBufferInfo bufferinfo3 = {
+  VkDescriptorBufferInfo descriptorBufferInfo = {
     .buffer = vc->buffer,
     .offset = 0,
     .range = sizeof(struct ubo),
   };
 
 
-  VkWriteDescriptorSet descriptroset[] = {
+  VkWriteDescriptorSet writeDescriptorSet[] = {
     {
       .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
       .dstSet = vc->descriptor_set,
@@ -440,13 +443,11 @@ init_cube(struct vkcube *vc)
       .dstArrayElement = 0,
       .descriptorCount = 1,
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      .pBufferInfo = &bufferinfo3
+      .pBufferInfo = &descriptorBufferInfo
     }
   };
 
-  vkUpdateDescriptorSets(vc->device, 1,
-                         descriptroset,
-                         0, NULL);
+  vkUpdateDescriptorSets(vc->device, 1, writeDescriptorSet, 0, NULL);
 }
 
 static void
@@ -481,7 +482,7 @@ render_cube(struct vkcube *vc, struct vkcube_buffer *b)
   memcpy(vc->map, &ubo, sizeof(ubo));
 
 
-  VkCommandBufferAllocateInfo allocateinfo14 = {
+  VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {
     .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
     .commandPool = vc->cmd_pool,
     .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
@@ -490,33 +491,32 @@ render_cube(struct vkcube *vc, struct vkcube_buffer *b)
 
   VkCommandBuffer cmd_buffer;
   vkAllocateCommandBuffers(vc->device,
-                           &allocateinfo14,
+                           &cmdBufferAllocateInfo,
                            &cmd_buffer);
 
-  VkCommandBufferBeginInfo cmdinfo = {
+  VkCommandBufferBeginInfo cmdBufferBeginInfo = {
     .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
     .flags = 0
   };
 
-  vkBeginCommandBuffer(cmd_buffer,
-                       &cmdinfo);
+  vkBeginCommandBuffer(cmd_buffer, &cmdBufferBeginInfo);
 
 
-  VkClearValue valuees[] = {
+  VkClearValue clearValues[] = {
     { .color = { .float32 = { 0.2f, 0.2f, 0.2f, 1.0f } } }
   };
 
-  VkRenderPassBeginInfo passbnegininfo = {
+  VkRenderPassBeginInfo passBeginInfo = {
     .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
     .renderPass = vc->render_pass,
     .framebuffer = b->framebuffer,
     .renderArea = { { 0, 0 }, { vc->width, vc->height } },
     .clearValueCount = 1,
-    .pClearValues = valuees
+    .pClearValues = clearValues
   };
 
   vkCmdBeginRenderPass(cmd_buffer,
-                       &passbnegininfo,
+                       &passBeginInfo,
                        VK_SUBPASS_CONTENTS_INLINE);
 
   VkBuffer buffers[] = {
@@ -530,7 +530,6 @@ render_cube(struct vkcube *vc, struct vkcube_buffer *b)
     vc->colors_offset,
     vc->normals_offset
   };
-
 
   vkCmdBindVertexBuffers(cmd_buffer, 0, 3,
                          buffers,
@@ -576,7 +575,7 @@ render_cube(struct vkcube *vc, struct vkcube_buffer *b)
   };
 
 
-  VkSubmitInfo submitinfo = {
+  VkSubmitInfo submitInfo = {
     .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
     .waitSemaphoreCount = 1,
     .pWaitSemaphores = &vc->semaphore,
@@ -585,12 +584,11 @@ render_cube(struct vkcube *vc, struct vkcube_buffer *b)
     .pCommandBuffers = &cmd_buffer,
   };
 
-  vkQueueSubmit(vc->queue, 1,
-                &submitinfo, vc->fence);
+  vkQueueSubmit(vc->queue, 1, &submitInfo, vc->fence);
 
-  VkFence fenss[] = { vc->fence };
+  VkFence fences[] = { vc->fence };
 
-  vkWaitForFences(vc->device, 1, fenss, true, INT64_MAX);
+  vkWaitForFences(vc->device, 1, fences, true, INT64_MAX);
   vkResetFences(vc->device, 1, &vc->fence);
 
   vkResetCommandPool(vc->device, vc->cmd_pool, 0);

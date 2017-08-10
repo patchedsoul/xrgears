@@ -1,24 +1,13 @@
 #pragma once
 
-#include <stdarg.h>
-#include <stdnoreturn.h>
-#include <sys/time.h>
-#include <stdbool.h>
-#include <string.h>
-
-
-
 #ifndef VK_USE_PLATFORM_XCB_KHR
 #define VK_USE_PLATFORM_XCB_KHR
 #endif
 
 #define VK_PROTOTYPES
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_intel.h>
 
 #include <gbm.h>
-
-#include "esUtil.h"
 
 #define MAX_NUM_IMAGES 4
 
@@ -49,7 +38,6 @@ struct vkcube {
    struct model model;
 
    VkSwapchainKHR swap_chain;
-
 
    uint32_t width, height;
 
