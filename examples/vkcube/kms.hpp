@@ -67,6 +67,7 @@ public:
 	char buf[16];
 	struct pollfd pfd[2];
 	struct vkcube_buffer *b;
+	struct kms_buffer *kms_b;
 
 	pfd[0].fd = STDIN_FILENO;
 	pfd[0].events = POLLIN;
@@ -77,12 +78,12 @@ public:
 	evctx.version = 2;
 	evctx.page_flip_handler = page_flip_handler;
 
-	ret = drmModeSetCrtc(fd, crtc->crtc_id, vc->buffers[0].fb,
+	ret = drmModeSetCrtc(fd, crtc->crtc_id, vc->kms_buffers[0].fb,
 	        0, 0, &connector->connector_id, 1, &crtc->mode);
 	fail_if(ret < 0, "modeset failed: %m\n");
 
 
-	ret = drmModePageFlip(fd, crtc->crtc_id, vc->buffers[0].fb,
+	ret = drmModePageFlip(fd, crtc->crtc_id, vc->kms_buffers[0].fb,
 	        DRM_MODE_PAGE_FLIP_EVENT, NULL);
 	fail_if(ret < 0, "pageflip failed: %m\n");
 
@@ -102,10 +103,11 @@ public:
 	    if (pfd[1].revents & POLLIN) {
 		drmHandleEvent(fd, &evctx);
 		b = &vc->buffers[vc->current & 1];
+		kms_b = &vc->kms_buffers[vc->current & 1];
 
 		app->model.render(vc, b);
 
-		ret = drmModePageFlip(fd, crtc->crtc_id, b->fb,
+		ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
 		                      DRM_MODE_PAGE_FLIP_EVENT, NULL);
 		fail_if(ret < 0, "pageflip failed: %m\n");
 		vc->current++;
@@ -209,13 +211,14 @@ public:
 
 	for (uint32_t i = 0; i < 2; i++) {
 	    struct vkcube_buffer *b = &vc->buffers[i];
+	    struct kms_buffer *kms_b = &vc->kms_buffers[i];
 	    int buffer_fd, stride, ret;
 
-	    b->gbm_bo = gbm_bo_create(gbm_dev, vc->width, vc->height,
+	    kms_b->gbm_bo = gbm_bo_create(gbm_dev, vc->width, vc->height,
 	                              GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
 
-	    buffer_fd = gbm_bo_get_fd(b->gbm_bo);
-	    stride = gbm_bo_get_stride(b->gbm_bo);
+	    buffer_fd = gbm_bo_get_fd(kms_b->gbm_bo);
+	    stride = gbm_bo_get_stride(kms_b->gbm_bo);
 
 
 	    VkDmaBufImageCreateInfo dmaBufInfo = {};
@@ -234,17 +237,17 @@ public:
 	    create_dma_buf_image(vc->device,
 	                         &dmaBufInfo,
 	                         NULL,
-	                         &b->mem,
+	                         &kms_b->mem,
 	                         &b->image);
 	    close(buffer_fd);
 
-	    b->stride = gbm_bo_get_stride(b->gbm_bo);
-	    uint32_t bo_handles[4] = { (uint32_t) (gbm_bo_get_handle(b->gbm_bo).s32), };
+	    kms_b->stride = gbm_bo_get_stride(kms_b->gbm_bo);
+	    uint32_t bo_handles[4] = { (uint32_t) (gbm_bo_get_handle(kms_b->gbm_bo).s32), };
 	    uint32_t pitches[4] = { (uint32_t) stride, };
 	    uint32_t offsets[4] = { 0, };
 	    ret = drmModeAddFB2(fd, vc->width, vc->height,
 	                        DRM_FORMAT_XRGB8888, bo_handles,
-	                        pitches, offsets, &b->fb, 0);
+	                        pitches, offsets, &kms_b->fb, 0);
 	    fail_if(ret == -1, "addfb2 failed\n");
 
 	    vc->init_buffer(b);

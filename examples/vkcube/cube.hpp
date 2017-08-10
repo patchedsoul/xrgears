@@ -49,9 +49,6 @@ public:
     struct ubo {
 	glm::mat4 modelview;
 	glm::mat4 modelviewprojection;
-	//ESMatrix modelview;
-	//ESMatrix modelviewprojection;
-
 	float normal[12];
     };
 
