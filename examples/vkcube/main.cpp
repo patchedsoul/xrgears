@@ -183,6 +183,7 @@ int main(int argc, char *argv[])
   gettimeofday(&vc.start_tv, NULL);
 
   init_display(&vc, &my_display_mode);
+  printf("Starting main loop\n");
   mainloop(&vc, my_display_mode);
 
   return 0;

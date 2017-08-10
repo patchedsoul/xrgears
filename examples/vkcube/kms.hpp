@@ -103,6 +103,9 @@ public:
     int
     init_vt(struct vkcube *vc)
     {
+
+	printf("kms init vt\n");
+
 	struct termios tio;
 	struct stat buf;
 	int ret;
@@ -155,6 +158,9 @@ public:
     int
     init(struct vkcube *vc)
     {
+
+	printf("kms init\n");
+
 	drmModeRes *resources;
 	drmModeConnector *connector;
 	drmModeEncoder *encoder;
