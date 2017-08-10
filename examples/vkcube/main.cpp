@@ -40,46 +40,42 @@
 #include <stdio.h>
 
 #include "vk.hpp"
-
 #include "xcb.hpp"
 #include "kms.hpp"
-/*
-extern "C" {
-#include "vkcube.h"
-}
-*/
 
 extern struct model cube_model;
 
 static display_mode my_display_mode = DISPLAY_MODE_AUTO;
 
+VikDisplayModeXCB *display_xcb;
+
 static inline bool
 streq(const char *a, const char *b)
 {
-   return strcmp(a, b) == 0;
+  return strcmp(a, b) == 0;
 }
 
 static bool
 display_mode_from_string(const char *s, enum display_mode *mode)
 {
-   if (streq(s, "auto")) {
-      *mode = DISPLAY_MODE_AUTO;
-      return true;
-   } else if (streq(s, "kms")) {
-      *mode = DISPLAY_MODE_KMS;
-      return true;
-   } else if (streq(s, "xcb")) {
-      *mode = DISPLAY_MODE_XCB;
-      return true;
-   } else {
-      return false;
-   }
+  if (streq(s, "auto")) {
+    *mode = DISPLAY_MODE_AUTO;
+    return true;
+  } else if (streq(s, "kms")) {
+    *mode = DISPLAY_MODE_KMS;
+    return true;
+  } else if (streq(s, "xcb")) {
+    *mode = DISPLAY_MODE_XCB;
+    return true;
+  } else {
+    return false;
+  }
 }
 
 void
 parse_args(int argc, char *argv[])
 {
-   /* Setting '+' in the optstring is the same as setting POSIXLY_CORRECT in
+  /* Setting '+' in the optstring is the same as setting POSIXLY_CORRECT in
     * the enviroment. It tells getopt to stop parsing argv when it encounters
     * the first non-option argument; it also prevents getopt from permuting
     * argv during parsing.
@@ -87,37 +83,37 @@ parse_args(int argc, char *argv[])
     * The initial ':' in the optstring makes getopt return ':' when an option
     * is missing a required argument.
     */
-   static const char *optstring = "+:nm:o:";
+  static const char *optstring = "+:nm:o:";
 
 
-   int opt;
-   bool found_arg_headless = false;
-   bool found_arg_display_mode = false;
+  int opt;
+  bool found_arg_headless = false;
+  bool found_arg_display_mode = false;
 
-   while ((opt = getopt(argc, argv, optstring)) != -1) {
-      switch (opt) {
+  while ((opt = getopt(argc, argv, optstring)) != -1) {
+    switch (opt) {
       case 'm':
-         found_arg_display_mode = true;
-         if (!display_mode_from_string(optarg, &my_display_mode))
-            printf("option -m given bad display mode\n");
-         break;
+        found_arg_display_mode = true;
+        if (!display_mode_from_string(optarg, &my_display_mode))
+          printf("option -m given bad display mode\n");
+        break;
       case '?':
-         printf("invalid option '-%c'\n", optopt);
-         break;
+        printf("invalid option '-%c'\n", optopt);
+        break;
       case ':':
-         printf("option -%c requires an argument\n", optopt);
-         break;
+        printf("option -%c requires an argument\n", optopt);
+        break;
       default:
-         assert(!"unreachable");
-         break;
-      }
-   }
+        assert(!"unreachable");
+        break;
+    }
+  }
 
-   if (found_arg_headless && found_arg_display_mode)
-      printf("options -n and -m are mutually exclusive\n");
+  if (found_arg_headless && found_arg_display_mode)
+    printf("options -n and -m are mutually exclusive\n");
 
-   if (optind != argc)
-      printf("trailing args\n");
+  if (optind != argc)
+    printf("trailing args\n");
 }
 
 
@@ -125,66 +121,68 @@ parse_args(int argc, char *argv[])
 void
 init_display(struct vkcube *vc, enum display_mode *mode)
 {
-   switch (*mode) {
-   case DISPLAY_MODE_AUTO:
+  switch (*mode) {
+    case DISPLAY_MODE_AUTO:
 
-         fprintf(stderr, "failed to initialize wayland, falling back "
-                         "to xcb\n");
-         *mode = DISPLAY_MODE_XCB;
-         if (init_xcb(vc) == -1) {
-            fprintf(stderr, "failed to initialize xcb, falling back "
-                            "to kms\n");
-            *mode = DISPLAY_MODE_KMS;
-            if (init_kms(vc) == -1) {
-               fprintf(stderr, "failed to initialize kms\n");
+      fprintf(stderr, "failed to initialize wayland, falling back "
+                      "to xcb\n");
+      *mode = DISPLAY_MODE_XCB;
+      display_xcb = new VikDisplayModeXCB();
+      if (display_xcb->init(vc) == -1) {
+        fprintf(stderr, "failed to initialize xcb, falling back "
+                        "to kms\n");
+        *mode = DISPLAY_MODE_KMS;
+        if (init_kms(vc) == -1) {
+          fprintf(stderr, "failed to initialize kms\n");
 
-            }
-         }
+        }
+      }
       break;
-   case DISPLAY_MODE_KMS:
+    case DISPLAY_MODE_KMS:
       if (init_kms(vc) == -1)
-         fail("failed to initialize kms");
+        fail("failed to initialize kms");
       break;
-   case DISPLAY_MODE_XCB:
-      if (init_xcb(vc) == -1)
-         fail("failed to initialize xcb");
+    case DISPLAY_MODE_XCB:
+      display_xcb = new VikDisplayModeXCB();
+      if (display_xcb->init(vc) == -1)
+        fail("failed to initialize xcb");
       break;
-   }
+  }
 }
 
 void
 mainloop(struct vkcube *vc, enum display_mode mode)
 {
-   switch (mode) {
-   case DISPLAY_MODE_AUTO:
+  switch (mode) {
+    case DISPLAY_MODE_AUTO:
       assert(!"display mode is unset");
       break;
-   case DISPLAY_MODE_XCB:
-      mainloop_xcb(vc);
+    case DISPLAY_MODE_XCB:
+      display_xcb->main_loop(vc);
       break;
-   case DISPLAY_MODE_KMS:
+    case DISPLAY_MODE_KMS:
       mainloop_vt(vc);
       break;
-   }
+  }
 }
 
 //
 
 int main(int argc, char *argv[])
 {
-   struct vkcube vc;
+  struct vkcube vc;
 
-   parse_args(argc, argv);
+  parse_args(argc, argv);
 
-   vc.model = cube_model;
-   vc.kms.gbm_device = NULL;
-   vc.xcb.window = XCB_NONE;
-   vc.width = 1024;
-   vc.height = 768;
-   gettimeofday(&vc.start_tv, NULL);
+  vc.model = cube_model;
+  vc.kms.gbm_device = NULL;
+  vc.xcb.window = XCB_NONE;
+  vc.width = 1024;
+  vc.height = 768;
+  gettimeofday(&vc.start_tv, NULL);
 
-   init_display(&vc, &my_display_mode);
-   mainloop(&vc, my_display_mode);
+  init_display(&vc, &my_display_mode);
+  mainloop(&vc, my_display_mode);
 
-   return 0;
+  return 0;
 }
