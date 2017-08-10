@@ -44,7 +44,7 @@ public:
 
     // Return -1 on failure.
     int
-    init(struct vkcube *vc)
+    init(CubeApplication *vc)
     {
 	xcb_screen_iterator_t iter;
 	static const char title[] = "Vulkan Cube";
@@ -114,7 +114,7 @@ public:
 	return 0;
     }
 
-    void init_surface(struct vkcube *vc) {
+    void init_surface(CubeApplication *vc) {
 	VkXcbSurfaceCreateInfoKHR surfaceInfo = {};
 
 	surfaceInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
@@ -140,7 +140,7 @@ public:
     }
 
     void
-    main_loop(struct vkcube *vc)
+    main_loop(CubeApplication *vc)
     {
 	xcb_generic_event_t *event;
 	xcb_key_press_event_t *key_press;
@@ -205,7 +205,9 @@ public:
 		vkAcquireNextImageKHR(vc->device, vc->swap_chain, 60,
 		                      vc->semaphore, VK_NULL_HANDLE, &index);
 
-		vc->model.render(vc, &vc->buffers[index]);
+
+		// TODO: model render
+		//vc->model.render(vc, &vc->buffers[index]);
 
 		VkResult result;
 

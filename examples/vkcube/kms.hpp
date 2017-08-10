@@ -29,6 +29,8 @@
 
 #include "display.hpp"
 
+#include "common.h"
+
 static void
 page_flip_handler(int fd, unsigned int frame,
                   unsigned int sec, unsigned int usec, void *data)
@@ -65,7 +67,7 @@ public:
 	restore_vt();
     }
 
-    void main_loop(struct vkcube *vc)
+    void main_loop(CubeApplication *vc)
     {
 	int len, ret;
 	char buf[16];
@@ -106,7 +108,9 @@ public:
 	    if (pfd[1].revents & POLLIN) {
 		drmHandleEvent(fd, &evctx);
 		b = &vc->buffers[vc->current & 1];
-		vc->model.render(vc, b);
+
+		// TODO: Render model
+		//vc->model.render(vc, b);
 
 		ret = drmModePageFlip(fd, crtc->crtc_id, b->fb,
 		                      DRM_MODE_PAGE_FLIP_EVENT, NULL);
@@ -116,7 +120,7 @@ public:
 	}
     }
 
-    int init_vt(struct vkcube *vc) {
+    int init_vt(CubeApplication *vc) {
 	struct termios tio;
 	struct stat buf;
 	int ret;
@@ -166,7 +170,7 @@ public:
     }
 
     // Return -1 on failure.
-    int init(struct vkcube *vc) {
+    int init(CubeApplication *vc) {
 	drmModeRes *resources;
 	drmModeEncoder *encoder;
 	int i;

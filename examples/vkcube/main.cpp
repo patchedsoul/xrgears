@@ -43,7 +43,7 @@
 #include "xcb.hpp"
 #include "kms.hpp"
 
-extern struct model cube_model;
+//extern struct model cube_model;
 
 static display_mode_type my_display_mode = DISPLAY_MODE_AUTO;
 
@@ -119,7 +119,7 @@ parse_args(int argc, char *argv[])
 
 //
 void
-init_display(struct vkcube *vc, enum display_mode_type *mode)
+init_display(CubeApplication *vc, enum display_mode_type *mode)
 {
   switch (*mode) {
     case DISPLAY_MODE_AUTO:
@@ -155,7 +155,7 @@ init_display(struct vkcube *vc, enum display_mode_type *mode)
 }
 
 void
-mainloop(struct vkcube *vc, enum display_mode_type mode)
+mainloop(CubeApplication *vc, enum display_mode_type mode)
 {
   switch (mode) {
     case DISPLAY_MODE_AUTO:
@@ -172,11 +172,11 @@ mainloop(struct vkcube *vc, enum display_mode_type mode)
 
 int main(int argc, char *argv[])
 {
-  struct vkcube vc;
+  CubeApplication vc;
 
   parse_args(argc, argv);
 
-  vc.model = cube_model;
+  //vc.model = cube_model;
   vc.width = 1024;
   vc.height = 768;
   gettimeofday(&vc.start_tv, NULL);

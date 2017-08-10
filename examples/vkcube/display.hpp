@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common.h"
+
 enum display_mode_type {
    DISPLAY_MODE_AUTO = 0,
    DISPLAY_MODE_KMS,
@@ -13,9 +15,9 @@ public:
 
 
 
-    virtual int init(struct vkcube *vc) {
+    virtual int init(CubeApplication *vc) {
 	return 0;
     }
 
-    virtual void main_loop(struct vkcube *vc) {}
+    virtual void main_loop(CubeApplication *vc) {}
 };

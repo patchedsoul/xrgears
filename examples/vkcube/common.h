@@ -25,7 +25,8 @@ struct model {
    void (*render)(struct vkcube *vc, struct vkcube_buffer *b);
 };
 
-struct vkcube {
+class CubeApplication {
+public:
    struct model model;
 
    VkSwapchainKHR swap_chain;

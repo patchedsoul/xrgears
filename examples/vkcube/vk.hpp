@@ -3,7 +3,7 @@
 #include "common.h"
 
 void
-init_vk(struct vkcube *vc, const char *extension)
+init_vk(CubeApplication *vc, const char *extension)
 {
     VkApplicationInfo appinfo = {};
     appinfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -71,7 +71,7 @@ init_vk(struct vkcube *vc, const char *extension)
 }
 
 VkFormat
-choose_surface_format(struct vkcube *vc)
+choose_surface_format(CubeApplication *vc)
 {
     uint32_t num_formats = 0;
     vkGetPhysicalDeviceSurfaceFormatsKHR(vc->physical_device, vc->surface,
@@ -107,7 +107,7 @@ choose_surface_format(struct vkcube *vc)
 }
 
 void
-init_vk_objects(struct vkcube *vc)
+init_vk_objects(CubeApplication *vc)
 {
 
     VkAttachmentDescription attachementDesc[] = {
@@ -164,7 +164,8 @@ init_vk_objects(struct vkcube *vc)
                        NULL,
                        &vc->render_pass);
 
-    vc->model.init(vc);
+    //TODO: init model
+    //vc->model.init(vc);
 
     VkFenceCreateInfo fenceinfo = {
         .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
@@ -200,7 +201,7 @@ init_vk_objects(struct vkcube *vc)
 
 
 void
-init_buffer(struct vkcube *vc, struct vkcube_buffer *b)
+init_buffer(CubeApplication *vc, struct vkcube_buffer *b)
 {
 
     VkImageViewCreateInfo imageviewinfo = {
@@ -247,7 +248,7 @@ init_buffer(struct vkcube *vc, struct vkcube_buffer *b)
 
 
 static void
-create_swapchain(struct vkcube *vc)
+create_swapchain(CubeApplication *vc)
 {
     VkSurfaceCapabilitiesKHR surface_caps;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vc->physical_device, vc->surface,

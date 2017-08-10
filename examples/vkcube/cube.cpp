@@ -47,7 +47,7 @@ static unsigned char fs_spirv_source[] = {
 
 
 static void
-init_cube(struct vkcube *vc)
+init_cube(CubeApplication *vc)
 {
   VkResult r;
 
@@ -451,7 +451,7 @@ init_cube(struct vkcube *vc)
 }
 
 static void
-render_cube(struct vkcube *vc, struct vkcube_buffer *b)
+render_cube(CubeApplication *vc, struct vkcube_buffer *b)
 {
   struct ubo ubo;
   struct timeval tv;
@@ -594,7 +594,9 @@ render_cube(struct vkcube *vc, struct vkcube_buffer *b)
   vkResetCommandPool(vc->device, vc->cmd_pool, 0);
 }
 
+/*
 struct model cube_model = {
   .init = init_cube,
   .render = render_cube
 };
+*/
