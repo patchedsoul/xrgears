@@ -1,6 +1,6 @@
 #pragma once
 
-#include "application.hpp"
+class CubeApplication;
 
 enum display_mode_type {
    DISPLAY_MODE_AUTO = 0,

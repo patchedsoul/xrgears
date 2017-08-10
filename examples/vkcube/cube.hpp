@@ -23,6 +23,8 @@
  * IN THE SOFTWARE.
  */
 
+#pragma once
+
 #include <sys/time.h>
 #include <string.h>
 
