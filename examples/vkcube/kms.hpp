@@ -42,6 +42,15 @@ class VikDisplayModeKMS : public VikDisplayMode {
 
     int fd;
 
+    struct kms_buffer {
+       struct gbm_bo *gbm_bo;
+       VkDeviceMemory mem;
+       uint32_t fb;
+       uint32_t stride;
+    };
+
+    struct kms_buffer kms_buffers[MAX_NUM_IMAGES];
+
 public:
     VikDisplayModeKMS() {
 	  gbm_dev = NULL;
@@ -78,12 +87,12 @@ public:
 	evctx.version = 2;
 	evctx.page_flip_handler = page_flip_handler;
 
-	ret = drmModeSetCrtc(fd, crtc->crtc_id, vc->kms_buffers[0].fb,
+	ret = drmModeSetCrtc(fd, crtc->crtc_id, kms_buffers[0].fb,
 	        0, 0, &connector->connector_id, 1, &crtc->mode);
 	fail_if(ret < 0, "modeset failed: %m\n");
 
 
-	ret = drmModePageFlip(fd, crtc->crtc_id, vc->kms_buffers[0].fb,
+	ret = drmModePageFlip(fd, crtc->crtc_id, kms_buffers[0].fb,
 	        DRM_MODE_PAGE_FLIP_EVENT, NULL);
 	fail_if(ret < 0, "pageflip failed: %m\n");
 
@@ -103,7 +112,7 @@ public:
 	    if (pfd[1].revents & POLLIN) {
 		drmHandleEvent(fd, &evctx);
 		b = &vc->buffers[vc->current & 1];
-		kms_b = &vc->kms_buffers[vc->current & 1];
+		kms_b = &kms_buffers[vc->current & 1];
 
 		app->model.render(vc, b);
 
@@ -211,7 +220,7 @@ public:
 
 	for (uint32_t i = 0; i < 2; i++) {
 	    struct vkcube_buffer *b = &vc->buffers[i];
-	    struct kms_buffer *kms_b = &vc->kms_buffers[i];
+	    struct kms_buffer *kms_b = &kms_buffers[i];
 	    int buffer_fd, stride, ret;
 
 	    kms_b->gbm_bo = gbm_bo_create(gbm_dev, vc->width, vc->height,

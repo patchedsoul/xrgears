@@ -13,12 +13,7 @@ struct vkcube_buffer {
    VkFramebuffer framebuffer;
 };
 
-struct kms_buffer {
-   struct gbm_bo *gbm_bo;
-   VkDeviceMemory mem;
-   uint32_t fb;
-   uint32_t stride;
-};
+
 
 class Cube;
 
@@ -46,7 +41,6 @@ public:
     VkSurfaceKHR surface;
     VkFormat image_format;
     struct vkcube_buffer buffers[MAX_NUM_IMAGES];
-    struct kms_buffer kms_buffers[MAX_NUM_IMAGES];
     uint32_t image_count;
     int current;
 
