@@ -177,6 +177,7 @@ int main(int argc, char *argv[])
   display_kms = new VikDisplayModeKMS();
 
   vc.model = cube_model;
+  vc.kms.gbm_device = NULL;
   vc.width = 1024;
   vc.height = 768;
   gettimeofday(&vc.start_tv, NULL);

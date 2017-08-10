@@ -52,6 +52,13 @@ struct model {
 struct vkcube {
    struct model model;
 
+   struct {
+     int fd;
+     struct gbm_device *gbm_device;
+     drmModeCrtc *crtc;
+     drmModeConnector *connector;
+   } kms;
+
    VkSwapchainKHR swap_chain;
 
 
