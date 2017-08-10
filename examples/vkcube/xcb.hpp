@@ -103,6 +103,16 @@ public:
 	    fail("Vulkan not supported on given X window");
 	}
 
+	init_surface(vc);
+
+	init_vk_objects(vc);
+
+	vc->image_count = 0;
+
+	return 0;
+    }
+
+    void init_surface(struct vkcube *vc) {
 	VkXcbSurfaceCreateInfoKHR surfaceInfo = {};
 
 	surfaceInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
@@ -112,16 +122,9 @@ public:
 	vkCreateXcbSurfaceKHR(vc->instance, &surfaceInfo, NULL, &vc->surface);
 
 	vc->image_format = choose_surface_format(vc);
-
-	init_vk_objects(vc);
-
-	vc->image_count = 0;
-
-	return 0;
     }
 
-    void
-    schedule_repaint(struct vkcube *vc)
+    void schedule_repaint()
     {
 	xcb_client_message_event_t client_message;
 
@@ -176,7 +179,7 @@ public:
 			break;
 
 		    case XCB_EXPOSE:
-			schedule_repaint(vc);
+			schedule_repaint();
 			break;
 
 		    case XCB_KEY_PRESS:
@@ -218,7 +221,7 @@ public:
 
 		vkQueuePresentKHR(vc->queue, &presentInfo);
 
-		schedule_repaint(vc);
+		schedule_repaint();
 	    }
 
 	    xcb_flush(conn);
