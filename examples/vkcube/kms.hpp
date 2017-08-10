@@ -29,6 +29,9 @@ page_flip_handler(int fd, unsigned int frame,
 static struct termios save_tio;
 
 class VikDisplayModeKMS {
+
+    drmModeCrtc *crtc;
+
 public:
     VikDisplayModeKMS() {}
     ~VikDisplayModeKMS() {}
@@ -65,12 +68,12 @@ public:
 	evctx.version = 2;
 	evctx.page_flip_handler = page_flip_handler;
 
-	ret = drmModeSetCrtc(vc->kms.fd, vc->kms.crtc->crtc_id, vc->buffers[0].fb,
-	        0, 0, &vc->kms.connector->connector_id, 1, &vc->kms.crtc->mode);
+	ret = drmModeSetCrtc(vc->kms.fd, crtc->crtc_id, vc->buffers[0].fb,
+	        0, 0, &vc->kms.connector->connector_id, 1, &crtc->mode);
 	fail_if(ret < 0, "modeset failed: %m\n");
 
 
-	ret = drmModePageFlip(vc->kms.fd, vc->kms.crtc->crtc_id, vc->buffers[0].fb,
+	ret = drmModePageFlip(vc->kms.fd, crtc->crtc_id, vc->buffers[0].fb,
 	        DRM_MODE_PAGE_FLIP_EVENT, NULL);
 	fail_if(ret < 0, "pageflip failed: %m\n");
 
@@ -92,7 +95,7 @@ public:
 		b = &vc->buffers[vc->current & 1];
 		vc->model.render(vc, b);
 
-		ret = drmModePageFlip(vc->kms.fd, vc->kms.crtc->crtc_id, b->fb,
+		ret = drmModePageFlip(vc->kms.fd, crtc->crtc_id, b->fb,
 		                      DRM_MODE_PAGE_FLIP_EVENT, NULL);
 		fail_if(ret < 0, "pageflip failed: %m\n");
 		vc->current++;
@@ -188,14 +191,14 @@ public:
 	fail_if(!connector, "no connected connector!\n");
 	encoder = drmModeGetEncoder(vc->kms.fd, connector->encoder_id);
 	fail_if(!encoder, "failed to get encoder\n");
-	vc->kms.crtc = drmModeGetCrtc(vc->kms.fd, encoder->crtc_id);
-	fail_if(!vc->kms.crtc, "failed to get crtc\n");
+	crtc = drmModeGetCrtc(vc->kms.fd, encoder->crtc_id);
+	fail_if(!crtc, "failed to get crtc\n");
 	printf("mode info: hdisplay %d, vdisplay %d\n",
-	       vc->kms.crtc->mode.hdisplay, vc->kms.crtc->mode.vdisplay);
+	       crtc->mode.hdisplay, crtc->mode.vdisplay);
 
 	vc->kms.connector = connector;
-	vc->width = vc->kms.crtc->mode.hdisplay;
-	vc->height = vc->kms.crtc->mode.vdisplay;
+	vc->width = crtc->mode.hdisplay;
+	vc->height = crtc->mode.vdisplay;
 
 	vc->kms.gbm_device = gbm_create_device(vc->kms.fd);
 
