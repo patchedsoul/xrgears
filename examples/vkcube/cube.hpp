@@ -57,6 +57,9 @@ public:
     struct ubo {
 	glm::mat4 modelview;
 	glm::mat4 modelviewprojection;
+	//ESMatrix modelview;
+	//ESMatrix modelviewprojection;
+
 	float normal[12];
     };
 
@@ -476,26 +479,24 @@ public:
 	t = ((tv.tv_sec * 1000 + tv.tv_usec / 1000) -
 	     (vc->start_tv.tv_sec * 1000 + vc->start_tv.tv_usec / 1000)) / 5;
 
+	glm::mat4 t_matrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -8.0f));
 
-	//esMatrixLoadIdentity(&ubo.modelview);
-
-	ubo.modelview = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -8.0f));
-
-	//esTranslate(&ubo.modelview, 0.0f, 0.0f, -8.0f);
-
-	glm::vec3 rotation = glm::vec3(45.0f + (0.25f * t),
+	glm::vec3 r_vec = glm::vec3(45.0f + (0.25f * t),
 	                               45.0f - (0.5f * t),
 	                               10.0f + (0.15f * t));
 
-	ubo.modelview = glm::rotate(ubo.modelview, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-	ubo.modelview = glm::rotate(ubo.modelview, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-	ubo.modelview = glm::rotate(ubo.modelview, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4  r_matrix = glm::mat4();
+	r_matrix = glm::rotate(r_matrix, glm::radians(r_vec.x), glm::vec3(-1.0f, 0.0f, 0.0f));
+	r_matrix = glm::rotate(r_matrix, glm::radians(r_vec.y), glm::vec3(0.0f, -1.0f, 0.0f));
+	r_matrix = glm::rotate(r_matrix, glm::radians(r_vec.z), glm::vec3(0.0f, 0.0f, -1.0f));
 
 	float aspect = (float) vc->height / (float) vc->width;
 
-	glm::mat4 projection = glm::frustum(-2.8f, +2.8f, -2.8f * aspect, +2.8f * aspect, 6.0f, 10.0f);
+	ubo.modelview = t_matrix * r_matrix;
 
-	ubo.modelviewprojection = glm::mat4();
+	glm::mat4 p_matrix = glm::frustum(-2.8f, +2.8f, -2.8f * aspect, +2.8f * aspect, 3.5f, 10.0f);
+
+	ubo.modelviewprojection = p_matrix * ubo.modelview;
 
 	/* The mat3 normalMatrix is laid out as 3 vec4s. */
 	memcpy(ubo.normal, &ubo.modelview, sizeof ubo.normal);
