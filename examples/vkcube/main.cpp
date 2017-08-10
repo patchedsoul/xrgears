@@ -39,11 +39,8 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "vk.hpp"
 #include "xcb.hpp"
 #include "kms.hpp"
-
-//extern struct model cube_model;
 
 static display_mode_type my_display_mode = DISPLAY_MODE_AUTO;
 
@@ -119,7 +116,7 @@ parse_args(int argc, char *argv[])
 
 //
 void
-init_display(CubeApplication *vc, enum display_mode_type *mode)
+init_display(CubeApplication *vc, VikRenderer* renderer, enum display_mode_type *mode)
 {
   switch (*mode) {
     case DISPLAY_MODE_AUTO:
@@ -129,25 +126,25 @@ init_display(CubeApplication *vc, enum display_mode_type *mode)
       *mode = DISPLAY_MODE_XCB;
 
       display = new VikDisplayModeXCB();
-      if (display->init(vc) == -1) {
+      if (display->init(vc, renderer) == -1) {
         fprintf(stderr, "failed to initialize xcb, falling back "
                         "to kms\n");
         delete(display);
         *mode = DISPLAY_MODE_KMS;
         display = new VikDisplayModeKMS();
-        if (display->init(vc) == -1) {
+        if (display->init(vc, renderer) == -1) {
           fprintf(stderr, "failed to initialize kms\n");
         }
       }
       break;
     case DISPLAY_MODE_KMS:
       display = new VikDisplayModeKMS();
-      if (display->init(vc) == -1)
+      if (display->init(vc, renderer) == -1)
         fail("failed to initialize kms");
       break;
     case DISPLAY_MODE_XCB:
       display = new VikDisplayModeXCB();
-      if (display->init(vc) == -1)
+      if (display->init(vc, renderer) == -1)
         printf("failed to initialize xcb\n");
         fail("failed to initialize xcb");
       break;
@@ -163,7 +160,7 @@ mainloop(CubeApplication *vc, enum display_mode_type mode)
       break;
     case DISPLAY_MODE_XCB:
     case DISPLAY_MODE_KMS:
-      display->main_loop(vc);
+      display->main_loop(vc, &vc->renderer);
       break;
   }
 }
@@ -177,11 +174,11 @@ int main(int argc, char *argv[])
   parse_args(argc, argv);
 
   //vc.model = cube_model;
-  vc.width = 1024;
-  vc.height = 768;
-  gettimeofday(&vc.start_tv, NULL);
+  vc.renderer.width = 1024;
+  vc.renderer.height = 768;
+  gettimeofday(&vc.renderer.start_tv, NULL);
 
-  init_display(&vc, &my_display_mode);
+  init_display(&vc, &vc.renderer, &my_display_mode);
   printf("Starting main loop\n");
   mainloop(&vc, my_display_mode);
 

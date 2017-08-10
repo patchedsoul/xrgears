@@ -6,7 +6,7 @@
 
 #include "display.hpp"
 
-#include "common.h"
+#include "application.hpp"
 
 #include "silo.h"
 
@@ -44,7 +44,7 @@ public:
 
     // Return -1 on failure.
     int
-    init(CubeApplication *vc)
+    init(CubeApplication* app, VikRenderer *vc)
     {
 	xcb_screen_iterator_t iter;
 	static const char title[] = "Vulkan Cube";
@@ -97,7 +97,7 @@ public:
 
 	xcb_flush(conn);
 
-	init_vk(vc, VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+	vc->init_vk(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 
 	if (!vkGetPhysicalDeviceXcbPresentationSupportKHR(vc->physical_device, 0,
 	                                                  conn,
@@ -107,14 +107,14 @@ public:
 
 	init_surface(vc);
 
-	init_vk_objects(vc);
+	vc->init_vk_objects(&app->model);
 
 	vc->image_count = 0;
 
 	return 0;
     }
 
-    void init_surface(CubeApplication *vc) {
+    void init_surface(VikRenderer *vc) {
 	VkXcbSurfaceCreateInfoKHR surfaceInfo = {};
 
 	surfaceInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
@@ -123,7 +123,7 @@ public:
 
 	vkCreateXcbSurfaceKHR(vc->instance, &surfaceInfo, NULL, &vc->surface);
 
-	vc->image_format = choose_surface_format(vc);
+	vc->image_format = vc->choose_surface_format();
     }
 
     void schedule_repaint()
@@ -140,7 +140,7 @@ public:
     }
 
     void
-    main_loop(CubeApplication *vc)
+    main_loop(CubeApplication* app, VikRenderer *vc)
     {
 	xcb_generic_event_t *event;
 	xcb_key_press_event_t *key_press;
@@ -199,7 +199,7 @@ public:
 
 	    if (repaint) {
 		if (vc->image_count == 0)
-		    create_swapchain(vc);
+		    vc->create_swapchain();
 
 		uint32_t index;
 		vkAcquireNextImageKHR(vc->device, vc->swap_chain, 60,
@@ -207,7 +207,7 @@ public:
 
 
 		// TODO: model render
-		//vc->model.render(vc, &vc->buffers[index]);
+		app->model.render(vc, &vc->buffers[index]);
 
 		VkResult result;
 

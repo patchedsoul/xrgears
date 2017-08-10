@@ -29,7 +29,7 @@
 
 #include "display.hpp"
 
-#include "common.h"
+#include "application.hpp"
 
 static void
 page_flip_handler(int fd, unsigned int frame,
@@ -67,7 +67,7 @@ public:
 	restore_vt();
     }
 
-    void main_loop(CubeApplication *vc)
+    void main_loop(CubeApplication* app, VikRenderer *vc)
     {
 	int len, ret;
 	char buf[16];
@@ -109,8 +109,7 @@ public:
 		drmHandleEvent(fd, &evctx);
 		b = &vc->buffers[vc->current & 1];
 
-		// TODO: Render model
-		//vc->model.render(vc, b);
+		app->model.render(vc, b);
 
 		ret = drmModePageFlip(fd, crtc->crtc_id, b->fb,
 		                      DRM_MODE_PAGE_FLIP_EVENT, NULL);
@@ -120,7 +119,7 @@ public:
 	}
     }
 
-    int init_vt(CubeApplication *vc) {
+    int init_vt() {
 	struct termios tio;
 	struct stat buf;
 	int ret;
@@ -170,12 +169,12 @@ public:
     }
 
     // Return -1 on failure.
-    int init(CubeApplication *vc) {
+    int init(CubeApplication *app, VikRenderer *vc) {
 	drmModeRes *resources;
 	drmModeEncoder *encoder;
 	int i;
 
-	if (init_vt(vc) == -1)
+	if (init_vt() == -1)
 	    return -1;
 
 	fd = open("/dev/dri/card0", O_RDWR);
@@ -207,9 +206,9 @@ public:
 
 	gbm_dev = gbm_create_device(fd);
 
-	init_vk(vc, NULL);
+	vc->init_vk(NULL);
 	vc->image_format = VK_FORMAT_R8G8B8A8_SRGB;
-	init_vk_objects(vc);
+	vc->init_vk_objects(&app->model);
 
 	PFN_vkCreateDmaBufImageINTEL create_dma_buf_image =
 	        (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(vc->device, "vkCreateDmaBufImageINTEL");
@@ -254,7 +253,7 @@ public:
 	                        pitches, offsets, &b->fb, 0);
 	    fail_if(ret == -1, "addfb2 failed\n");
 
-	    init_buffer(vc, b);
+	    vc->init_buffer(b);
 	}
 
 	return 0;

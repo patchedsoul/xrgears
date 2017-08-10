@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "application.hpp"
 
 enum display_mode_type {
    DISPLAY_MODE_AUTO = 0,
@@ -13,11 +13,9 @@ public:
     VikDisplayMode() {}
     ~VikDisplayMode() {}
 
-
-
-    virtual int init(CubeApplication *vc) {
+    virtual int init(CubeApplication* app, VikRenderer *vc) {
 	return 0;
     }
 
-    virtual void main_loop(CubeApplication *vc) {}
+    virtual void main_loop(CubeApplication* app, VikRenderer *vc) {}
 };
