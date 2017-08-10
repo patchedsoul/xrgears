@@ -28,8 +28,10 @@
 #include <sys/time.h>
 #include <string.h>
 
-#include "esUtil.h"
 #include "silo.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "VikRenderer.hpp"
 
@@ -53,8 +55,8 @@ public:
     void *map;
 
     struct ubo {
-	ESMatrix modelview;
-	ESMatrix modelviewprojection;
+	glm::mat4 modelview;
+	glm::mat4 modelviewprojection;
 	float normal[12];
     };
 
@@ -474,19 +476,26 @@ public:
 	t = ((tv.tv_sec * 1000 + tv.tv_usec / 1000) -
 	     (vc->start_tv.tv_sec * 1000 + vc->start_tv.tv_usec / 1000)) / 5;
 
-	esMatrixLoadIdentity(&ubo.modelview);
-	esTranslate(&ubo.modelview, 0.0f, 0.0f, -8.0f);
-	esRotate(&ubo.modelview, 45.0f + (0.25f * t), 1.0f, 0.0f, 0.0f);
-	esRotate(&ubo.modelview, 45.0f - (0.5f * t), 0.0f, 1.0f, 0.0f);
-	esRotate(&ubo.modelview, 10.0f + (0.15f * t), 0.0f, 0.0f, 1.0f);
+
+	//esMatrixLoadIdentity(&ubo.modelview);
+
+	ubo.modelview = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -8.0f));
+
+	//esTranslate(&ubo.modelview, 0.0f, 0.0f, -8.0f);
+
+	glm::vec3 rotation = glm::vec3(45.0f + (0.25f * t),
+	                               45.0f - (0.5f * t),
+	                               10.0f + (0.15f * t));
+
+	ubo.modelview = glm::rotate(ubo.modelview, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	ubo.modelview = glm::rotate(ubo.modelview, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	ubo.modelview = glm::rotate(ubo.modelview, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	float aspect = (float) vc->height / (float) vc->width;
-	ESMatrix projection;
-	esMatrixLoadIdentity(&projection);
-	esFrustum(&projection, -2.8f, +2.8f, -2.8f * aspect, +2.8f * aspect, 6.0f, 10.0f);
 
-	esMatrixLoadIdentity(&ubo.modelviewprojection);
-	esMatrixMultiply(&ubo.modelviewprojection, &ubo.modelview, &projection);
+	glm::mat4 projection = glm::frustum(-2.8f, +2.8f, -2.8f * aspect, +2.8f * aspect, 6.0f, 10.0f);
+
+	ubo.modelviewprojection = glm::mat4();
 
 	/* The mat3 normalMatrix is laid out as 3 vec4s. */
 	memcpy(ubo.normal, &ubo.modelview, sizeof ubo.normal);
