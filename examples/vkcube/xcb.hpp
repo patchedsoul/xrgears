@@ -27,8 +27,17 @@ get_atom(struct xcb_connection_t *conn, const char *name)
 }
 
 class VikDisplayModeXCB {
+
+    xcb_connection_t *conn;
+    xcb_window_t window;
+    xcb_atom_t atom_wm_protocols;
+    xcb_atom_t atom_wm_delete_window;
+
 public:
-    VikDisplayModeXCB() {}
+    VikDisplayModeXCB() {
+	  window = XCB_NONE;
+    }
+
     ~VikDisplayModeXCB() {}
 
     // Return -1 on failure.
@@ -38,11 +47,11 @@ public:
 	xcb_screen_iterator_t iter;
 	static const char title[] = "Vulkan Cube";
 
-	vc->xcb.conn = xcb_connect(0, 0);
-	if (xcb_connection_has_error(vc->xcb.conn))
+	conn = xcb_connect(0, 0);
+	if (xcb_connection_has_error(conn))
 	    return -1;
 
-	vc->xcb.window = xcb_generate_id(vc->xcb.conn);
+	window = xcb_generate_id(conn);
 
 	uint32_t window_values[] = {
 	    XCB_EVENT_MASK_EXPOSURE |
@@ -50,11 +59,11 @@ public:
 	    XCB_EVENT_MASK_KEY_PRESS
 	};
 
-	iter = xcb_setup_roots_iterator(xcb_get_setup(vc->xcb.conn));
+	iter = xcb_setup_roots_iterator(xcb_get_setup(conn));
 
-	xcb_create_window(vc->xcb.conn,
+	xcb_create_window(conn,
 	                  XCB_COPY_FROM_PARENT,
-	                  vc->xcb.window,
+	                  window,
 	                  iter.data->root,
 	                  0, 0,
 	                  vc->width,
@@ -64,32 +73,32 @@ public:
 	                  iter.data->root_visual,
 	                  XCB_CW_EVENT_MASK, window_values);
 
-	vc->xcb.atom_wm_protocols = get_atom(vc->xcb.conn, "WM_PROTOCOLS");
-	vc->xcb.atom_wm_delete_window = get_atom(vc->xcb.conn, "WM_DELETE_WINDOW");
-	xcb_change_property(vc->xcb.conn,
+	atom_wm_protocols = get_atom(conn, "WM_PROTOCOLS");
+	atom_wm_delete_window = get_atom(conn, "WM_DELETE_WINDOW");
+	xcb_change_property(conn,
 	                    XCB_PROP_MODE_REPLACE,
-	                    vc->xcb.window,
-	                    vc->xcb.atom_wm_protocols,
+	                    window,
+	                    atom_wm_protocols,
 	                    XCB_ATOM_ATOM,
 	                    32,
-	                    1, &vc->xcb.atom_wm_delete_window);
+	                    1, &atom_wm_delete_window);
 
-	xcb_change_property(vc->xcb.conn,
+	xcb_change_property(conn,
 	                    XCB_PROP_MODE_REPLACE,
-	                    vc->xcb.window,
-	                    get_atom(vc->xcb.conn, "_NET_WM_NAME"),
-	                    get_atom(vc->xcb.conn, "UTF8_STRING"),
+	                    window,
+	                    get_atom(conn, "_NET_WM_NAME"),
+	                    get_atom(conn, "UTF8_STRING"),
 	                    8, // sizeof(char),
 	                    strlen(title), title);
 
-	xcb_map_window(vc->xcb.conn, vc->xcb.window);
+	xcb_map_window(conn, window);
 
-	xcb_flush(vc->xcb.conn);
+	xcb_flush(conn);
 
 	init_vk(vc, VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 
 	if (!vkGetPhysicalDeviceXcbPresentationSupportKHR(vc->physical_device, 0,
-	                                                  vc->xcb.conn,
+	                                                  conn,
 	                                                  iter.data->root_visual)) {
 	    fail("Vulkan not supported on given X window");
 	}
@@ -97,8 +106,8 @@ public:
 	VkXcbSurfaceCreateInfoKHR surfaceInfo = {};
 
 	surfaceInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-	surfaceInfo.connection = vc->xcb.conn;
-	surfaceInfo.window = vc->xcb.window;
+	surfaceInfo.connection = conn;
+	surfaceInfo.window = window;
 
 	vkCreateXcbSurfaceKHR(vc->instance, &surfaceInfo, NULL, &vc->surface);
 
@@ -118,10 +127,10 @@ public:
 
 	client_message.response_type = XCB_CLIENT_MESSAGE;
 	client_message.format = 32;
-	client_message.window = vc->xcb.window;
+	client_message.window = window;
 	client_message.type = XCB_ATOM_NOTICE;
 
-	xcb_send_event(vc->xcb.conn, 0, vc->xcb.window,
+	xcb_send_event(conn, 0, window,
 	               0, (char *) &client_message);
     }
 
@@ -135,16 +144,16 @@ public:
 
 	while (1) {
 	    bool repaint = false;
-	    event = xcb_wait_for_event(vc->xcb.conn);
+	    event = xcb_wait_for_event(conn);
 	    while (event) {
 		switch (event->response_type & 0x7f) {
 		    case XCB_CLIENT_MESSAGE:
 			client_message = (xcb_client_message_event_t *) event;
-			if (client_message->window != vc->xcb.window)
+			if (client_message->window != window)
 			    break;
 
-			if (client_message->type == vc->xcb.atom_wm_protocols &&
-			        client_message->data.data32[0] == vc->xcb.atom_wm_delete_window) {
+			if (client_message->type == atom_wm_protocols &&
+			        client_message->data.data32[0] == atom_wm_delete_window) {
 			    exit(0);
 			}
 
@@ -180,7 +189,7 @@ public:
 		}
 		free(event);
 
-		event = xcb_poll_for_event(vc->xcb.conn);
+		event = xcb_poll_for_event(conn);
 	    }
 
 	    if (repaint) {
@@ -212,7 +221,7 @@ public:
 		schedule_repaint(vc);
 	    }
 
-	    xcb_flush(vc->xcb.conn);
+	    xcb_flush(conn);
 	}
     }
 };

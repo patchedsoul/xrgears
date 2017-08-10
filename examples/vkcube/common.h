@@ -52,15 +52,6 @@ struct model {
 struct vkcube {
    struct model model;
 
-
-
-   struct {
-      xcb_connection_t *conn;
-      xcb_window_t window;
-      xcb_atom_t atom_wm_protocols;
-      xcb_atom_t atom_wm_delete_window;
-   } xcb;
-
    struct {
      int fd;
      struct gbm_device *gbm_device;
