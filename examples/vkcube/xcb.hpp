@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "display.hpp"
+
 #include "common.h"
 
 #include "silo.h"
@@ -26,7 +28,7 @@ get_atom(struct xcb_connection_t *conn, const char *name)
     return atom;
 }
 
-class VikDisplayModeXCB {
+class VikDisplayModeXCB : public VikDisplayMode {
 
     xcb_connection_t *conn;
     xcb_window_t window;

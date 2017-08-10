@@ -27,6 +27,8 @@
 
 #include <vulkan/vulkan_intel.h>
 
+#include "display.hpp"
+
 static void
 page_flip_handler(int fd, unsigned int frame,
                   unsigned int sec, unsigned int usec, void *data)
@@ -34,7 +36,7 @@ page_flip_handler(int fd, unsigned int frame,
 
 static struct termios save_tio;
 
-class VikDisplayModeKMS {
+class VikDisplayModeKMS : public VikDisplayMode {
 
     drmModeCrtc *crtc;
     drmModeConnector *connector;
