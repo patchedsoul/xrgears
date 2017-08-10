@@ -7,10 +7,6 @@
 #include <string.h>
 
 
-#include <xf86drm.h>
-#include <xf86drmMode.h>
-#include <drm_fourcc.h>
-
 
 #ifndef VK_USE_PLATFORM_XCB_KHR
 #define VK_USE_PLATFORM_XCB_KHR
@@ -51,10 +47,6 @@ struct model {
 
 struct vkcube {
    struct model model;
-
-   struct {
-     int fd;
-   } kms;
 
    VkSwapchainKHR swap_chain;
 

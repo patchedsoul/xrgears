@@ -21,6 +21,10 @@
 #include <sys/mman.h>
 #include <linux/input.h>
 
+#include <xf86drm.h>
+#include <xf86drmMode.h>
+#include <drm_fourcc.h>
+
 static void
 page_flip_handler(int fd, unsigned int frame,
                   unsigned int sec, unsigned int usec, void *data)
@@ -33,11 +37,14 @@ class VikDisplayModeKMS {
     drmModeCrtc *crtc;
     drmModeConnector *connector;
 
-    struct gbm_device *gbm_device;
+    struct gbm_device *gbm_dev;
+    struct gbm_bo *gbm_bo;
+
+    int fd;
 
 public:
     VikDisplayModeKMS() {
-	  gbm_device = NULL;
+	  gbm_dev = NULL;
     }
 
     ~VikDisplayModeKMS() {}
@@ -67,19 +74,19 @@ public:
 
 	pfd[0].fd = STDIN_FILENO;
 	pfd[0].events = POLLIN;
-	pfd[1].fd = vc->kms.fd;
+	pfd[1].fd = fd;
 	pfd[1].events = POLLIN;
 
 	drmEventContext evctx = {};
 	evctx.version = 2;
 	evctx.page_flip_handler = page_flip_handler;
 
-	ret = drmModeSetCrtc(vc->kms.fd, crtc->crtc_id, vc->buffers[0].fb,
+	ret = drmModeSetCrtc(fd, crtc->crtc_id, vc->buffers[0].fb,
 	        0, 0, &connector->connector_id, 1, &crtc->mode);
 	fail_if(ret < 0, "modeset failed: %m\n");
 
 
-	ret = drmModePageFlip(vc->kms.fd, crtc->crtc_id, vc->buffers[0].fb,
+	ret = drmModePageFlip(fd, crtc->crtc_id, vc->buffers[0].fb,
 	        DRM_MODE_PAGE_FLIP_EVENT, NULL);
 	fail_if(ret < 0, "pageflip failed: %m\n");
 
@@ -97,11 +104,11 @@ public:
 		}
 	    }
 	    if (pfd[1].revents & POLLIN) {
-		drmHandleEvent(vc->kms.fd, &evctx);
+		drmHandleEvent(fd, &evctx);
 		b = &vc->buffers[vc->current & 1];
 		vc->model.render(vc, b);
 
-		ret = drmModePageFlip(vc->kms.fd, crtc->crtc_id, b->fb,
+		ret = drmModePageFlip(fd, crtc->crtc_id, b->fb,
 		                      DRM_MODE_PAGE_FLIP_EVENT, NULL);
 		fail_if(ret < 0, "pageflip failed: %m\n");
 		vc->current++;
@@ -177,16 +184,16 @@ public:
 	if (init_vt(vc) == -1)
 	    return -1;
 
-	vc->kms.fd = open("/dev/dri/card0", O_RDWR);
-	fail_if(vc->kms.fd == -1, "failed to open /dev/dri/card0\n");
+	fd = open("/dev/dri/card0", O_RDWR);
+	fail_if(fd == -1, "failed to open /dev/dri/card0\n");
 
 	/* Get KMS resources and find the first active connecter. We'll use that
       connector and the crtc driving it in the mode it's currently running. */
-	resources = drmModeGetResources(vc->kms.fd);
+	resources = drmModeGetResources(fd);
 	fail_if(!resources, "drmModeGetResources failed: %s\n", strerror(errno));
 
 	for (i = 0; i < resources->count_connectors; i++) {
-	    connector = drmModeGetConnector(vc->kms.fd, resources->connectors[i]);
+	    connector = drmModeGetConnector(fd, resources->connectors[i]);
 	    if (connector->connection == DRM_MODE_CONNECTED)
 		break;
 	    drmModeFreeConnector(connector);
@@ -194,9 +201,9 @@ public:
 	}
 
 	fail_if(!connector, "no connected connector!\n");
-	encoder = drmModeGetEncoder(vc->kms.fd, connector->encoder_id);
+	encoder = drmModeGetEncoder(fd, connector->encoder_id);
 	fail_if(!encoder, "failed to get encoder\n");
-	crtc = drmModeGetCrtc(vc->kms.fd, encoder->crtc_id);
+	crtc = drmModeGetCrtc(fd, encoder->crtc_id);
 	fail_if(!crtc, "failed to get crtc\n");
 	printf("mode info: hdisplay %d, vdisplay %d\n",
 	       crtc->mode.hdisplay, crtc->mode.vdisplay);
@@ -204,7 +211,7 @@ public:
 	vc->width = crtc->mode.hdisplay;
 	vc->height = crtc->mode.vdisplay;
 
-	gbm_device = gbm_create_device(vc->kms.fd);
+	gbm_dev = gbm_create_device(fd);
 
 	init_vk(vc, NULL);
 	vc->image_format = VK_FORMAT_R8G8B8A8_SRGB;
@@ -215,12 +222,12 @@ public:
 
 	for (uint32_t i = 0; i < 2; i++) {
 	    struct vkcube_buffer *b = &vc->buffers[i];
-	    int fd, stride, ret;
+	    int buffer_fd, stride, ret;
 
-	    b->gbm_bo = gbm_bo_create(gbm_device, vc->width, vc->height,
+	    b->gbm_bo = gbm_bo_create(gbm_dev, vc->width, vc->height,
 	                              GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
 
-	    fd = gbm_bo_get_fd(b->gbm_bo);
+	    buffer_fd = gbm_bo_get_fd(b->gbm_bo);
 	    stride = gbm_bo_get_stride(b->gbm_bo);
 
 
@@ -232,7 +239,7 @@ public:
 	    extent.depth = 1;
 
 	    dmaBufInfo.sType = (VkStructureType) VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_CREATE_INFO_INTEL;
-	    dmaBufInfo.fd = fd;
+	    dmaBufInfo.fd = buffer_fd;
 	    dmaBufInfo.format = vc->image_format;
 	    dmaBufInfo.extent = extent;
 	    dmaBufInfo.strideInBytes = stride;
@@ -242,13 +249,13 @@ public:
 	                         NULL,
 	                         &b->mem,
 	                         &b->image);
-	    close(fd);
+	    close(buffer_fd);
 
 	    b->stride = gbm_bo_get_stride(b->gbm_bo);
 	    uint32_t bo_handles[4] = { (uint32_t) (gbm_bo_get_handle(b->gbm_bo).s32), };
 	    uint32_t pitches[4] = { (uint32_t) stride, };
 	    uint32_t offsets[4] = { 0, };
-	    ret = drmModeAddFB2(vc->kms.fd, vc->width, vc->height,
+	    ret = drmModeAddFB2(fd, vc->width, vc->height,
 	                        DRM_FORMAT_XRGB8888, bo_handles,
 	                        pitches, offsets, &b->fb, 0);
 	    fail_if(ret == -1, "addfb2 failed\n");
