@@ -97,7 +97,7 @@ function(buildExample EXAMPLE_NAME)
     add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
 
     if (EXAMPLE_NAME STREQUAL "vkcube")
-	target_link_libraries(${EXAMPLE_NAME} vulkan m wayland-client png drm gbm xcb)
+	target_link_libraries(${EXAMPLE_NAME} vulkan m wayland-client png drm gbm xcb vks)
     else()
 	set(LINT_SOURCES ${LINT_SOURCES} ${EXAMPLE_SRC})
 	target_link_libraries(${EXAMPLE_NAME}

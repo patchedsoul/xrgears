@@ -34,18 +34,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "VikRenderer.hpp"
+#include "VikShader.hpp"
 
 #define VK_PROTOTYPES
 #include <vulkan/vulkan.h>
-
-
-static unsigned char vs_spirv_source[] = {
-    #include "vkcube.vert.spv.h"
-};
-
-static unsigned char fs_spirv_source[] = {
-    #include "vkcube.frag.spv.h"
-};
 
 class Cube {
 public:
@@ -140,7 +132,6 @@ public:
 	    }
 	};
 
-
 	VkPipelineVertexInputStateCreateInfo vi_create_info = {
 	    .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
 	    .vertexBindingDescriptionCount = 3,
@@ -149,46 +140,9 @@ public:
 	    .pVertexAttributeDescriptions = vertexAttribute
 	};
 
-	VkShaderModule vs_module;
-
-	VkShaderModuleCreateInfo shaderInfo = {
-	    .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-	    .codeSize = sizeof(vs_spirv_source),
-	    .pCode = (uint32_t *)vs_spirv_source,
-	};
-
-	vkCreateShaderModule(renderer->device,
-	                     &shaderInfo,
-	                     NULL,
-	                     &vs_module);
-
-
-	VkShaderModuleCreateInfo shaderInfo2 = {
-	    .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-	    .codeSize = sizeof(fs_spirv_source),
-	    .pCode = (uint32_t *)fs_spirv_source,
-	};
-
-	VkShaderModule fs_module;
-	vkCreateShaderModule(renderer->device,
-	                     &shaderInfo2,
-	                     NULL,
-	                     &fs_module);
-
-
 	VkPipelineShaderStageCreateInfo stagesInfo[] =  {
-	    {
-	        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-	        .stage = VK_SHADER_STAGE_VERTEX_BIT,
-	        .module = vs_module,
-	        .pName = "main",
-	    },
-	    {
-	        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-	        .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-	        .module = fs_module,
-	        .pName = "main",
-	    },
+	    VikShader::load(renderer->device, "vkcube/vkcube.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+	    VikShader::load(renderer->device, "vkcube/vkcube.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT),
 	};
 
 	VkPipelineInputAssemblyStateCreateInfo assmblyInfo = {
