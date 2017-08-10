@@ -48,6 +48,7 @@ extern struct model cube_model;
 static display_mode my_display_mode = DISPLAY_MODE_AUTO;
 
 VikDisplayModeXCB *display_xcb;
+VikDisplayModeKMS *display_kms;
 
 static inline bool
 streq(const char *a, const char *b)
@@ -132,14 +133,15 @@ init_display(struct vkcube *vc, enum display_mode *mode)
         fprintf(stderr, "failed to initialize xcb, falling back "
                         "to kms\n");
         *mode = DISPLAY_MODE_KMS;
-        if (init_kms(vc) == -1) {
+        display_kms = new VikDisplayModeKMS();
+        if (display_kms->init(vc) == -1) {
           fprintf(stderr, "failed to initialize kms\n");
-
         }
       }
       break;
     case DISPLAY_MODE_KMS:
-      if (init_kms(vc) == -1)
+      display_kms = new VikDisplayModeKMS();
+      if (display_kms->init(vc) == -1)
         fail("failed to initialize kms");
       break;
     case DISPLAY_MODE_XCB:
@@ -161,7 +163,7 @@ mainloop(struct vkcube *vc, enum display_mode mode)
       display_xcb->main_loop(vc);
       break;
     case DISPLAY_MODE_KMS:
-      mainloop_vt(vc);
+     display_kms->main_loop(vc);
       break;
   }
 }
