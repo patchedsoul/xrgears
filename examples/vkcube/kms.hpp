@@ -31,6 +31,7 @@ static struct termios save_tio;
 class VikDisplayModeKMS {
 
     drmModeCrtc *crtc;
+    drmModeConnector *connector;
 
 public:
     VikDisplayModeKMS() {}
@@ -69,7 +70,7 @@ public:
 	evctx.page_flip_handler = page_flip_handler;
 
 	ret = drmModeSetCrtc(vc->kms.fd, crtc->crtc_id, vc->buffers[0].fb,
-	        0, 0, &vc->kms.connector->connector_id, 1, &crtc->mode);
+	        0, 0, &connector->connector_id, 1, &crtc->mode);
 	fail_if(ret < 0, "modeset failed: %m\n");
 
 
@@ -165,7 +166,6 @@ public:
 	printf("kms init\n");
 
 	drmModeRes *resources;
-	drmModeConnector *connector;
 	drmModeEncoder *encoder;
 	int i;
 
@@ -196,7 +196,6 @@ public:
 	printf("mode info: hdisplay %d, vdisplay %d\n",
 	       crtc->mode.hdisplay, crtc->mode.vdisplay);
 
-	vc->kms.connector = connector;
 	vc->width = crtc->mode.hdisplay;
 	vc->height = crtc->mode.vdisplay;
 
