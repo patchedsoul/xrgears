@@ -44,7 +44,9 @@
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
 
-class XRGears : public ApplicationWayland {
+#define WINDOW_BACKEND ApplicationWayland
+
+class XRGears : public WINDOW_BACKEND {
 public:
   // Vertex layout for the models
   vks::VertexLayout vertexLayout = vks::VertexLayout({
@@ -95,7 +97,7 @@ public:
   // Semaphore used to synchronize between offscreen and final scene rendering
   VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
-  XRGears() : ApplicationWayland(ENABLE_VALIDATION) {
+  XRGears() : WINDOW_BACKEND(ENABLE_VALIDATION) {
     title = "XR Gears";
     enableTextOverlay = true;
     camera.type = Camera::CameraType::firstperson;
