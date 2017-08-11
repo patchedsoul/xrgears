@@ -40,6 +40,7 @@
 #include "../vks/vksWindowXCB.hpp"
 #include "../vks/vksWindowWayland.hpp"
 #include "../vks/vksWindowDisplay.hpp"
+#include "../vks/vksWindowKMS.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
