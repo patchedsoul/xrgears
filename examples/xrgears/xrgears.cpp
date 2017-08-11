@@ -40,7 +40,6 @@
 #include "../vks/vksWindowXCB.hpp"
 #include "../vks/vksWindowWayland.hpp"
 #include "../vks/vksWindowDisplay.hpp"
-#include "../vks/vksWindowKMS.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
@@ -155,7 +154,7 @@ public:
   }
 
   void buildCommandBuffers() {
-    printf("Draw command buffers size: %d\n", drawCmdBuffers.size());
+    printf("Draw command buffers size: %ld\n", drawCmdBuffers.size());
 
     if (enableDistortion)
       for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)

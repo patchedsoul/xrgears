@@ -18,7 +18,7 @@ class vksWindow {
   vksWindow() {}
   ~vksWindow() {}
 
-  virtual void renderLoop() {}
-  virtual const char* requiredExtensionName() {}
-  virtual void initSwapChain() {}
+  virtual void renderLoop() = 0;
+  virtual const char* requiredExtensionName() = 0;
+  virtual void initSwapChain() = 0;
 };
