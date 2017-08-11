@@ -45,9 +45,7 @@
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
 
-#define WINDOW_BACKEND ApplicationWayland
-
-class XRGears : public WINDOW_BACKEND {
+class XRGears : public Application {
 public:
   // Vertex layout for the models
   vks::VertexLayout vertexLayout = vks::VertexLayout({
@@ -98,7 +96,7 @@ public:
   // Semaphore used to synchronize between offscreen and final scene rendering
   VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
-  XRGears() : WINDOW_BACKEND(ENABLE_VALIDATION) {
+  XRGears() : Application(ENABLE_VALIDATION) {
     title = "XR Gears";
     enableTextOverlay = true;
     camera.type = Camera::CameraType::firstperson;
@@ -773,13 +771,14 @@ static void handleEvent(const xcb_generic_event_t *event) {
 int main(const int argc, const char *argv[]) {
   for (size_t i = 0; i < argc; i++) { XRGears::args.push_back(argv[i]); };
   app = new XRGears();
-  app->initVulkan();
+  ApplicationXCB * window = new ApplicationXCB();
+  app->initVulkan(window);
 
-  app->setupWindow();
+  window->setupWindow(app);
 
-  app->initSwapChain();
+  window->initSwapChain(app->instance, &app->swapChain);
   app->prepare();
-  app->renderLoopWrap();
+  app->renderLoopWrap(window);
   delete(app);
 
   return 0;

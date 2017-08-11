@@ -11,9 +11,11 @@
 
 #include "vksApplication.hpp"
 
+#include "vksWindowXCB.hpp"
+
 std::vector<const char*> Application::args;
 
-VkResult Application::createInstance(bool enableValidation) {
+VkResult Application::createInstance(bool enableValidation, ApplicationXCB*window) {
   this->settings.validation = enableValidation;
 
   VkApplicationInfo appInfo = {};
@@ -25,7 +27,7 @@ VkResult Application::createInstance(bool enableValidation) {
   std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
 
   // Enable surface extensions depending on os
-  instanceExtensions.push_back(requiredExtensionName());
+  instanceExtensions.push_back(window->requiredExtensionName());
 
   /*
   instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
@@ -183,11 +185,11 @@ VkPipelineShaderStageCreateInfo Application::loadShader(std::string fileName, Vk
 }
 
 
-void Application::renderLoopWrap() {
+void Application::renderLoopWrap(ApplicationXCB *window) {
   destWidth = width;
   destHeight = height;
 
-  renderLoop();
+  window->renderLoop(this);
 
   // Flush device to make sure all resources can be freed
   vkDeviceWaitIdle(device);
@@ -374,11 +376,11 @@ void Application::printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDev
 }
 
 
-void Application::initVulkan() {
+void Application::initVulkan(ApplicationXCB *window) {
   VkResult err;
 
   // Vulkan instance
-  err = createInstance(settings.validation);
+  err = createInstance(settings.validation, window);
   if (err)
     vks::tools::exitFatal("Could not create Vulkan instance : \n" + vks::tools::errorString(err), "Fatal error");
 

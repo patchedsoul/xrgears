@@ -40,14 +40,14 @@
 #define KEY_O 0x20
 #define KEY_T 0x1C
 
-class ApplicationXCB : public Application {
+class ApplicationXCB {
   xcb_connection_t *connection;
   xcb_screen_t *screen;
   xcb_window_t window;
   xcb_intern_atom_reply_t *atom_wm_delete_window;
 
  public:
-  explicit ApplicationXCB(bool enableValidation) : Application(enableValidation) {
+  explicit ApplicationXCB() {
     const xcb_setup_t *setup;
     xcb_screen_iterator_t iter;
     int scr;
@@ -71,60 +71,60 @@ class ApplicationXCB : public Application {
     xcb_disconnect(connection);
   }
 
-  void initSwapChain() {
+  void initSwapChain(const VkInstance &instance, VulkanSwapChain* swapChain) {
     VkResult err = VK_SUCCESS;
 
     VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
     surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
     surfaceCreateInfo.connection = connection;
     surfaceCreateInfo.window = window;
-    err = vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &swapChain.surface);
+    err = vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &swapChain->surface);
 
     if (err != VK_SUCCESS)
       vks::tools::exitFatal("Could not create surface!", "Fatal error");
     else
-      swapChain.initSurfaceCommon();
+      swapChain->initSurfaceCommon();
   }
 
-  void renderLoop() {
+  void renderLoop(Application *app) {
     xcb_flush(connection);
-    while (!quit) {
+    while (!app->quit) {
       auto tStart = std::chrono::high_resolution_clock::now();
-      if (viewUpdated) {
-        viewUpdated = false;
-        viewChanged();
+      if (app->viewUpdated) {
+        app->viewUpdated = false;
+        app->viewChanged();
       }
       xcb_generic_event_t *event;
       while ((event = xcb_poll_for_event(connection))) {
-        handleEvent(event);
+        handleEvent(app, event);
         free(event);
       }
-      render();
-      frameCounter++;
+      app->render();
+      app->frameCounter++;
       auto tEnd = std::chrono::high_resolution_clock::now();
       auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-      frameTimer = tDiff / 1000.0f;
-      camera.update(frameTimer);
-      if (camera.moving())
-        viewUpdated = true;
+      app->frameTimer = tDiff / 1000.0f;
+      app->camera.update(app->frameTimer);
+      if (app->camera.moving())
+        app->viewUpdated = true;
       // Convert to clamped timer value
-      if (!paused) {
-        timer += timerSpeed * frameTimer;
-        if (timer > 1.0)
-          timer -= 1.0f;
+      if (!app->paused) {
+        app->timer += app->timerSpeed * app->frameTimer;
+        if (app->timer > 1.0)
+          app->timer -= 1.0f;
       }
-      fpsTimer += (float)tDiff;
-      if (fpsTimer > 1000.0f) {
-        if (!enableTextOverlay) {
-          std::string windowTitle = getWindowTitle();
+      app->fpsTimer += (float)tDiff;
+      if (app->fpsTimer > 1000.0f) {
+        if (!app->enableTextOverlay) {
+          std::string windowTitle = app->getWindowTitle();
           xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
                               window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
                               windowTitle.size(), windowTitle.c_str());
         }
-        lastFPS = frameCounter;
-        updateTextOverlay();
-        fpsTimer = 0.0f;
-        frameCounter = 0;
+        app->lastFPS = app->frameCounter;
+        app->updateTextOverlay();
+        app->fpsTimer = 0.0f;
+        app->frameCounter = 0;
       }
     }
   }
@@ -135,7 +135,7 @@ class ApplicationXCB : public Application {
   }
 
   // Set up a window using XCB and request event types
-  void setupWindow() {
+  void setupWindow(Application *app) {
     uint32_t value_mask, value_list[32];
 
     if (connection == nullptr)
@@ -154,15 +154,15 @@ class ApplicationXCB : public Application {
         XCB_EVENT_MASK_BUTTON_PRESS |
         XCB_EVENT_MASK_BUTTON_RELEASE;
 
-    if (settings.fullscreen) {
-      width = destWidth = screen->width_in_pixels;
-      height = destHeight = screen->height_in_pixels;
+    if (app->settings.fullscreen) {
+      app->width = app->destWidth = screen->width_in_pixels;
+      app->height = app->destHeight = screen->height_in_pixels;
     }
 
     xcb_create_window(connection,
                       XCB_COPY_FROM_PARENT,
                       window, screen->root,
-                      0, 0, width, height, 0,
+                      0, 0, app->width, app->height, 0,
                       XCB_WINDOW_CLASS_INPUT_OUTPUT,
                       screen->root_visual,
                       value_mask, value_list);
@@ -175,14 +175,14 @@ class ApplicationXCB : public Application {
                         window, (*reply).atom, 4, 32, 1,
                         &(*atom_wm_delete_window).atom);
 
-    std::string windowTitle = getWindowTitle();
+    std::string windowTitle = app->getWindowTitle();
     xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
                         window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-                        title.size(), windowTitle.c_str());
+                        app->title.size(), windowTitle.c_str());
 
     free(reply);
 
-    if (settings.fullscreen) {
+    if (app->settings.fullscreen) {
       xcb_intern_atom_reply_t *atom_wm_state = intern_atom_helper(connection, false, "_NET_WM_STATE");
       xcb_intern_atom_reply_t *atom_wm_fullscreen = intern_atom_helper(connection, false, "_NET_WM_STATE_FULLSCREEN");
       xcb_change_property(connection,
@@ -197,79 +197,87 @@ class ApplicationXCB : public Application {
     xcb_map_window(connection, window);
   }
 
-  void handleEvent(const xcb_generic_event_t *event) {
+  void handleEvent(Application *app, const xcb_generic_event_t *event) {
     switch (event->response_type & 0x7f) {
       case XCB_CLIENT_MESSAGE:
         if ((*(xcb_client_message_event_t*)event).data.data32[0] ==
             (*atom_wm_delete_window).atom) {
-          quit = true;
+          app->quit = true;
         }
         break;
       case XCB_MOTION_NOTIFY: {
         xcb_motion_notify_event_t *motion = (xcb_motion_notify_event_t *)event;
-        if (mouseButtons.left) {
-          rotation.x += (mousePos.y - (float)motion->event_y) * 1.25f;
-          rotation.y -= (mousePos.x - (float)motion->event_x) * 1.25f;
-          camera.rotate(glm::vec3((mousePos.y - (float)motion->event_y) * camera.rotationSpeed, -(mousePos.x - (float)motion->event_x) * camera.rotationSpeed, 0.0f));
-          viewUpdated = true;
+        if (app->mouseButtons.left) {
+          app->rotation.x += (app->mousePos.y - (float)motion->event_y) * 1.25f;
+          app->rotation.y -= (app->mousePos.x - (float)motion->event_x) * 1.25f;
+          app->camera.rotate(
+                glm::vec3((
+                            app->mousePos.y - (float)motion->event_y) * app->camera.rotationSpeed,
+                          -(app->mousePos.x - (float)motion->event_x) * app->camera.rotationSpeed,
+                          0.0f));
+          app->viewUpdated = true;
         }
-        if (mouseButtons.right) {
-          zoom += (mousePos.y - (float)motion->event_y) * .005f;
-          camera.translate(glm::vec3(-0.0f, 0.0f, (mousePos.y - (float)motion->event_y) * .005f * zoomSpeed));
-          viewUpdated = true;
+        if (app->mouseButtons.right) {
+          app->zoom += (app->mousePos.y - (float)motion->event_y) * .005f;
+          app->camera.translate(glm::vec3(-0.0f, 0.0f, (app->mousePos.y - (float)motion->event_y) * .005f * app->zoomSpeed));
+          app->viewUpdated = true;
         }
-        if (mouseButtons.middle) {
-          cameraPos.x -= (mousePos.x - (float)motion->event_x) * 0.01f;
-          cameraPos.y -= (mousePos.y - (float)motion->event_y) * 0.01f;
-          camera.translate(glm::vec3(-(mousePos.x - (float)(float)motion->event_x) * 0.01f, -(mousePos.y - (float)motion->event_y) * 0.01f, 0.0f));
-          viewUpdated = true;
-          mousePos.x = (float)motion->event_x;
-          mousePos.y = (float)motion->event_y;
+        if (app->mouseButtons.middle) {
+          app->cameraPos.x -= (app->mousePos.x - (float)motion->event_x) * 0.01f;
+          app->cameraPos.y -= (app->mousePos.y - (float)motion->event_y) * 0.01f;
+          app->camera.translate(
+                glm::vec3(
+                  -(app->mousePos.x - (float)(float)motion->event_x) * 0.01f,
+                  -(app->mousePos.y - (float)motion->event_y) * 0.01f,
+                  0.0f));
+          app->viewUpdated = true;
+          app->mousePos.x = (float)motion->event_x;
+          app->mousePos.y = (float)motion->event_y;
         }
-        mousePos = glm::vec2((float)motion->event_x, (float)motion->event_y);
+        app->mousePos = glm::vec2((float)motion->event_x, (float)motion->event_y);
       }
         break;
       case XCB_BUTTON_PRESS: {
         xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
         if (press->detail == XCB_BUTTON_INDEX_1)
-          mouseButtons.left = true;
+          app->mouseButtons.left = true;
         if (press->detail == XCB_BUTTON_INDEX_2)
-          mouseButtons.middle = true;
+          app->mouseButtons.middle = true;
         if (press->detail == XCB_BUTTON_INDEX_3)
-          mouseButtons.right = true;
+          app->mouseButtons.right = true;
       }
         break;
       case XCB_BUTTON_RELEASE: {
         xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
         if (press->detail == XCB_BUTTON_INDEX_1)
-          mouseButtons.left = false;
+          app->mouseButtons.left = false;
         if (press->detail == XCB_BUTTON_INDEX_2)
-          mouseButtons.middle = false;
+          app->mouseButtons.middle = false;
         if (press->detail == XCB_BUTTON_INDEX_3)
-          mouseButtons.right = false;
+          app->mouseButtons.right = false;
       }
         break;
       case XCB_KEY_PRESS: {
         const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
         switch (keyEvent->detail) {
           case KEY_W:
-            camera.keys.up = true;
+            app->camera.keys.up = true;
             break;
           case KEY_S:
-            camera.keys.down = true;
+            app->camera.keys.down = true;
             break;
           case KEY_A:
-            camera.keys.left = true;
+            app->camera.keys.left = true;
             break;
           case KEY_D:
-            camera.keys.right = true;
+            app->camera.keys.right = true;
             break;
           case KEY_P:
-            paused = !paused;
+            app->paused = !app->paused;
             break;
           case KEY_F1:
-            if (enableTextOverlay)
-              textOverlay->visible = !textOverlay->visible;
+            if (app->enableTextOverlay)
+              app->textOverlay->visible = !app->textOverlay->visible;
             break;
         }
       }
@@ -278,34 +286,34 @@ class ApplicationXCB : public Application {
         const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
         switch (keyEvent->detail) {
           case KEY_W:
-            camera.keys.up = false;
+            app->camera.keys.up = false;
             break;
           case KEY_S:
-            camera.keys.down = false;
+            app->camera.keys.down = false;
             break;
           case KEY_A:
-            camera.keys.left = false;
+            app->camera.keys.left = false;
             break;
           case KEY_D:
-            camera.keys.right = false;
+            app->camera.keys.right = false;
             break;
           case KEY_ESCAPE:
-            quit = true;
+            app->quit = true;
             break;
         }
-        keyPressed(keyEvent->detail);
+        app->keyPressed(keyEvent->detail);
       }
         break;
       case XCB_DESTROY_NOTIFY:
-        quit = true;
+        app->quit = true;
         break;
       case XCB_CONFIGURE_NOTIFY: {
         const xcb_configure_notify_event_t *cfgEvent = (const xcb_configure_notify_event_t *)event;
-        if ((prepared) && ((cfgEvent->width != width) || (cfgEvent->height != height))) {
-          destWidth = cfgEvent->width;
-          destHeight = cfgEvent->height;
-          if ((destWidth > 0) && (destHeight > 0))
-            windowResize();
+        if ((app->prepared) && ((cfgEvent->width != app->width) || (cfgEvent->height != app->height))) {
+          app->destWidth = cfgEvent->width;
+          app->destHeight = cfgEvent->height;
+          if ((app->destWidth > 0) && (app->destHeight > 0))
+            app->windowResize();
         }
       }
         break;

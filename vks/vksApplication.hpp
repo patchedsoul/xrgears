@@ -31,8 +31,11 @@
 #include "vksTextOverlay.hpp"
 #include "vksCamera.hpp"
 
+
+class ApplicationXCB;
+
 class Application {
- protected:
+ public:
   PFN_vkGetPhysicalDeviceFeatures2KHR fpGetPhysicalDeviceFeatures2KHR;
   PFN_vkGetPhysicalDeviceProperties2KHR fpGetPhysicalDeviceProperties2KHR;
 
@@ -51,7 +54,7 @@ class Application {
   // Called if the window is resized and some resources have to be recreatesd
   void windowResize();
 
- protected:
+ public:
   // Frame counter to display fps
   uint32_t frameCounter = 0;
   uint32_t lastFPS = 0;
@@ -174,7 +177,7 @@ class Application {
     bool middle = false;
   } mouseButtons;
 
-  virtual const char* requiredExtensionName() {}
+
 
   struct {
     VkImage image;
@@ -195,14 +198,14 @@ class Application {
   virtual ~Application();
 
   // Setup the vulkan instance, enable required extensions and connect to the physical device (GPU)
-  void initVulkan();
+  void initVulkan(ApplicationXCB *window);
 
   /**
   * Create the application wide Vulkan instance
   *
   * @note Virtual, can be overriden by derived example class for custom instance creation
   */
-  virtual VkResult createInstance(bool enableValidation);
+  virtual VkResult createInstance(bool enableValidation, ApplicationXCB *window);
 
   // Pure virtual render function (override in derived class)
   virtual void render() = 0;
@@ -236,7 +239,6 @@ class Application {
   virtual void getEnabledFeatures();
 
   // Connect and prepare the swap chain
-  virtual void initSwapChain() {}
   // Create swap chain images
   void setupSwapChain();
 
@@ -265,7 +267,7 @@ class Application {
   VkPipelineShaderStageCreateInfo loadShader(std::string fileName, VkShaderStageFlagBits stage);
 
   // Start the main render loop
-  void renderLoopWrap();
+  void renderLoopWrap(ApplicationXCB *window);
 
   void updateTextOverlay();
 
@@ -281,5 +283,5 @@ class Application {
   // - Submits the text overlay (if enabled)
   void submitFrame();
 
-  virtual void renderLoop() {}
+
 };
