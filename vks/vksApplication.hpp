@@ -32,7 +32,7 @@
 #include "vksCamera.hpp"
 
 
-class VikWindowXCB;
+class VikWindow;
 
 class Application {
  public:
@@ -198,14 +198,14 @@ class Application {
   virtual ~Application();
 
   // Setup the vulkan instance, enable required extensions and connect to the physical device (GPU)
-  void initVulkan(VikWindowXCB *window);
+  void initVulkan(VikWindow *window);
 
   /**
   * Create the application wide Vulkan instance
   *
   * @note Virtual, can be overriden by derived example class for custom instance creation
   */
-  virtual VkResult createInstance(bool enableValidation, VikWindowXCB *window);
+  virtual VkResult createInstance(bool enableValidation, VikWindow *window);
 
   // Pure virtual render function (override in derived class)
   virtual void render() = 0;
@@ -267,7 +267,7 @@ class Application {
   VkPipelineShaderStageCreateInfo loadShader(std::string fileName, VkShaderStageFlagBits stage);
 
   // Start the main render loop
-  void renderLoopWrap(VikWindowXCB *window);
+  void renderLoopWrap(VikWindow *window);
 
   void updateTextOverlay();
 

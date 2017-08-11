@@ -15,10 +15,10 @@
 
 #include "vksApplication.hpp"
 
-class vksWindow {
+class VikWindow {
  public:
-  vksWindow() {}
-  ~vksWindow() {}
+  VikWindow() {}
+  ~VikWindow() {}
 
   virtual void renderLoop(Application *app) = 0;
   virtual const char* requiredExtensionName() = 0;

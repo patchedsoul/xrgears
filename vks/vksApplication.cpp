@@ -15,7 +15,7 @@
 
 std::vector<const char*> Application::args;
 
-VkResult Application::createInstance(bool enableValidation, VikWindowXCB*window) {
+VkResult Application::createInstance(bool enableValidation, VikWindow *window) {
   this->settings.validation = enableValidation;
 
   VkApplicationInfo appInfo = {};
@@ -185,7 +185,7 @@ VkPipelineShaderStageCreateInfo Application::loadShader(std::string fileName, Vk
 }
 
 
-void Application::renderLoopWrap(VikWindowXCB *window) {
+void Application::renderLoopWrap(VikWindow *window) {
   destWidth = width;
   destHeight = height;
 
@@ -376,7 +376,7 @@ void Application::printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDev
 }
 
 
-void Application::initVulkan(VikWindowXCB *window) {
+void Application::initVulkan(VikWindow *window) {
   VkResult err;
 
   // Vulkan instance
