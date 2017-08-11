@@ -15,10 +15,10 @@
 
 #include "vksWindow.hpp"
 
-class ApplicationDisplay  : public VikWindow {
+class VikWindowKhrDisplay  : public VikWindow {
  public:
-  explicit ApplicationDisplay() {}
-  ~ApplicationDisplay() {}
+  explicit VikWindowKhrDisplay() {}
+  ~VikWindowKhrDisplay() {}
 
   const char* requiredExtensionName() {
     return VK_KHR_DISPLAY_EXTENSION_NAME;
