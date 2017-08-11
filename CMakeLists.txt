@@ -24,6 +24,8 @@ add_cxxflag("-std=c++14")
 
 add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
 
+INCLUDE_DIRECTORIES(/usr/include/libdrm/)
+
 function(add_verbose_warnings)
     add_cxxflag("-Werror")
     add_cxxflag("-Wall")
@@ -66,7 +68,7 @@ SET_TARGET_PROPERTIES(vitamin-k  PROPERTIES LINKER_LANGUAGE CXX)
 include_directories(vks)
 include_directories(vitamin-k)
 
-target_link_libraries(vks vulkan xcb assimp wayland-client)
+target_link_libraries(vks vulkan xcb assimp wayland-client gbm drm)
 
 INCLUDE_DIRECTORIES(/usr/include/openhmd/)
 
