@@ -3,21 +3,17 @@
 #define VK_PROTOTYPES
 #include <vulkan/vulkan.h>
 
-#include <gbm.h>
-
 #define MAX_NUM_IMAGES 4
 
-struct vkcube_buffer {
+struct CubeBuffer {
    VkImage image;
    VkImageView view;
    VkFramebuffer framebuffer;
 };
 
-
-
 class Cube;
 
-class VikRenderer {
+class CubeRenderer {
 public:
     VkSwapchainKHR swap_chain;
     VkInstance instance;
@@ -36,32 +32,19 @@ public:
 
     uint32_t width, height;
 
-
     struct timeval start_tv;
     VkSurfaceKHR surface;
     VkFormat image_format;
-    struct vkcube_buffer buffers[MAX_NUM_IMAGES];
+    struct CubeBuffer buffers[MAX_NUM_IMAGES];
     uint32_t image_count;
     int current;
 
-    VikRenderer(uint32_t w, uint32_t h) ;
+    CubeRenderer(uint32_t w, uint32_t h) ;
+    ~CubeRenderer() ;
 
-    ~VikRenderer() ;
-
-    void
-    init_vk(const char *extension);
-
-    VkFormat
-    choose_surface_format();
-
-    void
-    init_vk_objects(Cube * model);
-
-
-    void
-    init_buffer(struct vkcube_buffer *b);
-
-
-    void
-    create_swapchain();
+    void init_vk(const char *extension);
+    VkFormat choose_surface_format();
+    void init_vk_objects(Cube * model);
+    void init_buffer(struct CubeBuffer *b);
+    void create_swapchain();
 };

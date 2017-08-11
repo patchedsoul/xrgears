@@ -44,7 +44,7 @@ public:
 
     // Return -1 on failure.
     int
-    init(CubeApplication* app, VikRenderer *vc)
+    init(CubeApplication* app, CubeRenderer *vc)
     {
 	xcb_screen_iterator_t iter;
 	static const char title[] = "Vulkan Cube";
@@ -114,7 +114,7 @@ public:
 	return 0;
     }
 
-    void init_surface(VikRenderer *vc) {
+    void init_surface(CubeRenderer *vc) {
 	VkXcbSurfaceCreateInfoKHR surfaceInfo = {};
 
 	surfaceInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
@@ -140,7 +140,7 @@ public:
     }
 
     void
-    main_loop(CubeApplication* app, VikRenderer *vc)
+    main_loop(CubeApplication* app, CubeRenderer *vc)
     {
 	xcb_generic_event_t *event;
 	xcb_key_press_event_t *key_press;

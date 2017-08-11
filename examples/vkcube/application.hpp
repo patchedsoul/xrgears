@@ -9,7 +9,7 @@
 class CubeApplication {
 public:
    Cube model;
-   VikRenderer *renderer;
+   CubeRenderer *renderer;
    VikDisplayMode *display;
    enum display_mode_type mode;
 

@@ -53,7 +53,7 @@ public:
     };
 
     void
-    init(VikRenderer* renderer)
+    init(CubeRenderer* renderer)
     {
 	VkResult r;
 
@@ -419,7 +419,7 @@ public:
     }
 
     void
-    render(VikRenderer *vc, struct vkcube_buffer *b)
+    render(CubeRenderer *vc, struct CubeBuffer *b)
     {
 	struct ubo ubo;
 	struct timeval tv;

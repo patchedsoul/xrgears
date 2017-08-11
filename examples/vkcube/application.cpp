@@ -9,7 +9,7 @@
 
 CubeApplication::CubeApplication(uint32_t w, uint32_t h) {
   mode = DISPLAY_MODE_AUTO;
-  renderer = new VikRenderer(w, h);
+  renderer = new CubeRenderer(w, h);
 }
 
 CubeApplication::~CubeApplication() {

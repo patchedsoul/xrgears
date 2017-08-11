@@ -7,6 +7,8 @@
 #include <poll.h>
 #include <signal.h>
 
+#include <gbm.h>
+
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <drm_fourcc.h>
@@ -70,12 +72,12 @@ public:
 	restore_vt();
     }
 
-    void main_loop(CubeApplication* app, VikRenderer *vc)
+    void main_loop(CubeApplication* app, CubeRenderer *vc)
     {
 	int len, ret;
 	char buf[16];
 	struct pollfd pfd[2];
-	struct vkcube_buffer *b;
+	struct CubeBuffer *b;
 	struct kms_buffer *kms_b;
 
 	pfd[0].fd = STDIN_FILENO;
@@ -157,8 +159,8 @@ public:
 	sigaction(SIGABRT, &act, NULL);
 
 	/* We don't drop drm master, so block VT switching while we're
-    * running. Otherwise, switching to X on another VT will crash X when it
-    * fails to get drm master. */
+	 * running. Otherwise, switching to X on another VT will crash X when it
+	 * fails to get drm master. */
 	struct vt_mode mode = {};
 	mode.mode = VT_PROCESS;
 	mode.relsig = 0;
@@ -174,7 +176,7 @@ public:
     }
 
     // Return -1 on failure.
-    int init(CubeApplication *app, VikRenderer *vc) {
+    int init(CubeApplication *app, CubeRenderer *vc) {
 	drmModeRes *resources;
 	drmModeEncoder *encoder;
 	int i;
@@ -219,7 +221,7 @@ public:
 	        (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(vc->device, "vkCreateDmaBufImageINTEL");
 
 	for (uint32_t i = 0; i < 2; i++) {
-	    struct vkcube_buffer *b = &vc->buffers[i];
+	    struct CubeBuffer *b = &vc->buffers[i];
 	    struct kms_buffer *kms_b = &kms_buffers[i];
 	    int buffer_fd, stride, ret;
 
