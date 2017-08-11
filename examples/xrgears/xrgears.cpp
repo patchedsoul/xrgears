@@ -775,13 +775,7 @@ int main(const int argc, const char *argv[]) {
   app = new XRGears();
   app->initVulkan();
 
-#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
-   app->setupWaylandWindow();
-#elif defined(_DIRECT2DISPLAY)
-#elif defined(VK_USE_PLATFORM_XCB_KHR)
-//#elif defined(__linux__)
-  app->setupXCBWindow();
-#endif
+  app->setupWindow();
 
   app->initSwapChain();
   app->prepare();

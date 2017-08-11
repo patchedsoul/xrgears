@@ -135,7 +135,7 @@ class ApplicationXCB : public Application {
   }
 
   // Set up a window using XCB and request event types
-  xcb_window_t setupXCBWindow() {
+  void setupWindow() {
     uint32_t value_mask, value_list[32];
 
     if (connection == nullptr)
@@ -195,8 +195,6 @@ class ApplicationXCB : public Application {
     }
 
     xcb_map_window(connection, window);
-
-    return(window);
   }
 
   void handleEvent(const xcb_generic_event_t *event) {

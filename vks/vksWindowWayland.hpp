@@ -342,7 +342,7 @@ class ApplicationWayland : public Application {
 
   static void PopupDoneCb(void *data, struct wl_shell_surface *shell_surface) {}
 
-  wl_shell_surface *setupWaylandWindow() {
+  void setupWindow() {
     surface = wl_compositor_create_surface(compositor);
     shell_surface = wl_shell_get_shell_surface(shell, surface);
 
@@ -353,7 +353,6 @@ class ApplicationWayland : public Application {
     wl_shell_surface_set_toplevel(shell_surface);
     std::string windowTitle = getWindowTitle();
     wl_shell_surface_set_title(shell_surface, windowTitle.c_str());
-    return shell_surface;
   }
 
   const char* requiredExtensionName() {
