@@ -13,66 +13,66 @@
 
 #include <vulkan/vulkan.h>
 
-#include "vksApplication.hpp"
+#include "vksWindow.hpp"
 
-class ApplicationDisplay  : public Application {
+class ApplicationDisplay  : public VikWindow {
  public:
-  explicit ApplicationDisplay(bool enableValidation) : Application(enableValidation) {}
+  explicit ApplicationDisplay() {}
   ~ApplicationDisplay() {}
 
   const char* requiredExtensionName() {
     return VK_KHR_DISPLAY_EXTENSION_NAME;
   }
 
-  void initSwapChain() {
-    createDirect2DisplaySurface(width, height);
-    swapChain.initSurfaceCommon();
+  void initSwapChain(Application *app) {
+    createDirect2DisplaySurface(app, app->width, app->height);
+    app->swapChain.initSurfaceCommon();
   }
 
-  void renderLoop() {
-    while (!quit) {
+  void renderLoop(Application *app) {
+    while (!app->quit) {
       auto tStart = std::chrono::high_resolution_clock::now();
-      if (viewUpdated) {
-        viewUpdated = false;
-        viewChanged();
+      if (app->viewUpdated) {
+        app->viewUpdated = false;
+        app->viewChanged();
       }
-      render();
-      frameCounter++;
+      app->render();
+      app->frameCounter++;
       auto tEnd = std::chrono::high_resolution_clock::now();
       auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-      frameTimer = tDiff / 1000.0f;
-      camera.update(frameTimer);
-      if (camera.moving())
-        viewUpdated = true;
+      app->frameTimer = tDiff / 1000.0f;
+      app->camera.update(app->frameTimer);
+      if (app->camera.moving())
+        app->viewUpdated = true;
       // Convert to clamped timer value
-      if (!paused) {
-        timer += timerSpeed * frameTimer;
-        if (timer > 1.0)
-          timer -= 1.0f;
+      if (!app->paused) {
+        app->timer += app->timerSpeed * app->frameTimer;
+        if (app->timer > 1.0)
+          app->timer -= 1.0f;
       }
-      fpsTimer += (float)tDiff;
-      if (fpsTimer > 1000.0f) {
-        lastFPS = frameCounter;
-        updateTextOverlay();
-        fpsTimer = 0.0f;
-        frameCounter = 0;
+      app->fpsTimer += (float)tDiff;
+      if (app->fpsTimer > 1000.0f) {
+        app->lastFPS = app->frameCounter;
+        app->updateTextOverlay();
+        app->fpsTimer = 0.0f;
+        app->frameCounter = 0;
       }
     }
   }
 
-  void createDirect2DisplaySurface(uint32_t width, uint32_t height) {
+  void createDirect2DisplaySurface(Application * app, uint32_t width, uint32_t height) {
     uint32_t displayPropertyCount;
 
     // Get display property
-    vkGetPhysicalDeviceDisplayPropertiesKHR(physicalDevice, &displayPropertyCount, NULL);
+    vkGetPhysicalDeviceDisplayPropertiesKHR(app->physicalDevice, &displayPropertyCount, NULL);
     VkDisplayPropertiesKHR* pDisplayProperties = new VkDisplayPropertiesKHR[displayPropertyCount];
-    vkGetPhysicalDeviceDisplayPropertiesKHR(physicalDevice, &displayPropertyCount, pDisplayProperties);
+    vkGetPhysicalDeviceDisplayPropertiesKHR(app->physicalDevice, &displayPropertyCount, pDisplayProperties);
 
     // Get plane property
     uint32_t planePropertyCount;
-    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice, &planePropertyCount, NULL);
+    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(app->physicalDevice, &planePropertyCount, NULL);
     VkDisplayPlanePropertiesKHR* pPlaneProperties = new VkDisplayPlanePropertiesKHR[planePropertyCount];
-    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice, &planePropertyCount, pPlaneProperties);
+    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(app->physicalDevice, &planePropertyCount, pPlaneProperties);
 
     VkDisplayKHR display = VK_NULL_HANDLE;
     VkDisplayModeKHR displayMode;
@@ -82,9 +82,9 @@ class ApplicationDisplay  : public Application {
     for (uint32_t i = 0; i < displayPropertyCount; ++i) {
       display = pDisplayProperties[i].display;
       uint32_t modeCount;
-      vkGetDisplayModePropertiesKHR(physicalDevice, display, &modeCount, NULL);
+      vkGetDisplayModePropertiesKHR(app->physicalDevice, display, &modeCount, NULL);
       pModeProperties = new VkDisplayModePropertiesKHR[modeCount];
-      vkGetDisplayModePropertiesKHR(physicalDevice, display, &modeCount, pModeProperties);
+      vkGetDisplayModePropertiesKHR(app->physicalDevice, display, &modeCount, pModeProperties);
 
       for (uint32_t j = 0; j < modeCount; ++j) {
         const VkDisplayModePropertiesKHR* mode = &pModeProperties[j];
@@ -111,11 +111,11 @@ class ApplicationDisplay  : public Application {
     for (uint32_t i = 0; i < planePropertyCount; i++) {
       uint32_t planeIndex = i;
       uint32_t displayCount;
-      vkGetDisplayPlaneSupportedDisplaysKHR(physicalDevice, planeIndex, &displayCount, NULL);
+      vkGetDisplayPlaneSupportedDisplaysKHR(app->physicalDevice, planeIndex, &displayCount, NULL);
       if (pDisplays)
         delete [] pDisplays;
       pDisplays = new VkDisplayKHR[displayCount];
-      vkGetDisplayPlaneSupportedDisplaysKHR(physicalDevice, planeIndex, &displayCount, pDisplays);
+      vkGetDisplayPlaneSupportedDisplaysKHR(app->physicalDevice, planeIndex, &displayCount, pDisplays);
 
       // Find a display that matches the current plane
       bestPlaneIndex = UINT32_MAX;
@@ -134,7 +134,7 @@ class ApplicationDisplay  : public Application {
     }
 
     VkDisplayPlaneCapabilitiesKHR planeCap;
-    vkGetDisplayPlaneCapabilitiesKHR(physicalDevice, displayMode, bestPlaneIndex, &planeCap);
+    vkGetDisplayPlaneCapabilitiesKHR(app->physicalDevice, displayMode, bestPlaneIndex, &planeCap);
     VkDisplayPlaneAlphaFlagBitsKHR alphaMode;
 
     if (planeCap.supportedAlpha & VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR)
@@ -157,7 +157,7 @@ class ApplicationDisplay  : public Application {
     surfaceInfo.imageExtent.width = width;
     surfaceInfo.imageExtent.height = height;
 
-    VkResult result = vkCreateDisplayPlaneSurfaceKHR(instance, &surfaceInfo, NULL, &swapChain.surface);
+    VkResult result = vkCreateDisplayPlaneSurfaceKHR(app->instance, &surfaceInfo, NULL, &app->swapChain.surface);
     if (result !=VK_SUCCESS)
       vks::tools::exitFatal("Failed to create surface!", "Fatal error");
 
