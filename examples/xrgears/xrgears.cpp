@@ -770,7 +770,7 @@ static void handleEvent(const xcb_generic_event_t *event) {
 int main(const int argc, const char *argv[]) {
   for (size_t i = 0; i < argc; i++) { XRGears::args.push_back(argv[i]); };
   app = new XRGears();
-  VikWindowXCB * window = new VikWindowXCB();
+  VikWindow * window = new VikWindowWayland();
   app->initVulkan(window);
 
   window->setupWindow(app);
