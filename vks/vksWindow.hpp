@@ -13,12 +13,14 @@
 
 #include <string>
 
+#include "vksApplication.hpp"
+
 class vksWindow {
  public:
   vksWindow() {}
   ~vksWindow() {}
 
-  virtual void renderLoop() = 0;
+  virtual void renderLoop(Application *app) = 0;
   virtual const char* requiredExtensionName() = 0;
-  virtual void initSwapChain() = 0;
+  virtual void initSwapChain(const VkInstance &instance, VulkanSwapChain* swapChain) = 0;
 };

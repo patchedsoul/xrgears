@@ -16,6 +16,7 @@
 
 #include <string>
 
+#include "vksWindow.hpp"
 #include "vksApplication.hpp"
 
 #define KEY_ESCAPE 0x9
@@ -40,14 +41,14 @@
 #define KEY_O 0x20
 #define KEY_T 0x1C
 
-class ApplicationXCB {
+class VikWindowXCB : public vksWindow {
   xcb_connection_t *connection;
   xcb_screen_t *screen;
   xcb_window_t window;
   xcb_intern_atom_reply_t *atom_wm_delete_window;
 
  public:
-  explicit ApplicationXCB() {
+  explicit VikWindowXCB() {
     const xcb_setup_t *setup;
     xcb_screen_iterator_t iter;
     int scr;
@@ -66,7 +67,7 @@ class ApplicationXCB {
     screen = iter.data;
   }
 
-  ~ApplicationXCB() {
+  ~VikWindowXCB() {
     xcb_destroy_window(connection, window);
     xcb_disconnect(connection);
   }
