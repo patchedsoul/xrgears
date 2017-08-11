@@ -38,6 +38,7 @@
 #include "VikCameraStereo.hpp"
 #include "VikCameraHMD.hpp"
 #include "../vks/vksWindowXCB.hpp"
+#include "../vks/vksWindowXCBMinimal.hpp"
 #include "../vks/vksWindowWayland.hpp"
 #include "../vks/vksWindowDisplay.hpp"
 
@@ -770,7 +771,7 @@ static void handleEvent(const xcb_generic_event_t *event) {
 int main(const int argc, const char *argv[]) {
   for (size_t i = 0; i < argc; i++) { XRGears::args.push_back(argv[i]); };
   app = new XRGears();
-  VikWindow * window = new VikWindowWayland();
+  VikWindow * window = new VikWindowXCBMinimal();
   app->initVulkan(window);
 
   window->setupWindow(app);
