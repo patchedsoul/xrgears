@@ -41,6 +41,7 @@
 #include "../vks/vksWindowXCBMinimal.hpp"
 #include "../vks/vksWindowWayland.hpp"
 #include "../vks/vksWindowDisplay.hpp"
+#include "../vks/vksWindowKMS.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION true
@@ -771,7 +772,7 @@ static void handleEvent(const xcb_generic_event_t *event) {
 int main(const int argc, const char *argv[]) {
   for (size_t i = 0; i < argc; i++) { XRGears::args.push_back(argv[i]); };
   app = new XRGears();
-  VikWindow * window = new VikWindowXCBMinimal();
+  VikWindow * window = new VikWindowWayland();
   app->initVulkan(window);
 
   window->setupWindow(app);

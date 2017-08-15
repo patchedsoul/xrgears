@@ -68,7 +68,7 @@ SET_TARGET_PROPERTIES(vitamin-k  PROPERTIES LINKER_LANGUAGE CXX)
 include_directories(vks)
 include_directories(vitamin-k)
 
-target_link_libraries(vks vulkan xcb assimp wayland-client gbm drm)
+target_link_libraries(vks vulkan xcb assimp wayland-client gbm drm m stdc++)
 
 INCLUDE_DIRECTORIES(/usr/include/openhmd/)
 
