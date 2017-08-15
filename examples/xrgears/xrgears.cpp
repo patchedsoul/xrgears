@@ -44,7 +44,7 @@
 #include "../vks/vksWindowKMS.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
-#define ENABLE_VALIDATION true
+#define ENABLE_VALIDATION false
 
 class XRGears : public Application {
 public:
@@ -58,7 +58,7 @@ public:
   VikCamera* vikCamera;
 
   bool enableSky = true;
-  bool enableHMDCam = false;
+  bool enableHMDCam = true;
   bool enableDistortion = true;
   bool enableStereo = true;
 

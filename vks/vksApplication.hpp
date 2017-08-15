@@ -118,13 +118,13 @@ class Application {
 
  public:
   bool prepared = false;
-  /*
   uint32_t width = 1080*2;
   uint32_t height = 1200;
-  */
 
+  /*
   uint32_t width = 1366;
   uint32_t height = 768;
+  */
 
   /** @brief Last frame time measured using a high performance timer (if available) */
   float frameTimer = 1.0f;
