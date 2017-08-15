@@ -7,3 +7,5 @@ cmake_install.cmake
 libvitamin-k.a
 CMakeLists.txt.user
 xrgears.cbp
+*~
+*.a
