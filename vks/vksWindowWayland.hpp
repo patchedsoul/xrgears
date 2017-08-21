@@ -51,7 +51,8 @@ class VikWindowWayland : public VikWindow {
       exit(1);
     }
 
-    static const struct wl_registry_listener registry_listener = { registryGlobalCb, registryGlobalRemoveCb };
+    static const struct wl_registry_listener registry_listener =
+      { registryGlobalCb, registryGlobalRemoveCb };
     wl_registry_add_listener(registry, &registry_listener, this);
     wl_display_dispatch(display);
     wl_display_roundtrip(display);
