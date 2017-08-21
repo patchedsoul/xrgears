@@ -5,6 +5,7 @@
 #include "cube.hpp"
 #include "xcb.hpp"
 #include "kms.hpp"
+#include "wayland.hpp"
 #include "VikRenderer.hpp"
 
 CubeApplication::CubeApplication(uint32_t w, uint32_t h) {
@@ -25,6 +26,9 @@ bool CubeApplication::display_mode_from_string(const char *s) {
     return true;
   } else if (streq(s, "xcb")) {
     mode = DISPLAY_MODE_XCB;
+    return true;
+  } else if (streq(s, "wayland")) {
+    mode = DISPLAY_MODE_WAYLAND;
     return true;
   } else {
     return false;
@@ -101,9 +105,18 @@ void CubeApplication::init_display() {
       break;
     case DISPLAY_MODE_XCB:
       display = new VikDisplayModeXCB();
-      if (display->init(this, renderer) == -1)
+      if (display->init(this, renderer) == -1) {
         printf("failed to initialize xcb\n");
-      fail("failed to initialize xcb");
+        fail("failed to initialize xcb");
+      }
+      break;
+
+    case DISPLAY_MODE_WAYLAND:
+      display = new VikDisplayModeWayland();
+      if (display->init(this, renderer) == -1) {
+        printf("failed to initialize wayland\n");
+        fail("failed to initialize wayland");
+      }
       break;
   }
 }
@@ -115,6 +128,7 @@ void CubeApplication::mainloop() {
       break;
     case DISPLAY_MODE_XCB:
     case DISPLAY_MODE_KMS:
+    case DISPLAY_MODE_WAYLAND:
       display->main_loop(this, renderer);
       break;
   }

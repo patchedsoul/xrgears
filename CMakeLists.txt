@@ -59,16 +59,21 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_XCB_KHR")
 file(GLOB VKS_SRC vks/*.cpp vks/*.h vks/*.hpp)
 file(GLOB VITAMINK_SRC vitamin-k/*.hpp)
 
+file(GLOB XDG_SRC xdg-shell/*.c)
+
 add_library(vks ${VKS_SRC})
 
 add_library(vitamin-k ${VITAMINK_SRC})
+
+add_library(xdg-shell ${XDG_SRC})
 
 SET_TARGET_PROPERTIES(vitamin-k  PROPERTIES LINKER_LANGUAGE CXX)
 
 include_directories(vks)
 include_directories(vitamin-k)
+include_directories(xdg-shell)
 
-target_link_libraries(vks vulkan xcb assimp wayland-client gbm drm m stdc++)
+target_link_libraries(vks vulkan xcb assimp wayland-client gbm drm m stdc++ xdg-shell)
 
 INCLUDE_DIRECTORIES(/usr/include/openhmd/)
 

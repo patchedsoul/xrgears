@@ -7,6 +7,7 @@ enum display_mode_type {
    DISPLAY_MODE_AUTO = 0,
    DISPLAY_MODE_KMS,
    DISPLAY_MODE_XCB,
+   DISPLAY_MODE_WAYLAND,
 };
 
 class VikDisplayMode {
