@@ -152,8 +152,8 @@ class VikWindowWayland : public VikWindow {
           unsigned int flags, int w, int h, int refresh) {
         printf("outputModeCb: %dx%d@%d\n", w, h, refresh);
         
-        //if (w == 2560 && h == 1440) {
-        if (w == 1920 && h == 1200) {
+        if (w == 2560 && h == 1440) {
+        //if (w == 1920 && h == 1200) {
           VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
           printf("setting wl_output to %p\n", wl_output);
           self->hmd_output = wl_output;

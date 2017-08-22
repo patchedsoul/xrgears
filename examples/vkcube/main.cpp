@@ -40,7 +40,8 @@
 
 int main(int argc, char *argv[])
 {
-  CubeApplication app(1920, 1200);
+  //CubeApplication app(1920, 1200);
+  CubeApplication app(2560, 1440);
   app.parse_args(argc, argv);
   app.init_display();
   app.mainloop();
