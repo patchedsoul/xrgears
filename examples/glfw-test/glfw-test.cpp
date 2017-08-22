@@ -1645,14 +1645,84 @@ static void demo_run(struct demo *demo) {
     }
 }
 
+static int euclid(int a, int b)
+{
+    return b ? euclid(b, a % b) : a;
+}
+
+static const char* format_mode(const GLFWvidmode* mode)
+{
+    static char buffer[512];
+    const int gcd = euclid(mode->width, mode->height);
+
+    snprintf(buffer,
+             sizeof(buffer),
+             "%i x %i x %i (%i:%i) (%i %i %i) %i Hz",
+             mode->width, mode->height,
+             mode->redBits + mode->greenBits + mode->blueBits,
+             mode->width / gcd, mode->height / gcd,
+             mode->redBits, mode->greenBits, mode->blueBits,
+             mode->refreshRate);
+
+    buffer[sizeof(buffer) - 1] = '\0';
+    return buffer;
+}
+
+static void list_modes(GLFWmonitor* monitor)
+{
+    int count, x, y, widthMM, heightMM, i;
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    const GLFWvidmode* modes = glfwGetVideoModes(monitor, &count);
+
+    glfwGetMonitorPos(monitor, &x, &y);
+    glfwGetMonitorPhysicalSize(monitor, &widthMM, &heightMM);
+
+    printf("Name: %s (%s)\n",
+           glfwGetMonitorName(monitor),
+           glfwGetPrimaryMonitor() == monitor ? "primary" : "secondary");
+    printf("Current mode: %s\n", format_mode(mode));
+    printf("Virtual position: %i %i\n", x, y);
+
+    printf("Physical size: %i x %i mm (%0.2f dpi)\n",
+           widthMM, heightMM, mode->width * 25.4f / widthMM);
+
+    printf("Modes:\n");
+
+    for (i = 0;  i < count;  i++)
+    {
+        printf("%3u: %s", (unsigned int) i, format_mode(modes + i));
+
+        if (memcmp(mode, modes + i, sizeof(GLFWvidmode)) == 0)
+            printf(" (current mode)");
+
+        putchar('\n');
+    }
+}
+
 static void demo_create_window(struct demo *demo) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+
+    int ch, i, count;
+    GLFWmonitor** monitors;
+    GLFWmonitor* secondary;
+
+    monitors = glfwGetMonitors(&count);
+
+    for (i = 0;  i < count;  i++)
+    {
+            list_modes(monitors[i]);
+
+            if (glfwGetPrimaryMonitor() != monitors[i])
+              secondary = monitors[i];
+    }
 
     demo->window = glfwCreateWindow(demo->width,
                                     demo->height,
                                     APP_LONG_NAME,
-                                    NULL,
+                                    glfwGetPrimaryMonitor(),
                                     NULL);
+
     if (!demo->window) {
         // It didn't work, so try to give a useful error:
         printf("Cannot create a window in which to draw!\n");
@@ -2163,8 +2233,8 @@ static void demo_init(struct demo *demo, const int argc, const char *argv[])
     demo_init_connection(demo);
     demo_init_vk(demo);
 
-    demo->width = 300;
-    demo->height = 300;
+    demo->width = 1920;
+    demo->height = 1200;
     demo->depthStencil = 1.0;
     demo->depthIncrement = -0.01f;
 }
