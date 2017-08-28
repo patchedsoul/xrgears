@@ -116,7 +116,7 @@ class VikWindowXCBMinimal : public VikWindow {
   }
 
   // Set up a window using XCB and request event types
-  void setupWindow(Application *app) {
+  int setupWindow(Application *app) {
     uint32_t value_mask, value_list[32];
 
     if (connection == nullptr)
@@ -165,6 +165,8 @@ class VikWindowXCBMinimal : public VikWindow {
 
 
     xcb_map_window(connection, window);
+
+    return 0;
   }
 
   void handleEvent(Application *app, const xcb_generic_event_t *event) {

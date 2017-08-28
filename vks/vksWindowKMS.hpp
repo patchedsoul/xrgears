@@ -112,9 +112,6 @@ public:
 
   void renderLoop(Application *app)
   {
-  
-  #if 0
-  
     int len, ret;
     char buf[16];
     struct pollfd pfd[2];
@@ -154,7 +151,7 @@ public:
       }
       if (pfd[1].revents & POLLIN) {
         drmHandleEvent(fd, &evctx);
-        b = &vc->buffers[app->frameCounter & 1];
+        //b = &vc->buffers[app->frameCounter & 1];
         kms_b = &kms_buffers[app->frameCounter & 1];
 
         //app->model.render(vc, b);
@@ -167,7 +164,6 @@ public:
         app->frameCounter++;
       }
     }
-    #endif
   }
 
   int init_vt() {
@@ -220,15 +216,16 @@ public:
   }
 
   // Return -1 on failure.
-  void setupWindow(Application *app) {
-  #if 0
+  int setupWindow(Application *app) {
+
+    printf("KMS setupWindow\n");
+
     drmModeRes *resources;
     drmModeEncoder *encoder;
     int i;
 
     if (init_vt() == -1)
-      //return -1;
-      return;
+      return -1;
 
     fd = open("/dev/dri/card0", O_RDWR);
     fail_if(fd == -1, "failed to open /dev/dri/card0\n");
@@ -268,13 +265,24 @@ public:
     PFN_vkCreateDmaBufImageINTEL create_dma_buf_image =
         (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(app->device, "vkCreateDmaBufImageINTEL");
 
+    /*
+    printf("Swap chain images: %d\n", app->swapChain.imageCount);
+    for (VkImage img : app->swapChain.images) {
+      printf("VkImage %p\n", img);
+    }
+    */
+
+    VkImage dmaBufImages[2];
+
     for (uint32_t i = 0; i < 2; i++) {
-      struct CubeBuffer *b = &vc->buffers[i];
+      //struct CubeBuffer *b = &vc->buffers[i];
       struct kms_buffer *kms_b = &kms_buffers[i];
       int buffer_fd, stride, ret;
 
       kms_b->gbm_bo = gbm_bo_create(gbm_dev, app->width, app->height,
                                     GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
+
+      printf("Created kms buffer %p\n", kms_b);
 
       buffer_fd = gbm_bo_get_fd(kms_b->gbm_bo);
       stride = gbm_bo_get_stride(kms_b->gbm_bo);
@@ -287,17 +295,27 @@ public:
       extent.height = app->height;
       extent.depth = 1;
 
+      //printf("kms: Using color format %d\n", app->swapChain.colorFormat);
+
       dmaBufInfo.sType = (VkStructureType) VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_CREATE_INFO_INTEL;
       dmaBufInfo.fd = buffer_fd;
-      dmaBufInfo.format = app->image_format;
+      //dmaBufInfo.format = app->swapChain.colorFormat;
+      dmaBufInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
       dmaBufInfo.extent = extent;
       dmaBufInfo.strideInBytes = stride;
 
+      printf("Creating dmabuf image %d\n", i);
       create_dma_buf_image(app->device,
                            &dmaBufInfo,
                            NULL,
                            &kms_b->mem,
-                           &b->image);
+                           //&b->image
+                           //&app->swapChain.images.at(i)
+                           &dmaBufImages[i]
+                           );
+
+      printf("Created image %p\n", &dmaBufImages[i]);
+
       close(buffer_fd);
 
       kms_b->stride = gbm_bo_get_stride(kms_b->gbm_bo);
@@ -309,11 +327,9 @@ public:
                           pitches, offsets, &kms_b->fb, 0);
       fail_if(ret == -1, "addfb2 failed\n");
 
-      vc->init_buffer(b);
+      //vc->init_buffer(b);
     }
-    #endif
-
-    //return 0;
+    return 0;
   }
 
   const char* requiredExtensionName() {

@@ -152,8 +152,8 @@ class VikWindowWayland : public VikWindow {
           unsigned int flags, int w, int h, int refresh) {
         printf("outputModeCb: %dx%d@%d\n", w, h, refresh);
         
-        if (w == 2560 && h == 1440) {
-        //if (w == 1920 && h == 1200) {
+    //    if (w == 2560 && h == 1440) {
+        if (w == 1920 && h == 1200) {
           VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
           printf("setting wl_output to %p\n", wl_output);
           self->hmd_output = wl_output;
@@ -393,7 +393,7 @@ class VikWindowWayland : public VikWindow {
 
   static void PopupDoneCb(void *data, struct wl_shell_surface *shell_surface) {}
 
-  void setupWindow(Application * app) {
+  int setupWindow(Application * app) {
     this->app = app;
     surface = wl_compositor_create_surface(compositor);
     shell_surface = wl_shell_get_shell_surface(shell, surface);
@@ -414,6 +414,8 @@ class VikWindowWayland : public VikWindow {
 
     std::string windowTitle = app->getWindowTitle();
     wl_shell_surface_set_title(shell_surface, windowTitle.c_str());
+
+    return 0;
   }
 
   const char* requiredExtensionName() {

@@ -27,7 +27,10 @@ VkResult Application::createInstance(bool enableValidation, VikWindow *window) {
   std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
 
   // Enable surface extensions depending on os
-  instanceExtensions.push_back(window->requiredExtensionName());
+  std::string windowExtension = std::string(window->requiredExtensionName());
+
+  if (!windowExtension.empty())
+    instanceExtensions.push_back(window->requiredExtensionName());
 
   /*
   instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
@@ -148,6 +151,7 @@ void Application::prepare() {
   if (vulkanDevice->enableDebugMarkers)
     vks::debugmarker::setup(device);
   createCommandPool();
+  // TODO: create DRM swapchain here
   setupSwapChain();
   createCommandBuffers();
   setupDepthStencil();
@@ -694,6 +698,7 @@ void Application::windowResize() {
   // Recreate swap chain
   width = destWidth;
   height = destHeight;
+  // TODO: Create kms swapchain here.
   setupSwapChain();
 
   // Recreate the frame buffers
