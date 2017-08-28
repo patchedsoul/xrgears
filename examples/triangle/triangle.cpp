@@ -1108,7 +1108,7 @@ int main(const int argc, const char *argv[])
     return -1;
   }
 
-  //window->initSwapChain(app->instance, &app->swapChain);
+  window->initSwapChain(app->instance, &app->swapChain);
   app->prepare();
   app->renderLoopWrap(window);
   delete(app);
