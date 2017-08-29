@@ -93,9 +93,16 @@ class VikWindowKMS : public VikWindow {
     uint32_t stride;
   };
 
+  struct render_buffer {
+     VkImage image;
+     VkImageView view;
+     VkFramebuffer framebuffer;
+  };
+
   #define MAX_NUM_IMAGES 3
 
   struct kms_buffer kms_buffers[MAX_NUM_IMAGES];
+  struct render_buffer render_buffers[MAX_NUM_IMAGES];
 
 public:
   VikWindowKMS() {
@@ -128,6 +135,8 @@ public:
     struct CubeBuffer *b;
     struct kms_buffer *kms_b;
 
+    fprintf(stderr, "starting renderLoop\n");
+
     pfd[0].fd = STDIN_FILENO;
     pfd[0].events = POLLIN;
     pfd[1].fd = fd;
@@ -145,6 +154,8 @@ public:
     ret = drmModePageFlip(fd, crtc->crtc_id, kms_buffers[0].fb,
         DRM_MODE_PAGE_FLIP_EVENT, NULL);
     fail_if(ret < 0, "pageflip failed: %m\n");
+
+    fprintf(stderr, "renderLoop: init done\n");
 
     while (1) {
       ret = poll(pfd, 2, -1);
@@ -166,14 +177,19 @@ public:
 
         //app->model.render(vc, b);
 
+        fprintf(stderr, "renderLoop: render\n");
         app->render();
 
+        fprintf(stderr, "renderLoop: drmModePageFlip\n");
         ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
                               DRM_MODE_PAGE_FLIP_EVENT, NULL);
         fail_if(ret < 0, "pageflip failed: %m\n");
         app->frameCounter++;
       }
     }
+
+    fprintf(stderr, "renderLoop: done\n");
+
   }
 
   int init_vt() {
@@ -285,11 +301,13 @@ public:
     }
     */
 
-    VkImage dmaBufImages[2];
+    //VkImage dmaBufImages[2];
+
 
     for (uint32_t i = 0; i < 2; i++) {
       //struct CubeBuffer *b = &vc->buffers[i];
       struct kms_buffer *kms_b = &kms_buffers[i];
+      struct render_buffer *b = &render_buffers[i];
       int buffer_fd, stride, ret;
 
       kms_b->gbm_bo = gbm_bo_create(gbm_dev, app->width, app->height,
@@ -322,12 +340,12 @@ public:
                            &dmaBufInfo,
                            NULL,
                            &kms_b->mem,
-                           //&b->image
+                           &b->image
                            //&app->swapChain.images.at(i)
-                           &dmaBufImages[i]
+                           //&dmaBufImages[i]
                            );
 
-      error("Created image %p\n", &dmaBufImages[i]);
+      error("Created image %p\n", &b->image);
 
       close(buffer_fd);
 
@@ -341,8 +359,58 @@ public:
       fail_if(ret == -1, "addfb2 failed\n");
 
       //vc->init_buffer(b);
+      init_buffer(app, &render_buffers[i]);
     }
+
+    error("setupWindow successfull\n");
+
     return 0;
+  }
+
+  void init_buffer(Application *app, struct render_buffer *b) {
+
+    VkImageViewCreateInfo imageviewinfo = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+      .image = b->image,
+      .viewType = VK_IMAGE_VIEW_TYPE_2D,
+      .format = VK_FORMAT_R8G8B8A8_SRGB,
+      .components = {
+        .r = VK_COMPONENT_SWIZZLE_R,
+        .g = VK_COMPONENT_SWIZZLE_G,
+        .b = VK_COMPONENT_SWIZZLE_B,
+        .a = VK_COMPONENT_SWIZZLE_A,
+      },
+      .subresourceRange = {
+        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        .baseMipLevel = 0,
+        .levelCount = 1,
+        .baseArrayLayer = 0,
+        .layerCount = 1,
+      },
+    };
+
+    vkCreateImageView(app->device,
+                      &imageviewinfo,
+                      NULL,
+                      &b->view);
+
+
+    VkFramebufferCreateInfo framebufferinfo = {
+      .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+      .renderPass = app->renderPass,
+      .attachmentCount = 1,
+      .pAttachments = &b->view,
+      .width = app->width,
+      .height = app->height,
+      .layers = 1
+    };
+
+    vkCreateFramebuffer(app->device,
+                        &framebufferinfo,
+                        NULL,
+                        &b->framebuffer);
+
+    error("init framebuffer %p done.\n", &b->framebuffer);
   }
 
   const char* requiredExtensionName() {

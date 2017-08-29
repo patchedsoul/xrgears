@@ -335,6 +335,8 @@ public:
 
 	void draw()
 	{
+    error("triangle: skipping draw.\n");
+    /*
 		// Get next image in the swap chain (back/front buffer)
 		VK_CHECK_RESULT(swapChain.acquireNextImage(presentCompleteSemaphore, &currentBuffer));
 
@@ -362,7 +364,8 @@ public:
 		// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
 		// This ensures that the image is not presented to the windowing system until all commands have been submitted
 		VK_CHECK_RESULT(swapChain.queuePresent(queue, currentBuffer, renderCompleteSemaphore));
-	}
+    */
+  }
 
 	// Prepare vertex and index buffers for an indexed triangle
 	// Also uploads them to device local memory using staging and initializes vertex input and attribute binding to match the vertex shader
@@ -675,6 +678,8 @@ public:
 	// Note: Override of virtual function in the base class and called from within VulkanExampleBase::prepare
 	void setupFrameBuffer()
 	{
+    fprintf(stderr, "skipping framebuffer swapchain setup.\n");
+    /*
 		// Create a frame buffer for every image in the swapchain
 		frameBuffers.resize(swapChain.imageCount);
 		for (size_t i = 0; i < frameBuffers.size(); i++)
@@ -695,6 +700,8 @@ public:
 			// Create the framebuffer
 			VK_CHECK_RESULT(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
 		}
+    */
+
 	}
 
 	// Render pass setup
@@ -1080,6 +1087,7 @@ public:
 	{
 		if (!prepared)
 			return;
+    fprintf(stderr, "triangle: render\n");
 		draw();
 	}
 
@@ -1097,9 +1105,9 @@ int main(const int argc, const char *argv[])
 {
   for (size_t i = 0; i < argc; i++) { Triangle::args.push_back(argv[i]); };
   app = new Triangle();
-  VikWindow * window = new VikWindowWayland();
+  //VikWindow * window = new VikWindowWayland();
   //VikWindow * window = new VikWindowXCB();
-  //VikWindow * window = new VikWindowKMS();
+  VikWindow * window = new VikWindowKMS();
   app->initVulkan(window);
 
   if (window->setupWindow(app) == -1) {
@@ -1109,7 +1117,9 @@ int main(const int argc, const char *argv[])
   }
 
   window->initSwapChain(app->instance, &app->swapChain);
+  fprintf(stderr, "prepare\n");
   app->prepare();
+  fprintf(stderr, "renderLoopWrap\n");
   app->renderLoopWrap(window);
   delete(app);
 

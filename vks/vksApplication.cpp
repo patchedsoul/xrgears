@@ -152,7 +152,11 @@ void Application::prepare() {
     vks::debugmarker::setup(device);
   createCommandPool();
   // TODO: create DRM swapchain here
-  setupSwapChain();
+
+  //setupSwapChain();
+  fprintf(stderr, "prepare: not creating swapchain.\n");
+
+
   createCommandBuffers();
   setupDepthStencil();
   setupRenderPass();
@@ -175,6 +179,8 @@ void Application::prepare() {
           shaderStages);
     updateTextOverlay();
   }
+
+  fprintf(stderr, "prepare: done.\n");
 }
 
 VkPipelineShaderStageCreateInfo Application::loadShader(std::string fileName, VkShaderStageFlagBits stage) {
@@ -699,8 +705,9 @@ void Application::windowResize() {
   width = destWidth;
   height = destHeight;
   // TODO: Create kms swapchain here.
-  setupSwapChain();
 
+  //setupSwapChain();
+  fprintf(stderr, "resize: not creating swapchain.\n");
   // Recreate the frame buffers
 
   vkDestroyImageView(device, depthStencil.view, nullptr);
