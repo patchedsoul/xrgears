@@ -228,7 +228,7 @@ public:
   // Return -1 on failure.
   int setupWindow(Application *app) {
 
-    printf("KMS setupWindow\n");
+    error("KMS setupWindow\n");
 
     drmModeRes *resources;
     drmModeEncoder *encoder;
@@ -237,12 +237,15 @@ public:
     if (init_vt() == -1)
       return -1;
 
+    error("init vt works\n");
+
     fd = open("/dev/dri/card0", O_RDWR);
     fail_if(fd == -1, "failed to open /dev/dri/card0\n");
 
     /* Get KMS resources and find the first active connecter. We'll use that
       connector and the crtc driving it in the mode it's currently running. */
     resources = drmModeGetResources(fd);
+    //resources = nullptr;
     fail_if(!resources, "drmModeGetResources failed: %s\n", strerror(errno));
 
     for (i = 0; i < resources->count_connectors; i++) {
@@ -276,9 +279,9 @@ public:
         (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(app->device, "vkCreateDmaBufImageINTEL");
 
     /*
-    printf("Swap chain images: %d\n", app->swapChain.imageCount);
+    error("Swap chain images: %d\n", app->swapChain.imageCount);
     for (VkImage img : app->swapChain.images) {
-      printf("VkImage %p\n", img);
+      error("VkImage %p\n", img);
     }
     */
 
@@ -292,7 +295,7 @@ public:
       kms_b->gbm_bo = gbm_bo_create(gbm_dev, app->width, app->height,
                                     GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
 
-      printf("Created kms buffer %p\n", kms_b);
+      error("Created kms buffer %p\n", kms_b);
 
       buffer_fd = gbm_bo_get_fd(kms_b->gbm_bo);
       stride = gbm_bo_get_stride(kms_b->gbm_bo);
@@ -305,7 +308,7 @@ public:
       extent.height = app->height;
       extent.depth = 1;
 
-      //printf("kms: Using color format %d\n", app->swapChain.colorFormat);
+      //error("kms: Using color format %d\n", app->swapChain.colorFormat);
 
       dmaBufInfo.sType = (VkStructureType) VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_CREATE_INFO_INTEL;
       dmaBufInfo.fd = buffer_fd;
@@ -314,7 +317,7 @@ public:
       dmaBufInfo.extent = extent;
       dmaBufInfo.strideInBytes = stride;
 
-      printf("Creating dmabuf image %d\n", i);
+      error("Creating dmabuf image %d\n", i);
       create_dma_buf_image(app->device,
                            &dmaBufInfo,
                            NULL,
@@ -324,7 +327,7 @@ public:
                            &dmaBufImages[i]
                            );
 
-      printf("Created image %p\n", &dmaBufImages[i]);
+      error("Created image %p\n", &dmaBufImages[i]);
 
       close(buffer_fd);
 
