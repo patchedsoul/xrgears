@@ -27,13 +27,11 @@
 
 #include "vksApplication.hpp"
 
-
 static void
-failv(const char *format, va_list args)
+errorv(const char *format, va_list args)
 {
    vfprintf(stderr, format, args);
    fprintf(stderr, "\n");
-   exit(1);
 }
 
 static void
@@ -42,7 +40,18 @@ fail(const char *format, ...)
    va_list args;
 
    va_start(args, format);
-   failv(format, args);
+   errorv(format, args);
+   va_end(args);
+   exit(1);
+}
+
+static void
+error(const char *format, ...)
+{
+   va_list args;
+
+   va_start(args, format);
+   errorv(format, args);
    va_end(args);
 }
 
@@ -55,8 +64,9 @@ fail_if(int cond, const char *format, ...)
       return;
 
    va_start(args, format);
-   failv(format, args);
+   errorv(format, args);
    va_end(args);
+   exit(1);
 }
 
 static void
@@ -248,7 +258,7 @@ public:
     fail_if(!encoder, "failed to get encoder\n");
     crtc = drmModeGetCrtc(fd, encoder->crtc_id);
     fail_if(!crtc, "failed to get crtc\n");
-    printf("mode info: hdisplay %d, vdisplay %d\n",
+    error("mode info: hdisplay %d, vdisplay %d\n",
            crtc->mode.hdisplay, crtc->mode.vdisplay);
 
     app->width = crtc->mode.hdisplay;
