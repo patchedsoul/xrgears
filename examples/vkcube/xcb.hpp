@@ -103,7 +103,7 @@ public:
 	if (!vkGetPhysicalDeviceXcbPresentationSupportKHR(vc->physical_device, 0,
 	                                                  conn,
 	                                                  iter.data->root_visual)) {
-	    fail("Vulkan not supported on given X window");
+      log_fatal("Vulkan not supported on given X window");
 	}
 
 	init_surface(vc);

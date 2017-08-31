@@ -246,7 +246,7 @@ public:
     surface = wl_compositor_create_surface(compositor);
 
     if (!shell)
-      fail("Compositor is missing unstable zxdg_shell_v6 protocol support");
+      log_fatal("Compositor is missing unstable zxdg_shell_v6 protocol support");
 
     xdg_surface = zxdg_shell_v6_get_xdg_surface(shell, surface);
 
@@ -282,7 +282,7 @@ public:
 
     if (!get_wayland_presentation_support(vc->physical_device, 0,
                                           display)) {
-      fail("Vulkan not supported on given Wayland surface");
+      log_fatal("Vulkan not supported on given Wayland surface");
     }
 
     VkWaylandSurfaceCreateInfoKHR waylandSurfaceInfo = {
