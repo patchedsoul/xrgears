@@ -279,6 +279,9 @@ public:
 		renderPassBeginInfo.renderArea.extent.height = height;
 		renderPassBeginInfo.clearValueCount = 2;
 		renderPassBeginInfo.pClearValues = clearValues;
+
+    fprintf(stderr, "triangle: we will process: %ld draw buffers\n", drawCmdBuffers.size());
+
 	
 		for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
 		{
@@ -331,6 +334,7 @@ public:
 
 			VK_CHECK_RESULT(vkEndCommandBuffer(drawCmdBuffers[i]));
 		}
+    fprintf(stderr, "triangle: buildCommandBuffers done: %ld\n", drawCmdBuffers.size());
 	}
 
 	void draw()
@@ -365,6 +369,8 @@ public:
 		// This ensures that the image is not presented to the windowing system until all commands have been submitted
 		VK_CHECK_RESULT(swapChain.queuePresent(queue, currentBuffer, renderCompleteSemaphore));
     */
+
+     error("vkQueueSubmit: draw done.\n");
   }
 
 	// Prepare vertex and index buffers for an indexed triangle
@@ -1081,6 +1087,7 @@ public:
 		setupDescriptorSet();
 		buildCommandBuffers();
 		prepared = true;
+    fprintf(stderr, "triangle: prepare done\n");
 	}
 
 	virtual void render()

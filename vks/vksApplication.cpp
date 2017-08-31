@@ -97,6 +97,8 @@ void Application::createCommandBuffers() {
         static_cast<uint32_t>(drawCmdBuffers.size()));
 
   VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, drawCmdBuffers.data()));
+
+  fprintf(stderr, "created %ld command buffers\n", drawCmdBuffers.size());
 }
 
 void Application::destroyCommandBuffers() {
@@ -575,6 +577,9 @@ void Application::setupDepthStencil() {
 }
 
 void Application::setupFrameBuffer() {
+  fprintf(stderr, "app: setupFrameBuffer\n");
+
+
   VkImageView attachments[2];
 
   // Depth/Stencil attachment is the same for all frame buffers
@@ -689,6 +694,7 @@ void Application::setupRenderPass() {
   // VK_KHX_multiview
 
   VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass));
+  fprintf(stderr, "renderpass setup complete\n");
 }
 
 void Application::getEnabledFeatures() {}
