@@ -714,8 +714,9 @@ public:
 	// Note: Override of virtual function in the base class and called from within VulkanExampleBase::prepare
 	void setupFrameBuffer()
 	{
-    fprintf(stderr, "skipping framebuffer swapchain setup.\n");
-    /*
+    //fprintf(stderr, "skipping framebuffer swapchain setup.\n");
+    /**/
+
 		// Create a frame buffer for every image in the swapchain
 		frameBuffers.resize(swapChain.imageCount);
 		for (size_t i = 0; i < frameBuffers.size(); i++)
@@ -736,7 +737,6 @@ public:
 			// Create the framebuffer
 			VK_CHECK_RESULT(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
 		}
-    */
 
 	}
 
@@ -1124,7 +1124,7 @@ public:
 	{
 		if (!prepared)
 			return;
-    fprintf(stderr, "triangle: render\n");
+    //fprintf(stderr, "triangle: render\n");
 		draw();
 	}
 
@@ -1142,9 +1142,9 @@ int main(const int argc, const char *argv[])
 {
   for (size_t i = 0; i < argc; i++) { Triangle::args.push_back(argv[i]); };
   app = new Triangle();
-  //VikWindow * window = new VikWindowWayland();
+  VikWindow * window = new VikWindowWayland();
   //VikWindow * window = new VikWindowXCB();
-  VikWindow * window = new VikWindowKMS();
+  //VikWindow * window = new VikWindowKMS();
   app->initVulkan(window);
 
   if (window->setupWindow(app) == -1) {
