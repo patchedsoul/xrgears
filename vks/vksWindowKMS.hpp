@@ -96,7 +96,7 @@ class VikWindowKMS : public VikWindow {
   struct render_buffer {
      VkImage image;
      VkImageView view;
-     VkFramebuffer framebuffer;
+     //VkFramebuffer framebuffer;
   };
 
   #define MAX_NUM_IMAGES 3
@@ -303,6 +303,8 @@ public:
 
     //VkImage dmaBufImages[2];
 
+    app->frameBuffers.resize(1);
+
 
     for (uint32_t i = 0; i < 2; i++) {
       //struct CubeBuffer *b = &vc->buffers[i];
@@ -408,9 +410,9 @@ public:
     vkCreateFramebuffer(app->device,
                         &framebufferinfo,
                         NULL,
-                        &b->framebuffer);
+                        &app->frameBuffers[0]);
 
-    error("init framebuffer %p done.\n", &b->framebuffer);
+    error("init framebuffer %p done.\n", &app->frameBuffers[0]);
   }
 
   const char* requiredExtensionName() {
