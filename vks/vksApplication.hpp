@@ -106,7 +106,7 @@ class Application {
   // Pipeline cache object
   VkPipelineCache pipelineCache;
   // Wraps the swap chain to present images (framebuffers) to the windowing system
-  VulkanSwapChain swapChain;
+  SwapChain swapChain;
   // Synchronization semaphores
 
   struct {

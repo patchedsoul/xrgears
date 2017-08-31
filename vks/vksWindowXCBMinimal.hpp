@@ -52,7 +52,7 @@ class VikWindowXCBMinimal : public VikWindow {
     xcb_disconnect(connection);
   }
 
-  void initSwapChain(const VkInstance &instance, VulkanSwapChain* swapChain) {
+  void initSwapChain(const VkInstance &instance, vks::SwapChain* swapChain) {
     VkResult err = VK_SUCCESS;
 
     VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};

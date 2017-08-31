@@ -23,5 +23,5 @@ class VikWindow {
   virtual int init(vks::Application *app) = 0;
   virtual void loop(vks::Application *app) = 0;
   virtual const char* requiredExtensionName() = 0;
-  virtual void initSwapChain(const VkInstance &instance, VulkanSwapChain* swapChain) = 0;
+  virtual void initSwapChain(const VkInstance &instance, vks::SwapChain* swapChain) = 0;
 };

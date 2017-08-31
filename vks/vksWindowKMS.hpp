@@ -123,7 +123,7 @@ public:
     restore_vt();
   }
 
-  void initSwapChain(const VkInstance &instance, VulkanSwapChain* swapChain) {
+  void initSwapChain(const VkInstance &instance, vks::SwapChain* swapChain) {
 
   }
 

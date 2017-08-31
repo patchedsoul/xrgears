@@ -23,12 +23,14 @@
 
 #include "vksTools.hpp"
 
+namespace vks {
+
 typedef struct _SwapChainBuffers {
   VkImage image;
   VkImageView view;
 } SwapChainBuffer;
 
-class VulkanSwapChain {
+class SwapChain {
  public:
   VkSurfaceKHR surface;
 
@@ -391,3 +393,4 @@ class VulkanSwapChain {
     swapChain = VK_NULL_HANDLE;
   }
 };
+}
