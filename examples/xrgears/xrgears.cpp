@@ -777,7 +777,7 @@ int main(const int argc, const char *argv[]) {
   //VikWindow * window = new VikWindowKMS();
   app->initVulkan(window);
 
-  window->setupWindow(app);
+  window->init(app);
 
   window->initSwapChain(app->instance, &app->swapChain);
   app->prepare();

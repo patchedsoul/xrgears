@@ -20,8 +20,8 @@ class VikWindow {
   VikWindow() {}
   ~VikWindow() {}
 
-  virtual int setupWindow(Application *app) = 0;
-  virtual void renderLoop(Application *app) = 0;
+  virtual int init(Application *app) = 0;
+  virtual void loop(Application *app) = 0;
   virtual const char* requiredExtensionName() = 0;
   virtual void initSwapChain(const VkInstance &instance, VulkanSwapChain* swapChain) = 0;
 };

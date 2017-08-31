@@ -29,7 +29,7 @@ class VikWindowKhrDisplay  : public VikWindow {
     app->swapChain.initSurfaceCommon();
   }
 
-  void renderLoop(Application *app) {
+  void loop(Application *app) {
     while (!app->quit) {
       auto tStart = std::chrono::high_resolution_clock::now();
       if (app->viewUpdated) {

@@ -127,7 +127,7 @@ public:
 
   }
 
-  void renderLoop(Application *app)
+  void loop(Application *app)
   {
     int len, ret;
     char buf[16];
@@ -242,7 +242,7 @@ public:
   }
 
   // Return -1 on failure.
-  int setupWindow(Application *app) {
+  int init(Application *app) {
 
     error("KMS setupWindow\n");
 

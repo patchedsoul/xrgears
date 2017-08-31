@@ -87,7 +87,7 @@ class VikWindowXCB : public VikWindow {
       swapChain->initSurfaceCommon();
   }
 
-  void renderLoop(Application *app) {
+  void loop(Application *app) {
     xcb_flush(connection);
     while (!app->quit) {
       auto tStart = std::chrono::high_resolution_clock::now();
@@ -136,7 +136,7 @@ class VikWindowXCB : public VikWindow {
   }
 
   // Set up a window using XCB and request event types
-  int setupWindow(Application *app) {
+  int init(Application *app) {
     uint32_t value_mask, value_list[32];
 
     if (connection == nullptr)
