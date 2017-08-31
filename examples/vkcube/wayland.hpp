@@ -31,6 +31,7 @@ class VikDisplayModeWayland : public VikDisplayMode {
 
 public:
   VikDisplayModeWayland() {
+    name = "wayland-xdg";
     seat = NULL;
     keyboard = NULL;
     shell = NULL;

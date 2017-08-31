@@ -1,23 +1,27 @@
 #pragma once
 
+#include <string>
+
 class CubeApplication;
 class CubeRenderer;
 
 enum display_mode_type {
-   DISPLAY_MODE_AUTO = 0,
-   DISPLAY_MODE_KMS,
-   DISPLAY_MODE_XCB,
-   DISPLAY_MODE_WAYLAND,
+  DISPLAY_MODE_AUTO = 0,
+  DISPLAY_MODE_KMS,
+  DISPLAY_MODE_XCB,
+  DISPLAY_MODE_WAYLAND,
 };
 
 class VikDisplayMode {
 public:
-    VikDisplayMode() {}
-    ~VikDisplayMode() {}
+  std::string name;
 
-    virtual int init(CubeApplication* app, CubeRenderer *vc) {
-	return 0;
-    }
+  VikDisplayMode() {}
+  ~VikDisplayMode() {}
 
-    virtual void main_loop(CubeApplication* app, CubeRenderer *vc) {}
+  virtual int init(CubeApplication* app, CubeRenderer *vc) {
+    return 0;
+  }
+
+  virtual void main_loop(CubeApplication* app, CubeRenderer *vc) {}
 };

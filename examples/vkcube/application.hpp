@@ -24,6 +24,10 @@ public:
    void parse_args(int argc, char *argv[]);
    void init_display();
    void mainloop();
+
+   int init_display_mode(display_mode_type m);
+   void init_display_mode_auto();
+
 };
 
 

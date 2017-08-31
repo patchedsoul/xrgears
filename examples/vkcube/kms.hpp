@@ -56,6 +56,7 @@ class VikDisplayModeKMS : public VikDisplayMode {
 public:
   VikDisplayModeKMS() {
     gbm_dev = NULL;
+    name = "kms";
   }
 
   ~VikDisplayModeKMS() {}

@@ -37,7 +37,8 @@ class VikDisplayModeXCB : public VikDisplayMode {
 
 public:
     VikDisplayModeXCB() {
-	  window = XCB_NONE;
+      window = XCB_NONE;
+      name = "xcb";
     }
 
     ~VikDisplayModeXCB() {}

@@ -78,60 +78,47 @@ void CubeApplication::parse_args(int argc, char *argv[]) {
 }
 
 
-void CubeApplication::init_display() {
+int CubeApplication::init_display_mode(display_mode_type m) {
   switch (mode) {
-    case DISPLAY_MODE_AUTO:
-
-      fprintf(stderr, "failed to initialize wayland, falling back "
-                      "to xcb\n");
-      mode = DISPLAY_MODE_XCB;
-
-      display = new VikDisplayModeXCB();
-      if (display->init(this, renderer) == -1) {
-        fprintf(stderr, "failed to initialize xcb, falling back "
-                        "to kms\n");
-        delete(display);
-        mode = DISPLAY_MODE_KMS;
-        display = new VikDisplayModeKMS();
-        if (display->init(this, renderer) == -1) {
-          fprintf(stderr, "failed to initialize kms\n");
-        }
-      }
-      break;
     case DISPLAY_MODE_KMS:
       display = new VikDisplayModeKMS();
-      if (display->init(this, renderer) == -1)
-        fail("failed to initialize kms");
       break;
     case DISPLAY_MODE_XCB:
       display = new VikDisplayModeXCB();
-      if (display->init(this, renderer) == -1) {
-        printf("failed to initialize xcb\n");
-        fail("failed to initialize xcb");
-      }
       break;
-
     case DISPLAY_MODE_WAYLAND:
       display = new VikDisplayModeWayland();
-      if (display->init(this, renderer) == -1) {
-        printf("failed to initialize wayland\n");
-        fail("failed to initialize wayland");
-      }
       break;
+    case DISPLAY_MODE_AUTO:
+      return -1;
+  }
+  return display->init(this, renderer);
+}
+
+void CubeApplication::init_display_mode_auto() {
+  mode = DISPLAY_MODE_WAYLAND;
+  if (init_display_mode(mode) == -1) {
+    fprintf(stderr, "failed to initialize wayland, falling back to xcb\n");
+    delete(display);
+    mode = DISPLAY_MODE_XCB;
+    if (init_display_mode(mode) == -1) {
+      fprintf(stderr, "failed to initialize xcb, falling back to kms\n");
+      delete(display);
+      mode = DISPLAY_MODE_KMS;
+      init_display_mode(mode);
+    }
   }
 }
 
+void CubeApplication::init_display() {
+  if (mode == DISPLAY_MODE_AUTO)
+    init_display_mode_auto();
+  else if (init_display_mode(mode) == -1)
+    fail("failed to initialize %s", display->name.c_str());
+}
+
 void CubeApplication::mainloop() {
-  switch (mode) {
-    case DISPLAY_MODE_AUTO:
-      assert(!"display mode is unset");
-      break;
-    case DISPLAY_MODE_XCB:
-    case DISPLAY_MODE_KMS:
-    case DISPLAY_MODE_WAYLAND:
-      display->main_loop(this, renderer);
-      break;
-  }
+  display->main_loop(this, renderer);
 }
 
 
