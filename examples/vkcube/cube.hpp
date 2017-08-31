@@ -44,6 +44,10 @@ public:
 
   uint32_t vertex_offset, colors_offset, normals_offset;
 
+  VkCommandBuffer cmd_buffer;
+
+  bool cmd_buffer_created = false;
+
   void *map;
 
   struct ubo {
@@ -418,43 +422,8 @@ public:
     vkUpdateDescriptorSets(renderer->device, 1, writeDescriptorSet, 0, NULL);
   }
 
-  void
-  render(CubeRenderer *vc, struct CubeBuffer *b)
-  {
-    struct ubo ubo;
-    struct timeval tv;
-    uint64_t t;
 
-    gettimeofday(&tv, NULL);
-
-    t = ((tv.tv_sec * 1000 + tv.tv_usec / 1000) -
-         (vc->start_tv.tv_sec * 1000 + vc->start_tv.tv_usec / 1000)) / 5;
-
-    glm::mat4 t_matrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -8.0f));
-
-    glm::vec3 r_vec = glm::vec3(45.0f + (0.25f * t),
-                                45.0f - (0.5f * t),
-                                10.0f + (0.15f * t));
-
-    glm::mat4  r_matrix = glm::mat4();
-    r_matrix = glm::rotate(r_matrix, glm::radians(r_vec.x), glm::vec3(-1.0f, 0.0f, 0.0f));
-    r_matrix = glm::rotate(r_matrix, glm::radians(r_vec.y), glm::vec3(0.0f, -1.0f, 0.0f));
-    r_matrix = glm::rotate(r_matrix, glm::radians(r_vec.z), glm::vec3(0.0f, 0.0f, -1.0f));
-
-    float aspect = (float) vc->height / (float) vc->width;
-
-    ubo.modelview = t_matrix * r_matrix;
-
-    glm::mat4 p_matrix = glm::frustum(-2.8f, +2.8f, -2.8f * aspect, +2.8f * aspect, 3.5f, 10.0f);
-
-    ubo.modelviewprojection = p_matrix * ubo.modelview;
-
-    /* The mat3 normalMatrix is laid out as 3 vec4s. */
-    memcpy(ubo.normal, &ubo.modelview, sizeof ubo.normal);
-
-    memcpy(map, &ubo, sizeof(ubo));
-
-
+  VkCommandBuffer build_command_buffer(CubeRenderer *vc, struct CubeBuffer *b) {
     VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
       .commandPool = vc->cmd_pool,
@@ -462,7 +431,6 @@ public:
       .commandBufferCount = 1,
     };
 
-    VkCommandBuffer cmd_buffer;
     vkAllocateCommandBuffers(vc->device,
                              &cmdBufferAllocateInfo,
                              &cmd_buffer);
@@ -543,6 +511,59 @@ public:
 
     vkEndCommandBuffer(cmd_buffer);
 
+    return cmd_buffer;
+  }
+
+  void update_uniform_buffer(CubeRenderer *vc, uint64_t t) {
+    struct ubo cube_ubo;
+
+    glm::mat4 t_matrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -8.0f));
+
+    glm::vec3 r_vec = glm::vec3(45.0f + (0.25f * t),
+                                45.0f - (0.5f * t),
+                                10.0f + (0.15f * t));
+
+    glm::mat4  r_matrix = glm::mat4();
+    r_matrix = glm::rotate(r_matrix, glm::radians(r_vec.x), glm::vec3(-1.0f, 0.0f, 0.0f));
+    r_matrix = glm::rotate(r_matrix, glm::radians(r_vec.y), glm::vec3(0.0f, -1.0f, 0.0f));
+    r_matrix = glm::rotate(r_matrix, glm::radians(r_vec.z), glm::vec3(0.0f, 0.0f, -1.0f));
+
+    float aspect = (float) vc->height / (float) vc->width;
+
+    cube_ubo.modelview = t_matrix * r_matrix;
+
+    glm::mat4 p_matrix = glm::frustum(-2.8f, +2.8f, -2.8f * aspect, +2.8f * aspect, 3.5f, 10.0f);
+
+    cube_ubo.modelviewprojection = p_matrix * cube_ubo.modelview;
+
+    /* The mat3 normalMatrix is laid out as 3 vec4s. */
+    memcpy(cube_ubo.normal, &cube_ubo.modelview, sizeof cube_ubo.normal);
+
+    memcpy(map, &cube_ubo, sizeof(ubo));
+  }
+
+  void
+  render(CubeRenderer *vc, struct CubeBuffer *b)
+  {
+
+    struct timeval tv;
+    uint64_t t;
+
+    gettimeofday(&tv, NULL);
+
+    t = ((tv.tv_sec * 1000 + tv.tv_usec / 1000) -
+         (vc->start_tv.tv_sec * 1000 + vc->start_tv.tv_usec / 1000)) / 5;
+
+    update_uniform_buffer(vc, t);
+
+    cmd_buffer = build_command_buffer(vc, b);
+    /*
+    if (!cmd_buffer_created) {
+      cmd_buffer = build_command_buffer(vc, b);
+      cmd_buffer_created = true;
+    }
+    */
+
     VkPipelineStageFlags stageflags[] = {
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
     };
@@ -557,11 +578,11 @@ public:
       .pCommandBuffers = &cmd_buffer,
     };
 
-    vkQueueSubmit(vc->queue, 1, &submitInfo, vc->fence);
+     vkQueueSubmit(vc->queue, 1, &submitInfo, vc->fence);
 
     VkFence fences[] = { vc->fence };
 
-    vkWaitForFences(vc->device, 1, fences, true, INT64_MAX);
+    vkWaitForFences(vc->device, 1, fences, VK_TRUE, INT64_MAX);
     vkResetFences(vc->device, 1, &vc->fence);
 
     vkResetCommandPool(vc->device, vc->cmd_pool, 0);
