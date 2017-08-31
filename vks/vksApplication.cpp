@@ -13,6 +13,8 @@
 
 #include "vksWindowXCB.hpp"
 
+namespace vks {
+
 std::vector<const char*> Application::args;
 
 VkResult Application::createInstance(bool enableValidation, VikWindow *window) {
@@ -753,4 +755,5 @@ void Application::windowResized() {
 
 void Application::setupSwapChain() {
   swapChain.create(&width, &height, settings.vsync);
+}
 }

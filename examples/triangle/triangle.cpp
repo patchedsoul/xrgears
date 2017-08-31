@@ -39,7 +39,7 @@
 // See "prepareVertices" for details on what's staging and on why to use it
 #define USE_STAGING true
 
-class Triangle : public Application
+class Triangle : public vks::Application
 {
 public:
   // Vertex layout used in this example

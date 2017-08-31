@@ -24,12 +24,12 @@ class VikWindowKhrDisplay  : public VikWindow {
     return VK_KHR_DISPLAY_EXTENSION_NAME;
   }
 
-  void initSwapChain(Application *app) {
+  void initSwapChain(vks::Application *app) {
     createDirect2DisplaySurface(app, app->width, app->height);
     app->swapChain.initSurfaceCommon();
   }
 
-  void loop(Application *app) {
+  void loop(vks::Application *app) {
     while (!app->quit) {
       auto tStart = std::chrono::high_resolution_clock::now();
       if (app->viewUpdated) {
@@ -60,7 +60,7 @@ class VikWindowKhrDisplay  : public VikWindow {
     }
   }
 
-  void createDirect2DisplaySurface(Application * app, uint32_t width, uint32_t height) {
+  void createDirect2DisplaySurface(vks::Application * app, uint32_t width, uint32_t height) {
     uint32_t displayPropertyCount;
 
     // Get display property

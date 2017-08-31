@@ -34,6 +34,8 @@
 
 class VikWindow;
 
+namespace vks {
+
 class Application {
  public:
   PFN_vkGetPhysicalDeviceFeatures2KHR fpGetPhysicalDeviceFeatures2KHR;
@@ -297,6 +299,5 @@ class Application {
   // Submit the frames' workload
   // - Submits the text overlay (if enabled)
   void submitFrame();
-
-
 };
+}

@@ -127,7 +127,7 @@ public:
 
   }
 
-  void loop(Application *app)
+  void loop(vks::Application *app)
   {
     int len, ret;
     char buf[16];
@@ -242,7 +242,7 @@ public:
   }
 
   // Return -1 on failure.
-  int init(Application *app) {
+  int init(vks::Application *app) {
 
     error("KMS setupWindow\n");
 
@@ -369,7 +369,7 @@ public:
     return 0;
   }
 
-  void init_buffer(Application *app, struct render_buffer *b) {
+  void init_buffer(vks::Application *app, struct render_buffer *b) {
 
     VkImageViewCreateInfo imageviewinfo = {
       .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,

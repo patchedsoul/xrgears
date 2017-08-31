@@ -33,7 +33,7 @@ class VikWindowWayland : public VikWindow {
   wl_output *hmd_output = nullptr;
   int hmd_refresh = 0;
   
-  Application* app;
+  vks::Application* app;
 
  public:
   explicit VikWindowWayland() {
@@ -77,7 +77,7 @@ class VikWindowWayland : public VikWindow {
     wl_display_disconnect(display);
   }
 
-  void loop(Application *app) {
+  void loop(vks::Application *app) {
     while (!app->quit) {
       auto tStart = std::chrono::high_resolution_clock::now();
       if (app->viewUpdated) {
@@ -393,7 +393,7 @@ class VikWindowWayland : public VikWindow {
 
   static void PopupDoneCb(void *data, struct wl_shell_surface *shell_surface) {}
 
-  int init(Application * app) {
+  int init(vks::Application * app) {
     this->app = app;
     surface = wl_compositor_create_surface(compositor);
     shell_surface = wl_shell_get_shell_surface(shell, surface);

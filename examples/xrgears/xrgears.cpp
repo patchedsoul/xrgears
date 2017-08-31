@@ -46,7 +46,7 @@
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
 
-class XRGears : public Application {
+class XRGears : public vks::Application {
 public:
   // Vertex layout for the models
   vks::VertexLayout vertexLayout = vks::VertexLayout({
