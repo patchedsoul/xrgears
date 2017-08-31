@@ -42,7 +42,10 @@
 * @brief Mostly self-contained text overlay class
 * @note Will only work with compatible render passes
 */ 
-class VulkanTextOverlay {
+
+namespace vks {
+
+class TextOverlay {
  private:
   vks::Device *vulkanDevice;
 
@@ -91,7 +94,7 @@ class VulkanTextOverlay {
   *
   * @param vulkanDevice Pointer to a valid VulkanDevice
   */
-  VulkanTextOverlay(
+  TextOverlay(
       vks::Device *vulkanDevice,
       VkQueue queue,
       std::vector<VkFramebuffer> *framebuffers,
@@ -123,7 +126,7 @@ class VulkanTextOverlay {
   /**
   * Default destructor, frees up all Vulkan resources acquired by the text overlay
   */
-  ~VulkanTextOverlay() {
+  ~TextOverlay() {
     // Free up all Vulkan resources requested by the text overlay
     vertexBuffer.destroy();
     vkDestroySampler(vulkanDevice->logicalDevice, sampler, nullptr);
@@ -698,3 +701,4 @@ class VulkanTextOverlay {
     VK_CHECK_RESULT(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &cmdBufAllocateInfo, cmdBuffers.data()));
   }
 };
+}

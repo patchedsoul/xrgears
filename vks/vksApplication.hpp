@@ -171,7 +171,7 @@ class Application {
   bool paused = false;
 
   bool enableTextOverlay = false;
-  VulkanTextOverlay *textOverlay;
+  TextOverlay *textOverlay;
 
   // Use to adjust mouse rotation speed
   float rotationSpeed = 1.0f;
@@ -289,7 +289,7 @@ class Application {
   void updateTextOverlay();
 
   /** @brief (Virtual) Called when the text overlay is updating, can be used to add custom text to the overlay */
-  virtual void getOverlayText(VulkanTextOverlay*);
+  virtual void getOverlayText(TextOverlay*);
 
   // Prepare the frame for workload submission
   // - Acquires the next image from the swap chain

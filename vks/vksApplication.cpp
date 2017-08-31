@@ -172,7 +172,7 @@ void Application::prepare() {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
     shaderStages.push_back(loadShader(getAssetPath() + "shaders/base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
     shaderStages.push_back(loadShader(getAssetPath() + "shaders/base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
-    textOverlay = new VulkanTextOverlay(
+    textOverlay = new TextOverlay(
           vulkanDevice,
           queue,
           &frameBuffers,
@@ -215,21 +215,21 @@ void Application::updateTextOverlay() {
 
   textOverlay->beginTextUpdate();
 
-  textOverlay->addText(title, 5.0f, 5.0f, VulkanTextOverlay::alignLeft);
+  textOverlay->addText(title, 5.0f, 5.0f, TextOverlay::alignLeft);
 
   std::stringstream ss;
   ss << std::fixed << std::setprecision(3) << (frameTimer * 1000.0f) << "ms (" << lastFPS << " fps)";
-  textOverlay->addText(ss.str(), 5.0f, 25.0f, VulkanTextOverlay::alignLeft);
+  textOverlay->addText(ss.str(), 5.0f, 25.0f, TextOverlay::alignLeft);
 
   std::string deviceName(deviceProperties.deviceName);
-  textOverlay->addText(deviceName, 5.0f, 45.0f, VulkanTextOverlay::alignLeft);
+  textOverlay->addText(deviceName, 5.0f, 45.0f, TextOverlay::alignLeft);
 
   getOverlayText(textOverlay);
 
   textOverlay->endTextUpdate();
 }
 
-void Application::getOverlayText(VulkanTextOverlay*) {}
+void Application::getOverlayText(TextOverlay*) {}
 
 void Application::prepareFrame() {
   // Acquire the next image from the swap chain
