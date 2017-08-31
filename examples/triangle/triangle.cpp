@@ -1147,7 +1147,7 @@ int main(const int argc, const char *argv[])
   //VikWindow * window = new VikWindowKMS();
   app->initVulkan(window);
 
-  if (window->setupWindow(app) == -1) {
+  if (window->init(app) == -1) {
     printf("Error setting up window\n");
     delete(app);
     return -1;

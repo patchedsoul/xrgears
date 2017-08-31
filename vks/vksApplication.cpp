@@ -201,7 +201,7 @@ void Application::renderLoopWrap(VikWindow *window) {
   destWidth = width;
   destHeight = height;
 
-  window->renderLoop(this);
+  window->loop(this);
 
   // Flush device to make sure all resources can be freed
   vkDeviceWaitIdle(device);
