@@ -118,7 +118,7 @@ void CubeApplication::init_display() {
 }
 
 void CubeApplication::mainloop() {
-  display->main_loop(this, renderer);
+  display->loop(this, renderer);
 }
 
 

@@ -303,7 +303,7 @@ public:
   }
 
   void
-  main_loop(CubeApplication* app, CubeRenderer *vc)
+  loop(CubeApplication* app, CubeRenderer *vc)
   {
     VkResult result = VK_SUCCESS;
     struct pollfd fds[] = {

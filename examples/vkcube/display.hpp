@@ -17,11 +17,8 @@ public:
   std::string name;
 
   VikDisplayMode() {}
-  ~VikDisplayMode() {}
+  virtual ~VikDisplayMode() {}
 
-  virtual int init(CubeApplication* app, CubeRenderer *vc) {
-    return 0;
-  }
-
-  virtual void main_loop(CubeApplication* app, CubeRenderer *vc) {}
+  virtual int init(CubeApplication* app, CubeRenderer *vc) = 0;
+  virtual void loop(CubeApplication* app, CubeRenderer *vc) = 0;
 };

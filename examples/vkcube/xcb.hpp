@@ -141,7 +141,7 @@ public:
     }
 
     void
-    main_loop(CubeApplication* app, CubeRenderer *vc)
+    loop(CubeApplication* app, CubeRenderer *vc)
     {
 	xcb_generic_event_t *event;
 	xcb_key_press_event_t *key_press;

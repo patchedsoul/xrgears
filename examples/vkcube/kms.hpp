@@ -73,7 +73,7 @@ public:
     restore_vt();
   }
 
-  void main_loop(CubeApplication* app, CubeRenderer *vc)
+  void loop(CubeApplication* app, CubeRenderer *vc)
   {
     int len, ret;
     char buf[16];
