@@ -155,8 +155,8 @@ void Application::prepare() {
   createCommandPool();
   // TODO: create DRM swapchain here
 
-  //setupSwapChain();
-  fprintf(stderr, "prepare: not creating swapchain.\n");
+  setupSwapChain();
+  //fprintf(stderr, "prepare: not creating swapchain.\n");
 
 
   createCommandBuffers();
@@ -712,8 +712,8 @@ void Application::windowResize() {
   height = destHeight;
   // TODO: Create kms swapchain here.
 
-  //setupSwapChain();
-  fprintf(stderr, "resize: not creating swapchain.\n");
+  setupSwapChain();
+  //fprintf(stderr, "resize: not creating swapchain.\n");
   // Recreate the frame buffers
 
   vkDestroyImageView(device, depthStencil.view, nullptr);
