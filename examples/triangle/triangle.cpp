@@ -339,8 +339,39 @@ public:
 
 	void draw()
 	{
-    error("triangle: skipping draw.\n");
     /*
+    error("triangle: draw.\n");
+
+    VkPipelineStageFlags stageflags[] = {
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+    };
+
+
+    VkSubmitInfo submitInfo = {
+      .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+      .waitSemaphoreCount = 1,
+      .pWaitSemaphores = &presentCompleteSemaphore,
+      .pWaitDstStageMask = stageflags,
+      .commandBufferCount = 1,
+      //.pCommandBuffers = &drawCmdBuffers[currentBuffer],
+      .pCommandBuffers = &drawCmdBuffers[0],
+    };
+
+    error("command buffer size: %d\n", drawCmdBuffers.size());
+
+    error("vkQueueSubmit: draw.\n");
+     vkQueueSubmit(queue, 1, &submitInfo, waitFences[0]);
+
+    //VkFence fences[] = { fence };
+
+    //vkWaitForFences(device, 1, fences, VK_TRUE, INT64_MAX);
+      error("vkWaitForFences: draw.\n");
+    vkWaitForFences(device, 1, &waitFences[0], VK_TRUE, INT64_MAX);
+    //vkResetFences(device, 1, &fence);
+     error("vkResetFences: draw.\n");
+    vkResetFences(device, 1, &waitFences[0]);
+    */
+
 		// Get next image in the swap chain (back/front buffer)
 		VK_CHECK_RESULT(swapChain.acquireNextImage(presentCompleteSemaphore, &currentBuffer));
 
@@ -368,9 +399,8 @@ public:
 		// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
 		// This ensures that the image is not presented to the windowing system until all commands have been submitted
 		VK_CHECK_RESULT(swapChain.queuePresent(queue, currentBuffer, renderCompleteSemaphore));
-    */
 
-     error("vkQueueSubmit: draw done.\n");
+     //error("vkQueueSubmit: draw done.\n");
   }
 
 	// Prepare vertex and index buffers for an indexed triangle
