@@ -475,7 +475,7 @@ void Application::initVulkan(VikWindow *window) {
   // Vulkan device creation
   // This is handled by a separate class that gets a logical device representation
   // and encapsulates functions related to a device
-  vulkanDevice = new vks::VulkanDevice(physicalDevice);
+  vulkanDevice = new vks::Device(physicalDevice);
   VkResult res = vulkanDevice->createLogicalDevice(enabledFeatures, enabledExtensions);
   if (res != VK_SUCCESS)
     vks::tools::exitFatal("Could not create Vulkan device: \n" + vks::tools::errorString(res), "Fatal error");

@@ -22,7 +22,8 @@
 #include "vksBuffer.hpp"
 
 namespace vks {
-struct VulkanDevice {
+class Device {
+ public:
   /** @brief Physical device representation */
   VkPhysicalDevice physicalDevice;
   /** @brief Logical device representation (application's view of the device) */
@@ -60,7 +61,7 @@ struct VulkanDevice {
     *
     * @param physicalDevice Physical device that is to be used
     */
-  explicit VulkanDevice(VkPhysicalDevice physicalDevice) {
+  explicit Device(VkPhysicalDevice physicalDevice) {
     assert(physicalDevice);
     this->physicalDevice = physicalDevice;
 
@@ -94,7 +95,7 @@ struct VulkanDevice {
     *
     * @note Frees the logical device
     */
-  ~VulkanDevice() {
+  ~Device() {
     if (commandPool)
       vkDestroyCommandPool(logicalDevice, commandPool, nullptr);
     if (logicalDevice)

@@ -46,7 +46,7 @@ class VikCamera {
     memcpy(uniformBuffer.mapped, &uboCamera, sizeof(uboCamera));
   }
 
-  void prepareUniformBuffers(vks::VulkanDevice *vulkanDevice) {
+  void prepareUniformBuffers(vks::Device *vulkanDevice) {
     VikBuffer::create(vulkanDevice, &uniformBuffer, sizeof(uboCamera));
   }
 };

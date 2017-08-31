@@ -55,7 +55,7 @@ class VikSkyBox {
           &textureDescriptor);
   }
 
-  void loadAssets(vks::VertexLayout vertexLayout, vks::VulkanDevice *vulkanDevice, VkQueue queue) {
+  void loadAssets(vks::VertexLayout vertexLayout, vks::Device *vulkanDevice, VkQueue queue) {
     // Skybox
     model.loadFromFile(VikAssets::getAssetPath() + "models/cube.obj", vertexLayout, 10.0f, vulkanDevice, queue);
     cubeMap.loadFromFile(

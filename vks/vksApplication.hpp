@@ -144,7 +144,7 @@ class Application {
   const std::string getAssetPath();
 
   /** @brief Encapsulated physical and logical vulkan device */
-  vks::VulkanDevice *vulkanDevice;
+  vks::Device *vulkanDevice;
 
   /** @brief Example settings that can be changed e.g. by command line arguments */
   struct Settings {

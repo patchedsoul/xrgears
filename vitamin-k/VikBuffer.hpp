@@ -16,7 +16,7 @@
 
 class VikBuffer {
  public:
-  static void create(vks::VulkanDevice *vulkanDevice, vks::Buffer *buffer,
+  static void create(vks::Device *vulkanDevice, vks::Buffer *buffer,
                      VkDeviceSize size) {
     VK_CHECK_RESULT(
           vulkanDevice->createBuffer(

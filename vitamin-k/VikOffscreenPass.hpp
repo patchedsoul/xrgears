@@ -68,7 +68,7 @@ class VikOffscreenPass {
 
   // Create a frame buffer attachment
   void createAttachment(
-      vks::VulkanDevice *vulkanDevice,
+      vks::Device *vulkanDevice,
       VkFormat format,
       VkImageUsageFlagBits usage,
       FrameBufferAttachment *attachment) {
@@ -125,7 +125,7 @@ class VikOffscreenPass {
   }
 
   // Prepare a new framebuffer and attachments for offscreen rendering (G-Buffer)
-  void prepareOffscreenFramebuffer(vks::VulkanDevice *vulkanDevice, const VkPhysicalDevice& physicalDevice) {
+  void prepareOffscreenFramebuffer(vks::Device *vulkanDevice, const VkPhysicalDevice& physicalDevice) {
     offScreenFrameBuf.width = FB_DIM;
     offScreenFrameBuf.height = FB_DIM;
 

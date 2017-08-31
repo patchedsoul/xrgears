@@ -44,7 +44,7 @@
 */ 
 class VulkanTextOverlay {
  private:
-  vks::VulkanDevice *vulkanDevice;
+  vks::Device *vulkanDevice;
 
   VkQueue queue;
   VkFormat colorFormat;
@@ -92,7 +92,7 @@ class VulkanTextOverlay {
   * @param vulkanDevice Pointer to a valid VulkanDevice
   */
   VulkanTextOverlay(
-      vks::VulkanDevice *vulkanDevice,
+      vks::Device *vulkanDevice,
       VkQueue queue,
       std::vector<VkFramebuffer> *framebuffers,
       VkFormat colorformat,

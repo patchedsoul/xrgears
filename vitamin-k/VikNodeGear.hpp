@@ -36,7 +36,7 @@ class VikNodeGear : public VikNode {
   VikGear gear;
 
  public:
-  void generate(vks::VulkanDevice *vulkanDevice, GearInfo *gearinfo, VkQueue queue) {
+  void generate(vks::Device *vulkanDevice, GearInfo *gearinfo, VkQueue queue) {
     gear.generate(vulkanDevice, gearinfo, queue);
   }
 

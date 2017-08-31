@@ -225,7 +225,7 @@ class VikDistortion {
     vkCmdDraw(commandBuffer, 12, 1, 0, 0);
   }
 
-  void generateQuads(vks::VulkanDevice *vulkanDevice) {
+  void generateQuads(vks::Device *vulkanDevice) {
     // Setup vertices for multiple screen aligned quads
     // Used for displaying final result and debug
     struct Vertex {
@@ -310,7 +310,7 @@ class VikDistortion {
     memcpy(uboHandle.mapped, &uboData, sizeof(uboData));
   }
 
-  void prepareUniformBuffer(vks::VulkanDevice *vulkanDevice) {
+  void prepareUniformBuffer(vks::Device *vulkanDevice) {
     // Warp UBO in deferred fragment shader
     VK_CHECK_RESULT(vulkanDevice->createBuffer(
                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,

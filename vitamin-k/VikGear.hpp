@@ -62,7 +62,7 @@ class VikGear {
     iBuffer->push_back(c);
   }
 
-  void generate(vks::VulkanDevice *vulkanDevice, GearInfo *gearinfo, VkQueue queue) {
+  void generate(vks::Device *vulkanDevice, GearInfo *gearinfo, VkQueue queue) {
     std::vector<Vertex> vBuffer;
     std::vector<uint32_t> iBuffer;
 

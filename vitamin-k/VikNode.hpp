@@ -115,7 +115,7 @@ class VikNode {
     memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
   }
 
-  void prepareUniformBuffer(vks::VulkanDevice *vulkanDevice) {
+  void prepareUniformBuffer(vks::Device *vulkanDevice) {
     VikBuffer::create(vulkanDevice, &uniformBuffer, sizeof(ubo));
   }
 
