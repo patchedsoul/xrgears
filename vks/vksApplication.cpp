@@ -75,10 +75,6 @@ std::string Application::getWindowTitle() {
   return windowTitle;
 }
 
-const std::string Application::getAssetPath() {
-  return "./data/";
-}
-
 bool Application::checkCommandBuffers() {
   for (auto& cmdBuffer : drawCmdBuffers)
     if (cmdBuffer == VK_NULL_HANDLE)
@@ -272,8 +268,8 @@ void Application::submitFrame() {
 Application::Application(bool enableValidation) {
   // Check for a valid asset path
   struct stat info;
-  if (stat(getAssetPath().c_str(), &info) != 0) {
-    std::cerr << "Error: Could not find asset path in " << getAssetPath() << std::endl;
+  if (stat(VikAssets::getAssetPath().c_str(), &info) != 0) {
+    std::cerr << "Error: Could not find asset path in " << VikAssets::getAssetPath() << std::endl;
     exit(-1);
   }
 
