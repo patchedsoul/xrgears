@@ -529,9 +529,11 @@ public:
     VkPipelineDynamicStateCreateInfo dynamicState =
         vks::initializers::pipelineDynamicStateCreateInfo(dynamicStateEnables);
 
-    // Tessellation pipeline
     // Load shaders
     std::array<VkPipelineShaderStageCreateInfo, 3> shaderStages;
+    shaderStages[0] = VikShader::load(device, "xrgears/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+    shaderStages[1] = VikShader::load(device, "xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+    shaderStages[2] = VikShader::load(device, "xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 
     VkGraphicsPipelineCreateInfo pipelineCreateInfo;
 
@@ -572,11 +574,8 @@ public:
 
     pipelineCreateInfo.renderPass = usedPass;
 
-    shaderStages[0] = loadShader(getAssetPath() + "shaders/xrgears/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    shaderStages[1] = loadShader(getAssetPath() + "shaders/xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-    // A geometry shader is used to output geometry to multiple viewports in one single pass
-    // See the "invoctations" decorator of the layout input in the shader
-    shaderStages[2] = loadShader(getAssetPath() + "shaders/xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
+
+
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.pbr));
 
     if (enableSky)

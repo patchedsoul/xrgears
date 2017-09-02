@@ -30,6 +30,7 @@
 #include "vksSwapChain.hpp"
 #include "vksTextOverlay.hpp"
 #include "vksCamera.hpp"
+#include "vksRenderer.h"
 
 
 class VikWindow;
@@ -37,6 +38,9 @@ class VikWindow;
 namespace vks {
 
 class Application {
+
+  vks::Renderer *renderer;
+
  public:
   PFN_vkGetPhysicalDeviceFeatures2KHR fpGetPhysicalDeviceFeatures2KHR;
   PFN_vkGetPhysicalDeviceProperties2KHR fpGetPhysicalDeviceProperties2KHR;
@@ -170,7 +174,7 @@ class Application {
 
   bool paused = false;
 
-  bool enableTextOverlay = false;
+  bool enableTextOverlay = true;
   TextOverlay *textOverlay;
 
   // Use to adjust mouse rotation speed
@@ -279,9 +283,6 @@ class Application {
 
   // Prepare commonly used Vulkan functions
   virtual void prepare();
-
-  // Load a SPIR-V shader
-  VkPipelineShaderStageCreateInfo loadShader(std::string fileName, VkShaderStageFlagBits stage);
 
   // Start the main render loop
   void renderLoopWrap(VikWindow *window);

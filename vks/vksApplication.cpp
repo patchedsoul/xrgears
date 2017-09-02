@@ -12,6 +12,7 @@
 #include "vksApplication.hpp"
 
 #include "vksWindowXCB.hpp"
+#include "../vitamin-k/VikShader.hpp"
 
 namespace vks {
 
@@ -170,8 +171,9 @@ void Application::prepare() {
   if (enableTextOverlay) {
     // Load the text rendering shaders
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-    shaderStages.push_back(loadShader(getAssetPath() + "shaders/base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
-    shaderStages.push_back(loadShader(getAssetPath() + "shaders/base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
+    shaderStages.push_back(VikShader::load(device, "base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
+    shaderStages.push_back(VikShader::load(device, "base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
+
     textOverlay = new TextOverlay(
           vulkanDevice,
           queue,
@@ -185,17 +187,6 @@ void Application::prepare() {
   }
 
   fprintf(stderr, "prepare: done.\n");
-}
-
-VkPipelineShaderStageCreateInfo Application::loadShader(std::string fileName, VkShaderStageFlagBits stage) {
-  VkPipelineShaderStageCreateInfo shaderStage = {};
-  shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-  shaderStage.stage = stage;
-  shaderStage.module = vks::tools::loadShader(fileName.c_str(), device);
-  shaderStage.pName = "main";
-  assert(shaderStage.module != VK_NULL_HANDLE);
-  shaderModules.push_back(shaderStage.module);
-  return shaderStage;
 }
 
 
@@ -287,6 +278,8 @@ Application::Application(bool enableValidation) {
   }
 
   settings.validation = enableValidation;
+
+  renderer = new Renderer();
 
   // Parse command line arguments
   for (size_t i = 0; i < args.size(); i++) {
