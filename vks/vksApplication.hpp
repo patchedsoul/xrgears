@@ -196,8 +196,6 @@ class Application {
     bool middle = false;
   } mouseButtons;
 
-
-
   struct {
     VkImage image;
     VkDeviceMemory mem;

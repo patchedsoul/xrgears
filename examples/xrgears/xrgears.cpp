@@ -760,13 +760,6 @@ public:
 };
 
 XRGears *app;
-/*
-static void handleEvent(const xcb_generic_event_t *event) {
-  if (app != NULL)
-    app->handleEvent(event);
-}
-*/
-
 
 int main(const int argc, const char *argv[]) {
   for (size_t i = 0; i < argc; i++) { XRGears::args.push_back(argv[i]); };
