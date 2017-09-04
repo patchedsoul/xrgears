@@ -1096,7 +1096,7 @@ int main(const int argc, const char *argv[])
   fprintf(stderr, "prepare\n");
   app->prepare();
   fprintf(stderr, "renderLoopWrap\n");
-  app->renderLoopWrap(window);
+  app->loop(window);
   delete(app);
 
   return 0;

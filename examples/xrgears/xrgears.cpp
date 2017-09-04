@@ -764,7 +764,7 @@ int main(const int argc, const char *argv[]) {
 
   window->initSwapChain(app->instance, &app->swapChain);
   app->prepare();
-  app->renderLoopWrap(window);
+  app->loop(window);
   delete(app);
 
   return 0;

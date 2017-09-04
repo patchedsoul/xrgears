@@ -277,7 +277,7 @@ class Application {
   void check_view_update();
 
   // Start the main render loop
-  void renderLoopWrap(VikWindow *window);
+  void loop(VikWindow *window);
 
   void updateTextOverlay();
 
@@ -295,5 +295,7 @@ class Application {
 
   void update_camera(float frame_time);
   void check_tick_finnished(VikWindow *window);
+
+  void submit_text_overlay();
 };
 }
