@@ -166,8 +166,6 @@ class Application {
 
   static std::vector<const char*> args;
 
-  bool paused = false;
-
   bool enableTextOverlay = true;
   TextOverlay *textOverlay;
 

@@ -87,8 +87,7 @@ class VikWindowXCBMinimal : public VikWindow {
       if (app->camera.moving())
         app->viewUpdated = true;
       // Convert to clamped timer value
-      if (!app->paused)
-        app->timer.update_animation_timer();
+      app->timer.update_animation_timer();
 
       if (app->timer.time_since_tick > 1000.0f) {
         if (!app->enableTextOverlay) {

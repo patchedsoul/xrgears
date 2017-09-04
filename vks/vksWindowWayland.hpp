@@ -97,9 +97,7 @@ class VikWindowWayland : public VikWindow {
       app->camera.update(timer);
       if (app->camera.moving())
         app->viewUpdated = true;
-      // Convert to clamped timer value
-      if (!app->paused)
-        app->timer.update_animation_timer();
+      app->timer.update_animation_timer();
 
       if (app->timer.time_since_tick > 1000.0f) {
         if (!app->enableTextOverlay) {
@@ -302,7 +300,7 @@ class VikWindowWayland : public VikWindow {
         break;
       case KEY_P:
         if (state)
-          app->paused = !app->paused;
+          app->timer.toggle_animation_pause();
         break;
       case KEY_F1:
         if (state && app->enableTextOverlay)

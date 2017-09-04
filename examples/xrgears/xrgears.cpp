@@ -617,7 +617,7 @@ public:
     uboLights.lights[2] = glm::vec4( p, -p*0.5f,  p, 1.0f);
     uboLights.lights[3] = glm::vec4( p, -p*0.5f, -p, 1.0f);
 
-    if (!paused)
+    if (!timer.animation_paused)
     {
       uboLights.lights[0].x = sin(glm::radians(timer.animation_timer * 360.0f)) * 20.0f;
       uboLights.lights[0].z = cos(glm::radians(timer.animation_timer * 360.0f)) * 20.0f;
@@ -718,36 +718,29 @@ public:
     prepared = true;
   }
 
-  virtual void render()
-  {
+  virtual void render() {
     if (!prepared)
       return;
 
     vkDeviceWaitIdle(device);
     draw();
     vkDeviceWaitIdle(device);
-    if (!paused)
-    {
+    if (!timer.animation_paused)
       updateUniformBuffers();
-    }
   }
 
-  virtual void viewChanged()
-  {
+  virtual void viewChanged() {
     updateUniformBuffers();
   }
 
-  void changeEyeSeparation(float delta)
-  {
+  void changeEyeSeparation(float delta) {
     if (!enableHMDCam)
       ((VikCameraStereo*)vikCamera)->changeEyeSeparation(delta);
     updateUniformBuffers();
   }
 
-  virtual void keyPressed(uint32_t keyCode)
-  {
-    switch (keyCode)
-    {
+  virtual void keyPressed(uint32_t keyCode) {
+    switch (keyCode) {
       case KEY_KPADD:
         changeEyeSeparation(0.005);
         break;
@@ -756,7 +749,6 @@ public:
         break;
     }
   }
-
 };
 
 XRGears *app;

@@ -107,8 +107,7 @@ class VikWindowXCB : public VikWindow {
       if (app->camera.moving())
         app->viewUpdated = true;
 
-      if (!app->paused)
-        app->timer.update_animation_timer();
+      app->timer.update_animation_timer();
 
       if (app->timer.tick_finnished()) {
         app->timer.update_fps();
@@ -273,7 +272,7 @@ class VikWindowXCB : public VikWindow {
             app->camera.keys.right = true;
             break;
           case KEY_P:
-            app->paused = !app->paused;
+            app->timer.toggle_animation_pause();
             break;
           case KEY_F1:
             if (app->enableTextOverlay)
