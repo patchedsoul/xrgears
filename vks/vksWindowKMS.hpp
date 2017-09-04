@@ -173,7 +173,7 @@ public:
       if (pfd[1].revents & POLLIN) {
         drmHandleEvent(fd, &evctx);
         //b = &vc->buffers[app->frameCounter & 1];
-        kms_b = &kms_buffers[app->frameCounter & 1];
+        kms_b = &kms_buffers[app->timer.frames_since_tick & 1];
 
         //app->model.render(vc, b);
 
@@ -184,7 +184,7 @@ public:
         ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
                               DRM_MODE_PAGE_FLIP_EVENT, NULL);
         fail_if(ret < 0, "pageflip failed: %m\n");
-        app->frameCounter++;
+        app->timer.increment();
       }
     }
 

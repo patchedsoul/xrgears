@@ -90,7 +90,7 @@ class VikWindowXCB : public VikWindow {
   void loop(vks::Application *app) {
     xcb_flush(connection);
     while (!app->quit) {
-      auto tStart = std::chrono::high_resolution_clock::now();
+      app->timer.start();
       if (app->viewUpdated) {
         app->viewUpdated = false;
         app->viewChanged();
@@ -101,33 +101,30 @@ class VikWindowXCB : public VikWindow {
         free(event);
       }
       app->render();
-      app->frameCounter++;
-      auto tEnd = std::chrono::high_resolution_clock::now();
-      auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-      app->frameTimer = tDiff / 1000.0f;
-      app->camera.update(app->frameTimer);
+      app->timer.increment();
+      float frame_time = app->timer.update_frame_time();
+      app->camera.update(frame_time);
       if (app->camera.moving())
         app->viewUpdated = true;
-      // Convert to clamped timer value
-      if (!app->paused) {
-        app->timer += app->timerSpeed * app->frameTimer;
-        if (app->timer > 1.0)
-          app->timer -= 1.0f;
-      }
-      app->fpsTimer += (float)tDiff;
-      if (app->fpsTimer > 1000.0f) {
-        if (!app->enableTextOverlay) {
-          std::string windowTitle = app->getWindowTitle();
-          xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-                              window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-                              windowTitle.size(), windowTitle.c_str());
-        }
-        app->lastFPS = app->frameCounter;
-        app->updateTextOverlay();
-        app->fpsTimer = 0.0f;
-        app->frameCounter = 0;
+
+      if (!app->paused)
+        app->timer.update_animation_timer();
+
+      if (app->timer.tick_finnished()) {
+        app->timer.update_fps();
+        if (!app->enableTextOverlay)
+          update_window_title(app->getWindowTitle());
+        else
+          app->updateTextOverlay();
+        app->timer.reset();
       }
     }
+  }
+
+  void update_window_title(const std::string& windowTitle) {
+    xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
+                        window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+                        windowTitle.size(), windowTitle.c_str());
   }
 
   static inline xcb_intern_atom_reply_t* intern_atom_helper(xcb_connection_t *conn, bool only_if_exists, const char *str) {

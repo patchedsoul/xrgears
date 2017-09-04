@@ -70,7 +70,7 @@ std::string Application::getWindowTitle() {
   std::string windowTitle;
   windowTitle = title + " - " + device;
   if (!enableTextOverlay) {
-    windowTitle += " - " + std::to_string(frameCounter) + " fps";
+    windowTitle += " - " + std::to_string(timer.frames_since_tick) + " fps";
   }
   return windowTitle;
 }
@@ -205,7 +205,7 @@ void Application::updateTextOverlay() {
   textOverlay->addText(title, 5.0f, 5.0f, TextOverlay::alignLeft);
 
   std::stringstream ss;
-  ss << std::fixed << std::setprecision(3) << (frameTimer * 1000.0f) << "ms (" << lastFPS << " fps)";
+  ss << std::fixed << std::setprecision(3) << (timer.frame_time_seconds * 1000.0f) << "ms (" << timer.frames_per_second << " fps)";
   textOverlay->addText(ss.str(), 5.0f, 25.0f, TextOverlay::alignLeft);
 
   std::string deviceName(deviceProperties.deviceName);

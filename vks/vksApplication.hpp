@@ -30,7 +30,8 @@
 #include "vksSwapChain.hpp"
 #include "vksTextOverlay.hpp"
 #include "vksCamera.hpp"
-#include "vksRenderer.h"
+#include "vksRenderer.hpp"
+#include "vksFrameCounter.hpp"
 
 
 class VikWindow;
@@ -42,13 +43,16 @@ class Application {
   vks::Renderer *renderer;
 
  public:
+
+  vks::Timer timer;
+
   PFN_vkGetPhysicalDeviceFeatures2KHR fpGetPhysicalDeviceFeatures2KHR;
   PFN_vkGetPhysicalDeviceProperties2KHR fpGetPhysicalDeviceProperties2KHR;
 
   void printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDevice physicalDevice);
 
   // fps timer (one second interval)
-  float fpsTimer = 0.0f;
+
   // Get window title with example name, device, et.
   std::string getWindowTitle();
   /** brief Indicates that the view (position, rotation) has changed and */
@@ -62,8 +66,7 @@ class Application {
 
  public:
   // Frame counter to display fps
-  uint32_t frameCounter = 0;
-  uint32_t lastFPS = 0;
+
   // Vulkan instance, stores all per-application states
   VkInstance instance;
   // Physical device (GPU) that Vulkan will ise
@@ -142,8 +145,7 @@ class Application {
   uint32_t height = 768;
   */
 
-  /** @brief Last frame time measured using a high performance timer (if available) */
-  float frameTimer = 1.0f;
+
 
   /** @brief Encapsulated physical and logical vulkan device */
   vks::Device *vulkanDevice;
@@ -163,12 +165,6 @@ class Application {
   float zoom = 0;
 
   static std::vector<const char*> args;
-
-  // Defines a frame rate independent timer value clamped from -1.0...1.0
-  // For use in animations, rotations, etc.
-  float timer = 0.0f;
-  // Multiplier for speeding up (or slowing down) the global timer
-  float timerSpeed = 0.25f;
 
   bool paused = false;
 

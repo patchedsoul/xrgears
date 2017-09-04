@@ -79,7 +79,7 @@ class VikWindowWayland : public VikWindow {
 
   void loop(vks::Application *app) {
     while (!app->quit) {
-      auto tStart = std::chrono::high_resolution_clock::now();
+      app->timer.start();
       if (app->viewUpdated) {
         app->viewUpdated = false;
         app->viewChanged();
@@ -92,29 +92,23 @@ class VikWindowWayland : public VikWindow {
       wl_display_dispatch_pending(display);
 
       app->render();
-      app->frameCounter++;
-      auto tEnd = std::chrono::high_resolution_clock::now();
-      auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-      app->frameTimer = tDiff / 1000.0f;
-      app->camera.update(app->frameTimer);
+      app->timer.increment();
+      float timer = app->timer.update_frame_time();
+      app->camera.update(timer);
       if (app->camera.moving())
         app->viewUpdated = true;
       // Convert to clamped timer value
-      if (!app->paused) {
-        app->timer += app->timerSpeed * app->frameTimer;
-        if (app->timer > 1.0)
-          app->timer -= 1.0f;
-      }
-      app->fpsTimer += (float)tDiff;
-      if (app->fpsTimer > 1000.0f) {
+      if (!app->paused)
+        app->timer.update_animation_timer();
+
+      if (app->timer.time_since_tick > 1000.0f) {
         if (!app->enableTextOverlay) {
           std::string windowTitle = app->getWindowTitle();
           wl_shell_surface_set_title(shell_surface, windowTitle.c_str());
         }
-        app->lastFPS = app->frameCounter;
+        app->timer.update_fps();
         app->updateTextOverlay();
-        app->fpsTimer = 0.0f;
-        app->frameCounter = 0;
+        app->timer.reset();
       }
     }
   }

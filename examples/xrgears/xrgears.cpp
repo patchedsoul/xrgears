@@ -106,7 +106,7 @@ public:
     camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
 
     camera.movementSpeed = 5.0f;
-    timerSpeed *= 0.25f;
+    timer.animation_timer_speed *= 0.25f;
     //paused = true;
   }
 
@@ -604,7 +604,7 @@ public:
     sv.view[1] = vikCamera->uboCamera.view[1];
 
     for (auto& node : nodes)
-      node->updateUniformBuffer(sv, timer);
+      node->updateUniformBuffer(sv, timer.animation_timer);
 
     updateLights();
   }
@@ -619,10 +619,10 @@ public:
 
     if (!paused)
     {
-      uboLights.lights[0].x = sin(glm::radians(timer * 360.0f)) * 20.0f;
-      uboLights.lights[0].z = cos(glm::radians(timer * 360.0f)) * 20.0f;
-      uboLights.lights[1].x = cos(glm::radians(timer * 360.0f)) * 20.0f;
-      uboLights.lights[1].y = sin(glm::radians(timer * 360.0f)) * 20.0f;
+      uboLights.lights[0].x = sin(glm::radians(timer.animation_timer * 360.0f)) * 20.0f;
+      uboLights.lights[0].z = cos(glm::radians(timer.animation_timer * 360.0f)) * 20.0f;
+      uboLights.lights[1].x = cos(glm::radians(timer.animation_timer * 360.0f)) * 20.0f;
+      uboLights.lights[1].y = sin(glm::radians(timer.animation_timer * 360.0f)) * 20.0f;
     }
 
     memcpy(uniformBuffers.lights.mapped, &uboLights, sizeof(uboLights));
@@ -764,8 +764,8 @@ XRGears *app;
 int main(const int argc, const char *argv[]) {
   for (size_t i = 0; i < argc; i++) { XRGears::args.push_back(argv[i]); };
   app = new XRGears();
-  VikWindow * window = new VikWindowWayland();
-  //VikWindow * window = new VikWindowXCB();
+  //VikWindow * window = new VikWindowWayland();
+  VikWindow * window = new VikWindowXCB();
   //VikWindow * window = new VikWindowKMS();
   app->initVulkan(window);
 
