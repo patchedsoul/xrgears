@@ -274,6 +274,8 @@ class Application {
   // Prepare commonly used Vulkan functions
   virtual void prepare();
 
+  void check_view_update();
+
   // Start the main render loop
   void renderLoopWrap(VikWindow *window);
 

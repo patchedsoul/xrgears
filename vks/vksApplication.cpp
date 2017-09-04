@@ -75,6 +75,13 @@ std::string Application::getWindowTitle() {
   return windowTitle;
 }
 
+void Application::check_view_update() {
+  if (viewUpdated) {
+    viewUpdated = false;
+    viewChanged();
+  }
+}
+
 bool Application::checkCommandBuffers() {
   for (auto& cmdBuffer : drawCmdBuffers)
     if (cmdBuffer == VK_NULL_HANDLE)

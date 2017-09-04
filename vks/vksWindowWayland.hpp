@@ -77,38 +77,16 @@ class VikWindowWayland : public VikWindow {
     wl_display_disconnect(display);
   }
 
-  void loop(vks::Application *app) {
-    while (!app->quit) {
-      app->timer.start();
-      if (app->viewUpdated) {
-        app->viewUpdated = false;
-        app->viewChanged();
-      }
-
-      while (wl_display_prepare_read(display) != 0)
-        wl_display_dispatch_pending(display);
-      wl_display_flush(display);
-      wl_display_read_events(display);
+  void flush(vks::Application *app) {
+    while (wl_display_prepare_read(display) != 0)
       wl_display_dispatch_pending(display);
+    wl_display_flush(display);
+    wl_display_read_events(display);
+    wl_display_dispatch_pending(display);
+  }
 
-      app->render();
-      app->timer.increment();
-      float timer = app->timer.update_frame_time();
-      app->camera.update(timer);
-      if (app->camera.moving())
-        app->viewUpdated = true;
-      app->timer.update_animation_timer();
-
-      if (app->timer.time_since_tick > 1000.0f) {
-        if (!app->enableTextOverlay) {
-          std::string windowTitle = app->getWindowTitle();
-          wl_shell_surface_set_title(shell_surface, windowTitle.c_str());
-        }
-        app->timer.update_fps();
-        app->updateTextOverlay();
-        app->timer.reset();
-      }
-    }
+  void update_window_title(const std::string& title) {
+    wl_shell_surface_set_title(shell_surface, title.c_str());
   }
 
   void initSwapChain(const VkInstance &instance, vks::SwapChain* swapChain) {

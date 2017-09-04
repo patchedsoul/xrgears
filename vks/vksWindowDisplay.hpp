@@ -29,29 +29,6 @@ class VikWindowKhrDisplay  : public VikWindow {
     app->swapChain.initSurfaceCommon();
   }
 
-  void loop(vks::Application *app) {
-    while (!app->quit) {
-      app->timer.start();
-      if (app->viewUpdated) {
-        app->viewUpdated = false;
-        app->viewChanged();
-      }
-      app->render();
-      app->timer.increment();
-      float timer = app->timer.update_frame_time();
-      app->camera.update(timer);
-      if (app->camera.moving())
-        app->viewUpdated = true;
-      app->timer.update_animation_timer();
-
-      if (app->timer.time_since_tick > 1000.0f) {
-        app->timer.update_fps();
-        app->updateTextOverlay();
-        app->timer.reset();
-      }
-    }
-  }
-
   void createDirect2DisplaySurface(vks::Application * app, uint32_t width, uint32_t height) {
     uint32_t displayPropertyCount;
 
