@@ -292,5 +292,8 @@ class Application {
   // Submit the frames' workload
   // - Submits the text overlay (if enabled)
   void submitFrame();
+
+  void update_camera(float frame_time);
+  void check_tick_finnished(VikWindow *window);
 };
 }

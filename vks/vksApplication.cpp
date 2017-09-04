@@ -197,10 +197,39 @@ void Application::renderLoopWrap(VikWindow *window) {
   destWidth = width;
   destHeight = height;
 
-  window->loop(this);
+  while (!quit) {
+    timer.start();
+    check_view_update();
+
+    window->flush(this);
+
+    render();
+    timer.increment();
+    float frame_time = timer.update_frame_time();
+    update_camera(frame_time);
+    timer.update_animation_timer();
+    check_tick_finnished(window);
+  }
 
   // Flush device to make sure all resources can be freed
   vkDeviceWaitIdle(device);
+}
+
+void Application::update_camera(float frame_time) {
+  camera.update(frame_time);
+  if (camera.moving())
+    viewUpdated = true;
+}
+
+void Application::check_tick_finnished(VikWindow *window) {
+  if (timer.tick_finnished()) {
+    timer.update_fps();
+    if (!enableTextOverlay)
+      window->update_window_title(getWindowTitle());
+    else
+      updateTextOverlay();
+    timer.reset();
+  }
 }
 
 void Application::updateTextOverlay() {
