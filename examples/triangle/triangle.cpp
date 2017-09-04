@@ -28,7 +28,6 @@
 
 #include "vksApplication.hpp"
 #include "../vks/vksWindowXCB.hpp"
-#include "../vks/vksWindowXCBMinimal.hpp"
 #include "../vks/vksWindowWayland.hpp"
 #include "../vks/vksWindowDisplay.hpp"
 #include "../vks/vksWindowKMS.hpp"
