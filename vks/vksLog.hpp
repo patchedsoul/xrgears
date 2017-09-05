@@ -15,6 +15,11 @@
 #define vik_log_f(...) vik_log(vks::Log::FATAL, __VA_ARGS__)
 #define vik_log_f_if(...) vks::Log::log_fatal_if(__FILE__, __LINE__, __VA_ARGS__)
 
+// Macro to check and display Vulkan return results
+#define vik_log_check(f) {\
+  VkResult res = (f);\
+  vik_log_f_if(res != VK_SUCCESS, "VkResult is %s", vks::tools::errorString(res).c_str());\
+}
 
 namespace vks {
 class Log {

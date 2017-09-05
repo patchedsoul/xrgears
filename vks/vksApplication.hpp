@@ -282,7 +282,5 @@ class Application {
   void parse_arguments(const int argc, const char *argv[]);
 
   void list_gpus();
-
-  uint32_t select_gpu(const char *id_str, uint32_t gpuCount);
 };
 }

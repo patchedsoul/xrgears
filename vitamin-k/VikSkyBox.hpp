@@ -70,7 +70,7 @@ class VikSkyBox {
 
   void createDescriptorSet(const VkDescriptorSetAllocateInfo& allocInfo,
                            VkDescriptorBufferInfo* cameraDescriptor) {
-    VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
+    vik_log_check(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
 
     std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
       vks::initializers::writeDescriptorSet(
@@ -121,7 +121,7 @@ class VikSkyBox {
     pipelineCreateInfo->pStages = shaderStagesSky.data();
     pipelineCreateInfo->pRasterizationState = &rasterizationStateSky;
 
-    VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, pipelineCreateInfo, nullptr, &pipeline));
+    vik_log_check(vkCreateGraphicsPipelines(device, pipelineCache, 1, pipelineCreateInfo, nullptr, &pipeline));
 
     vkDestroyShaderModule(device, shaderStagesSky[0].module, nullptr);
     vkDestroyShaderModule(device, shaderStagesSky[1].module, nullptr);

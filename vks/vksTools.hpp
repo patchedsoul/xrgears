@@ -42,12 +42,6 @@
   vik_log_f_if(fp##entrypoint == NULL, "GET_DEVICE_PROC_ADDR vk"#entrypoint" is null!");\
 }
 
-// Macro to check and display Vulkan return results
-#define VK_CHECK_RESULT(f) {\
-  VkResult res = (f);\
-  vik_log_f_if(res != VK_SUCCESS, "VkResult is %s", vks::tools::errorString(res).c_str());\
-}
-
 #define ASSET_PATH "./data/"
 
 namespace vks {

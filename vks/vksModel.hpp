@@ -269,7 +269,7 @@ struct Model {
       vks::Buffer vertexStaging, indexStaging;
 
       // Vertex buffer
-      VK_CHECK_RESULT(device->createBuffer(
+      vik_log_check(device->createBuffer(
                         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
                         &vertexStaging,
@@ -277,7 +277,7 @@ struct Model {
                         vertexBuffer.data()));
 
       // Index buffer
-      VK_CHECK_RESULT(device->createBuffer(
+      vik_log_check(device->createBuffer(
                         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
                         &indexStaging,
@@ -286,14 +286,14 @@ struct Model {
 
       // Create device local target buffers
       // Vertex buffer
-      VK_CHECK_RESULT(device->createBuffer(
+      vik_log_check(device->createBuffer(
                         VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                         &vertices,
                         vBufferSize));
 
       // Index buffer
-      VK_CHECK_RESULT(device->createBuffer(
+      vik_log_check(device->createBuffer(
                         VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                         &indices,

@@ -184,7 +184,7 @@ public:
     renderPassBeginInfo.framebuffer = frameBuffer;
 
     VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
-    VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
+    vik_log_check(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 
     vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -201,7 +201,7 @@ public:
 
     vkCmdEndRenderPass(cmdBuffer);
 
-    VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffer));
+    vik_log_check(vkEndCommandBuffer(cmdBuffer));
   }
 
   // Build command buffer for rendering the scene to the offscreen frame buffer attachments
@@ -211,7 +211,7 @@ public:
 
     // Create a semaphore used to synchronize offscreen rendering and usage
     VkSemaphoreCreateInfo semaphoreCreateInfo = vks::initializers::semaphoreCreateInfo();
-    VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &offscreenSemaphore));
+    vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &offscreenSemaphore));
 
     VkFramebuffer unused;
 
@@ -221,7 +221,7 @@ public:
   void buildPbrCommandBuffer(VkCommandBuffer& cmdBuffer, VkFramebuffer& framebuffer, bool offScreen) {
 
     VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
-    VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
+    vik_log_check(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 
     if (vks::debugmarker::active)
       vks::debugmarker::beginRegion(cmdBuffer,
@@ -256,7 +256,7 @@ public:
     if (vks::debugmarker::active)
       vks::debugmarker::endRegion(cmdBuffer);
 
-    VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffer));
+    vik_log_check(vkEndCommandBuffer(cmdBuffer));
   }
 
   void drawScene(VkCommandBuffer cmdBuffer) {
@@ -413,7 +413,7 @@ public:
           poolSizes.data(),
           6);
 
-    VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &descriptorPool));
+    vik_log_check(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &descriptorPool));
   }
 
   void setupDescriptorSetLayout()
@@ -447,7 +447,7 @@ public:
     VkDescriptorSetLayoutCreateInfo descriptorLayout =
         vks::initializers::descriptorSetLayoutCreateInfo(setLayoutBindings);
 
-    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &descriptorSetLayout));
+    vik_log_check(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &descriptorSetLayout));
 
     VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
         vks::initializers::pipelineLayoutCreateInfo(&descriptorSetLayout, 1);
@@ -463,7 +463,7 @@ public:
     pPipelineLayoutCreateInfo.pushConstantRangeCount = pushConstantRanges.size();
     pPipelineLayoutCreateInfo.pPushConstantRanges = pushConstantRanges.data();
 
-    VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+    vik_log_check(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
   }
 
   void setupDescriptorSet() {
@@ -571,7 +571,7 @@ public:
 
 
 
-    VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.pbr));
+    vik_log_check(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.pbr));
 
     if (enableSky)
       skyBox->createPipeline(&pipelineCreateInfo, pipelineCache);
@@ -650,7 +650,7 @@ public:
       // Submit work
 
       submitInfo.pCommandBuffers = &offScreenCmdBuffer;
-      VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+      vik_log_check(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
 
       // Scene rendering
 
@@ -662,7 +662,7 @@ public:
 
     // Submit to queue
     submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];
-    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+    vik_log_check(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
     Application::submitFrame();
   }
 

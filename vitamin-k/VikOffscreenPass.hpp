@@ -104,12 +104,12 @@ class VikOffscreenPass {
     VkMemoryAllocateInfo memAlloc = vks::initializers::memoryAllocateInfo();
     VkMemoryRequirements memReqs;
 
-    VK_CHECK_RESULT(vkCreateImage(device, &image, nullptr, &attachment->image));
+    vik_log_check(vkCreateImage(device, &image, nullptr, &attachment->image));
     vkGetImageMemoryRequirements(device, attachment->image, &memReqs);
     memAlloc.allocationSize = memReqs.size;
     memAlloc.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &attachment->mem));
-    VK_CHECK_RESULT(vkBindImageMemory(device, attachment->image, attachment->mem, 0));
+    vik_log_check(vkAllocateMemory(device, &memAlloc, nullptr, &attachment->mem));
+    vik_log_check(vkBindImageMemory(device, attachment->image, attachment->mem, 0));
 
     VkImageViewCreateInfo imageView = vks::initializers::imageViewCreateInfo();
     imageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -121,7 +121,7 @@ class VikOffscreenPass {
     imageView.subresourceRange.baseArrayLayer = 0;
     imageView.subresourceRange.layerCount = 1;
     imageView.image = attachment->image;
-    VK_CHECK_RESULT(vkCreateImageView(device, &imageView, nullptr, &attachment->view));
+    vik_log_check(vkCreateImageView(device, &imageView, nullptr, &attachment->view));
   }
 
   // Prepare a new framebuffer and attachments for offscreen rendering (G-Buffer)
@@ -213,7 +213,7 @@ class VikOffscreenPass {
     renderPassInfo.dependencyCount = 2;
     renderPassInfo.pDependencies = dependencies.data();
 
-    VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &offScreenFrameBuf.renderPass));
+    vik_log_check(vkCreateRenderPass(device, &renderPassInfo, nullptr, &offScreenFrameBuf.renderPass));
 
     std::array<VkImageView, 2> attachments;
     attachments[0] = offScreenFrameBuf.diffuseColor.view;
@@ -228,7 +228,7 @@ class VikOffscreenPass {
     fbufCreateInfo.width = offScreenFrameBuf.width;
     fbufCreateInfo.height = offScreenFrameBuf.height;
     fbufCreateInfo.layers = 1;
-    VK_CHECK_RESULT(vkCreateFramebuffer(device, &fbufCreateInfo, nullptr, &offScreenFrameBuf.frameBuffer));
+    vik_log_check(vkCreateFramebuffer(device, &fbufCreateInfo, nullptr, &offScreenFrameBuf.frameBuffer));
 
     // Create sampler to sample from the color attachments
     VkSamplerCreateInfo sampler = vks::initializers::samplerCreateInfo();
@@ -243,7 +243,7 @@ class VikOffscreenPass {
     sampler.minLod = 0.0f;
     sampler.maxLod = 1.0f;
     sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-    VK_CHECK_RESULT(vkCreateSampler(device, &sampler, nullptr, &colorSampler));
+    vik_log_check(vkCreateSampler(device, &sampler, nullptr, &colorSampler));
   }
 
   VkDescriptorImageInfo getDescriptorImageInfo() {

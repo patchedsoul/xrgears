@@ -119,7 +119,7 @@ class Texture2D : public Texture {
       bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
       bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-      VK_CHECK_RESULT(vkCreateBuffer(device->logicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
+      vik_log_check(vkCreateBuffer(device->logicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
 
       // Get memory requirements for the staging buffer (alignment, memory type bits)
       vkGetBufferMemoryRequirements(device->logicalDevice, stagingBuffer, &memReqs);
@@ -128,12 +128,12 @@ class Texture2D : public Texture {
       // Get memory type index for a host visible buffer
       memAllocInfo.memoryTypeIndex = device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-      VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &stagingMemory));
-      VK_CHECK_RESULT(vkBindBufferMemory(device->logicalDevice, stagingBuffer, stagingMemory, 0));
+      vik_log_check(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &stagingMemory));
+      vik_log_check(vkBindBufferMemory(device->logicalDevice, stagingBuffer, stagingMemory, 0));
 
       // Copy texture data into staging buffer
       uint8_t *data;
-      VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
+      vik_log_check(vkMapMemory(device->logicalDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
       memcpy(data, tex2D.data(), tex2D.size());
       vkUnmapMemory(device->logicalDevice, stagingMemory);
 
@@ -172,15 +172,15 @@ class Texture2D : public Texture {
       // Ensure that the TRANSFER_DST bit is set for staging
       if (!(imageCreateInfo.usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT))
         imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-      VK_CHECK_RESULT(vkCreateImage(device->logicalDevice, &imageCreateInfo, nullptr, &image));
+      vik_log_check(vkCreateImage(device->logicalDevice, &imageCreateInfo, nullptr, &image));
 
       vkGetImageMemoryRequirements(device->logicalDevice, image, &memReqs);
 
       memAllocInfo.allocationSize = memReqs.size;
 
       memAllocInfo.memoryTypeIndex = device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-      VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &deviceMemory));
-      VK_CHECK_RESULT(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
+      vik_log_check(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &deviceMemory));
+      vik_log_check(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
 
       VkImageSubresourceRange subresourceRange = {};
       subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -244,7 +244,7 @@ class Texture2D : public Texture {
       imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
       // Load mip map level 0 to linear tiling image
-      VK_CHECK_RESULT(vkCreateImage(device->logicalDevice, &imageCreateInfo, nullptr, &mappableImage));
+      vik_log_check(vkCreateImage(device->logicalDevice, &imageCreateInfo, nullptr, &mappableImage));
 
       // Get memory requirements for this image
       // like size and alignment
@@ -256,10 +256,10 @@ class Texture2D : public Texture {
       memAllocInfo.memoryTypeIndex = device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
       // Allocate host memory
-      VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &mappableMemory));
+      vik_log_check(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &mappableMemory));
 
       // Bind allocated image for use
-      VK_CHECK_RESULT(vkBindImageMemory(device->logicalDevice, mappableImage, mappableMemory, 0));
+      vik_log_check(vkBindImageMemory(device->logicalDevice, mappableImage, mappableMemory, 0));
 
       // Get sub resource layout
       // Mip map count, array layer, etc.
@@ -275,7 +275,7 @@ class Texture2D : public Texture {
       vkGetImageSubresourceLayout(device->logicalDevice, mappableImage, &subRes, &subResLayout);
 
       // Map image memory
-      VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, mappableMemory, 0, memReqs.size, 0, &data));
+      vik_log_check(vkMapMemory(device->logicalDevice, mappableMemory, 0, memReqs.size, 0, &data));
 
       // Copy image data into memory
       memcpy(data, tex2D[subRes.mipLevel].data(), tex2D[subRes.mipLevel].size());
@@ -312,7 +312,7 @@ class Texture2D : public Texture {
     samplerCreateInfo.maxAnisotropy = 8;
     samplerCreateInfo.anisotropyEnable = VK_TRUE;
     samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-    VK_CHECK_RESULT(vkCreateSampler(device->logicalDevice, &samplerCreateInfo, nullptr, &sampler));
+    vik_log_check(vkCreateSampler(device->logicalDevice, &samplerCreateInfo, nullptr, &sampler));
 
     // Create image view
     // Textures are not directly accessed by the shaders and
@@ -328,7 +328,7 @@ class Texture2D : public Texture {
     // Only set mip map count if optimal tiling is used
     viewCreateInfo.subresourceRange.levelCount = (useStaging) ? mipLevels : 1;
     viewCreateInfo.image = image;
-    VK_CHECK_RESULT(vkCreateImageView(device->logicalDevice, &viewCreateInfo, nullptr, &view));
+    vik_log_check(vkCreateImageView(device->logicalDevice, &viewCreateInfo, nullptr, &view));
 
     // Update descriptor image info member that can be used for setting up descriptor sets
     updateDescriptor();
@@ -382,7 +382,7 @@ class Texture2D : public Texture {
     bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    VK_CHECK_RESULT(vkCreateBuffer(device->logicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
+    vik_log_check(vkCreateBuffer(device->logicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
 
     // Get memory requirements for the staging buffer (alignment, memory type bits)
     vkGetBufferMemoryRequirements(device->logicalDevice, stagingBuffer, &memReqs);
@@ -391,12 +391,12 @@ class Texture2D : public Texture {
     // Get memory type index for a host visible buffer
     memAllocInfo.memoryTypeIndex = device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &stagingMemory));
-    VK_CHECK_RESULT(vkBindBufferMemory(device->logicalDevice, stagingBuffer, stagingMemory, 0));
+    vik_log_check(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &stagingMemory));
+    vik_log_check(vkBindBufferMemory(device->logicalDevice, stagingBuffer, stagingMemory, 0));
 
     // Copy texture data into staging buffer
     uint8_t *data;
-    VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
+    vik_log_check(vkMapMemory(device->logicalDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
     memcpy(data, buffer, bufferSize);
     vkUnmapMemory(device->logicalDevice, stagingMemory);
 
@@ -425,15 +425,15 @@ class Texture2D : public Texture {
     // Ensure that the TRANSFER_DST bit is set for staging
     if (!(imageCreateInfo.usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT))
       imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    VK_CHECK_RESULT(vkCreateImage(device->logicalDevice, &imageCreateInfo, nullptr, &image));
+    vik_log_check(vkCreateImage(device->logicalDevice, &imageCreateInfo, nullptr, &image));
 
     vkGetImageMemoryRequirements(device->logicalDevice, image, &memReqs);
 
     memAllocInfo.allocationSize = memReqs.size;
 
     memAllocInfo.memoryTypeIndex = device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &deviceMemory));
-    VK_CHECK_RESULT(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
+    vik_log_check(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &deviceMemory));
+    vik_log_check(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
 
     VkImageSubresourceRange subresourceRange = {};
     subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -487,7 +487,7 @@ class Texture2D : public Texture {
     samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
     samplerCreateInfo.minLod = 0.0f;
     samplerCreateInfo.maxLod = 0.0f;
-    VK_CHECK_RESULT(vkCreateSampler(device->logicalDevice, &samplerCreateInfo, nullptr, &sampler));
+    vik_log_check(vkCreateSampler(device->logicalDevice, &samplerCreateInfo, nullptr, &sampler));
 
     // Create image view
     VkImageViewCreateInfo viewCreateInfo = {};
@@ -499,7 +499,7 @@ class Texture2D : public Texture {
     viewCreateInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
     viewCreateInfo.subresourceRange.levelCount = 1;
     viewCreateInfo.image = image;
-    VK_CHECK_RESULT(vkCreateImageView(device->logicalDevice, &viewCreateInfo, nullptr, &view));
+    vik_log_check(vkCreateImageView(device->logicalDevice, &viewCreateInfo, nullptr, &view));
 
     // Update descriptor image info member that can be used for setting up descriptor sets
     updateDescriptor();
@@ -555,7 +555,7 @@ class Texture2DArray : public Texture {
     bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    VK_CHECK_RESULT(vkCreateBuffer(device->logicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
+    vik_log_check(vkCreateBuffer(device->logicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
 
     // Get memory requirements for the staging buffer (alignment, memory type bits)
     vkGetBufferMemoryRequirements(device->logicalDevice, stagingBuffer, &memReqs);
@@ -564,12 +564,12 @@ class Texture2DArray : public Texture {
     // Get memory type index for a host visible buffer
     memAllocInfo.memoryTypeIndex = device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &stagingMemory));
-    VK_CHECK_RESULT(vkBindBufferMemory(device->logicalDevice, stagingBuffer, stagingMemory, 0));
+    vik_log_check(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &stagingMemory));
+    vik_log_check(vkBindBufferMemory(device->logicalDevice, stagingBuffer, stagingMemory, 0));
 
     // Copy texture data into staging buffer
     uint8_t *data;
-    VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
+    vik_log_check(vkMapMemory(device->logicalDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
     memcpy(data, tex2DArray.data(), static_cast<size_t>(tex2DArray.size()));
     vkUnmapMemory(device->logicalDevice, stagingMemory);
 
@@ -612,15 +612,15 @@ class Texture2DArray : public Texture {
     imageCreateInfo.arrayLayers = layerCount;
     imageCreateInfo.mipLevels = mipLevels;
 
-    VK_CHECK_RESULT(vkCreateImage(device->logicalDevice, &imageCreateInfo, nullptr, &image));
+    vik_log_check(vkCreateImage(device->logicalDevice, &imageCreateInfo, nullptr, &image));
 
     vkGetImageMemoryRequirements(device->logicalDevice, image, &memReqs);
 
     memAllocInfo.allocationSize = memReqs.size;
     memAllocInfo.memoryTypeIndex = device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &deviceMemory));
-    VK_CHECK_RESULT(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
+    vik_log_check(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &deviceMemory));
+    vik_log_check(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
 
     // Use a separate command buffer for texture loading
     VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
@@ -674,7 +674,7 @@ class Texture2DArray : public Texture {
     samplerCreateInfo.minLod = 0.0f;
     samplerCreateInfo.maxLod = (float)mipLevels;
     samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-    VK_CHECK_RESULT(vkCreateSampler(device->logicalDevice, &samplerCreateInfo, nullptr, &sampler));
+    vik_log_check(vkCreateSampler(device->logicalDevice, &samplerCreateInfo, nullptr, &sampler));
 
     // Create image view
     VkImageViewCreateInfo viewCreateInfo = vks::initializers::imageViewCreateInfo();
@@ -685,7 +685,7 @@ class Texture2DArray : public Texture {
     viewCreateInfo.subresourceRange.layerCount = layerCount;
     viewCreateInfo.subresourceRange.levelCount = mipLevels;
     viewCreateInfo.image = image;
-    VK_CHECK_RESULT(vkCreateImageView(device->logicalDevice, &viewCreateInfo, nullptr, &view));
+    vik_log_check(vkCreateImageView(device->logicalDevice, &viewCreateInfo, nullptr, &view));
 
     // Clean up staging resources
     vkFreeMemory(device->logicalDevice, stagingMemory, nullptr);
@@ -744,7 +744,7 @@ class TextureCubeMap : public Texture {
     bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    VK_CHECK_RESULT(vkCreateBuffer(device->logicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
+    vik_log_check(vkCreateBuffer(device->logicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
 
     // Get memory requirements for the staging buffer (alignment, memory type bits)
     vkGetBufferMemoryRequirements(device->logicalDevice, stagingBuffer, &memReqs);
@@ -753,12 +753,12 @@ class TextureCubeMap : public Texture {
     // Get memory type index for a host visible buffer
     memAllocInfo.memoryTypeIndex = device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &stagingMemory));
-    VK_CHECK_RESULT(vkBindBufferMemory(device->logicalDevice, stagingBuffer, stagingMemory, 0));
+    vik_log_check(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &stagingMemory));
+    vik_log_check(vkBindBufferMemory(device->logicalDevice, stagingBuffer, stagingMemory, 0));
 
     // Copy texture data into staging buffer
     uint8_t *data;
-    VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
+    vik_log_check(vkMapMemory(device->logicalDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
     memcpy(data, texCube.data(), texCube.size());
     vkUnmapMemory(device->logicalDevice, stagingMemory);
 
@@ -805,15 +805,15 @@ class TextureCubeMap : public Texture {
     imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 
 
-    VK_CHECK_RESULT(vkCreateImage(device->logicalDevice, &imageCreateInfo, nullptr, &image));
+    vik_log_check(vkCreateImage(device->logicalDevice, &imageCreateInfo, nullptr, &image));
 
     vkGetImageMemoryRequirements(device->logicalDevice, image, &memReqs);
 
     memAllocInfo.allocationSize = memReqs.size;
     memAllocInfo.memoryTypeIndex = device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &deviceMemory));
-    VK_CHECK_RESULT(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
+    vik_log_check(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &deviceMemory));
+    vik_log_check(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
 
     // Use a separate command buffer for texture loading
     VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
@@ -867,7 +867,7 @@ class TextureCubeMap : public Texture {
     samplerCreateInfo.minLod = 0.0f;
     samplerCreateInfo.maxLod = (float)mipLevels;
     samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-    VK_CHECK_RESULT(vkCreateSampler(device->logicalDevice, &samplerCreateInfo, nullptr, &sampler));
+    vik_log_check(vkCreateSampler(device->logicalDevice, &samplerCreateInfo, nullptr, &sampler));
 
     // Create image view
     VkImageViewCreateInfo viewCreateInfo = vks::initializers::imageViewCreateInfo();
@@ -878,7 +878,7 @@ class TextureCubeMap : public Texture {
     viewCreateInfo.subresourceRange.layerCount = 6;
     viewCreateInfo.subresourceRange.levelCount = mipLevels;
     viewCreateInfo.image = image;
-    VK_CHECK_RESULT(vkCreateImageView(device->logicalDevice, &viewCreateInfo, nullptr, &view));
+    vik_log_check(vkCreateImageView(device->logicalDevice, &viewCreateInfo, nullptr, &view));
 
     // Clean up staging resources
     vkFreeMemory(device->logicalDevice, stagingMemory, nullptr);

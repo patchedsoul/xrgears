@@ -17,6 +17,8 @@
 #include <vector>
 
 #include "../vks/vksModel.hpp"
+#include "../vks/vksLog.hpp"
+
 #include "VikOffscreenPass.hpp"
 #include "VikShader.hpp"
 
@@ -134,7 +136,7 @@ class VikDistortion {
     VkPipelineVertexInputStateCreateInfo emptyInputState = vks::initializers::pipelineVertexInputStateCreateInfo();
     pipelineCreateInfo.pVertexInputState = &emptyInputState;
     pipelineCreateInfo.layout = pipelineLayout;
-    VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
+    vik_log_check(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
 
     vkDestroyShaderModule(device, shaderStages[0].module, nullptr);
     vkDestroyShaderModule(device, shaderStages[1].module, nullptr);
@@ -158,7 +160,7 @@ class VikDistortion {
           &descriptorSetLayout,
           1);
 
-    VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
+    vik_log_check(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
 
     VkDescriptorImageInfo offScreenImageInfo = offscreenPass->getDescriptorImageInfo();
 
@@ -192,7 +194,7 @@ class VikDistortion {
           setLayoutBindings.data(),
           static_cast<uint32_t>(setLayoutBindings.size()));
 
-    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &descriptorSetLayout));
+    vik_log_check(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &descriptorSetLayout));
   }
 
   void createPipeLineLayout() {
@@ -201,7 +203,7 @@ class VikDistortion {
           &descriptorSetLayout,
           1);
 
-    VK_CHECK_RESULT(vkCreatePipelineLayout(device,
+    vik_log_check(vkCreatePipelineLayout(device,
                                            &pPipelineLayoutCreateInfo,
                                            nullptr,
                                            &pipelineLayout));
@@ -241,7 +243,7 @@ class VikDistortion {
     vertexBuffer.push_back({ { 1.f, 0.f, 0.f }, { 1.f, 0.f } });
 
 
-    VK_CHECK_RESULT(vulkanDevice->createBuffer(
+    vik_log_check(vulkanDevice->createBuffer(
                       VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                       vertexBuffer.size() * sizeof(Vertex),
@@ -254,7 +256,7 @@ class VikDistortion {
 
     quad.indexCount = static_cast<uint32_t>(indexBuffer.size());
 
-    VK_CHECK_RESULT(vulkanDevice->createBuffer(
+    vik_log_check(vulkanDevice->createBuffer(
                       VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                       indexBuffer.size() * sizeof(uint32_t),
@@ -300,23 +302,16 @@ class VikDistortion {
     uboData.hmdWarpParam = glm::make_vec4(distortion_coeffs);
     uboData.aberr = glm::make_vec4(aberr_scale);
 
-    printf("hmdWarpParam  %.4f %.4f %.4f %.4f\n", uboData.hmdWarpParam[0], uboData.hmdWarpParam[1], uboData.hmdWarpParam[2], uboData.hmdWarpParam[3]);
-    printf("aberr         %.4f %.4f %.4f %.4f\n", uboData.aberr[0], uboData.aberr[1], uboData.aberr[2], uboData.aberr[3]);
-    printf("lensCenter 0  %.4f %.4f\n", uboData.lensCenter[0][0], uboData.lensCenter[0][1]);
-    printf("lensCenter 1  %.4f %.4f\n", uboData.lensCenter[1][0], uboData.lensCenter[1][1]);
-    printf("viewportScale %.4f %.4f\n", uboData.viewportScale[0], uboData.viewportScale[1]);
-    printf("warpScale     %.4f\n", uboData.warpScale);
-
     memcpy(uboHandle.mapped, &uboData, sizeof(uboData));
   }
 
   void prepareUniformBuffer(vks::Device *vulkanDevice) {
     // Warp UBO in deferred fragment shader
-    VK_CHECK_RESULT(vulkanDevice->createBuffer(
+    vik_log_check(vulkanDevice->createBuffer(
                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                       &uboHandle,
                       sizeof(uboData)));
-    VK_CHECK_RESULT(uboHandle.map());
+    vik_log_check(uboHandle.map());
   }
 };

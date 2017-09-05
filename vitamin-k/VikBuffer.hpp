@@ -18,7 +18,7 @@ class VikBuffer {
  public:
   static void create(vks::Device *vulkanDevice, vks::Buffer *buffer,
                      VkDeviceSize size) {
-    VK_CHECK_RESULT(
+    vik_log_check(
           vulkanDevice->createBuffer(
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
@@ -27,6 +27,6 @@ class VikBuffer {
             size));
 
     // Map persistent
-    VK_CHECK_RESULT(buffer->map());
+    vik_log_check(buffer->map());
   }
 };

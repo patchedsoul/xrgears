@@ -22,6 +22,8 @@
 
 #include "../vks/vksCamera.hpp"
 #include "../vks/vksBuffer.hpp"
+#include "../vks/vksLog.hpp"
+
 
 #include "VikCamera.hpp"
 #include "VikBuffer.hpp"
@@ -87,14 +89,14 @@ class VikHMD {
       return;
     }
 
-    printf("viewport_scale: [%0.4f, %0.4f]\n", viewport_scale[0], viewport_scale[1]);
-    printf("lens separation: %04f\n", sep);
-    printf("IPD: %0.4f\n", ipd);
-    printf("warp_scale: %0.4f\r\n", warp_scale);
-    printf("distoriton coeffs: [%0.4f, %0.4f, %0.4f, %0.4f]\n", distortion_coeffs[0], distortion_coeffs[1], distortion_coeffs[2], distortion_coeffs[3]);
-    printf("aberration coeffs: [%0.4f, %0.4f, %0.4f]\n", aberr_scale[0], aberr_scale[1], aberr_scale[2]);
-    printf("left_lens_center: [%0.4f, %0.4f]\n", left_lens_center[0], left_lens_center[1]);
-    printf("right_lens_center: [%0.4f, %0.4f]\n", right_lens_center[0], right_lens_center[1]);
+    vik_log_i("hmdWarpParam     %.4f %.4f %.4f %.4f", distortion_coeffs[0], distortion_coeffs[1], distortion_coeffs[2], distortion_coeffs[3]);
+    vik_log_i("warpScale        %.4f", warp_scale);
+    vik_log_i("aberr            %.4f %.4f %.4f %.4f", aberr_scale[0], aberr_scale[1], aberr_scale[2]);
+    vik_log_i("lensCenter L     %.4f %.4f", left_lens_center[0], left_lens_center[1]);
+    vik_log_i("lensCenter R     %.4f %.4f", right_lens_center[0], right_lens_center[1]);
+    vik_log_i("lens separation: %.4f", sep);
+    vik_log_i("IPD:             %.4f", ipd);
+    vik_log_i("viewportScale    %.4f %.4f", viewport_scale[0], viewport_scale[1]);
   }
 
   ~VikHMD() {

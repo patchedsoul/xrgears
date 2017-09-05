@@ -280,7 +280,7 @@ VkShaderModule loadShader(const char *fileName, VkDevice device) {
     moduleCreateInfo.codeSize = size;
     moduleCreateInfo.pCode = (uint32_t*)shaderCode;
 
-    VK_CHECK_RESULT(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
+    vik_log_check(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
 
     delete[] shaderCode;
 

@@ -159,7 +159,7 @@ class TextOverlay {
     cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     cmdPoolInfo.queueFamilyIndex = vulkanDevice->queueFamilyIndices.graphics;
     cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    VK_CHECK_RESULT(vkCreateCommandPool(vulkanDevice->logicalDevice, &cmdPoolInfo, nullptr, &commandPool));
+    vik_log_check(vkCreateCommandPool(vulkanDevice->logicalDevice, &cmdPoolInfo, nullptr, &commandPool));
 
     VkCommandBufferAllocateInfo cmdBufAllocateInfo =
         vks::initializers::commandBufferAllocateInfo(
@@ -167,10 +167,10 @@ class TextOverlay {
           VK_COMMAND_BUFFER_LEVEL_PRIMARY,
           (uint32_t)cmdBuffers.size());
 
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &cmdBufAllocateInfo, cmdBuffers.data()));
+    vik_log_check(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &cmdBufAllocateInfo, cmdBuffers.data()));
 
     // Vertex buffer
-    VK_CHECK_RESULT(vulkanDevice->createBuffer(
+    vik_log_check(vulkanDevice->createBuffer(
                       VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                       &vertexBuffer,
@@ -193,20 +193,20 @@ class TextOverlay {
     imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
-    VK_CHECK_RESULT(vkCreateImage(vulkanDevice->logicalDevice, &imageInfo, nullptr, &image));
+    vik_log_check(vkCreateImage(vulkanDevice->logicalDevice, &imageInfo, nullptr, &image));
 
     VkMemoryRequirements memReqs;
     VkMemoryAllocateInfo allocInfo = vks::initializers::memoryAllocateInfo();
     vkGetImageMemoryRequirements(vulkanDevice->logicalDevice, image, &memReqs);
     allocInfo.allocationSize = memReqs.size;
     allocInfo.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    VK_CHECK_RESULT(vkAllocateMemory(vulkanDevice->logicalDevice, &allocInfo, nullptr, &imageMemory));
-    VK_CHECK_RESULT(vkBindImageMemory(vulkanDevice->logicalDevice, image, imageMemory, 0));
+    vik_log_check(vkAllocateMemory(vulkanDevice->logicalDevice, &allocInfo, nullptr, &imageMemory));
+    vik_log_check(vkBindImageMemory(vulkanDevice->logicalDevice, image, imageMemory, 0));
 
     // Staging
     vks::Buffer stagingBuffer;
 
-    VK_CHECK_RESULT(vulkanDevice->createBuffer(
+    vik_log_check(vulkanDevice->createBuffer(
                       VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                       &stagingBuffer,
@@ -220,10 +220,10 @@ class TextOverlay {
     // Copy to image
     VkCommandBuffer copyCmd;
     cmdBufAllocateInfo.commandBufferCount = 1;
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &cmdBufAllocateInfo, &copyCmd));
+    vik_log_check(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &cmdBufAllocateInfo, &copyCmd));
 
     VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
-    VK_CHECK_RESULT(vkBeginCommandBuffer(copyCmd, &cmdBufInfo));
+    vik_log_check(vkBeginCommandBuffer(copyCmd, &cmdBufInfo));
 
     // Prepare for transfer
     vks::tools::setImageLayout(
@@ -257,14 +257,14 @@ class TextOverlay {
           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-    VK_CHECK_RESULT(vkEndCommandBuffer(copyCmd));
+    vik_log_check(vkEndCommandBuffer(copyCmd));
 
     VkSubmitInfo submitInfo = vks::initializers::submitInfo();
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &copyCmd;
 
-    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
-    VK_CHECK_RESULT(vkQueueWaitIdle(queue));
+    vik_log_check(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+    vik_log_check(vkQueueWaitIdle(queue));
 
     stagingBuffer.destroy();
 
@@ -276,7 +276,7 @@ class TextOverlay {
     imageViewInfo.format = imageInfo.format;
     imageViewInfo.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
     imageViewInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-    VK_CHECK_RESULT(vkCreateImageView(vulkanDevice->logicalDevice, &imageViewInfo, nullptr, &view));
+    vik_log_check(vkCreateImageView(vulkanDevice->logicalDevice, &imageViewInfo, nullptr, &view));
 
     // Sampler
     VkSamplerCreateInfo samplerInfo = vks::initializers::samplerCreateInfo();
@@ -291,7 +291,7 @@ class TextOverlay {
     samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = 1.0f;
     samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-    VK_CHECK_RESULT(vkCreateSampler(vulkanDevice->logicalDevice, &samplerInfo, nullptr, &sampler));
+    vik_log_check(vkCreateSampler(vulkanDevice->logicalDevice, &samplerInfo, nullptr, &sampler));
 
     // Descriptor
     // Font uses a separate descriptor pool
@@ -304,7 +304,7 @@ class TextOverlay {
           poolSizes.data(),
           1);
 
-    VK_CHECK_RESULT(vkCreateDescriptorPool(vulkanDevice->logicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+    vik_log_check(vkCreateDescriptorPool(vulkanDevice->logicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 
     // Descriptor set layout
     std::array<VkDescriptorSetLayoutBinding, 1> setLayoutBindings;
@@ -315,7 +315,7 @@ class TextOverlay {
           setLayoutBindings.data(),
           static_cast<uint32_t>(setLayoutBindings.size()));
 
-    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(vulkanDevice->logicalDevice, &descriptorSetLayoutInfo, nullptr, &descriptorSetLayout));
+    vik_log_check(vkCreateDescriptorSetLayout(vulkanDevice->logicalDevice, &descriptorSetLayoutInfo, nullptr, &descriptorSetLayout));
 
     // Pipeline layout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo =
@@ -323,7 +323,7 @@ class TextOverlay {
           &descriptorSetLayout,
           1);
 
-    VK_CHECK_RESULT(vkCreatePipelineLayout(vulkanDevice->logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout));
+    vik_log_check(vkCreatePipelineLayout(vulkanDevice->logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout));
 
     // Descriptor set
     VkDescriptorSetAllocateInfo descriptorSetAllocInfo =
@@ -332,7 +332,7 @@ class TextOverlay {
           &descriptorSetLayout,
           1);
 
-    VK_CHECK_RESULT(vkAllocateDescriptorSets(vulkanDevice->logicalDevice, &descriptorSetAllocInfo, &descriptorSet));
+    vik_log_check(vkAllocateDescriptorSets(vulkanDevice->logicalDevice, &descriptorSetAllocInfo, &descriptorSet));
 
     VkDescriptorImageInfo texDescriptor =
         vks::initializers::descriptorImageInfo(
@@ -347,11 +347,11 @@ class TextOverlay {
     // Pipeline cache
     VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
     pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-    VK_CHECK_RESULT(vkCreatePipelineCache(vulkanDevice->logicalDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
+    vik_log_check(vkCreatePipelineCache(vulkanDevice->logicalDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
 
     // Command buffer execution fence
     VkFenceCreateInfo fenceCreateInfo = vks::initializers::fenceCreateInfo();
-    VK_CHECK_RESULT(vkCreateFence(vulkanDevice->logicalDevice, &fenceCreateInfo, nullptr, &fence));
+    vik_log_check(vkCreateFence(vulkanDevice->logicalDevice, &fenceCreateInfo, nullptr, &fence));
   }
 
   /**
@@ -446,7 +446,7 @@ class TextOverlay {
     pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
     pipelineCreateInfo.pStages = shaderStages.data();
 
-    VK_CHECK_RESULT(vkCreateGraphicsPipelines(vulkanDevice->logicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
+    vik_log_check(vkCreateGraphicsPipelines(vulkanDevice->logicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
   }
 
   /**
@@ -526,7 +526,7 @@ class TextOverlay {
     renderPassInfo.dependencyCount = 2;
     renderPassInfo.pDependencies = subpassDependencies;
 
-    VK_CHECK_RESULT(vkCreateRenderPass(vulkanDevice->logicalDevice, &renderPassInfo, nullptr, &renderPass));
+    vik_log_check(vkCreateRenderPass(vulkanDevice->logicalDevice, &renderPassInfo, nullptr, &renderPass));
   }
 
   /**
@@ -638,7 +638,7 @@ class TextOverlay {
     for (size_t i = 0; i < cmdBuffers.size(); ++i) {
       renderPassBeginInfo.framebuffer = *frameBuffers[i];
 
-      VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffers[i], &cmdBufInfo));
+      vik_log_check(vkBeginCommandBuffer(cmdBuffers[i], &cmdBufInfo));
 
       if (vks::debugmarker::active)
         vks::debugmarker::beginRegion(cmdBuffers[i], "Text overlay", glm::vec4(1.0f, 0.94f, 0.3f, 1.0f));
@@ -665,7 +665,7 @@ class TextOverlay {
       if (vks::debugmarker::active)
         vks::debugmarker::endRegion(cmdBuffers[i]);
 
-      VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffers[i]));
+      vik_log_check(vkEndCommandBuffer(cmdBuffers[i]));
     }
   }
 
@@ -679,10 +679,10 @@ class TextOverlay {
     submitInfo.pCommandBuffers = &cmdBuffers[bufferindex];
     submitInfo.commandBufferCount = 1;
 
-    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, fence));
+    vik_log_check(vkQueueSubmit(queue, 1, &submitInfo, fence));
 
-    VK_CHECK_RESULT(vkWaitForFences(vulkanDevice->logicalDevice, 1, &fence, VK_TRUE, UINT64_MAX));
-    VK_CHECK_RESULT(vkResetFences(vulkanDevice->logicalDevice, 1, &fence));
+    vik_log_check(vkWaitForFences(vulkanDevice->logicalDevice, 1, &fence, VK_TRUE, UINT64_MAX));
+    vik_log_check(vkResetFences(vulkanDevice->logicalDevice, 1, &fence));
   }
 
   /**
@@ -698,7 +698,7 @@ class TextOverlay {
           VK_COMMAND_BUFFER_LEVEL_PRIMARY,
           static_cast<uint32_t>(cmdBuffers.size()));
 
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &cmdBufAllocateInfo, cmdBuffers.data()));
+    vik_log_check(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &cmdBufAllocateInfo, cmdBuffers.data()));
   }
 
   void update(const std::string& title, const std::string& fps, const std::string& device) {

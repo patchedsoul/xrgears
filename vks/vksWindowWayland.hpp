@@ -38,29 +38,17 @@ class VikWindowWayland : public vks::VikWindow {
  public:
   explicit VikWindowWayland() {
     display = wl_display_connect(NULL);
-    if (!display) {
-      std::cout << "Could not connect to Wayland display!\n";
-      fflush(stdout);
-      exit(1);
-    }
+    vik_log_f_if(!display, "Could not connect to Wayland display!");
 
     registry = wl_display_get_registry(display);
-    if (!registry) {
-      std::cout << "Could not get Wayland registry!\n";
-      fflush(stdout);
-      exit(1);
-    }
+    vik_log_f_if(!registry, "Could not get Wayland registry!");
 
     static const struct wl_registry_listener registry_listener =
       { registryGlobalCb, registryGlobalRemoveCb };
     wl_registry_add_listener(registry, &registry_listener, this);
     wl_display_dispatch(display);
     wl_display_roundtrip(display);
-    if (!compositor || !shell || !seat) {
-      std::cout << "Could not bind Wayland protocols!\n";
-      fflush(stdout);
-      exit(1);
-    }
+    vik_log_f_if(!compositor || !shell || !seat, "Could not bind Wayland protocols!");
   }
 
   ~VikWindowWayland() {
@@ -114,32 +102,32 @@ class VikWindowWayland : public vks::VikWindow {
       int y, int w, int h, int subpixel, const char *make, const char *model,
       int transform) {
     //VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
-        printf("%s: %s [%d, %d] %dx%d\n", make, model, x, y, w, h);
+        vik_log_i("%s: %s [%d, %d] %dx%d", make, model, x, y, w, h);
   }
 
     static void outputModeCb(void *data, struct wl_output *wl_output, 
           unsigned int flags, int w, int h, int refresh) {
-        printf("outputModeCb: %dx%d@%d\n", w, h, refresh);
+        vik_log_i("outputModeCb: %dx%d@%d", w, h, refresh);
         
     //    if (w == 2560 && h == 1440) {
         if (w == 1920 && h == 1200) {
           VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
-          printf("setting wl_output to %p\n", wl_output);
+          vik_log_d("setting wl_output to %p", wl_output);
           self->hmd_output = wl_output;
           self->hmd_refresh = refresh;
         } else {
-          printf("ignoring wl_output %p\n", wl_output);
+          vik_log_d("ignoring wl_output %p", wl_output);
         }
     }
 
     static void
     outputDoneCb(void *data, struct wl_output *output) {
-        printf("output done %p\n", output);
+        vik_log_d("output done %p", output);
     }
 
     static void
     outputScaleCb(void *data, struct wl_output *output, int scale) {
-        printf("output scale: %d\n", scale);
+        vik_log_d("output scale: %d", scale);
     }
 
   static void seatCapabilitiesCb(void *data, wl_seat *seat, uint32_t caps) {
@@ -357,7 +345,7 @@ class VikWindowWayland : public vks::VikWindow {
 
   static void ConfigureCb(void *data, struct wl_shell_surface *shell_surface,
                           uint32_t edges, int32_t width, int32_t height) {
-    printf("configure: %dx%d\n", width, height);
+    vik_log_d("configure: %dx%d", width, height);
   }
 
   static void PopupDoneCb(void *data, struct wl_shell_surface *shell_surface) {}
@@ -373,8 +361,8 @@ class VikWindowWayland : public vks::VikWindow {
     wl_shell_surface_add_listener(shell_surface, &shell_surface_listener, this);
     //wl_shell_surface_set_toplevel(shell_surface);
     
-    printf("setting hmd refresh to %d\n", hmd_refresh);
-    printf("setting hmd output to %p\n", hmd_output);
+    vik_log_d("setting hmd refresh to %d", hmd_refresh);
+    vik_log_d("setting hmd output to %p", hmd_output);
 
     wl_shell_surface_set_fullscreen(shell_surface,
                                     WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,

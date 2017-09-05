@@ -118,11 +118,11 @@ class SwapChain {
 
     // Get list of supported surface formats
     uint32_t formatCount;
-    VK_CHECK_RESULT(fpGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, NULL));
+    vik_log_check(fpGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, NULL));
     assert(formatCount > 0);
 
     std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
-    VK_CHECK_RESULT(fpGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, surfaceFormats.data()));
+    vik_log_check(fpGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, surfaceFormats.data()));
 
     // If the surface format list only includes one entry with VK_FORMAT_UNDEFINED,
     // there is no preferered format, so we assume VK_FORMAT_B8G8R8A8_UNORM
@@ -192,15 +192,15 @@ class SwapChain {
 
     // Get physical device surface properties and formats
     VkSurfaceCapabilitiesKHR surfCaps;
-    VK_CHECK_RESULT(fpGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfCaps));
+    vik_log_check(fpGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfCaps));
 
     // Get available present modes
     uint32_t presentModeCount;
-    VK_CHECK_RESULT(fpGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, NULL));
+    vik_log_check(fpGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, NULL));
     assert(presentModeCount > 0);
 
     std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-    VK_CHECK_RESULT(fpGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes.data()));
+    vik_log_check(fpGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes.data()));
 
     VkExtent2D swapchainExtent = {};
     // If width (and height) equals the special value 0xFFFFFFFF, the size of the surface will be set by the swapchain
@@ -293,7 +293,7 @@ class SwapChain {
       swapchainCI.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     }
 
-    VK_CHECK_RESULT(fpCreateSwapchainKHR(device, &swapchainCI, nullptr, &swapChain));
+    vik_log_check(fpCreateSwapchainKHR(device, &swapchainCI, nullptr, &swapChain));
 
     // If an existing swap chain is re-created, destroy the old swap chain
     // This also cleans up all the presentable images
@@ -302,11 +302,11 @@ class SwapChain {
         vkDestroyImageView(device, buffers[i].view, nullptr);
       fpDestroySwapchainKHR(device, oldSwapchain, nullptr);
     }
-    VK_CHECK_RESULT(fpGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL));
+    vik_log_check(fpGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL));
 
     // Get the swap chain images
     images.resize(imageCount);
-    VK_CHECK_RESULT(fpGetSwapchainImagesKHR(device, swapChain, &imageCount, images.data()));
+    vik_log_check(fpGetSwapchainImagesKHR(device, swapChain, &imageCount, images.data()));
 
     // Get the swap chain buffers containing the image and imageview
     buffers.resize(imageCount);
@@ -333,7 +333,7 @@ class SwapChain {
 
       colorAttachmentView.image = buffers[i].image;
 
-      VK_CHECK_RESULT(vkCreateImageView(device, &colorAttachmentView, nullptr, &buffers[i].view));
+      vik_log_check(vkCreateImageView(device, &colorAttachmentView, nullptr, &buffers[i].view));
     }
   }
 

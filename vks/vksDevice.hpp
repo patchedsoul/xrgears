@@ -319,7 +319,7 @@ class Device {
     // Create the buffer handle
     VkBufferCreateInfo bufferCreateInfo = vks::initializers::bufferCreateInfo(usageFlags, size);
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    VK_CHECK_RESULT(vkCreateBuffer(logicalDevice, &bufferCreateInfo, nullptr, buffer));
+    vik_log_check(vkCreateBuffer(logicalDevice, &bufferCreateInfo, nullptr, buffer));
 
     // Create the memory backing up the buffer handle
     VkMemoryRequirements memReqs;
@@ -328,12 +328,12 @@ class Device {
     memAlloc.allocationSize = memReqs.size;
     // Find a memory type index that fits the properties of the buffer
     memAlloc.memoryTypeIndex = getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
-    VK_CHECK_RESULT(vkAllocateMemory(logicalDevice, &memAlloc, nullptr, memory));
+    vik_log_check(vkAllocateMemory(logicalDevice, &memAlloc, nullptr, memory));
 
     // If a pointer to the buffer data has been passed, map the buffer and copy over the data
     if (data != nullptr) {
       void *mapped;
-      VK_CHECK_RESULT(vkMapMemory(logicalDevice, *memory, 0, size, 0, &mapped));
+      vik_log_check(vkMapMemory(logicalDevice, *memory, 0, size, 0, &mapped));
       memcpy(mapped, data, size);
       // If host coherency hasn't been requested, do a manual flush to make writes visible
       if ((memoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0) {
@@ -347,7 +347,7 @@ class Device {
     }
 
     // Attach the memory to the buffer object
-    VK_CHECK_RESULT(vkBindBufferMemory(logicalDevice, *buffer, *memory, 0));
+    vik_log_check(vkBindBufferMemory(logicalDevice, *buffer, *memory, 0));
 
     return VK_SUCCESS;
   }
@@ -368,7 +368,7 @@ class Device {
 
     // Create the buffer handle
     VkBufferCreateInfo bufferCreateInfo = vks::initializers::bufferCreateInfo(usageFlags, size);
-    VK_CHECK_RESULT(vkCreateBuffer(logicalDevice, &bufferCreateInfo, nullptr, &buffer->buffer));
+    vik_log_check(vkCreateBuffer(logicalDevice, &bufferCreateInfo, nullptr, &buffer->buffer));
 
     // Create the memory backing up the buffer handle
     VkMemoryRequirements memReqs;
@@ -377,7 +377,7 @@ class Device {
     memAlloc.allocationSize = memReqs.size;
     // Find a memory type index that fits the properties of the buffer
     memAlloc.memoryTypeIndex = getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
-    VK_CHECK_RESULT(vkAllocateMemory(logicalDevice, &memAlloc, nullptr, &buffer->memory));
+    vik_log_check(vkAllocateMemory(logicalDevice, &memAlloc, nullptr, &buffer->memory));
 
     buffer->alignment = memReqs.alignment;
     buffer->size = memAlloc.allocationSize;
@@ -386,7 +386,7 @@ class Device {
 
     // If a pointer to the buffer data has been passed, map the buffer and copy over the data
     if (data != nullptr) {
-      VK_CHECK_RESULT(buffer->map());
+      vik_log_check(buffer->map());
       memcpy(buffer->mapped, data, size);
       buffer->unmap();
     }
@@ -439,7 +439,7 @@ class Device {
     cmdPoolInfo.queueFamilyIndex = queueFamilyIndex;
     cmdPoolInfo.flags = createFlags;
     VkCommandPool cmdPool;
-    VK_CHECK_RESULT(vkCreateCommandPool(logicalDevice, &cmdPoolInfo, nullptr, &cmdPool));
+    vik_log_check(vkCreateCommandPool(logicalDevice, &cmdPoolInfo, nullptr, &cmdPool));
     return cmdPool;
   }
 
@@ -455,12 +455,12 @@ class Device {
     VkCommandBufferAllocateInfo cmdBufAllocateInfo = vks::initializers::commandBufferAllocateInfo(commandPool, level, 1);
 
     VkCommandBuffer cmdBuffer;
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(logicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
+    vik_log_check(vkAllocateCommandBuffers(logicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
 
     // If requested, also start recording for the new command buffer
     if (begin) {
       VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
-      VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
+      vik_log_check(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
     }
 
     return cmdBuffer;
@@ -480,7 +480,7 @@ class Device {
     if (commandBuffer == VK_NULL_HANDLE)
       return;
 
-    VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+    vik_log_check(vkEndCommandBuffer(commandBuffer));
 
     VkSubmitInfo submitInfo = vks::initializers::submitInfo();
     submitInfo.commandBufferCount = 1;
@@ -489,12 +489,12 @@ class Device {
     // Create fence to ensure that the command buffer has finished executing
     VkFenceCreateInfo fenceInfo = vks::initializers::fenceCreateInfo(VK_FLAGS_NONE);
     VkFence fence;
-    VK_CHECK_RESULT(vkCreateFence(logicalDevice, &fenceInfo, nullptr, &fence));
+    vik_log_check(vkCreateFence(logicalDevice, &fenceInfo, nullptr, &fence));
 
     // Submit to the queue
-    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, fence));
+    vik_log_check(vkQueueSubmit(queue, 1, &submitInfo, fence));
     // Wait for the fence to signal that command buffer has finished executing
-    VK_CHECK_RESULT(vkWaitForFences(logicalDevice, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
+    vik_log_check(vkWaitForFences(logicalDevice, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
 
     vkDestroyFence(logicalDevice, fence, nullptr);
 

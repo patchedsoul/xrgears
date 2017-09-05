@@ -19,10 +19,8 @@ namespace vks {
 Application::Application() {
   // Check for a valid asset path
   struct stat info;
-  if (stat(VikAssets::getAssetPath().c_str(), &info) != 0) {
-    std::cerr << "Error: Could not find asset path in " << VikAssets::getAssetPath() << std::endl;
-    exit(-1);
-  }
+  if (stat(VikAssets::getAssetPath().c_str(), &info) != 0)
+    vik_log_f("Error: Could not find asset path in %s", VikAssets::getAssetPath().c_str());
 
   renderer = new Renderer();
 }
@@ -123,7 +121,7 @@ bool Application::checkCommandBuffers() {
 void Application::createCommandBuffers() {
   // Create one command buffer for each swap chain image and reuse for rendering
 
-  printf("Swapchain image count %d\n", swapChain.imageCount);
+  vik_log_d("Swapchain image count %d", swapChain.imageCount);
 
   drawCmdBuffers.resize(swapChain.imageCount);
 
@@ -133,9 +131,9 @@ void Application::createCommandBuffers() {
         VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         static_cast<uint32_t>(drawCmdBuffers.size()));
 
-  VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, drawCmdBuffers.data()));
+  vik_log_check(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, drawCmdBuffers.data()));
 
-  fprintf(stderr, "created %ld command buffers\n", drawCmdBuffers.size());
+  vik_log_d("created %ld command buffers", drawCmdBuffers.size());
 }
 
 void Application::destroyCommandBuffers() {
@@ -151,12 +149,12 @@ VkCommandBuffer Application::createCommandBuffer(VkCommandBufferLevel level, boo
         level,
         1);
 
-  VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, &cmdBuffer));
+  vik_log_check(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, &cmdBuffer));
 
   // If requested, also start the new command buffer
   if (begin) {
     VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
-    VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
+    vik_log_check(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
   }
 
   return cmdBuffer;
@@ -166,15 +164,15 @@ void Application::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queu
   if (commandBuffer == VK_NULL_HANDLE)
     return;
 
-  VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+  vik_log_check(vkEndCommandBuffer(commandBuffer));
 
   VkSubmitInfo submitInfo = {};
   submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   submitInfo.commandBufferCount = 1;
   submitInfo.pCommandBuffers = &commandBuffer;
 
-  VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
-  VK_CHECK_RESULT(vkQueueWaitIdle(queue));
+  vik_log_check(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+  vik_log_check(vkQueueWaitIdle(queue));
 
   if (free)
     vkFreeCommandBuffers(device, cmdPool, 1, &commandBuffer);
@@ -183,7 +181,7 @@ void Application::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queu
 void Application::createPipelineCache() {
   VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
   pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-  VK_CHECK_RESULT(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
+  vik_log_check(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
 }
 
 void Application::prepare() {
@@ -193,8 +191,6 @@ void Application::prepare() {
   // TODO: create DRM swapchain here
 
   swapChain.create(&width, &height, settings.vsync);
-  //fprintf(stderr, "prepare: not creating swapchain.\n");
-
 
   createCommandBuffers();
   setupDepthStencil();
@@ -220,7 +216,7 @@ void Application::prepare() {
     updateTextOverlay();
   }
 
-  fprintf(stderr, "prepare: done.\n");
+  vik_log_d("prepare done");
 }
 
 
@@ -286,7 +282,7 @@ void Application::prepareFrame() {
   if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR))
     windowResize();
   else
-    VK_CHECK_RESULT(err);
+    vik_log_check(err);
 }
 
 void Application::submit_text_overlay() {
@@ -305,7 +301,7 @@ void Application::submit_text_overlay() {
   // Submit current text overlay command buffer
   submitInfo.commandBufferCount = 1;
   submitInfo.pCommandBuffers = &textOverlay->cmdBuffers[currentBuffer];
-  VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+  vik_log_check(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
 
   // Reset stage mask
   submitInfo.pWaitDstStageMask = &submitPipelineStages;
@@ -327,8 +323,8 @@ void Application::submitFrame() {
     waitSemaphore = semaphores.renderComplete;
   }
 
-  VK_CHECK_RESULT(swapChain.queuePresent(queue, currentBuffer, waitSemaphore));
-  VK_CHECK_RESULT(vkQueueWaitIdle(queue));
+  vik_log_check(swapChain.queuePresent(queue, currentBuffer, waitSemaphore));
+  vik_log_check(vkQueueWaitIdle(queue));
 }
 
 void Application::init_physical_device() {
@@ -337,7 +333,7 @@ void Application::init_physical_device() {
   // Physical device
   uint32_t gpuCount = 0;
   // Get number of available physical devices
-  VK_CHECK_RESULT(vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, nullptr));
+  vik_log_check(vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, nullptr));
   assert(gpuCount > 0);
   // Enumerate devices
   std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
@@ -358,40 +354,30 @@ void Application::init_physical_device() {
     std::cerr << "Selected device index " << settings.gpu_index
               << " is out of range, reverting to device 0 (use -listgpus to show available Vulkan devices)"
               << std::endl;
-  } else {
-    std::cout << "Selected Vulkan device " << settings.gpu_index << std::endl;
+  } else if (settings.gpu_index != 0) {
+    vik_log_i("Selected Vulkan device %d", settings.gpu_index);
     selectedDevice = settings.gpu_index;
   }
 
   physicalDevice = physicalDevices[selectedDevice];
 }
 
-uint32_t Application::select_gpu(const char* id_str, uint32_t gpuCount) {
-  char* endptr;
-  uint32_t index = strtol(id_str, &endptr, 10);
-  if (endptr != id_str) {
-
-  }
-  return 0;
-}
-
-
 void Application::list_gpus() {
   uint32_t gpuCount = 0;
-  VK_CHECK_RESULT(vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, nullptr));
+  vik_log_check(vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, nullptr));
   if (gpuCount == 0) {
-    std::cerr << "No Vulkan devices found!" << std::endl;
+    vik_log_e("No Vulkan devices found!");
   } else {
     // Enumerate devices
-    std::cout << "Available Vulkan devices" << std::endl;
+    vik_log_i("Available Vulkan devices");
     std::vector<VkPhysicalDevice> devices(gpuCount);
-    VK_CHECK_RESULT(vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, devices.data()));
+    vik_log_check(vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, devices.data()));
     for (uint32_t i = 0; i < gpuCount; i++) {
       VkPhysicalDeviceProperties deviceProperties;
       vkGetPhysicalDeviceProperties(devices[i], &deviceProperties);
-      std::cout << "Device [" << i << "] : " << deviceProperties.deviceName << std::endl;
-      std::cout << " Type: " << vks::tools::physicalDeviceTypeString(deviceProperties.deviceType) << std::endl;
-      std::cout << " API: " << (deviceProperties.apiVersion >> 22) << "." << ((deviceProperties.apiVersion >> 12) & 0x3ff) << "." << (deviceProperties.apiVersion & 0xfff) << std::endl;
+      vik_log_i("Device [%d] : %s", i, deviceProperties.deviceName);
+      vik_log_i(" Type: %s", vks::tools::physicalDeviceTypeString(deviceProperties.deviceType).c_str());
+      vik_log_i(" API: %d.%d.%d", deviceProperties.apiVersion >> 22, (deviceProperties.apiVersion >> 12) & 0x3ff, deviceProperties.apiVersion & 0xfff);
     }
   }
 }
@@ -468,14 +454,14 @@ void Application::init_semaphores() {
   VkSemaphoreCreateInfo semaphoreCreateInfo = vks::initializers::semaphoreCreateInfo();
   // Create a semaphore used to synchronize image presentation
   // Ensures that the image is displayed before we start submitting new commands to the queu
-  VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
+  vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
   // Create a semaphore used to synchronize command submission
   // Ensures that the image is not presented until all commands have been sumbitted and executed
-  VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.renderComplete));
+  vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.renderComplete));
   // Create a semaphore used to synchronize command submission
   // Ensures that the image is not presented until all commands for the text overlay have been sumbitted and executed
   // Will be inserted after the render complete semaphore if the text overlay is enabled
-  VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.textOverlayComplete));
+  vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.textOverlayComplete));
 
   // Set up submit info structure
   // Semaphores will stay the same during application lifetime
@@ -499,7 +485,7 @@ void Application::createCommandPool() {
   cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
   cmdPoolInfo.queueFamilyIndex = swapChain.queueNodeIndex;
   cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-  VK_CHECK_RESULT(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
+  vik_log_check(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
 }
 
 void Application::setupDepthStencil() {
@@ -537,19 +523,19 @@ void Application::setupDepthStencil() {
 
   VkMemoryRequirements memReqs;
 
-  VK_CHECK_RESULT(vkCreateImage(device, &image, nullptr, &depthStencil.image));
+  vik_log_check(vkCreateImage(device, &image, nullptr, &depthStencil.image));
   vkGetImageMemoryRequirements(device, depthStencil.image, &memReqs);
   mem_alloc.allocationSize = memReqs.size;
   mem_alloc.memoryTypeIndex = vksDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-  VK_CHECK_RESULT(vkAllocateMemory(device, &mem_alloc, nullptr, &depthStencil.mem));
-  VK_CHECK_RESULT(vkBindImageMemory(device, depthStencil.image, depthStencil.mem, 0));
+  vik_log_check(vkAllocateMemory(device, &mem_alloc, nullptr, &depthStencil.mem));
+  vik_log_check(vkBindImageMemory(device, depthStencil.image, depthStencil.mem, 0));
 
   depthStencilView.image = depthStencil.image;
-  VK_CHECK_RESULT(vkCreateImageView(device, &depthStencilView, nullptr, &depthStencil.view));
+  vik_log_check(vkCreateImageView(device, &depthStencilView, nullptr, &depthStencil.view));
 }
 
 void Application::setupFrameBuffer() {
-  fprintf(stderr, "app: setupFrameBuffer\n");
+  vik_log_d("setupFrameBuffer");
 
 
   VkImageView attachments[2];
@@ -571,7 +557,7 @@ void Application::setupFrameBuffer() {
   frameBuffers.resize(swapChain.imageCount);
   for (uint32_t i = 0; i < frameBuffers.size(); i++) {
     attachments[0] = swapChain.buffers[i].view;
-    VK_CHECK_RESULT(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
+    vik_log_check(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
   }
 }
 
@@ -665,8 +651,8 @@ void Application::setupRenderPass() {
   renderPassInfo.pNext = NULL;
   // VK_KHX_multiview
 
-  VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass));
-  fprintf(stderr, "renderpass setup complete\n");
+  vik_log_check(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass));
+  vik_log_d("renderpass setup complete");
 }
 
 void Application::getEnabledFeatures() {}
@@ -685,7 +671,6 @@ void Application::windowResize() {
   // TODO: Create kms swapchain here.
 
   swapChain.create(&width, &height, settings.vsync);
-  //fprintf(stderr, "resize: not creating swapchain.\n");
   // Recreate the frame buffers
 
   vkDestroyImageView(device, depthStencil.view, nullptr);

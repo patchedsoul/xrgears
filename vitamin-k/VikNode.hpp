@@ -72,7 +72,7 @@ class VikNode {
           &descriptorSetLayout,
           1);
 
-    VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
+    vik_log_check(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
 
     std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
       // Binding 0 : Vertex shader uniform buffer
