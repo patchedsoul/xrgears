@@ -108,7 +108,7 @@ void Application::createPipelineCache() {
 }
 
 void Application::prepare() {
-  if (vulkanDevice->enableDebugMarkers)
+  if (vksDevice->enableDebugMarkers)
     vks::debugmarker::setup(device);
   createCommandPool();
   // TODO: create DRM swapchain here
@@ -130,7 +130,7 @@ void Application::prepare() {
     shaderStages.push_back(VikShader::load(device, "base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
 
     textOverlay = new TextOverlay(
-          vulkanDevice,
+          vksDevice,
           queue,
           &frameBuffers,
           swapChain.colorFormat,
@@ -315,7 +315,7 @@ Application::~Application() {
   if (enableTextOverlay)
     delete textOverlay;
 
-  delete vulkanDevice;
+  delete vksDevice;
 
   if (settings.validation)
     vks::debug::freeDebugCallback(renderer->instance);
@@ -453,17 +453,17 @@ void Application::initVulkan(VikWindow *window) {
   // Vulkan device creation
   // This is handled by a separate class that gets a logical device representation
   // and encapsulates functions related to a device
-  vulkanDevice = new vks::Device(physicalDevice);
-  VkResult res = vulkanDevice->createLogicalDevice(enabledFeatures, enabledExtensions);
+  vksDevice = new vks::Device(physicalDevice);
+  VkResult res = vksDevice->createLogicalDevice(enabledFeatures, enabledExtensions);
   if (res != VK_SUCCESS)
     vks::tools::exitFatal("Could not create Vulkan device: \n" + vks::tools::errorString(res), "Fatal error");
 
-  device = vulkanDevice->logicalDevice;
+  device = vksDevice->logicalDevice;
 
   // printMultiviewProperties(device, physicalDevice);
 
   // Get a graphics queue from the device
-  vkGetDeviceQueue(device, vulkanDevice->queueFamilyIndices.graphics, 0, &queue);
+  vkGetDeviceQueue(device, vksDevice->queueFamilyIndices.graphics, 0, &queue);
 
   // Find a suitable depth format
   VkBool32 validDepthFormat = vks::tools::getSupportedDepthFormat(physicalDevice, &depthFormat);
@@ -548,7 +548,7 @@ void Application::setupDepthStencil() {
   VK_CHECK_RESULT(vkCreateImage(device, &image, nullptr, &depthStencil.image));
   vkGetImageMemoryRequirements(device, depthStencil.image, &memReqs);
   mem_alloc.allocationSize = memReqs.size;
-  mem_alloc.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  mem_alloc.memoryTypeIndex = vksDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
   VK_CHECK_RESULT(vkAllocateMemory(device, &mem_alloc, nullptr, &depthStencil.mem));
   VK_CHECK_RESULT(vkBindImageMemory(device, depthStencil.image, depthStencil.mem, 0));
 

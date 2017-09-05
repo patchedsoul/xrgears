@@ -147,7 +147,7 @@ class Application {
 
 
   /** @brief Encapsulated physical and logical vulkan device */
-  vks::Device *vulkanDevice;
+  vks::Device *vksDevice;
 
   /** @brief Example settings that can be changed e.g. by command line arguments */
   Settings settings;

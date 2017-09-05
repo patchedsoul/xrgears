@@ -299,7 +299,7 @@ public:
 
   void loadAssets() {
     if (enableSky)
-      skyBox->loadAssets(vertexLayout, vulkanDevice, queue);
+      skyBox->loadAssets(vertexLayout, vksDevice, queue);
   }
 
   void initGears() {
@@ -342,14 +342,14 @@ public:
 
       nodes[i] = new VikNodeGear();
       nodes[i]->setInfo(&gearNodeInfo);
-      ((VikNodeGear*)nodes[i])->generate(vulkanDevice, &gearInfo, queue);
+      ((VikNodeGear*)nodes[i])->generate(vksDevice, &gearInfo, queue);
     }
 
     VikNodeModel* teapotNode = new VikNodeModel();
     teapotNode->loadModel("teapot.dae",
                           vertexLayout,
                           0.25f,
-                          vulkanDevice,
+                          vksDevice,
                           queue);
 
     Material teapotMaterial = Material("Cream", glm::vec3(1.0f, 1.0f, 0.7f), 1.0f, 1.0f);
@@ -584,12 +584,12 @@ public:
   // Prepare and initialize uniform buffer containing shader uniforms
   void prepareUniformBuffers()
   {
-    VikBuffer::create(vulkanDevice, &uniformBuffers.lights, sizeof(uboLights));
+    VikBuffer::create(vksDevice, &uniformBuffers.lights, sizeof(uboLights));
 
-    vikCamera->prepareUniformBuffers(vulkanDevice);
+    vikCamera->prepareUniformBuffers(vksDevice);
 
     for (auto& node : nodes)
-      node->prepareUniformBuffer(vulkanDevice);
+      node->prepareUniformBuffer(vksDevice);
 
     updateUniformBuffers();
   }
@@ -695,10 +695,10 @@ public:
 
     if (enableDistortion) {
       offscreenPass = new VikOffscreenPass(device);
-      offscreenPass->prepareOffscreenFramebuffer(vulkanDevice, physicalDevice);
+      offscreenPass->prepareOffscreenFramebuffer(vksDevice, physicalDevice);
       hmdDistortion = new VikDistortion(device);
-      hmdDistortion->generateQuads(vulkanDevice);
-      hmdDistortion->prepareUniformBuffer(vulkanDevice);
+      hmdDistortion->generateQuads(vksDevice);
+      hmdDistortion->prepareUniformBuffer(vksDevice);
       hmdDistortion->updateUniformBufferWarp(hmd->openHmdDevice);
       hmdDistortion->createDescriptorSetLayout();
       hmdDistortion->createPipeLineLayout();
