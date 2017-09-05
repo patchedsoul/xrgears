@@ -299,7 +299,7 @@ Application::~Application() {
 }
 
 void Application::parse_arguments(const int argc, const char *argv[]) {
-
+  std::vector<const char*> args;
   for (size_t i = 0; i < argc; i++) { args.push_back(argv[i]); };
 
   // Parse command line arguments

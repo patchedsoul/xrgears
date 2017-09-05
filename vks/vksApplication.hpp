@@ -139,8 +139,6 @@ class Application {
   uint32_t height = 768;
   */
 
-
-
   /** @brief Encapsulated physical and logical vulkan device */
   vks::Device *vksDevice;
 
@@ -150,8 +148,6 @@ class Application {
   VkClearColorValue defaultClearColor = { { 0.025f, 0.025f, 0.025f, 1.0f } };
 
   float zoom = 0;
-
-  std::vector<const char*> args;
 
   bool enableTextOverlay = true;
   TextOverlay *textOverlay;
