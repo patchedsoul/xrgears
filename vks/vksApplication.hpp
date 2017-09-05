@@ -46,11 +46,6 @@ class Application {
 
   vks::Timer timer;
 
-  PFN_vkGetPhysicalDeviceFeatures2KHR fpGetPhysicalDeviceFeatures2KHR;
-  PFN_vkGetPhysicalDeviceProperties2KHR fpGetPhysicalDeviceProperties2KHR;
-
-  void printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDevice physicalDevice);
-
   // fps timer (one second interval)
 
   // Get window title with example name, device, et.
@@ -195,7 +190,7 @@ class Application {
   } gamePadState;
 
   // Default ctor
-  explicit Application(bool enableValidation);
+  explicit Application();
 
   // dtor
   virtual ~Application();
@@ -288,7 +283,7 @@ class Application {
 
   void init_semaphores();
 
-  void parse_arguments();
+  void parse_arguments(const int argc, const char *argv[]);
 
   void list_gpus();
 

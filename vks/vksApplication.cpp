@@ -249,7 +249,7 @@ void Application::submitFrame() {
   VK_CHECK_RESULT(vkQueueWaitIdle(queue));
 }
 
-Application::Application(bool enableValidation) {
+Application::Application() {
   // Check for a valid asset path
   struct stat info;
   if (stat(VikAssets::getAssetPath().c_str(), &info) != 0) {
@@ -257,12 +257,7 @@ Application::Application(bool enableValidation) {
     exit(-1);
   }
 
-  settings.validation = enableValidation;
-
   renderer = new Renderer();
-
-  parse_arguments();
-
 }
 
 Application::~Application() {
@@ -303,11 +298,16 @@ Application::~Application() {
   vkDestroyInstance(renderer->instance, nullptr);
 }
 
-void Application::parse_arguments() {
+void Application::parse_arguments(const int argc, const char *argv[]) {
+
+  for (size_t i = 0; i < argc; i++) { args.push_back(argv[i]); };
+
   // Parse command line arguments
   for (size_t i = 0; i < args.size(); i++) {
-    if (args[i] == std::string("-validation"))
+    if (args[i] == std::string("-validation")) {
       settings.validation = true;
+      printf("enabling validation: %d\n", settings.validation);
+    }
     if (args[i] == std::string("-vsync"))
       settings.vsync = true;
     if (args[i] == std::string("-fullscreen"))
@@ -324,49 +324,6 @@ void Application::parse_arguments() {
     }
   }
 }
-
-void Application::printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDevice physicalDevice) {
-  GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceProperties2KHR);
-  GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceFeatures2KHR);
-
-  if (fpGetPhysicalDeviceFeatures2KHR) {
-    VkPhysicalDeviceFeatures2KHR deviceFeatures2{};
-    VkPhysicalDeviceMultiviewFeaturesKHX multiViewFeatures{};
-    multiViewFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHX;
-    deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
-    deviceFeatures2.pNext = &multiViewFeatures;
-    fpGetPhysicalDeviceFeatures2KHR(physicalDevice, &deviceFeatures2);
-
-    // vkGetPhysicalDeviceFeatures2KHR(physicalDevice, &deviceFeatures2);
-
-    printf("multiview %d\n", multiViewFeatures.multiview);
-    printf("multiviewGeometryShader %d\n", multiViewFeatures.multiviewGeometryShader);
-    printf("multiviewTessellationShader %d\n", multiViewFeatures.multiviewTessellationShader);
-  }
-
-  if (fpGetPhysicalDeviceProperties2KHR) {
-    VkPhysicalDeviceProperties2KHR deviceProps2{};
-
-    VkPhysicalDeviceMultiviewPropertiesKHX extProps{};
-    extProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHX;
-    deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
-    deviceProps2.pNext = &extProps;
-    fpGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps2);
-
-    printf("maxMultiviewViewCount %d\n", extProps.maxMultiviewViewCount);
-    printf("maxMultiviewInstanceIndex %d\n", extProps.maxMultiviewInstanceIndex);
-
-    VkPhysicalDeviceProperties2KHR deviceProps22{};
-    VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX extProps2{};
-    extProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX;
-    deviceProps22.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
-    deviceProps22.pNext = &extProps2;
-    fpGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps22);
-
-    printf("perViewPositionAllComponents %d\n", extProps2.perViewPositionAllComponents);
-  }
-}
-
 
 void Application::init_physical_device() {
   VkResult err;
@@ -459,7 +416,8 @@ void Application::initVulkan(VikWindow *window) {
 
   // Vulkan instance
 
-  renderer = new vks::Renderer();
+  printf("validation enabled: %d\n", settings.validation);
+
   err = renderer->createInstance(&settings, window, name);
   if (err)
     vks::tools::exitFatal("Could not create Vulkan instance : \n" + vks::tools::errorString(err), "Fatal error");
@@ -479,13 +437,21 @@ void Application::initVulkan(VikWindow *window) {
   // This is handled by a separate class that gets a logical device representation
   // and encapsulates functions related to a device
   vksDevice = new vks::Device(physicalDevice);
+
+  //enabledExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+  //enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
+  /*
+  enabledExtensions.push_back(VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME);
+  enabledExtensions.push_back(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
+  enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+  */
   VkResult res = vksDevice->createLogicalDevice(enabledFeatures, enabledExtensions);
   if (res != VK_SUCCESS)
     vks::tools::exitFatal("Could not create Vulkan device: \n" + vks::tools::errorString(res), "Fatal error");
 
   device = vksDevice->logicalDevice;
 
-  // printMultiviewProperties(device, physicalDevice);
+  //vksDevice->printMultiviewProperties();
 
   // Get a graphics queue from the device
   vkGetDeviceQueue(device, vksDevice->queueFamilyIndices.graphics, 0, &queue);

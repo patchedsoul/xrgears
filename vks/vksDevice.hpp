@@ -512,5 +512,49 @@ class Device {
   bool extensionSupported(std::string extension) {
     return (std::find(supportedExtensions.begin(), supportedExtensions.end(), extension) != supportedExtensions.end());
   }
+
+  void printMultiviewProperties() {
+    PFN_vkGetPhysicalDeviceFeatures2KHR fpGetPhysicalDeviceFeatures2KHR;
+    PFN_vkGetPhysicalDeviceProperties2KHR fpGetPhysicalDeviceProperties2KHR;
+
+    GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceProperties2KHR);
+    GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceFeatures2KHR);
+
+    if (fpGetPhysicalDeviceFeatures2KHR) {
+      VkPhysicalDeviceFeatures2KHR deviceFeatures2{};
+      VkPhysicalDeviceMultiviewFeaturesKHX multiViewFeatures{};
+      multiViewFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHX;
+      deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
+      deviceFeatures2.pNext = &multiViewFeatures;
+      fpGetPhysicalDeviceFeatures2KHR(physicalDevice, &deviceFeatures2);
+
+      printf("multiview %d\n", multiViewFeatures.multiview);
+      printf("multiviewGeometryShader %d\n", multiViewFeatures.multiviewGeometryShader);
+      printf("multiviewTessellationShader %d\n", multiViewFeatures.multiviewTessellationShader);
+    }
+
+    if (fpGetPhysicalDeviceProperties2KHR) {
+      VkPhysicalDeviceProperties2KHR deviceProps2{};
+
+      VkPhysicalDeviceMultiviewPropertiesKHX extProps{};
+      extProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHX;
+      deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+      deviceProps2.pNext = &extProps;
+      fpGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps2);
+
+      printf("maxMultiviewViewCount %d\n", extProps.maxMultiviewViewCount);
+      printf("maxMultiviewInstanceIndex %d\n", extProps.maxMultiviewInstanceIndex);
+
+      VkPhysicalDeviceProperties2KHR deviceProps22{};
+      VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX extProps2{};
+      extProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX;
+      deviceProps22.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+      deviceProps22.pNext = &extProps2;
+      fpGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps22);
+
+      printf("perViewPositionAllComponents %d\n", extProps2.perViewPositionAllComponents);
+    }
+  }
+
 };
 }  // namespace vks

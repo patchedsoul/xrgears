@@ -33,8 +33,6 @@
 #include "../vks/vksWindowKMS.hpp"
 #include "../vitamin-k/VikShader.hpp"
 
-// Set to "true" to enable Vulkan's validation layers (see vulkandebug.cpp for details)
-#define ENABLE_VALIDATION false
 // Set to "true" to use staging buffers for uploading vertex and index data to device local memory
 // See "prepareVertices" for details on what's staging and on why to use it
 #define USE_STAGING true
@@ -118,7 +116,7 @@ public:
   // Used to check the completion of queue operations (e.g. command buffer execution)
   std::vector<VkFence> waitFences;
 
-  Triangle() : Application(ENABLE_VALIDATION)
+  Triangle() : Application()
   {
     zoom = -2.5f;
     title = "Vulkan Example - Basic indexed triangle";
@@ -1074,13 +1072,9 @@ public:
   }
 };
 
-// Linux entry point
-Triangle *app;
-
-int main(const int argc, const char *argv[])
-{
-  app = new Triangle();
-  for (size_t i = 0; i < argc; i++) { app->args.push_back(argv[i]); };
+int main(const int argc, const char *argv[]) {
+  Triangle *app = new Triangle();
+  app->parse_arguments(argc, argv);
   vks::VikWindow * window = new VikWindowWayland();
   //VikWindow * window = new VikWindowXCB();
   //VikWindow * window = new VikWindowKMS();

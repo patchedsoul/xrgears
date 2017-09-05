@@ -43,7 +43,6 @@
 #include "../vks/vksWindowKMS.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
-#define ENABLE_VALIDATION false
 
 class XRGears : public vks::Application {
 public:
@@ -96,7 +95,7 @@ public:
   // Semaphore used to synchronize between offscreen and final scene rendering
   VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
-  XRGears() : Application(ENABLE_VALIDATION) {
+  XRGears() : Application() {
     title = "XR Gears";
     enableTextOverlay = true;
     camera.type = Camera::CameraType::firstperson;
@@ -754,7 +753,7 @@ XRGears *app;
 
 int main(const int argc, const char *argv[]) {
   app = new XRGears();
-  for (size_t i = 0; i < argc; i++) { app->args.push_back(argv[i]); };
+  app->parse_arguments(argc, argv);
   vks::VikWindow * window = new VikWindowWayland();
   //VikWindow * window = new VikWindowXCB();
   //VikWindow * window = new VikWindowKMS();
