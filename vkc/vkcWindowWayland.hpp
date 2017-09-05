@@ -293,7 +293,9 @@ public:
 
     vc->image_format = vc->choose_surface_format();
 
-    vc->init_vk_objects(&app->model);
+    vc->init_vk_objects_part1();
+    app->init();
+    vc->init_vk_objects_part2();
 
     vc->create_swapchain();
 
@@ -329,7 +331,7 @@ public:
         return;
 
       //vc->model.render(vc, &vc->buffers[index]);
-      app->model.render(vc, &vc->buffers[index]);
+      app->render(&vc->buffers[index]);
 
       VkSwapchainKHR swapChains[] = { vc->swap_chain, };
       uint32_t indices[] = { index, };

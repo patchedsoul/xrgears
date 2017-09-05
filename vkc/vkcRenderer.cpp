@@ -1,7 +1,8 @@
 #include <assert.h>
+#include <sys/time.h>
 
 #include "vkcRenderer.hpp"
-#include "vkcCube.hpp"
+#include "vksApplication.hpp"
 
 namespace vkc {
 
@@ -112,9 +113,7 @@ VkFormat Renderer::choose_surface_format() {
   return format;
 }
 
-void Renderer::init_vk_objects(Cube * model)
-{
-
+void Renderer::init_vk_objects_part1() {
   VkAttachmentDescription attachementDesc[] = {
     {
       .format = image_format,
@@ -168,9 +167,9 @@ void Renderer::init_vk_objects(Cube * model)
                      &passcreateinfo,
                      NULL,
                      &render_pass);
+}
 
-  model->init(this);
-
+void Renderer::init_vk_objects_part2() {
   VkFenceCreateInfo fenceinfo = {
     .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
     .flags = 0
@@ -202,6 +201,15 @@ void Renderer::init_vk_objects(Cube * model)
                     NULL,
                     &semaphore);
 }
+
+/*
+void Renderer::init_vk_objects(Application * model)
+{
+  init_vk_objects_part1();
+  model->init(this);
+  init_vk_objects_part2();
+}
+*/
 
 
 void Renderer::init_buffer(struct CubeBuffer *b) {

@@ -6,6 +6,7 @@
 
 #include "vkcWindow.hpp"
 #include "vkcApplication.hpp"
+#include "vkcRenderer.hpp"
 
 #include "../vks/vksLog.hpp"
 
@@ -106,7 +107,10 @@ public:
 
     init_surface(vc);
 
-    vc->init_vk_objects(&app->model);
+    //vc->init_vk_objects(app);
+    vc->init_vk_objects_part1();
+    app->init();
+    vc->init_vk_objects_part2();
 
     vc->image_count = 0;
 
@@ -206,7 +210,7 @@ public:
 
 
         // TODO: model render
-        app->model.render(vc, &vc->buffers[index]);
+        app->render(&vc->buffers[index]);
 
         VkResult result;
 

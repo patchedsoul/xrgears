@@ -117,7 +117,7 @@ public:
         b = &vc->buffers[vc->current & 1];
         kms_b = &kms_buffers[vc->current & 1];
 
-        app->model.render(vc, b);
+        app->render(b);
 
         ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
                               DRM_MODE_PAGE_FLIP_EVENT, NULL);
@@ -216,7 +216,9 @@ public:
 
     vc->init_vk(NULL);
     vc->image_format = VK_FORMAT_R8G8B8A8_SRGB;
-    vc->init_vk_objects(&app->model);
+    vc->init_vk_objects_part1();
+    app->init();
+    vc->init_vk_objects_part2();
 
     PFN_vkCreateDmaBufImageINTEL create_dma_buf_image =
         (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(vc->device, "vkCreateDmaBufImageINTEL");

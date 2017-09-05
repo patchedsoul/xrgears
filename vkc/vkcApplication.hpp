@@ -1,15 +1,17 @@
 #pragma once
 
 #include <assert.h>
+#include <stdio.h>
+#include <string.h>
 
-#include "../vkc/vkcCube.hpp"
 #include "../vkc/vkcWindow.hpp"
-#include "../vkc/vkcRenderer.hpp"
 
 namespace vkc {
+
+class Renderer;
+
 class Application {
 public:
-   Cube model;
    Renderer *renderer;
    Window *display;
    enum window_type mode;
@@ -28,6 +30,9 @@ public:
 
    int init_display_mode(window_type m);
    void init_display_mode_auto();
+
+   virtual void init() = 0;
+   virtual void render(struct CubeBuffer *b) = 0;
 
 };
 }

@@ -14,8 +14,6 @@ struct CubeBuffer {
    VkFramebuffer framebuffer;
 };
 
-class Cube;
-
 class Renderer {
 public:
     VkSwapchainKHR swap_chain;
@@ -47,7 +45,8 @@ public:
 
     void init_vk(const char *extension);
     VkFormat choose_surface_format();
-    void init_vk_objects(Cube * model);
+    void init_vk_objects_part1();
+    void init_vk_objects_part2();
     void init_buffer(struct CubeBuffer *b);
     void create_swapchain();
 };

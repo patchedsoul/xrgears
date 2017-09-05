@@ -2,7 +2,6 @@
 
 #include "vkcApplication.hpp"
 
-#include "vkcCube.hpp"
 #include "vkcWindowXCB.hpp"
 #include "vkcWindowKMS.hpp"
 #include "vkcWindowWayland.hpp"
