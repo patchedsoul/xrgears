@@ -92,16 +92,16 @@ public:
 
     ret = drmModeSetCrtc(fd, crtc->crtc_id, kms_buffers[0].fb,
         0, 0, &connector->connector_id, 1, &crtc->mode);
-    log_fatal_if(ret < 0, "modeset failed: %m\n");
+    vks::Log::fatal_if(ret < 0, "modeset failed: %m\n");
 
 
     ret = drmModePageFlip(fd, crtc->crtc_id, kms_buffers[0].fb,
         DRM_MODE_PAGE_FLIP_EVENT, NULL);
-    log_fatal_if(ret < 0, "pageflip failed: %m\n");
+    vks::Log::fatal_if(ret < 0, "pageflip failed: %m\n");
 
     while (1) {
       ret = poll(pfd, 2, -1);
-      log_fatal_if(ret == -1, "poll failed\n");
+      vks::Log::fatal_if(ret == -1, "poll failed\n");
       if (pfd[0].revents & POLLIN) {
         len = read(STDIN_FILENO, buf, sizeof(buf));
         switch (buf[0]) {
@@ -121,7 +121,7 @@ public:
 
         ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
                               DRM_MODE_PAGE_FLIP_EVENT, NULL);
-        log_fatal_if(ret < 0, "pageflip failed: %m\n");
+        vks::Log::fatal_if(ret < 0, "pageflip failed: %m\n");
         vc->current++;
       }
     }
@@ -137,7 +137,7 @@ public:
 
     /* Make sure we're on a vt. */
     ret = fstat(STDIN_FILENO, &buf);
-    log_fatal_if(ret == -1, "failed to stat stdin\n");
+    vks::Log::fatal_if(ret == -1, "failed to stat stdin\n");
 
     if (major(buf.st_rdev) != TTY_MAJOR) {
       fprintf(stderr, "stdin not a vt, running in no-display mode\n");
@@ -167,11 +167,11 @@ public:
     mode.relsig = 0;
     mode.acqsig = 0;
     ret = ioctl(STDIN_FILENO, VT_SETMODE, &mode);
-    log_fatal_if(ret == -1, "failed to take control of vt handling\n");
+    vks::Log::fatal_if(ret == -1, "failed to take control of vt handling\n");
 
     /* Set KD_GRAPHICS to disable fbcon while we render. */
     ret = ioctl(STDIN_FILENO, KDSETMODE, KD_GRAPHICS);
-    log_fatal_if(ret == -1, "failed to switch console to graphics mode\n");
+    vks::Log::fatal_if(ret == -1, "failed to switch console to graphics mode\n");
 
     return 0;
   }
@@ -186,12 +186,12 @@ public:
       return -1;
 
     fd = open("/dev/dri/card0", O_RDWR);
-    log_fatal_if(fd == -1, "failed to open /dev/dri/card0\n");
+    vks::Log::fatal_if(fd == -1, "failed to open /dev/dri/card0\n");
 
     /* Get KMS resources and find the first active connecter. We'll use that
       connector and the crtc driving it in the mode it's currently running. */
     resources = drmModeGetResources(fd);
-    log_fatal_if(!resources, "drmModeGetResources failed: %s\n", strerror(errno));
+    vks::Log::fatal_if(!resources, "drmModeGetResources failed: %s\n", strerror(errno));
 
     for (i = 0; i < resources->count_connectors; i++) {
       connector = drmModeGetConnector(fd, resources->connectors[i]);
@@ -201,11 +201,11 @@ public:
       connector = NULL;
     }
 
-    log_fatal_if(!connector, "no connected connector!\n");
+    vks::Log::fatal_if(!connector, "no connected connector!\n");
     encoder = drmModeGetEncoder(fd, connector->encoder_id);
-    log_fatal_if(!encoder, "failed to get encoder\n");
+    vks::Log::fatal_if(!encoder, "failed to get encoder\n");
     crtc = drmModeGetCrtc(fd, encoder->crtc_id);
-    log_fatal_if(!crtc, "failed to get crtc\n");
+    vks::Log::fatal_if(!crtc, "failed to get crtc\n");
     printf("mode info: hdisplay %d, vdisplay %d\n",
            crtc->mode.hdisplay, crtc->mode.vdisplay);
 
@@ -260,7 +260,7 @@ public:
       ret = drmModeAddFB2(fd, vc->width, vc->height,
                           DRM_FORMAT_XRGB8888, bo_handles,
                           pitches, offsets, &kms_b->fb, 0);
-      log_fatal_if(ret == -1, "addfb2 failed\n");
+      vks::Log::fatal_if(ret == -1, "addfb2 failed\n");
 
       vc->init_buffer(b);
     }
