@@ -264,25 +264,8 @@ Application::Application(bool enableValidation) {
 
   renderer = new Renderer();
 
-  // Parse command line arguments
-  for (size_t i = 0; i < args.size(); i++) {
-    if (args[i] == std::string("-validation"))
-      settings.validation = true;
-    if (args[i] == std::string("-vsync"))
-      settings.vsync = true;
-    if (args[i] == std::string("-fullscreen"))
-      settings.fullscreen = true;
-    if ((args[i] == std::string("-w")) || (args[i] == std::string("-width"))) {
-      char* endptr;
-      uint32_t w = strtol(args[i + 1], &endptr, 10);
-      if (endptr != args[i + 1]) width = w;
-    }
-    if ((args[i] == std::string("-h")) || (args[i] == std::string("-height"))) {
-      char* endptr;
-      uint32_t h = strtol(args[i + 1], &endptr, 10);
-      if (endptr != args[i + 1]) height = h;
-    }
-  }
+  parse_arguments();
+
 }
 
 Application::~Application() {
@@ -321,6 +304,28 @@ Application::~Application() {
     vks::debug::freeDebugCallback(renderer->instance);
 
   vkDestroyInstance(renderer->instance, nullptr);
+}
+
+void Application::parse_arguments() {
+  // Parse command line arguments
+  for (size_t i = 0; i < args.size(); i++) {
+    if (args[i] == std::string("-validation"))
+      settings.validation = true;
+    if (args[i] == std::string("-vsync"))
+      settings.vsync = true;
+    if (args[i] == std::string("-fullscreen"))
+      settings.fullscreen = true;
+    if ((args[i] == std::string("-w")) || (args[i] == std::string("-width"))) {
+      char* endptr;
+      uint32_t w = strtol(args[i + 1], &endptr, 10);
+      if (endptr != args[i + 1]) width = w;
+    }
+    if ((args[i] == std::string("-h")) || (args[i] == std::string("-height"))) {
+      char* endptr;
+      uint32_t h = strtol(args[i + 1], &endptr, 10);
+      if (endptr != args[i + 1]) height = h;
+    }
+  }
 }
 
 void Application::printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDevice physicalDevice) {
@@ -389,42 +394,51 @@ void Application::init_physical_device() {
   // GPU selection via command line argument
   for (size_t i = 0; i < args.size(); i++) {
     // Select GPU
-    if ((args[i] == std::string("-g")) || (args[i] == std::string("-gpu"))) {
-      char* endptr;
-      uint32_t index = strtol(args[i + 1], &endptr, 10);
-      if (endptr != args[i + 1]) {
-        if (index > gpuCount - 1) {
-          std::cerr << "Selected device index " << index << " is out of range, reverting to device 0 (use -listgpus to show available Vulkan devices)" << std::endl;
-        } else {
-          std::cout << "Selected Vulkan device " << index << std::endl;
-          selectedDevice = index;
-        }
-      }
-      break;
-    }
+    if ((args[i] == std::string("-g")) || (args[i] == std::string("-gpu")))
+      selectedDevice = select_gpu(i, gpuCount);
     // List available GPUs
-    if (args[i] == std::string("-listgpus")) {
-      uint32_t gpuCount = 0;
-      VK_CHECK_RESULT(vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, nullptr));
-      if (gpuCount == 0) {
-        std::cerr << "No Vulkan devices found!" << std::endl;
-      } else {
-        // Enumerate devices
-        std::cout << "Available Vulkan devices" << std::endl;
-        std::vector<VkPhysicalDevice> devices(gpuCount);
-        VK_CHECK_RESULT(vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, devices.data()));
-        for (uint32_t i = 0; i < gpuCount; i++) {
-          VkPhysicalDeviceProperties deviceProperties;
-          vkGetPhysicalDeviceProperties(devices[i], &deviceProperties);
-          std::cout << "Device [" << i << "] : " << deviceProperties.deviceName << std::endl;
-          std::cout << " Type: " << vks::tools::physicalDeviceTypeString(deviceProperties.deviceType) << std::endl;
-          std::cout << " API: " << (deviceProperties.apiVersion >> 22) << "." << ((deviceProperties.apiVersion >> 12) & 0x3ff) << "." << (deviceProperties.apiVersion & 0xfff) << std::endl;
-        }
-      }
-    }
+    if (args[i] == std::string("-listgpus"))
+      list_gpus();
   }
 
   physicalDevice = physicalDevices[selectedDevice];
+}
+
+uint32_t Application::select_gpu(int i, uint32_t gpuCount) {
+  char* endptr;
+  uint32_t index = strtol(args[i + 1], &endptr, 10);
+  if (endptr != args[i + 1]) {
+    if (index > gpuCount - 1) {
+      std::cerr << "Selected device index " << index
+                << " is out of range, reverting to device 0 (use -listgpus to show available Vulkan devices)"
+                << std::endl;
+    } else {
+      std::cout << "Selected Vulkan device " << index << std::endl;
+      return index;
+    }
+  }
+  return 0;
+}
+
+
+void Application::list_gpus() {
+  uint32_t gpuCount = 0;
+  VK_CHECK_RESULT(vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, nullptr));
+  if (gpuCount == 0) {
+    std::cerr << "No Vulkan devices found!" << std::endl;
+  } else {
+    // Enumerate devices
+    std::cout << "Available Vulkan devices" << std::endl;
+    std::vector<VkPhysicalDevice> devices(gpuCount);
+    VK_CHECK_RESULT(vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, devices.data()));
+    for (uint32_t i = 0; i < gpuCount; i++) {
+      VkPhysicalDeviceProperties deviceProperties;
+      vkGetPhysicalDeviceProperties(devices[i], &deviceProperties);
+      std::cout << "Device [" << i << "] : " << deviceProperties.deviceName << std::endl;
+      std::cout << " Type: " << vks::tools::physicalDeviceTypeString(deviceProperties.deviceType) << std::endl;
+      std::cout << " API: " << (deviceProperties.apiVersion >> 22) << "." << ((deviceProperties.apiVersion >> 12) & 0x3ff) << "." << (deviceProperties.apiVersion & 0xfff) << std::endl;
+    }
+  }
 }
 
 void Application::get_physical_device_properties() {
@@ -485,6 +499,11 @@ void Application::initVulkan(VikWindow *window) {
 
   swapChain.connect(renderer->instance, physicalDevice, device);
 
+  init_semaphores();
+
+}
+
+void Application::init_semaphores() {
   // Create synchronization objects
   VkSemaphoreCreateInfo semaphoreCreateInfo = vks::initializers::semaphoreCreateInfo();
   // Create a semaphore used to synchronize image presentation
@@ -508,7 +527,6 @@ void Application::initVulkan(VikWindow *window) {
   submitInfo.signalSemaphoreCount = 1;
   submitInfo.pSignalSemaphores = &semaphores.renderComplete;
 }
-
 
 void Application::viewChanged() {}
 

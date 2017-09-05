@@ -285,5 +285,13 @@ class Application {
   void init_debugging();
 
   void get_physical_device_properties();
+
+  void init_semaphores();
+
+  void parse_arguments();
+
+  void list_gpus();
+
+  uint32_t select_gpu(int i, uint32_t gpuCount);
 };
 }
