@@ -27,6 +27,7 @@ get_atom(struct xcb_connection_t *conn, const char *name)
     return atom;
 }
 
+namespace vkc {
 class VikDisplayModeXCB : public VikDisplayMode {
 
     xcb_connection_t *conn;
@@ -230,3 +231,4 @@ public:
 	}
     }
 };
+}

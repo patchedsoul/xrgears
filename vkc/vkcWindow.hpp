@@ -2,6 +2,7 @@
 
 #include <string>
 
+namespace vkc {
 class CubeApplication;
 class CubeRenderer;
 
@@ -22,3 +23,4 @@ public:
   virtual int init(CubeApplication* app, CubeRenderer *vc) = 0;
   virtual void loop(CubeApplication* app, CubeRenderer *vc) = 0;
 };
+}

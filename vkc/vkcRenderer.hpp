@@ -5,6 +5,9 @@
 
 #define MAX_NUM_IMAGES 4
 
+
+
+namespace vkc {
 struct CubeBuffer {
    VkImage image;
    VkImageView view;
@@ -48,3 +51,4 @@ public:
     void init_buffer(struct CubeBuffer *b);
     void create_swapchain();
 };
+}

@@ -8,6 +8,8 @@
 #include "vkcWindowWayland.hpp"
 #include "vkcRenderer.hpp"
 
+namespace vkc {
+
 CubeApplication::CubeApplication(uint32_t w, uint32_t h) {
   mode = DISPLAY_MODE_AUTO;
   renderer = new CubeRenderer(w, h);
@@ -120,5 +122,5 @@ void CubeApplication::init_display() {
 void CubeApplication::mainloop() {
   display->loop(this, renderer);
 }
-
+}
 

@@ -12,7 +12,7 @@
 
 #include "../vks/vksLog.hpp"
 
-
+namespace vkc {
 class VikDisplayModeWayland : public VikDisplayMode {
 
   struct wl_display *display;
@@ -348,3 +348,4 @@ public:
     }
   }
 };
+}

@@ -3,6 +3,8 @@
 #include "vkcRenderer.hpp"
 #include "vkcCube.hpp"
 
+namespace vkc {
+
 CubeRenderer::CubeRenderer(uint32_t w, uint32_t h) : width(w), height(h) {
   gettimeofday(&start_tv, NULL);
 }
@@ -303,4 +305,6 @@ void CubeRenderer::create_swapchain() {
     buffers[i].image = swap_chain_images[i];
     init_buffer(&buffers[i]);
   }
+}
+
 }

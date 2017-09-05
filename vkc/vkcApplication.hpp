@@ -6,6 +6,7 @@
 #include "../vkc/vkcWindow.hpp"
 #include "../vkc/vkcRenderer.hpp"
 
+namespace vkc {
 class CubeApplication {
 public:
    Cube model;
@@ -29,5 +30,4 @@ public:
    void init_display_mode_auto();
 
 };
-
-
+}

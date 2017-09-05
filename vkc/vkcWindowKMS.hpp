@@ -33,6 +33,7 @@ page_flip_handler(int fd, unsigned int frame,
 
 static struct termios save_tio;
 
+namespace vkc {
 class VikDisplayModeKMS : public VikDisplayMode {
 
   drmModeCrtc *crtc;
@@ -267,3 +268,4 @@ public:
     return 0;
   }
 };
+}

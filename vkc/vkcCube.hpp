@@ -39,6 +39,7 @@
 #define VK_PROTOTYPES
 #include <vulkan/vulkan.h>
 
+namespace vkc {
 class Cube {
 public:
 
@@ -57,7 +58,7 @@ public:
   };
 
   void
-  init(CubeRenderer* renderer)
+  init(vkc::CubeRenderer* renderer)
   {
     VkResult r;
 
@@ -422,7 +423,7 @@ public:
   }
 
 
-  VkCommandBuffer build_command_buffer(CubeRenderer *vc, struct CubeBuffer *b) {
+  VkCommandBuffer build_command_buffer(vkc::CubeRenderer *vc, struct CubeBuffer *b) {
     VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
       .commandPool = vc->cmd_pool,
@@ -513,7 +514,7 @@ public:
     return cmd_buffer;
   }
 
-  void update_uniform_buffer(CubeRenderer *vc, uint64_t t) {
+  void update_uniform_buffer(vkc::CubeRenderer *vc, uint64_t t) {
     struct ubo cube_ubo;
 
     glm::mat4 t_matrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -8.0f));
@@ -542,7 +543,7 @@ public:
   }
 
   void
-  render(CubeRenderer *vc, struct CubeBuffer *b)
+  render(vkc::CubeRenderer *vc, struct CubeBuffer *b)
   {
 
     struct timeval tv;
@@ -587,3 +588,5 @@ public:
     vkResetCommandPool(vc->device, vc->cmd_pool, 0);
   }
 };
+}
+
