@@ -246,11 +246,6 @@ void insertImageMemoryBarrier(
         1, &imageMemoryBarrier);
 }
 
-void exitFatal(std::string message, std::string caption) {
-  std::cerr << message << "\n";
-  exit(1);
-}
-
 std::string readTextFile(const char *fileName) {
   std::string fileContent;
   std::ifstream fileStream(fileName, std::ios::in);

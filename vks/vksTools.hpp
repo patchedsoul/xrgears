@@ -23,6 +23,7 @@
 #include <stdexcept>
 
 #include "vksInitializers.hpp"
+#include "vksLog.hpp"
 
 // Custom define for better code readability
 #define VK_FLAGS_NONE 0
@@ -32,28 +33,19 @@
 // Macro to get a procedure address based on a vulkan instance
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint) {\
   fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetInstanceProcAddr(inst, "vk"#entrypoint));\
-  if (fp##entrypoint == NULL) {\
-    printf("GET_INSTANCE_PROC_ADDR vk"#entrypoint" is null!\n");\
-    exit(1);\
-  }\
+  vik_log_f_if(fp##entrypoint == NULL, "GET_INSTANCE_PROC_ADDR vk"#entrypoint" is null!");\
 }
 
 // Macro to get a procedure address based on a vulkan device
 #define GET_DEVICE_PROC_ADDR(dev, entrypoint) {\
   fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetDeviceProcAddr(dev, "vk"#entrypoint));\
-  if (fp##entrypoint == NULL) {\
-    printf("GET_DEVICE_PROC_ADDR vk"#entrypoint" is null!\n");\
-    exit(1);\
-  }\
+  vik_log_f_if(fp##entrypoint == NULL, "GET_DEVICE_PROC_ADDR vk"#entrypoint" is null!");\
 }
 
 // Macro to check and display Vulkan return results
 #define VK_CHECK_RESULT(f) {\
   VkResult res = (f);\
-  if (res != VK_SUCCESS) {\
-    std::cout << "Fatal : VkResult is \"" << vks::tools::errorString(res) << "\" in " << __FILE__ << " at line " << __LINE__ << std::endl;\
-    assert(res == VK_SUCCESS);\
-  }\
+  vik_log_f_if(res != VK_SUCCESS, "VkResult is %s", vks::tools::errorString(res).c_str());\
 }
 
 #define ASSET_PATH "./data/"
