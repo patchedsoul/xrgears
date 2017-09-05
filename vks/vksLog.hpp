@@ -67,20 +67,20 @@ public:
     return std::string(code_str);
   }
 
-  static std::string strip_file_name(const std::string& file) {
-    std::string striped_path = std::strrchr(file.c_str(), '/') + 1;
+  static std::string strip_file_name(const char* file) {
+    std::string striped_path = std::strrchr(file, '/') + 1;
     size_t lastindex = striped_path.find_last_of(".");
     return striped_path.substr(0, lastindex);
   }
 
-  static void log(const std::string& file, int line, type t, const char *format, ...) {
+  static void log(const char* file, int line, type t, const char *format, ...) {
     va_list args;
     va_start(args, format);
     log_values(file, line, t, format, args);
     va_end(args);
   }
 
-  static void log_values(const std::string& file, int line, type t, const char *format, va_list args) {
+  static void log_values(const char* file, int line, type t, const char *format, va_list args) {
     fprintf(stdout, "[%s%s%s] ", color_code(type_color(t)).c_str(), type_str(t).c_str(), color_code(0).c_str());
     fprintf(stdout, "%s:%d | ", strip_file_name(file).c_str(), line);
     vfprintf(stdout, format, args);
@@ -89,7 +89,7 @@ public:
       exit(1);
   }
 
-  static void log_fatal_if(const std::string& file, int line, bool cond, const char *format, ...) {
+  static void log_fatal_if(const char* file, int line, bool cond, const char *format, ...) {
     if (!cond)
       return;
 
