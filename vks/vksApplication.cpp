@@ -113,7 +113,7 @@ void Application::prepare() {
   createCommandPool();
   // TODO: create DRM swapchain here
 
-  setupSwapChain();
+  swapChain.create(&width, &height, settings.vsync);
   //fprintf(stderr, "prepare: not creating swapchain.\n");
 
 
@@ -366,24 +366,8 @@ void Application::printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDev
 }
 
 
-void Application::initVulkan(VikWindow *window) {
+void Application::init_physical_device() {
   VkResult err;
-
-  // Vulkan instance
-
-  renderer = new vks::Renderer();
-  err = renderer->createInstance(&settings, window, name);
-  if (err)
-    vks::tools::exitFatal("Could not create Vulkan instance : \n" + vks::tools::errorString(err), "Fatal error");
-
-  // If requested, we enable the default validation layers for debugging
-  if (settings.validation) {
-    // The report flags determine what type of messages for the layers will be displayed
-    // For validating (debugging) an appplication the error and warning bits should suffice
-    VkDebugReportFlagsEXT debugReportFlags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-    // Additional flags include performance info, loader and layer debug messages, etc.
-    vks::debug::setupDebugging(renderer->instance, debugReportFlags, VK_NULL_HANDLE);
-  }
 
   // Physical device
   uint32_t gpuCount = 0;
@@ -441,11 +425,41 @@ void Application::initVulkan(VikWindow *window) {
   }
 
   physicalDevice = physicalDevices[selectedDevice];
+}
 
-  // Store properties (including limits), features and memory properties of the phyiscal device (so that examples can check against them)
+void Application::get_physical_device_properties() {
+  // Store properties (including limits), features and memory properties
+  // of the phyiscal device (so that examples can check against them)
   vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
   vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
   vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemoryProperties);
+}
+
+void Application::init_debugging() {
+  // The report flags determine what type of messages for the layers will be displayed
+  // For validating (debugging) an appplication the error and warning bits should suffice
+  VkDebugReportFlagsEXT debugReportFlags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+  // Additional flags include performance info, loader and layer debug messages, etc.
+  vks::debug::setupDebugging(renderer->instance, debugReportFlags, VK_NULL_HANDLE);
+}
+
+void Application::initVulkan(VikWindow *window) {
+  VkResult err;
+
+  // Vulkan instance
+
+  renderer = new vks::Renderer();
+  err = renderer->createInstance(&settings, window, name);
+  if (err)
+    vks::tools::exitFatal("Could not create Vulkan instance : \n" + vks::tools::errorString(err), "Fatal error");
+
+  // If requested, we enable the default validation layers for debugging
+  if (settings.validation)
+    init_debugging();
+
+  init_physical_device();
+
+  get_physical_device_properties();
 
   // Derived examples can override this to set actual features (based on above readings) to enable for logical device creation
   getEnabledFeatures();
@@ -692,7 +706,7 @@ void Application::windowResize() {
   height = destHeight;
   // TODO: Create kms swapchain here.
 
-  setupSwapChain();
+  swapChain.create(&width, &height, settings.vsync);
   //fprintf(stderr, "resize: not creating swapchain.\n");
   // Recreate the frame buffers
 
@@ -721,17 +735,10 @@ void Application::windowResize() {
   camera.updateAspectRatio((float)width / (float)height);
 
   // Notify derived class
-  windowResized();
+  //windowResized();
   viewChanged();
 
   prepared = true;
 }
 
-void Application::windowResized() {
-  // Can be overriden in derived class
-}
-
-void Application::setupSwapChain() {
-  swapChain.create(&width, &height, settings.vsync);
-}
 }

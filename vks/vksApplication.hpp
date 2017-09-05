@@ -217,7 +217,7 @@ class Application {
   virtual void keyPressed(uint32_t);
   // Called when the window has been resized
   // Can be overriden in derived class to recreate or rebuild resources attached to the frame buffer / swapchain
-  virtual void windowResized();
+  //virtual void windowResized();
   // Pure virtual function to be overriden by the dervice class
   // Called in case of an event where e.g. the framebuffer has to be rebuild and thus
   // all command buffers that may reference this
@@ -237,9 +237,6 @@ class Application {
   /** @brief (Virtual) Called after the physical device features have been read, can be used to set features to enable on the device */
   virtual void getEnabledFeatures();
 
-  // Connect and prepare the swap chain
-  // Create swap chain images
-  void setupSwapChain();
 
   // Check if command buffers are valid (!= VK_NULL_HANDLE)
   bool checkCommandBuffers();
@@ -282,5 +279,11 @@ class Application {
   void check_tick_finnished(VikWindow *window);
 
   void submit_text_overlay();
+
+  void init_physical_device();
+
+  void init_debugging();
+
+  void get_physical_device_properties();
 };
 }
