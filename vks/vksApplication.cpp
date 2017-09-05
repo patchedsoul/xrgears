@@ -16,6 +16,88 @@
 
 namespace vks {
 
+Application::Application() {
+  // Check for a valid asset path
+  struct stat info;
+  if (stat(VikAssets::getAssetPath().c_str(), &info) != 0) {
+    std::cerr << "Error: Could not find asset path in " << VikAssets::getAssetPath() << std::endl;
+    exit(-1);
+  }
+
+  renderer = new Renderer();
+}
+
+Application::~Application() {
+  // Clean up Vulkan resources
+  swapChain.cleanup();
+  if (descriptorPool != VK_NULL_HANDLE) {
+    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+  }
+  destroyCommandBuffers();
+  vkDestroyRenderPass(device, renderPass, nullptr);
+  for (uint32_t i = 0; i < frameBuffers.size(); i++) {
+    vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
+  }
+
+  for (auto& shaderModule : shaderModules) {
+    vkDestroyShaderModule(device, shaderModule, nullptr);
+  }
+  vkDestroyImageView(device, depthStencil.view, nullptr);
+  vkDestroyImage(device, depthStencil.image, nullptr);
+  vkFreeMemory(device, depthStencil.mem, nullptr);
+
+  vkDestroyPipelineCache(device, pipelineCache, nullptr);
+
+  vkDestroyCommandPool(device, cmdPool, nullptr);
+
+  vkDestroySemaphore(device, semaphores.presentComplete, nullptr);
+  vkDestroySemaphore(device, semaphores.renderComplete, nullptr);
+  vkDestroySemaphore(device, semaphores.textOverlayComplete, nullptr);
+
+  if (enableTextOverlay)
+    delete textOverlay;
+
+  delete vksDevice;
+
+  if (settings.validation)
+    vks::debug::freeDebugCallback(renderer->instance);
+
+  vkDestroyInstance(renderer->instance, nullptr);
+}
+
+void Application::parse_arguments(const int argc, const char *argv[]) {
+  std::vector<const char*> args;
+  for (size_t i = 0; i < argc; i++) { args.push_back(argv[i]); };
+
+  // Parse command line arguments
+  for (size_t i = 0; i < args.size(); i++) {
+    if (args[i] == std::string("-validation"))
+      settings.validation = true;
+    if (args[i] == std::string("-vsync"))
+      settings.vsync = true;
+    if (args[i] == std::string("-fullscreen"))
+      settings.fullscreen = true;
+    if ((args[i] == std::string("-w")) || (args[i] == std::string("-width"))) {
+      char* endptr;
+      uint32_t w = strtol(args[i + 1], &endptr, 10);
+      if (endptr != args[i + 1]) width = w;
+    }
+    if ((args[i] == std::string("-g")) || (args[i] == std::string("-gpu"))) {
+      char* endptr;
+      uint32_t gpu_index = strtol(args[i + 1], &endptr, 10);
+      if (endptr != args[i + 1]) settings.gpu_index = gpu_index;
+    }
+    if ((args[i] == std::string("-h")) || (args[i] == std::string("-height"))) {
+      char* endptr;
+      uint32_t h = strtol(args[i + 1], &endptr, 10);
+      if (endptr != args[i + 1]) height = h;
+    }
+    // List available GPUs
+    if (args[i] == std::string("-listgpus"))
+      settings.list_gpus_and_exit = true;
+  }
+}
+
 std::string Application::getWindowTitle() {
   std::string device(deviceProperties.deviceName);
   std::string windowTitle = title + " - " + device;
@@ -247,88 +329,6 @@ void Application::submitFrame() {
 
   VK_CHECK_RESULT(swapChain.queuePresent(queue, currentBuffer, waitSemaphore));
   VK_CHECK_RESULT(vkQueueWaitIdle(queue));
-}
-
-Application::Application() {
-  // Check for a valid asset path
-  struct stat info;
-  if (stat(VikAssets::getAssetPath().c_str(), &info) != 0) {
-    std::cerr << "Error: Could not find asset path in " << VikAssets::getAssetPath() << std::endl;
-    exit(-1);
-  }
-
-  renderer = new Renderer();
-}
-
-Application::~Application() {
-  // Clean up Vulkan resources
-  swapChain.cleanup();
-  if (descriptorPool != VK_NULL_HANDLE) {
-    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-  }
-  destroyCommandBuffers();
-  vkDestroyRenderPass(device, renderPass, nullptr);
-  for (uint32_t i = 0; i < frameBuffers.size(); i++) {
-    vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
-  }
-
-  for (auto& shaderModule : shaderModules) {
-    vkDestroyShaderModule(device, shaderModule, nullptr);
-  }
-  vkDestroyImageView(device, depthStencil.view, nullptr);
-  vkDestroyImage(device, depthStencil.image, nullptr);
-  vkFreeMemory(device, depthStencil.mem, nullptr);
-
-  vkDestroyPipelineCache(device, pipelineCache, nullptr);
-
-  vkDestroyCommandPool(device, cmdPool, nullptr);
-
-  vkDestroySemaphore(device, semaphores.presentComplete, nullptr);
-  vkDestroySemaphore(device, semaphores.renderComplete, nullptr);
-  vkDestroySemaphore(device, semaphores.textOverlayComplete, nullptr);
-
-  if (enableTextOverlay)
-    delete textOverlay;
-
-  delete vksDevice;
-
-  if (settings.validation)
-    vks::debug::freeDebugCallback(renderer->instance);
-
-  vkDestroyInstance(renderer->instance, nullptr);
-}
-
-void Application::parse_arguments(const int argc, const char *argv[]) {
-  std::vector<const char*> args;
-  for (size_t i = 0; i < argc; i++) { args.push_back(argv[i]); };
-
-  // Parse command line arguments
-  for (size_t i = 0; i < args.size(); i++) {
-    if (args[i] == std::string("-validation"))
-      settings.validation = true;
-    if (args[i] == std::string("-vsync"))
-      settings.vsync = true;
-    if (args[i] == std::string("-fullscreen"))
-      settings.fullscreen = true;
-    if ((args[i] == std::string("-w")) || (args[i] == std::string("-width"))) {
-      char* endptr;
-      uint32_t w = strtol(args[i + 1], &endptr, 10);
-      if (endptr != args[i + 1]) width = w;
-    }
-    if ((args[i] == std::string("-g")) || (args[i] == std::string("-gpu"))) {
-      char* endptr;
-      uint32_t gpu_index = strtol(args[i + 1], &endptr, 10);
-      if (endptr != args[i + 1]) settings.gpu_index = gpu_index;
-    }
-    if ((args[i] == std::string("-h")) || (args[i] == std::string("-height"))) {
-      char* endptr;
-      uint32_t h = strtol(args[i + 1], &endptr, 10);
-      if (endptr != args[i + 1]) height = h;
-    }
-    // List available GPUs
-    if (args[i] == std::string("-listgpus"))
-      settings.list_gpus_and_exit = true;
-  }
 }
 
 void Application::init_physical_device() {
