@@ -41,6 +41,7 @@
 #include "../vks/vksWindowWayland.hpp"
 #include "../vks/vksWindowDisplay.hpp"
 #include "../vks/vksWindowKMS.hpp"
+#include "../vks/vksLog.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 
@@ -758,6 +759,10 @@ int main(const int argc, const char *argv[]) {
   //VikWindow * window = new VikWindowXCB();
   //VikWindow * window = new VikWindowKMS();
   app->initVulkan(window);
+
+  vik_log_d("Oh hai.");
+  vik_log_e("Error.");
+
 
   window->init(app);
 
