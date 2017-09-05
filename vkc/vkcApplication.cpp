@@ -47,23 +47,18 @@ void Application::parse_args(int argc, char *argv[]) {
        */
   static const char *optstring = "+:nm:o:";
 
-
   int opt;
-  bool found_arg_headless = false;
-  bool found_arg_display_mode = false;
-
   while ((opt = getopt(argc, argv, optstring)) != -1) {
     switch (opt) {
       case 'm':
-        found_arg_display_mode = true;
         if (!display_mode_from_string(optarg))
-          printf("option -m given bad display mode\n");
+          vik_log_e("option -m given bad display mode");
         break;
       case '?':
-        printf("invalid option '-%c'\n", optopt);
+        vik_log_f("invalid option '-%c'", optopt);
         break;
       case ':':
-        printf("option -%c requires an argument\n", optopt);
+        vik_log_f("option -%c requires an argument", optopt);
         break;
       default:
         assert(!"unreachable");
@@ -71,11 +66,8 @@ void Application::parse_args(int argc, char *argv[]) {
     }
   }
 
-  if (found_arg_headless && found_arg_display_mode)
-    printf("options -n and -m are mutually exclusive\n");
-
   if (optind != argc)
-    printf("trailing args\n");
+    vik_log_w("trailing args");
 }
 
 

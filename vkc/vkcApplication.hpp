@@ -32,7 +32,7 @@ public:
    void init_display_mode_auto();
 
    virtual void init() = 0;
-   virtual void render(struct CubeBuffer *b) = 0;
+   virtual void render(struct RenderBuffer *b) = 0;
 
 };
 }

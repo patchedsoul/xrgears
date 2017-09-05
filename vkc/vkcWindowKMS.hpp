@@ -78,7 +78,7 @@ public:
     int len, ret;
     char buf[16];
     struct pollfd pfd[2];
-    struct CubeBuffer *b;
+    struct RenderBuffer *b;
     struct kms_buffer *kms_b;
 
     pfd[0].fd = STDIN_FILENO;
@@ -224,7 +224,7 @@ public:
         (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(vc->device, "vkCreateDmaBufImageINTEL");
 
     for (uint32_t i = 0; i < 2; i++) {
-      struct CubeBuffer *b = &vc->buffers[i];
+      struct RenderBuffer *b = &vc->buffers[i];
       struct kms_buffer *kms_b = &kms_buffers[i];
       int buffer_fd, stride, ret;
 

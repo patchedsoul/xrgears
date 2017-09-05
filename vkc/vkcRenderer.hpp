@@ -8,7 +8,7 @@
 
 
 namespace vkc {
-struct CubeBuffer {
+struct RenderBuffer {
    VkImage image;
    VkImageView view;
    VkFramebuffer framebuffer;
@@ -36,7 +36,7 @@ public:
     struct timeval start_tv;
     VkSurfaceKHR surface;
     VkFormat image_format;
-    struct CubeBuffer buffers[MAX_NUM_IMAGES];
+    struct RenderBuffer buffers[MAX_NUM_IMAGES];
     uint32_t image_count;
     int current;
 
@@ -47,7 +47,7 @@ public:
     VkFormat choose_surface_format();
     void init_render_pass();
     void init_vk_objects();
-    void init_buffer(struct CubeBuffer *b);
+    void init_buffer(struct RenderBuffer *b);
     void create_swapchain();
 };
 }

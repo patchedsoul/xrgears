@@ -202,7 +202,7 @@ void Renderer::init_vk_objects() {
                     &semaphore);
 }
 
-void Renderer::init_buffer(struct CubeBuffer *b) {
+void Renderer::init_buffer(struct RenderBuffer *b) {
 
   VkImageViewCreateInfo imageviewinfo = {
     .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,

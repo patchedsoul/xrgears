@@ -432,7 +432,7 @@ public:
   }
 
 
-  VkCommandBuffer build_command_buffer(struct vkc::CubeBuffer *b) {
+  VkCommandBuffer build_command_buffer(struct vkc::RenderBuffer *b) {
     VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
       .commandPool = renderer->cmd_pool,
@@ -551,7 +551,7 @@ public:
     memcpy(map, &cube_ubo, sizeof(ubo));
   }
 
-  void render(struct vkc::CubeBuffer *b) {
+  void render(struct vkc::RenderBuffer *b) {
 
     struct timeval tv;
     uint64_t t;
