@@ -304,10 +304,8 @@ void Application::parse_arguments(const int argc, const char *argv[]) {
 
   // Parse command line arguments
   for (size_t i = 0; i < args.size(); i++) {
-    if (args[i] == std::string("-validation")) {
+    if (args[i] == std::string("-validation"))
       settings.validation = true;
-      printf("enabling validation: %d\n", settings.validation);
-    }
     if (args[i] == std::string("-vsync"))
       settings.vsync = true;
     if (args[i] == std::string("-fullscreen"))
@@ -317,11 +315,19 @@ void Application::parse_arguments(const int argc, const char *argv[]) {
       uint32_t w = strtol(args[i + 1], &endptr, 10);
       if (endptr != args[i + 1]) width = w;
     }
+    if ((args[i] == std::string("-g")) || (args[i] == std::string("-gpu"))) {
+      char* endptr;
+      uint32_t gpu_index = strtol(args[i + 1], &endptr, 10);
+      if (endptr != args[i + 1]) settings.gpu_index = gpu_index;
+    }
     if ((args[i] == std::string("-h")) || (args[i] == std::string("-height"))) {
       char* endptr;
       uint32_t h = strtol(args[i + 1], &endptr, 10);
       if (endptr != args[i + 1]) height = h;
     }
+    // List available GPUs
+    if (args[i] == std::string("-listgpus"))
+      settings.list_gpus_and_exit = true;
   }
 }
 
@@ -340,36 +346,31 @@ void Application::init_physical_device() {
     vks::tools::exitFatal("Could not enumerate physical devices : \n" + vks::tools::errorString(err), "Fatal error");
 
   // GPU selection
+  if (settings.list_gpus_and_exit) {
+    list_gpus();
+    exit(0);
+  }
 
   // Select physical device to be used for the Vulkan example
   // Defaults to the first device unless specified by command line
   uint32_t selectedDevice = 0;
-
-  // GPU selection via command line argument
-  for (size_t i = 0; i < args.size(); i++) {
-    // Select GPU
-    if ((args[i] == std::string("-g")) || (args[i] == std::string("-gpu")))
-      selectedDevice = select_gpu(i, gpuCount);
-    // List available GPUs
-    if (args[i] == std::string("-listgpus"))
-      list_gpus();
+  if (settings.gpu_index > gpuCount - 1) {
+    std::cerr << "Selected device index " << settings.gpu_index
+              << " is out of range, reverting to device 0 (use -listgpus to show available Vulkan devices)"
+              << std::endl;
+  } else {
+    std::cout << "Selected Vulkan device " << settings.gpu_index << std::endl;
+    selectedDevice = settings.gpu_index;
   }
 
   physicalDevice = physicalDevices[selectedDevice];
 }
 
-uint32_t Application::select_gpu(int i, uint32_t gpuCount) {
+uint32_t Application::select_gpu(const char* id_str, uint32_t gpuCount) {
   char* endptr;
-  uint32_t index = strtol(args[i + 1], &endptr, 10);
-  if (endptr != args[i + 1]) {
-    if (index > gpuCount - 1) {
-      std::cerr << "Selected device index " << index
-                << " is out of range, reverting to device 0 (use -listgpus to show available Vulkan devices)"
-                << std::endl;
-    } else {
-      std::cout << "Selected Vulkan device " << index << std::endl;
-      return index;
-    }
+  uint32_t index = strtol(id_str, &endptr, 10);
+  if (endptr != id_str) {
+
   }
   return 0;
 }
@@ -415,9 +416,6 @@ void Application::initVulkan(VikWindow *window) {
   VkResult err;
 
   // Vulkan instance
-
-  printf("validation enabled: %d\n", settings.validation);
-
   err = renderer->createInstance(&settings, window, name);
   if (err)
     vks::tools::exitFatal("Could not create Vulkan instance : \n" + vks::tools::errorString(err), "Fatal error");
@@ -438,13 +436,13 @@ void Application::initVulkan(VikWindow *window) {
   // and encapsulates functions related to a device
   vksDevice = new vks::Device(physicalDevice);
 
-  //enabledExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-  //enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
   /*
+  enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
   enabledExtensions.push_back(VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME);
   enabledExtensions.push_back(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
   enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
   */
+
   VkResult res = vksDevice->createLogicalDevice(enabledFeatures, enabledExtensions);
   if (res != VK_SUCCESS)
     vks::tools::exitFatal("Could not create Vulkan device: \n" + vks::tools::errorString(res), "Fatal error");

@@ -287,6 +287,6 @@ class Application {
 
   void list_gpus();
 
-  uint32_t select_gpu(int i, uint32_t gpuCount);
+  uint32_t select_gpu(const char *id_str, uint32_t gpuCount);
 };
 }

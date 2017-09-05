@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 namespace vks {
 class Settings {
 public:
@@ -9,5 +11,9 @@ public:
     bool fullscreen = false;
     /** @brief Set to true if v-sync will be forced for the swapchain */
     bool vsync = false;
+
+    uint32_t gpu_index = 0;
+
+    bool list_gpus_and_exit = false;
 };
 }
