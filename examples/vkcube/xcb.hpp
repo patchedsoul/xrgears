@@ -8,7 +8,7 @@
 
 #include "application.hpp"
 
-#include "silo.h"
+#include "../vks/vksLog.hpp"
 
 static xcb_atom_t
 get_atom(struct xcb_connection_t *conn, const char *name)

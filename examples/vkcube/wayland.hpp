@@ -11,7 +11,7 @@
 
 #include "application.hpp"
 
-#include "silo.h"
+#include "../vks/vksLog.hpp"
 
 
 class VikDisplayModeWayland : public VikDisplayMode {

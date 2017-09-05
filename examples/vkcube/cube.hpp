@@ -28,7 +28,7 @@
 #include <sys/time.h>
 #include <string.h>
 
-#include "silo.h"
+#include "../vks/vksLog.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
