@@ -34,7 +34,7 @@ page_flip_handler(int fd, unsigned int frame,
 static struct termios save_tio;
 
 namespace vkc {
-class VikDisplayModeKMS : public VikDisplayMode {
+class WindowKMS : public Window {
 
   drmModeCrtc *crtc;
   drmModeConnector *connector;
@@ -54,12 +54,12 @@ class VikDisplayModeKMS : public VikDisplayMode {
   struct kms_buffer kms_buffers[MAX_NUM_IMAGES];
 
 public:
-  VikDisplayModeKMS() {
+  WindowKMS() {
     gbm_dev = NULL;
     name = "kms";
   }
 
-  ~VikDisplayModeKMS() {}
+  ~WindowKMS() {}
 
   static void restore_vt(void) {
     struct vt_mode mode = { .mode = VT_AUTO };
@@ -73,7 +73,7 @@ public:
     restore_vt();
   }
 
-  void loop(CubeApplication* app, CubeRenderer *vc)
+  void loop(Application* app, Renderer *vc)
   {
     int len, ret;
     char buf[16];
@@ -177,7 +177,7 @@ public:
   }
 
   // Return -1 on failure.
-  int init(CubeApplication *app, CubeRenderer *vc) {
+  int init(Application *app, Renderer *vc) {
     drmModeRes *resources;
     drmModeEncoder *encoder;
     int i;

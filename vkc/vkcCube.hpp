@@ -58,7 +58,7 @@ public:
   };
 
   void
-  init(vkc::CubeRenderer* renderer)
+  init(vkc::Renderer* renderer)
   {
     VkResult r;
 
@@ -423,7 +423,7 @@ public:
   }
 
 
-  VkCommandBuffer build_command_buffer(vkc::CubeRenderer *vc, struct CubeBuffer *b) {
+  VkCommandBuffer build_command_buffer(vkc::Renderer *vc, struct CubeBuffer *b) {
     VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
       .commandPool = vc->cmd_pool,
@@ -514,7 +514,7 @@ public:
     return cmd_buffer;
   }
 
-  void update_uniform_buffer(vkc::CubeRenderer *vc, uint64_t t) {
+  void update_uniform_buffer(vkc::Renderer *vc, uint64_t t) {
     struct ubo cube_ubo;
 
     glm::mat4 t_matrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -8.0f));
@@ -543,7 +543,7 @@ public:
   }
 
   void
-  render(vkc::CubeRenderer *vc, struct CubeBuffer *b)
+  render(vkc::Renderer *vc, struct CubeBuffer *b)
   {
 
     struct timeval tv;

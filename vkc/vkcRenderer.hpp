@@ -16,7 +16,7 @@ struct CubeBuffer {
 
 class Cube;
 
-class CubeRenderer {
+class Renderer {
 public:
     VkSwapchainKHR swap_chain;
     VkInstance instance;
@@ -42,8 +42,8 @@ public:
     uint32_t image_count;
     int current;
 
-    CubeRenderer(uint32_t w, uint32_t h) ;
-    ~CubeRenderer() ;
+    Renderer(uint32_t w, uint32_t h) ;
+    ~Renderer() ;
 
     void init_vk(const char *extension);
     VkFormat choose_surface_format();

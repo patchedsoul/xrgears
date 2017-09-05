@@ -13,7 +13,7 @@
 #include "../vks/vksLog.hpp"
 
 namespace vkc {
-class VikDisplayModeWayland : public VikDisplayMode {
+class WindowWayland : public Window {
 
   struct wl_display *display;
   struct wl_compositor *compositor;
@@ -29,20 +29,20 @@ class VikDisplayModeWayland : public VikDisplayMode {
   wl_output *hmd_output = nullptr;
 
 public:
-  VikDisplayModeWayland() {
+  WindowWayland() {
     name = "wayland-xdg";
     seat = NULL;
     keyboard = NULL;
     shell = NULL;
   }
 
-  ~VikDisplayModeWayland() {}
+  ~WindowWayland() {}
 
   static void
   handle_xdg_surface_configure(void *data, struct zxdg_surface_v6 *surface,
                                uint32_t serial)
   {
-    VikDisplayModeWayland *self = reinterpret_cast<VikDisplayModeWayland *>(data);
+    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
 
     zxdg_surface_v6_ack_configure(surface, serial);
 
@@ -138,7 +138,7 @@ public:
   handle_wl_seat_capabilities(void *data, struct wl_seat *wl_seat,
                               uint32_t capabilities)
   {
-    VikDisplayModeWayland *self = reinterpret_cast<VikDisplayModeWayland *>(data);
+    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
 
     if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && (!self->keyboard)) {
       self->keyboard = wl_seat_get_keyboard(wl_seat);
@@ -157,7 +157,7 @@ public:
   registry_handle_global(void *data, struct wl_registry *registry,
                          uint32_t name, const char *interface, uint32_t version)
   {
-    VikDisplayModeWayland *self = reinterpret_cast<VikDisplayModeWayland *>(data);
+    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
 
     if (strcmp(interface, "wl_compositor") == 0) {
       self->compositor = ( wl_compositor *) wl_registry_bind(registry, name,
@@ -204,7 +204,7 @@ public:
 
     if (w == 2560 && h == 1440) {
     //if (w == 1920 && h == 1200) {
-      VikDisplayModeWayland *self = reinterpret_cast<VikDisplayModeWayland *>(data);
+      WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
       printf("setting wl_output to %p\n", wl_output);
       self->hmd_output = wl_output;
       self->hmd_refresh = refresh;
@@ -227,7 +227,7 @@ public:
 
   // Return -1 on failure.
   int
-  init(CubeApplication* app, CubeRenderer *vc)
+  init(Application* app, Renderer *vc)
   {
     display = wl_display_connect(NULL);
     if (!display)
@@ -301,7 +301,7 @@ public:
   }
 
   void
-  loop(CubeApplication* app, CubeRenderer *vc)
+  loop(Application* app, Renderer *vc)
   {
     VkResult result = VK_SUCCESS;
     struct pollfd fds[] = {

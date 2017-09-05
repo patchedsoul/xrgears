@@ -5,14 +5,14 @@
 
 namespace vkc {
 
-CubeRenderer::CubeRenderer(uint32_t w, uint32_t h) : width(w), height(h) {
+Renderer::Renderer(uint32_t w, uint32_t h) : width(w), height(h) {
   gettimeofday(&start_tv, NULL);
 }
 
-CubeRenderer::~CubeRenderer() {
+Renderer::~Renderer() {
 }
 
-void CubeRenderer::init_vk(const char *extension) {
+void Renderer::init_vk(const char *extension) {
   VkApplicationInfo appinfo = {};
   appinfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   appinfo.pApplicationName = "vkcube";
@@ -78,7 +78,7 @@ void CubeRenderer::init_vk(const char *extension) {
   vkGetDeviceQueue(device, 0, 0, &queue);
 }
 
-VkFormat CubeRenderer::choose_surface_format() {
+VkFormat Renderer::choose_surface_format() {
   uint32_t num_formats = 0;
   vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface,
                                        &num_formats, NULL);
@@ -112,7 +112,7 @@ VkFormat CubeRenderer::choose_surface_format() {
   return format;
 }
 
-void CubeRenderer::init_vk_objects(Cube * model)
+void Renderer::init_vk_objects(Cube * model)
 {
 
   VkAttachmentDescription attachementDesc[] = {
@@ -204,7 +204,7 @@ void CubeRenderer::init_vk_objects(Cube * model)
 }
 
 
-void CubeRenderer::init_buffer(struct CubeBuffer *b) {
+void Renderer::init_buffer(struct CubeBuffer *b) {
 
   VkImageViewCreateInfo imageviewinfo = {
     .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -249,7 +249,7 @@ void CubeRenderer::init_buffer(struct CubeBuffer *b) {
 }
 
 
-void CubeRenderer::create_swapchain() {
+void Renderer::create_swapchain() {
   VkSurfaceCapabilitiesKHR surface_caps;
   vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface,
                                             &surface_caps);

@@ -28,7 +28,7 @@ get_atom(struct xcb_connection_t *conn, const char *name)
 }
 
 namespace vkc {
-class VikDisplayModeXCB : public VikDisplayMode {
+class WindowXCB : public Window {
 
     xcb_connection_t *conn;
     xcb_window_t window;
@@ -36,16 +36,16 @@ class VikDisplayModeXCB : public VikDisplayMode {
     xcb_atom_t atom_wm_delete_window;
 
 public:
-    VikDisplayModeXCB() {
+    WindowXCB() {
       window = XCB_NONE;
       name = "xcb";
     }
 
-    ~VikDisplayModeXCB() {}
+    ~WindowXCB() {}
 
     // Return -1 on failure.
     int
-    init(CubeApplication* app, CubeRenderer *vc)
+    init(Application* app, Renderer *vc)
     {
 	xcb_screen_iterator_t iter;
 	static const char title[] = "Vulkan Cube";
@@ -113,7 +113,7 @@ public:
 	return 0;
     }
 
-    void init_surface(CubeRenderer *vc) {
+    void init_surface(Renderer *vc) {
 	VkXcbSurfaceCreateInfoKHR surfaceInfo = {};
 
 	surfaceInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
@@ -139,7 +139,7 @@ public:
     }
 
     void
-    loop(CubeApplication* app, CubeRenderer *vc)
+    loop(Application* app, Renderer *vc)
     {
 	xcb_generic_event_t *event;
 	xcb_key_press_event_t *key_press;

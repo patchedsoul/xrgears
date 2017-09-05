@@ -10,34 +10,34 @@
 
 namespace vkc {
 
-CubeApplication::CubeApplication(uint32_t w, uint32_t h) {
-  mode = DISPLAY_MODE_AUTO;
-  renderer = new CubeRenderer(w, h);
+Application::Application(uint32_t w, uint32_t h) {
+  mode = AUTO;
+  renderer = new Renderer(w, h);
 }
 
-CubeApplication::~CubeApplication() {
+Application::~Application() {
   delete renderer;
 }
 
-bool CubeApplication::display_mode_from_string(const char *s) {
+bool Application::display_mode_from_string(const char *s) {
   if (streq(s, "auto")) {
-    mode = DISPLAY_MODE_AUTO;
+    mode = AUTO;
     return true;
   } else if (streq(s, "kms")) {
-    mode = DISPLAY_MODE_KMS;
+    mode = KMS;
     return true;
   } else if (streq(s, "xcb")) {
-    mode = DISPLAY_MODE_XCB;
+    mode = XCB;
     return true;
   } else if (streq(s, "wayland")) {
-    mode = DISPLAY_MODE_WAYLAND;
+    mode = WAYLAND;
     return true;
   } else {
     return false;
   }
 }
 
-void CubeApplication::parse_args(int argc, char *argv[]) {
+void Application::parse_args(int argc, char *argv[]) {
   /* Setting '+' in the optstring is the same as setting POSIXLY_CORRECT in
        * the enviroment. It tells getopt to stop parsing argv when it encounters
        * the first non-option argument; it also prevents getopt from permuting
@@ -80,46 +80,46 @@ void CubeApplication::parse_args(int argc, char *argv[]) {
 }
 
 
-int CubeApplication::init_display_mode(display_mode_type m) {
+int Application::init_display_mode(window_type m) {
   switch (mode) {
-    case DISPLAY_MODE_KMS:
-      display = new VikDisplayModeKMS();
+    case KMS:
+      display = new WindowKMS();
       break;
-    case DISPLAY_MODE_XCB:
-      display = new VikDisplayModeXCB();
+    case XCB:
+      display = new WindowXCB();
       break;
-    case DISPLAY_MODE_WAYLAND:
-      display = new VikDisplayModeWayland();
+    case WAYLAND:
+      display = new WindowWayland();
       break;
-    case DISPLAY_MODE_AUTO:
+    case AUTO:
       return -1;
   }
   return display->init(this, renderer);
 }
 
-void CubeApplication::init_display_mode_auto() {
-  mode = DISPLAY_MODE_WAYLAND;
+void Application::init_display_mode_auto() {
+  mode = WAYLAND;
   if (init_display_mode(mode) == -1) {
     vik_log_e("failed to initialize wayland, falling back to xcb");
     delete(display);
-    mode = DISPLAY_MODE_XCB;
+    mode = XCB;
     if (init_display_mode(mode) == -1) {
       vik_log_e("failed to initialize xcb, falling back to kms");
       delete(display);
-      mode = DISPLAY_MODE_KMS;
+      mode = KMS;
       init_display_mode(mode);
     }
   }
 }
 
-void CubeApplication::init_display() {
-  if (mode == DISPLAY_MODE_AUTO)
+void Application::init_display() {
+  if (mode == AUTO)
     init_display_mode_auto();
   else if (init_display_mode(mode) == -1)
     vik_log_f("failed to initialize %s", display->name.c_str());
 }
 
-void CubeApplication::mainloop() {
+void Application::mainloop() {
   display->loop(this, renderer);
 }
 }

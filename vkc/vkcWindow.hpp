@@ -3,24 +3,24 @@
 #include <string>
 
 namespace vkc {
-class CubeApplication;
-class CubeRenderer;
+class Application;
+class Renderer;
 
-enum display_mode_type {
-  DISPLAY_MODE_AUTO = 0,
-  DISPLAY_MODE_KMS,
-  DISPLAY_MODE_XCB,
-  DISPLAY_MODE_WAYLAND,
+enum window_type {
+  AUTO = 0,
+  KMS,
+  XCB,
+  WAYLAND,
 };
 
-class VikDisplayMode {
+class Window {
 public:
   std::string name;
 
-  VikDisplayMode() {}
-  virtual ~VikDisplayMode() {}
+  Window() {}
+  virtual ~Window() {}
 
-  virtual int init(CubeApplication* app, CubeRenderer *vc) = 0;
-  virtual void loop(CubeApplication* app, CubeRenderer *vc) = 0;
+  virtual int init(Application* app, Renderer *vc) = 0;
+  virtual void loop(Application* app, Renderer *vc) = 0;
 };
 }
