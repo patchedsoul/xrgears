@@ -28,48 +28,6 @@
 #include "vksApplication.hpp"
 
 static void
-errorv(const char *format, va_list args)
-{
-   vfprintf(stderr, format, args);
-   fprintf(stderr, "\n");
-}
-
-static void
-fail(const char *format, ...)
-{
-   va_list args;
-
-   va_start(args, format);
-   errorv(format, args);
-   va_end(args);
-   exit(1);
-}
-
-static void
-error(const char *format, ...)
-{
-   va_list args;
-
-   va_start(args, format);
-   errorv(format, args);
-   va_end(args);
-}
-
-static void
-fail_if(int cond, const char *format, ...)
-{
-   va_list args;
-
-   if (!cond)
-      return;
-
-   va_start(args, format);
-   errorv(format, args);
-   va_end(args);
-   exit(1);
-}
-
-static void
 page_flip_handler(int fd, unsigned int frame,
                   unsigned int sec, unsigned int usec, void *data)
 {}
@@ -149,18 +107,18 @@ public:
 
     ret = drmModeSetCrtc(fd, crtc->crtc_id, kms_buffers[0].fb,
         0, 0, &connector->connector_id, 1, &crtc->mode);
-    fail_if(ret < 0, "modeset failed: %m\n");
+    vik_log_f_if(ret < 0, "modeset failed: %m");
 
 
     ret = drmModePageFlip(fd, crtc->crtc_id, kms_buffers[0].fb,
         DRM_MODE_PAGE_FLIP_EVENT, NULL);
-    fail_if(ret < 0, "pageflip failed: %m\n");
+    vik_log_f_if(ret < 0, "pageflip failed: %m\n");
 
-    fprintf(stderr, "renderLoop: init done\n");
+    vik_log_d("renderLoop: init done");
 
     while (1) {
       ret = poll(pfd, 2, -1);
-      fail_if(ret == -1, "poll failed\n");
+      vik_log_f_if(ret == -1, "poll failed");
       if (pfd[0].revents & POLLIN) {
         len = read(STDIN_FILENO, buf, sizeof(buf));
         switch (buf[0]) {
@@ -178,18 +136,18 @@ public:
 
         //app->model.render(vc, b);
 
-        fprintf(stderr, "renderLoop: render\n");
+        vik_log_d("renderLoop: render");
         app->render();
 
-        fprintf(stderr, "renderLoop: drmModePageFlip\n");
+        vik_log_d("renderLoop: drmModePageFlip");
         ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
                               DRM_MODE_PAGE_FLIP_EVENT, NULL);
-        fail_if(ret < 0, "pageflip failed: %m\n");
+        vik_log_f_if(ret < 0, "pageflip failed: %m");
         app->timer.increment();
       }
     }
 
-    fprintf(stderr, "renderLoop: done\n");
+    vik_log_d("renderLoop done");
 
   }
 
@@ -203,10 +161,10 @@ public:
 
     /* Make sure we're on a vt. */
     ret = fstat(STDIN_FILENO, &buf);
-    fail_if(ret == -1, "failed to stat stdin\n");
+    vik_log_f_if(ret == -1, "failed to stat stdin");
 
     if (major(buf.st_rdev) != TTY_MAJOR) {
-      fprintf(stderr, "stdin not a vt, running in no-display mode\n");
+      vik_log_e("stdin not a vt, running in no-display mode");
       return -1;
     }
 
@@ -233,11 +191,11 @@ public:
     mode.relsig = 0;
     mode.acqsig = 0;
     ret = ioctl(STDIN_FILENO, VT_SETMODE, &mode);
-    fail_if(ret == -1, "failed to take control of vt handling\n");
+    vik_log_f_if(ret == -1, "failed to take control of vt handling\n");
 
     /* Set KD_GRAPHICS to disable fbcon while we render. */
     ret = ioctl(STDIN_FILENO, KDSETMODE, KD_GRAPHICS);
-    fail_if(ret == -1, "failed to switch console to graphics mode\n");
+    vik_log_f_if(ret == -1, "failed to switch console to graphics mode\n");
 
     return 0;
   }
@@ -245,7 +203,7 @@ public:
   // Return -1 on failure.
   int init(vks::Application *app) {
 
-    error("KMS setupWindow\n");
+    vik_log_d("init");
 
     drmModeRes *resources;
     drmModeEncoder *encoder;
@@ -254,16 +212,16 @@ public:
     if (init_vt() == -1)
       return -1;
 
-    error("init vt works\n");
+    vik_log_d("init vt done");
 
     fd = open("/dev/dri/card0", O_RDWR);
-    fail_if(fd == -1, "failed to open /dev/dri/card0\n");
+    vik_log_f_if(fd == -1, "failed to open /dev/dri/card0");
 
     /* Get KMS resources and find the first active connecter. We'll use that
       connector and the crtc driving it in the mode it's currently running. */
     resources = drmModeGetResources(fd);
     //resources = nullptr;
-    fail_if(!resources, "drmModeGetResources failed: %s\n", strerror(errno));
+    vik_log_f_if(!resources, "drmModeGetResources failed: %s", strerror(errno));
 
     for (i = 0; i < resources->count_connectors; i++) {
       connector = drmModeGetConnector(fd, resources->connectors[i]);
@@ -273,12 +231,12 @@ public:
       connector = NULL;
     }
 
-    fail_if(!connector, "no connected connector!\n");
+    vik_log_f_if(!connector, "no connected connector!");
     encoder = drmModeGetEncoder(fd, connector->encoder_id);
-    fail_if(!encoder, "failed to get encoder\n");
+    vik_log_f_if(!encoder, "failed to get encoder");
     crtc = drmModeGetCrtc(fd, encoder->crtc_id);
-    fail_if(!crtc, "failed to get crtc\n");
-    error("mode info: hdisplay %d, vdisplay %d\n",
+    vik_log_f_if(!crtc, "failed to get crtc");
+    vik_log_i("mode info: hdisplay %d, vdisplay %d",
            crtc->mode.hdisplay, crtc->mode.vdisplay);
 
     app->width = crtc->mode.hdisplay;
@@ -316,7 +274,7 @@ public:
       kms_b->gbm_bo = gbm_bo_create(gbm_dev, app->width, app->height,
                                     GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
 
-      error("Created kms buffer %p\n", kms_b);
+      vik_log_d("Created kms buffer %p", kms_b);
 
       buffer_fd = gbm_bo_get_fd(kms_b->gbm_bo);
       stride = gbm_bo_get_stride(kms_b->gbm_bo);
@@ -338,7 +296,7 @@ public:
       dmaBufInfo.extent = extent;
       dmaBufInfo.strideInBytes = stride;
 
-      error("Creating dmabuf image %d\n", i);
+      vik_log_d("Creating dmabuf image %d", i);
       create_dma_buf_image(app->device,
                            &dmaBufInfo,
                            NULL,
@@ -348,7 +306,7 @@ public:
                            //&dmaBufImages[i]
                            );
 
-      error("Created image %p\n", &b->image);
+      vik_log_d("Created image %p", &b->image);
 
       close(buffer_fd);
 
@@ -359,13 +317,13 @@ public:
       ret = drmModeAddFB2(fd, app->width, app->height,
                           DRM_FORMAT_XRGB8888, bo_handles,
                           pitches, offsets, &kms_b->fb, 0);
-      fail_if(ret == -1, "addfb2 failed\n");
+      vik_log_f_if(ret == -1, "drmModeAddFB2 failed");
 
       //vc->init_buffer(b);
       init_buffer(app, &render_buffers[i]);
     }
 
-    error("setupWindow successfull\n");
+    vik_log_d("setupWindow successfull");
 
     return 0;
   }
@@ -413,7 +371,7 @@ public:
                         NULL,
                         &app->frameBuffers[0]);
 
-    error("init framebuffer %p done.\n", &app->frameBuffers[0]);
+    vik_log_d("init framebuffer %p done.", &app->frameBuffers[0]);
   }
 
   const char* requiredExtensionName() {

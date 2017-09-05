@@ -195,34 +195,34 @@ public:
                                int y, int w, int h, int subpixel, const char *make, const char *model,
                                int transform) {
     //VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
-    printf("%s: %s [%d, %d] %dx%d\n", make, model, x, y, w, h);
+    vik_log_i("%s: %s [%d, %d] %dx%d", make, model, x, y, w, h);
   }
 
   static void outputModeCb(void *data, struct wl_output *wl_output,
                            unsigned int flags, int w, int h, int refresh) {
-    printf("outputModeCb: %dx%d@%d\n", w, h, refresh);
+    vik_log_i("outputModeCb: %dx%d@%d", w, h, refresh);
 
     if (w == 2560 && h == 1440) {
     //if (w == 1920 && h == 1200) {
       WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
-      printf("setting wl_output to %p\n", wl_output);
+      vik_log_d("setting wl_output to %p", wl_output);
       self->hmd_output = wl_output;
       self->hmd_refresh = refresh;
       zxdg_toplevel_v6_set_fullscreen(self->xdg_toplevel, self->hmd_output);
       wl_surface_commit(self->surface);
     } else {
-      printf("ignoring wl_output %p\n", wl_output);
+      vik_log_d("ignoring wl_output %p", wl_output);
     }
   }
 
   static void
   outputDoneCb(void *data, struct wl_output *output) {
-    printf("output done %p\n", output);
+    vik_log_d("output done %p", output);
   }
 
   static void
   outputScaleCb(void *data, struct wl_output *output, int scale) {
-    printf("output scale: %d\n", scale);
+    vik_log_d("output scale: %d", scale);
   }
 
   // Return -1 on failure.
@@ -256,7 +256,7 @@ public:
 
     //zxdg_positioner_v6_set_size();
 
-    printf("the hmd output is %p\n", hmd_output);
+    vik_log_d("the hmd output is %p", hmd_output);
 
     zxdg_toplevel_v6_add_listener(xdg_toplevel, &xdg_toplevel_listener, this);
 
@@ -329,7 +329,6 @@ public:
       if (result != VK_SUCCESS)
         return;
 
-      //vc->model.render(vc, &vc->buffers[index]);
       app->render(&vc->buffers[index]);
 
       VkSwapchainKHR swapChains[] = { vc->swap_chain, };

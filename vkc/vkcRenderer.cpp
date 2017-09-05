@@ -39,11 +39,11 @@ void Renderer::init_vk(const char *extension) {
   VkPhysicalDevice pd[count];
   vkEnumeratePhysicalDevices(instance, &count, pd);
   physical_device = pd[0];
-  printf("%d physical devices\n", count);
+  vik_log_d("%d physical devices", count);
 
   VkPhysicalDeviceProperties properties;
   vkGetPhysicalDeviceProperties(physical_device, &properties);
-  printf("vendor id %04x, device name %s\n",
+  vik_log_i("vendor id %04x, device name %s",
          properties.vendorID, properties.deviceName);
 
   vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &count, NULL);

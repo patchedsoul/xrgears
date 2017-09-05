@@ -206,7 +206,7 @@ public:
     vik_log_f_if(!encoder, "failed to get encoder\n");
     crtc = drmModeGetCrtc(fd, encoder->crtc_id);
     vik_log_f_if(!crtc, "failed to get crtc\n");
-    printf("mode info: hdisplay %d, vdisplay %d\n",
+    vik_log_i("mode info: hdisplay %d, vdisplay %d",
            crtc->mode.hdisplay, crtc->mode.vdisplay);
 
     vc->width = crtc->mode.hdisplay;
