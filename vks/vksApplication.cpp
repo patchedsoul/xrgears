@@ -21,11 +21,9 @@ std::vector<const char*> Application::args;
 
 std::string Application::getWindowTitle() {
   std::string device(deviceProperties.deviceName);
-  std::string windowTitle;
-  windowTitle = title + " - " + device;
-  if (!enableTextOverlay) {
+  std::string windowTitle = title + " - " + device;
+  if (!enableTextOverlay)
     windowTitle += " - " + std::to_string(timer.frames_since_tick) + " fps";
-  }
   return windowTitle;
 }
 
@@ -190,23 +188,17 @@ void Application::updateTextOverlay() {
   if (!enableTextOverlay)
     return;
 
-  textOverlay->beginTextUpdate();
-
-  textOverlay->addText(title, 5.0f, 5.0f, TextOverlay::alignLeft);
-
   std::stringstream ss;
-  ss << std::fixed << std::setprecision(3) << (timer.frame_time_seconds * 1000.0f) << "ms (" << timer.frames_per_second << " fps)";
-  textOverlay->addText(ss.str(), 5.0f, 25.0f, TextOverlay::alignLeft);
-
+  ss << std::fixed
+     << std::setprecision(3)
+     << (timer.frame_time_seconds * 1000.0f)
+     << "ms (" << timer.frames_per_second
+     << " fps)";
   std::string deviceName(deviceProperties.deviceName);
-  textOverlay->addText(deviceName, 5.0f, 45.0f, TextOverlay::alignLeft);
 
-  getOverlayText(textOverlay);
-
-  textOverlay->endTextUpdate();
+  textOverlay->update(title, ss.str(), deviceName);
 }
 
-void Application::getOverlayText(TextOverlay*) {}
 
 void Application::prepareFrame() {
   // Acquire the next image from the swap chain

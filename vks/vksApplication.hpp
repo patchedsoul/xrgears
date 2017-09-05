@@ -269,9 +269,6 @@ class Application {
 
   void updateTextOverlay();
 
-  /** @brief (Virtual) Called when the text overlay is updating, can be used to add custom text to the overlay */
-  virtual void getOverlayText(TextOverlay*);
-
   // Prepare the frame for workload submission
   // - Acquires the next image from the swap chain
   // - Sets the default wait and signal semaphores

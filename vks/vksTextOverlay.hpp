@@ -700,5 +700,14 @@ class TextOverlay {
 
     VK_CHECK_RESULT(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &cmdBufAllocateInfo, cmdBuffers.data()));
   }
+
+  void update(const std::string& title, const std::string& fps, const std::string& device) {
+    beginTextUpdate();
+    addText(title, 5.0f, 5.0f, TextOverlay::alignLeft);
+    addText(fps, 5.0f, 25.0f, TextOverlay::alignLeft);
+    addText(device, 5.0f, 45.0f, TextOverlay::alignLeft);
+    endTextUpdate();
+  }
+
 };
 }
