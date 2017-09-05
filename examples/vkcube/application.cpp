@@ -98,11 +98,11 @@ int CubeApplication::init_display_mode(display_mode_type m) {
 void CubeApplication::init_display_mode_auto() {
   mode = DISPLAY_MODE_WAYLAND;
   if (init_display_mode(mode) == -1) {
-    vks::Log::error("failed to initialize wayland, falling back to xcb");
+    vik_log_e("failed to initialize wayland, falling back to xcb");
     delete(display);
     mode = DISPLAY_MODE_XCB;
     if (init_display_mode(mode) == -1) {
-      vks::Log::error("failed to initialize xcb, falling back to kms");
+      vik_log_e("failed to initialize xcb, falling back to kms");
       delete(display);
       mode = DISPLAY_MODE_KMS;
       init_display_mode(mode);
@@ -114,7 +114,7 @@ void CubeApplication::init_display() {
   if (mode == DISPLAY_MODE_AUTO)
     init_display_mode_auto();
   else if (init_display_mode(mode) == -1)
-    vks::Log::fatal("failed to initialize %s", display->name.c_str());
+    vik_log_f("failed to initialize %s", display->name.c_str());
 }
 
 void CubeApplication::mainloop() {

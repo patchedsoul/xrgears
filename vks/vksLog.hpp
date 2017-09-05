@@ -89,43 +89,6 @@ public:
       exit(1);
   }
 
-  static void debug_values(const char *format, va_list args) {
-    vfprintf(stdout, format, args);
-    fprintf(stdout, "\n");
-  }
-
-  static void error_values(const char *format, va_list args) {
-    fprintf(stderr, "[%se%s] ", color_code(type_color(ERROR)).c_str(), color_code(0).c_str());
-    vfprintf(stderr, format, args);
-    fprintf(stderr, "\n");
-  }
-
-  static void fatal_values(const char *format, va_list args) {
-    error_values(format, args);
-    exit(1);
-  }
-
-  static void error(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    error_values(format, args);
-    va_end(args);
-  }
-
-  static void debug(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    debug_values(format, args);
-    va_end(args);
-  }
-
-  static void fatal(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    fatal_values(format, args);
-    va_end(args);
-  }
-
   static void log_fatal_if(const std::string& file, int line, bool cond, const char *format, ...) {
     if (!cond)
       return;
@@ -137,15 +100,6 @@ public:
     exit(1);
   }
 
-  static void fatal_if(bool cond, const char *format, ...) {
-    if (!cond)
-      return;
-
-    va_list args;
-    va_start(args, format);
-    fatal_values(format, args);
-    va_end(args);
-  }
 };
 }
 

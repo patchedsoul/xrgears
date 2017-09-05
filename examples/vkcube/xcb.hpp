@@ -100,11 +100,9 @@ public:
 
 	vc->init_vk(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 
-	if (!vkGetPhysicalDeviceXcbPresentationSupportKHR(vc->physical_device, 0,
-	                                                  conn,
-	                                                  iter.data->root_visual)) {
-      vks::Log::fatal("Vulkan not supported on given X window");
-	}
+  VkBool32 ret = vkGetPhysicalDeviceXcbPresentationSupportKHR(
+        vc->physical_device, 0, conn, iter.data->root_visual);
+  vik_log_f_if(!ret, "Vulkan not supported on given X window");
 
 	init_surface(vc);
 

@@ -349,8 +349,7 @@ public:
                      &renderer->mem);
 
     r = vkMapMemory(renderer->device, renderer->mem, 0, mem_size, 0, &map);
-    if (r != VK_SUCCESS)
-      vks::Log::fatal("vkMapMemory failed");
+    vik_log_f_if(r != VK_SUCCESS, "vkMapMemory failed");
 
 
     memcpy(((char*)map + vertex_offset), vVertices, sizeof(vVertices));
