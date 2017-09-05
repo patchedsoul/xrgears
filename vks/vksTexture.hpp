@@ -20,6 +20,7 @@
 #include "vksTools.hpp"
 #include "vksDevice.hpp"
 #include "vksBuffer.hpp"
+#include "vksLog.hpp"
 
 namespace vks {
 /** @brief Vulkan texture base class */
@@ -78,8 +79,9 @@ class Texture2D : public Texture {
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
       VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
       bool forceLinear = false) {
-    if (!vks::tools::fileExists(filename))
-      vks::tools::exitFatal("Could not load texture from " + filename, "File not found");
+
+    vik_log_f_if(!vks::tools::fileExists(filename), "File not found: Could not load texture from %s", filename.c_str());
+
     gli::texture2d tex2D(gli::load(filename.c_str()));
 
     assert(!tex2D.empty());
@@ -525,8 +527,10 @@ class Texture2DArray : public Texture {
       VkQueue copyQueue,
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
       VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-    if (!vks::tools::fileExists(filename))
-      vks::tools::exitFatal("Could not load texture from " + filename, "File not found");
+
+    vik_log_f_if(!vks::tools::fileExists(filename),
+                 "File not found: Could not load texture from %s",
+                 filename.c_str());
 
     gli::texture2d_array tex2DArray(gli::load(filename));
 
@@ -713,8 +717,11 @@ class TextureCubeMap : public Texture {
       VkQueue copyQueue,
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
       VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-    if (!vks::tools::fileExists(filename))
-      vks::tools::exitFatal("Could not load texture from " + filename, "File not found");
+
+    vik_log_f_if(!vks::tools::fileExists(filename),
+                 "File not found: Could not load texture from %s",
+                 filename.c_str());
+
     gli::texture_cube texCube(gli::load(filename));
 
     assert(!texCube.empty());

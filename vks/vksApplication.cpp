@@ -342,8 +342,8 @@ void Application::init_physical_device() {
   // Enumerate devices
   std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
   err = vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, physicalDevices.data());
-  if (err)
-    vks::tools::exitFatal("Could not enumerate physical devices : \n" + vks::tools::errorString(err), "Fatal error");
+
+  vik_log_f_if(err, "Could not enumerate physical devices: %s", vks::tools::errorString(err).c_str());
 
   // GPU selection
   if (settings.list_gpus_and_exit) {
@@ -417,8 +417,8 @@ void Application::initVulkan(VikWindow *window) {
 
   // Vulkan instance
   err = renderer->createInstance(&settings, window, name);
-  if (err)
-    vks::tools::exitFatal("Could not create Vulkan instance : \n" + vks::tools::errorString(err), "Fatal error");
+
+  vik_log_f_if(err, "Could not create Vulkan instance: %s", vks::tools::errorString(err).c_str());
 
   // If requested, we enable the default validation layers for debugging
   if (settings.validation)
@@ -444,8 +444,7 @@ void Application::initVulkan(VikWindow *window) {
   */
 
   VkResult res = vksDevice->createLogicalDevice(enabledFeatures, enabledExtensions);
-  if (res != VK_SUCCESS)
-    vks::tools::exitFatal("Could not create Vulkan device: \n" + vks::tools::errorString(res), "Fatal error");
+  vik_log_f_if(res != VK_SUCCESS, "Could not create Vulkan device: %s", vks::tools::errorString(res).c_str());
 
   device = vksDevice->logicalDevice;
 

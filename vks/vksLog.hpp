@@ -81,7 +81,10 @@ public:
   }
 
   static void log_values(const char* file, int line, type t, const char *format, va_list args) {
-    fprintf(stdout, "%s[%s]%s ", color_code(type_color(t)).c_str(), type_str(t), color_code(0).c_str());
+    fprintf(stdout, "%s[%s]%s ",
+            color_code(type_color(t)).c_str(),
+            type_str(t),
+            color_code(0).c_str());
     fprintf(stdout, "%s:%d | ", strip_file_name(file).c_str(), line);
     vfprintf(stdout, format, args);
     fprintf(stdout, "\n");

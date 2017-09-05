@@ -98,10 +98,9 @@ class VikWindowWayland : public vks::VikWindow {
     surfaceCreateInfo.surface = surface;
     err = vkCreateWaylandSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &swapChain->surface);
 
-    if (err != VK_SUCCESS)
-      vks::tools::exitFatal("Could not create surface!", "Fatal error");
-    else
-      swapChain->initSurfaceCommon();
+    vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
+
+    swapChain->initSurfaceCommon();
   }
 
   static void registryGlobalCb(void *data, wl_registry *registry, uint32_t name,

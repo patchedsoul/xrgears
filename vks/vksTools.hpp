@@ -102,7 +102,7 @@ void insertImageMemoryBarrier(
     VkImageSubresourceRange subresourceRange);
 
 // Display error message and exit on fatal error
-void exitFatal(std::string message, std::string caption);
+//void exitFatal(std::string message, std::string caption);
 
 // Load a SPIR-V shader (binary)
 VkShaderModule loadShader(const char *fileName, VkDevice device);

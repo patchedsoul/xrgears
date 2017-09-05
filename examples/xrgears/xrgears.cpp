@@ -136,26 +136,22 @@ public:
   }
 
   // Enable physical device features required for this example
-  virtual void getEnabledFeatures()
-  {
+  virtual void getEnabledFeatures() {
     // Geometry shader support is required for this example
-    if (deviceFeatures.geometryShader) {
+    if (deviceFeatures.geometryShader)
       enabledFeatures.geometryShader = VK_TRUE;
-    }
-    else {
-      vks::tools::exitFatal("Selected GPU does not support geometry shaders!", "Feature not supported");
-    }
+    else
+      vik_log_f("Feature not supported: Selected GPU does not support geometry shaders!");
+
     // Multiple viewports must be supported
-    if (deviceFeatures.multiViewport) {
+    if (deviceFeatures.multiViewport)
       enabledFeatures.multiViewport = VK_TRUE;
-    }
-    else {
-      vks::tools::exitFatal("Selected GPU does not support multi viewports!", "Feature not supported");
-    }
+    else
+      vik_log_f("Feature not supported: Selected GPU does not support multi viewports!");
   }
 
   void buildCommandBuffers() {
-    printf("Draw command buffers size: %ld\n", drawCmdBuffers.size());
+    vik_log_d("Draw command buffers size: %ld", drawCmdBuffers.size());
 
     if (enableDistortion)
       for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
@@ -759,11 +755,6 @@ int main(const int argc, const char *argv[]) {
   //VikWindow * window = new VikWindowXCB();
   //VikWindow * window = new VikWindowKMS();
   app->initVulkan(window);
-
-  vik_log_d("Oh hai.");
-  vik_log_e("Error.");
-
-
   window->init(app);
 
   window->initSwapChain(app->renderer->instance, &app->swapChain);

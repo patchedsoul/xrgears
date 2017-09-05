@@ -19,6 +19,8 @@
 #include "vksWindow.hpp"
 #include "vksApplication.hpp"
 
+#include "vksLog.hpp"
+
 #define KEY_ESCAPE 0x9
 #define KEY_F1 0x43
 #define KEY_F2 0x44
@@ -81,10 +83,9 @@ class VikWindowXCB : public vks::VikWindow {
     surfaceCreateInfo.window = window;
     err = vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &swapChain->surface);
 
-    if (err != VK_SUCCESS)
-      vks::tools::exitFatal("Could not create surface!", "Fatal error");
-    else
-      swapChain->initSurfaceCommon();
+    vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
+
+    swapChain->initSurfaceCommon();
   }
 
   void flush(vks::Application *app) {

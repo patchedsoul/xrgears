@@ -23,6 +23,8 @@
 
 #include "vksTools.hpp"
 
+#include "vksLog.hpp"
+
 namespace vks {
 
 typedef struct _SwapChainBuffers {
@@ -106,11 +108,11 @@ class SwapChain {
 
     // Exit if either a graphics or a presenting queue hasn't been found
     if (graphicsQueueNodeIndex == UINT32_MAX || presentQueueNodeIndex == UINT32_MAX)
-      vks::tools::exitFatal("Could not find a graphics and/or presenting queue!", "Fatal error");
+      vik_log_f("Could not find a graphics and/or presenting queue!");
 
     // todo : Add support for separate graphics and presenting queue
     if (graphicsQueueNodeIndex != presentQueueNodeIndex)
-      vks::tools::exitFatal("Separate graphics and presenting queues are not supported yet!", "Fatal error");
+      vik_log_f("Separate graphics and presenting queues are not supported yet!", "Fatal error");
 
     queueNodeIndex = graphicsQueueNodeIndex;
 

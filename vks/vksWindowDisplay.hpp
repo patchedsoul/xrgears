@@ -69,10 +69,7 @@ class VikWindowKhrDisplay  : public vks::VikWindow {
       delete [] pModeProperties;
     }
 
-    if (!foundMode) {
-      vks::tools::exitFatal("Can't find a display and a display mode!", "Fatal error");
-      return;
-    }
+    vik_log_f_if(!foundMode, "Can't find a display and a display mode!");
 
     // Search for a best plane we can use
     uint32_t bestPlaneIndex = UINT32_MAX;
@@ -97,10 +94,7 @@ class VikWindowKhrDisplay  : public vks::VikWindow {
         break;
     }
 
-    if (bestPlaneIndex == UINT32_MAX) {
-      vks::tools::exitFatal("Can't find a plane for displaying!", "Fatal error");
-      return;
-    }
+    vik_log_f_if(bestPlaneIndex == UINT32_MAX, "Can't find a plane for displaying!");
 
     VkDisplayPlaneCapabilitiesKHR planeCap;
     vkGetDisplayPlaneCapabilitiesKHR(app->physicalDevice, displayMode, bestPlaneIndex, &planeCap);
@@ -127,8 +121,7 @@ class VikWindowKhrDisplay  : public vks::VikWindow {
     surfaceInfo.imageExtent.height = height;
 
     VkResult result = vkCreateDisplayPlaneSurfaceKHR(app->renderer->instance, &surfaceInfo, NULL, &app->swapChain.surface);
-    if (result !=VK_SUCCESS)
-      vks::tools::exitFatal("Failed to create surface!", "Fatal error");
+    vik_log_f_if(result !=VK_SUCCESS, "Failed to create surface!");
 
     delete[] pDisplays;
     delete[] pModeProperties;
