@@ -220,7 +220,7 @@ void Application::prepare() {
 }
 
 
-void Application::loop(VikWindow *window) {
+void Application::loop(Window *window) {
   destWidth = width;
   destHeight = height;
 
@@ -248,7 +248,7 @@ void Application::update_camera(float frame_time) {
     viewUpdated = true;
 }
 
-void Application::check_tick_finnished(VikWindow *window) {
+void Application::check_tick_finnished(Window *window) {
   if (timer.tick_finnished()) {
     timer.update_fps();
     if (!enableTextOverlay)
@@ -398,7 +398,7 @@ void Application::init_debugging() {
   vks::debug::setupDebugging(renderer->instance, debugReportFlags, VK_NULL_HANDLE);
 }
 
-void Application::initVulkan(VikWindow *window) {
+void Application::initVulkan(Window *window) {
   VkResult err;
 
   // Vulkan instance

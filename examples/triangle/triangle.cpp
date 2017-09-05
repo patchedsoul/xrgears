@@ -1075,9 +1075,9 @@ public:
 int main(const int argc, const char *argv[]) {
   Triangle *app = new Triangle();
   app->parse_arguments(argc, argv);
-  vks::VikWindow * window = new VikWindowWayland();
-  //VikWindow * window = new VikWindowXCB();
-  //VikWindow * window = new VikWindowKMS();
+  vks::Window * window = new vks::WindowWayland();
+  //VikWindow * window = new vks::WindowXCB();
+  //VikWindow * window = new vks::WindowKMS();
   app->initVulkan(window);
 
   if (window->init(app) == -1) {

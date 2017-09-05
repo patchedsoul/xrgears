@@ -20,7 +20,8 @@
 #include "vksWindow.hpp"
 #include "vksApplication.hpp"
 
-class VikWindowWayland : public vks::VikWindow {
+namespace vks {
+class WindowWayland : public Window {
   wl_display *display = nullptr;
   wl_registry *registry = nullptr;
   wl_compositor *compositor = nullptr;
@@ -36,7 +37,7 @@ class VikWindowWayland : public vks::VikWindow {
   vks::Application* app;
 
  public:
-  explicit VikWindowWayland() {
+  explicit WindowWayland() {
     display = wl_display_connect(NULL);
     vik_log_f_if(!display, "Could not connect to Wayland display!");
 
@@ -51,7 +52,7 @@ class VikWindowWayland : public vks::VikWindow {
     vik_log_f_if(!compositor || !shell || !seat, "Could not bind Wayland protocols!");
   }
 
-  ~VikWindowWayland() {
+  ~WindowWayland() {
     wl_shell_surface_destroy(shell_surface);
     wl_surface_destroy(surface);
     if (keyboard)
@@ -93,7 +94,7 @@ class VikWindowWayland : public vks::VikWindow {
 
   static void registryGlobalCb(void *data, wl_registry *registry, uint32_t name,
                                const char *interface, uint32_t version) {
-    VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
+    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
     self->registryGlobal(registry, name, interface, version);
   }
 
@@ -111,7 +112,7 @@ class VikWindowWayland : public vks::VikWindow {
         
     //    if (w == 2560 && h == 1440) {
         if (w == 1920 && h == 1200) {
-          VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
+          WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
           vik_log_d("setting wl_output to %p", wl_output);
           self->hmd_output = wl_output;
           self->hmd_refresh = refresh;
@@ -131,7 +132,7 @@ class VikWindowWayland : public vks::VikWindow {
     }
 
   static void seatCapabilitiesCb(void *data, wl_seat *seat, uint32_t caps) {
-    VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
+    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
     self->seatCapabilities(seat, caps);
   }
 
@@ -145,7 +146,7 @@ class VikWindowWayland : public vks::VikWindow {
 
   static void pointerMotionCb(void *data, wl_pointer *pointer, uint32_t time,
                               wl_fixed_t sx, wl_fixed_t sy) {
-    VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
+    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
     self->pointerMotion(pointer, time, sx, sy);
   }
 
@@ -185,7 +186,7 @@ class VikWindowWayland : public vks::VikWindow {
   static void pointerButtonCb(void *data,
                               wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button,
                               uint32_t state) {
-    VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
+    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
     self->pointerButton(pointer, serial, time, button, state);
   }
 
@@ -209,7 +210,7 @@ class VikWindowWayland : public vks::VikWindow {
   static void pointerAxisCb(void *data,
                             wl_pointer *pointer, uint32_t time, uint32_t axis,
                             wl_fixed_t value) {
-    VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
+    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
     self->pointerAxis(pointer, time, axis, value);
   }
 
@@ -244,7 +245,7 @@ class VikWindowWayland : public vks::VikWindow {
   static void keyboardKeyCb(void *data,
                             struct wl_keyboard *keyboard, uint32_t serial, uint32_t time,
                             uint32_t key, uint32_t state) {
-    VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
+    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
     self->keyboardKey(keyboard, serial, time, key, state);
   }
 
@@ -379,3 +380,4 @@ class VikWindowWayland : public vks::VikWindow {
     return VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
   }
 };
+}

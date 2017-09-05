@@ -76,7 +76,8 @@ page_flip_handler(int fd, unsigned int frame,
 
 static struct termios save_tio;
 
-class VikWindowKMS : public vks::VikWindow {
+namespace vks {
+class WindowKMS : public Window {
 
   drmModeCrtc *crtc;
   drmModeConnector *connector;
@@ -105,11 +106,11 @@ class VikWindowKMS : public vks::VikWindow {
   struct render_buffer render_buffers[MAX_NUM_IMAGES];
 
 public:
-  VikWindowKMS() {
+  WindowKMS() {
     gbm_dev = NULL;
   }
 
-  ~VikWindowKMS() {}
+  ~WindowKMS() {}
 
   static void restore_vt(void) {
     struct vt_mode mode = { .mode = VT_AUTO };
@@ -419,3 +420,4 @@ public:
     return "";
   }
 };
+}

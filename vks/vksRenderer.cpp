@@ -15,7 +15,7 @@ Renderer::~Renderer() {
   *
   * @note Virtual, can be overriden by derived example class for custom instance creation
   */
-VkResult Renderer::createInstance(Settings* settings, VikWindow *window, const std::string& name) {
+VkResult Renderer::createInstance(Settings* settings, Window *window, const std::string& name) {
   VkApplicationInfo appInfo = {};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   appInfo.pApplicationName = name.c_str();

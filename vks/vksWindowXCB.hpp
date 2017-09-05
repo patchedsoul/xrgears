@@ -43,14 +43,15 @@
 #define KEY_O 0x20
 #define KEY_T 0x1C
 
-class VikWindowXCB : public vks::VikWindow {
+namespace vks {
+class WindowXCB : public Window {
   xcb_connection_t *connection;
   xcb_screen_t *screen;
   xcb_window_t window;
   xcb_intern_atom_reply_t *atom_wm_delete_window;
 
  public:
-  explicit VikWindowXCB() {
+  explicit WindowXCB() {
     const xcb_setup_t *setup;
     xcb_screen_iterator_t iter;
     int scr;
@@ -69,7 +70,7 @@ class VikWindowXCB : public vks::VikWindow {
     screen = iter.data;
   }
 
-  ~VikWindowXCB() {
+  ~WindowXCB() {
     xcb_destroy_window(connection, window);
     xcb_disconnect(connection);
   }
@@ -302,3 +303,4 @@ class VikWindowXCB : public vks::VikWindow {
     return VK_KHR_XCB_SURFACE_EXTENSION_NAME;
   }
 };
+}

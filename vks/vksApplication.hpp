@@ -37,7 +37,7 @@
 
 
 namespace vks {
-class VikWindow;
+class Window;
 
 class Application {
 
@@ -192,7 +192,7 @@ class Application {
   virtual ~Application();
 
   // Setup the vulkan instance, enable required extensions and connect to the physical device (GPU)
-  void initVulkan(VikWindow *window);
+  void initVulkan(Window *window);
 
 
   //virtual VkResult createInstance(bool enableValidation, VikWindow *window);
@@ -253,7 +253,7 @@ class Application {
   void check_view_update();
 
   // Start the main render loop
-  void loop(VikWindow *window);
+  void loop(Window *window);
 
   void updateTextOverlay();
 
@@ -267,7 +267,7 @@ class Application {
   void submitFrame();
 
   void update_camera(float frame_time);
-  void check_tick_finnished(VikWindow *window);
+  void check_tick_finnished(Window *window);
 
   void submit_text_overlay();
 

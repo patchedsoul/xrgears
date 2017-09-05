@@ -8,7 +8,7 @@
 
 namespace vks {
 
-class VikWindow;
+class Window;
 
 class Renderer {
 public:
@@ -17,7 +17,7 @@ public:
 
   Renderer();
   ~Renderer();
-  VkResult createInstance(Settings* settings, VikWindow *window, const std::string& name);
+  VkResult createInstance(Settings* settings, Window *window, const std::string& name);
 
 };
 }

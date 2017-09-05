@@ -17,10 +17,10 @@
 
 namespace vks {
 
-class VikWindow {
+class Window {
  public:
-  VikWindow() {}
-  ~VikWindow() {}
+  Window() {}
+  ~Window() {}
 
   virtual int init(vks::Application *app) = 0;
 

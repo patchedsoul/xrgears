@@ -15,10 +15,11 @@
 
 #include "vksWindow.hpp"
 
-class VikWindowKhrDisplay  : public vks::VikWindow {
+namespace vks {
+class WindowKhrDisplay  : public Window {
  public:
-  explicit VikWindowKhrDisplay() {}
-  ~VikWindowKhrDisplay() {}
+  explicit WindowKhrDisplay() {}
+  ~WindowKhrDisplay() {}
 
   const char* requiredExtensionName() {
     return VK_KHR_DISPLAY_EXTENSION_NAME;
@@ -129,3 +130,4 @@ class VikWindowKhrDisplay  : public vks::VikWindow {
     delete[] pPlaneProperties;
   }
 };
+}
