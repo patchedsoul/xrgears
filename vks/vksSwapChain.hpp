@@ -127,18 +127,17 @@ class SwapChain {
     // If the surface format list only includes one entry with VK_FORMAT_UNDEFINED,
     // there is no preferered format, so we assume VK_FORMAT_B8G8R8A8_UNORM
     if ((formatCount == 1) && (surfaceFormats[0].format == VK_FORMAT_UNDEFINED)) {
-      printf("Just taking VK_FORMAT_B8G8R8A8_UNORM\n");
-      printf("Using color format VK_FORMAT_B8G8R8A8_UNORM\n");
+      vik_log_d("Using color format VK_FORMAT_B8G8R8A8_UNORM\n");
       colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
       colorSpace = surfaceFormats[0].colorSpace;
     } else {
       // iterate over the list of available surface format and
       // check for the presence of VK_FORMAT_B8G8R8A8_UNORM
       bool found_B8G8R8A8_UNORM = false;
-      printf("Iterating surface formats\n");
+      vik_log_d("Iterating surface formats");
       for (auto&& surfaceFormat : surfaceFormats) {
         if (surfaceFormat.format == VK_FORMAT_B8G8R8A8_UNORM) {
-          printf("Using color format %d\n", surfaceFormat.format);
+          vik_log_d("Using color format %d", surfaceFormat.format);
           colorFormat = surfaceFormat.format;
           colorSpace = surfaceFormat.colorSpace;
           found_B8G8R8A8_UNORM = true;
@@ -149,7 +148,7 @@ class SwapChain {
       // in case VK_FORMAT_B8G8R8A8_UNORM is not available
       // select the first available color format
       if (!found_B8G8R8A8_UNORM) {
-        printf("B8G8R8A8_UNORM not found. Using %d\n", surfaceFormats[0].format);
+        vik_log_d("B8G8R8A8_UNORM not found. Using %d\n", surfaceFormats[0].format);
         colorFormat = surfaceFormats[0].format;
         colorSpace = surfaceFormats[0].colorSpace;
       }
