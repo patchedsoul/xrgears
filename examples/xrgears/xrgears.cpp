@@ -755,14 +755,14 @@ XRGears *app;
 int main(const int argc, const char *argv[]) {
   for (size_t i = 0; i < argc; i++) { XRGears::args.push_back(argv[i]); };
   app = new XRGears();
-  VikWindow * window = new VikWindowWayland();
+  vks::VikWindow * window = new VikWindowWayland();
   //VikWindow * window = new VikWindowXCB();
   //VikWindow * window = new VikWindowKMS();
   app->initVulkan(window);
 
   window->init(app);
 
-  window->initSwapChain(app->instance, &app->swapChain);
+  window->initSwapChain(app->renderer->instance, &app->swapChain);
   app->prepare();
   app->loop(window);
   delete(app);

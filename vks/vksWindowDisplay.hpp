@@ -15,7 +15,7 @@
 
 #include "vksWindow.hpp"
 
-class VikWindowKhrDisplay  : public VikWindow {
+class VikWindowKhrDisplay  : public vks::VikWindow {
  public:
   explicit VikWindowKhrDisplay() {}
   ~VikWindowKhrDisplay() {}
@@ -126,7 +126,7 @@ class VikWindowKhrDisplay  : public VikWindow {
     surfaceInfo.imageExtent.width = width;
     surfaceInfo.imageExtent.height = height;
 
-    VkResult result = vkCreateDisplayPlaneSurfaceKHR(app->instance, &surfaceInfo, NULL, &app->swapChain.surface);
+    VkResult result = vkCreateDisplayPlaneSurfaceKHR(app->renderer->instance, &surfaceInfo, NULL, &app->swapChain.surface);
     if (result !=VK_SUCCESS)
       vks::tools::exitFatal("Failed to create surface!", "Fatal error");
 

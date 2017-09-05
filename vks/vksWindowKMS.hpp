@@ -76,7 +76,7 @@ page_flip_handler(int fd, unsigned int frame,
 
 static struct termios save_tio;
 
-class VikWindowKMS : public VikWindow {
+class VikWindowKMS : public vks::VikWindow {
 
   drmModeCrtc *crtc;
   drmModeConnector *connector;

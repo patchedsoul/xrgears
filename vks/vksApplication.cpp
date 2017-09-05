@@ -18,52 +18,6 @@ namespace vks {
 
 std::vector<const char*> Application::args;
 
-VkResult Application::createInstance(bool enableValidation, VikWindow *window) {
-  this->settings.validation = enableValidation;
-
-  VkApplicationInfo appInfo = {};
-  appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-  appInfo.pApplicationName = name.c_str();
-  appInfo.pEngineName = name.c_str();
-  appInfo.apiVersion = VK_API_VERSION_1_0;
-
-  std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
-
-  // Enable surface extensions depending on os
-  std::string windowExtension = std::string(window->requiredExtensionName());
-
-  if (!windowExtension.empty())
-    instanceExtensions.push_back(window->requiredExtensionName());
-
-  /*
-  instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-  enabledExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-  enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
-  enabledExtensions.push_back(VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME);
-  enabledExtensions.push_back(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
-  enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-  */
-
-  VkInstanceCreateInfo instanceCreateInfo = {};
-  instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-  instanceCreateInfo.pNext = NULL;
-  instanceCreateInfo.pApplicationInfo = &appInfo;
-  if (instanceExtensions.size() > 0) {
-    if (settings.validation) {
-      printf("Enabling VK_EXT_DEBUG_REPORT_EXTENSION_NAME\n");
-      instanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-    } else {
-      printf("!NOT! Enabling VK_EXT_DEBUG_REPORT_EXTENSION_NAME\n");
-    }
-    instanceCreateInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
-    instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
-  }
-  if (settings.validation) {
-    instanceCreateInfo.enabledLayerCount = vks::debug::validationLayerCount;
-    instanceCreateInfo.ppEnabledLayerNames = vks::debug::validationLayerNames;
-  }
-  return vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
-}
 
 std::string Application::getWindowTitle() {
   std::string device(deviceProperties.deviceName);
@@ -372,9 +326,9 @@ Application::~Application() {
   delete vulkanDevice;
 
   if (settings.validation)
-    vks::debug::freeDebugCallback(instance);
+    vks::debug::freeDebugCallback(renderer->instance);
 
-  vkDestroyInstance(instance, nullptr);
+  vkDestroyInstance(renderer->instance, nullptr);
 }
 
 void Application::printMultiviewProperties(VkDevice logicalDevice, VkPhysicalDevice physicalDevice) {
@@ -424,7 +378,9 @@ void Application::initVulkan(VikWindow *window) {
   VkResult err;
 
   // Vulkan instance
-  err = createInstance(settings.validation, window);
+
+  renderer = new vks::Renderer();
+  err = renderer->createInstance(&settings, window, name);
   if (err)
     vks::tools::exitFatal("Could not create Vulkan instance : \n" + vks::tools::errorString(err), "Fatal error");
 
@@ -434,17 +390,17 @@ void Application::initVulkan(VikWindow *window) {
     // For validating (debugging) an appplication the error and warning bits should suffice
     VkDebugReportFlagsEXT debugReportFlags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
     // Additional flags include performance info, loader and layer debug messages, etc.
-    vks::debug::setupDebugging(instance, debugReportFlags, VK_NULL_HANDLE);
+    vks::debug::setupDebugging(renderer->instance, debugReportFlags, VK_NULL_HANDLE);
   }
 
   // Physical device
   uint32_t gpuCount = 0;
   // Get number of available physical devices
-  VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &gpuCount, nullptr));
+  VK_CHECK_RESULT(vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, nullptr));
   assert(gpuCount > 0);
   // Enumerate devices
   std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
-  err = vkEnumeratePhysicalDevices(instance, &gpuCount, physicalDevices.data());
+  err = vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, physicalDevices.data());
   if (err)
     vks::tools::exitFatal("Could not enumerate physical devices : \n" + vks::tools::errorString(err), "Fatal error");
 
@@ -473,14 +429,14 @@ void Application::initVulkan(VikWindow *window) {
     // List available GPUs
     if (args[i] == std::string("-listgpus")) {
       uint32_t gpuCount = 0;
-      VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &gpuCount, nullptr));
+      VK_CHECK_RESULT(vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, nullptr));
       if (gpuCount == 0) {
         std::cerr << "No Vulkan devices found!" << std::endl;
       } else {
         // Enumerate devices
         std::cout << "Available Vulkan devices" << std::endl;
         std::vector<VkPhysicalDevice> devices(gpuCount);
-        VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &gpuCount, devices.data()));
+        VK_CHECK_RESULT(vkEnumeratePhysicalDevices(renderer->instance, &gpuCount, devices.data()));
         for (uint32_t i = 0; i < gpuCount; i++) {
           VkPhysicalDeviceProperties deviceProperties;
           vkGetPhysicalDeviceProperties(devices[i], &deviceProperties);
@@ -521,7 +477,7 @@ void Application::initVulkan(VikWindow *window) {
   VkBool32 validDepthFormat = vks::tools::getSupportedDepthFormat(physicalDevice, &depthFormat);
   assert(validDepthFormat);
 
-  swapChain.connect(instance, physicalDevice, device);
+  swapChain.connect(renderer->instance, physicalDevice, device);
 
   // Create synchronization objects
   VkSemaphoreCreateInfo semaphoreCreateInfo = vks::initializers::semaphoreCreateInfo();

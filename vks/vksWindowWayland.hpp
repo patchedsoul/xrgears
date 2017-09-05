@@ -20,7 +20,7 @@
 #include "vksWindow.hpp"
 #include "vksApplication.hpp"
 
-class VikWindowWayland : public VikWindow {
+class VikWindowWayland : public vks::VikWindow {
   wl_display *display = nullptr;
   wl_registry *registry = nullptr;
   wl_compositor *compositor = nullptr;

@@ -32,17 +32,17 @@
 #include "vksCamera.hpp"
 #include "vksRenderer.hpp"
 #include "vksFrameCounter.hpp"
+#include "vksSettings.hpp"
 
 
-class VikWindow;
 
 namespace vks {
+class VikWindow;
 
 class Application {
 
-  vks::Renderer *renderer;
-
  public:
+  vks::Renderer *renderer;
 
   vks::Timer timer;
 
@@ -67,8 +67,7 @@ class Application {
  public:
   // Frame counter to display fps
 
-  // Vulkan instance, stores all per-application states
-  VkInstance instance;
+
   // Physical device (GPU) that Vulkan will ise
   VkPhysicalDevice physicalDevice;
   // Stores physical device properties (for e.g. checking device limits)
@@ -151,14 +150,7 @@ class Application {
   vks::Device *vulkanDevice;
 
   /** @brief Example settings that can be changed e.g. by command line arguments */
-  struct Settings {
-    /** @brief Activates validation layers (and message output) when set to true */
-    bool validation = true;
-    /** @brief Set to true if fullscreen mode has been requested via command line */
-    bool fullscreen = false;
-    /** @brief Set to true if v-sync will be forced for the swapchain */
-    bool vsync = false;
-  } settings;
+  Settings settings;
 
   VkClearColorValue defaultClearColor = { { 0.025f, 0.025f, 0.025f, 1.0f } };
 
@@ -211,12 +203,8 @@ class Application {
   // Setup the vulkan instance, enable required extensions and connect to the physical device (GPU)
   void initVulkan(VikWindow *window);
 
-  /**
-  * Create the application wide Vulkan instance
-  *
-  * @note Virtual, can be overriden by derived example class for custom instance creation
-  */
-  virtual VkResult createInstance(bool enableValidation, VikWindow *window);
+
+  //virtual VkResult createInstance(bool enableValidation, VikWindow *window);
 
   // Pure virtual render function (override in derived class)
   virtual void render() = 0;

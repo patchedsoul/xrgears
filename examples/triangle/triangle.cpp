@@ -1081,7 +1081,7 @@ int main(const int argc, const char *argv[])
 {
   for (size_t i = 0; i < argc; i++) { Triangle::args.push_back(argv[i]); };
   app = new Triangle();
-  VikWindow * window = new VikWindowWayland();
+  vks::VikWindow * window = new VikWindowWayland();
   //VikWindow * window = new VikWindowXCB();
   //VikWindow * window = new VikWindowKMS();
   app->initVulkan(window);
@@ -1092,7 +1092,7 @@ int main(const int argc, const char *argv[])
     return -1;
   }
 
-  window->initSwapChain(app->instance, &app->swapChain);
+  window->initSwapChain(app->renderer->instance, &app->swapChain);
   fprintf(stderr, "prepare\n");
   app->prepare();
   fprintf(stderr, "renderLoopWrap\n");

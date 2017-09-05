@@ -41,7 +41,7 @@
 #define KEY_O 0x20
 #define KEY_T 0x1C
 
-class VikWindowXCB : public VikWindow {
+class VikWindowXCB : public vks::VikWindow {
   xcb_connection_t *connection;
   xcb_screen_t *screen;
   xcb_window_t window;
