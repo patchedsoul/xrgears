@@ -278,8 +278,7 @@ public:
     renderPassBeginInfo.clearValueCount = 2;
     renderPassBeginInfo.pClearValues = clearValues;
 
-    fprintf(stderr, "triangle: we will process: %ld draw buffers\n", drawCmdBuffers.size());
-
+    vik_log_d("we will process %ld draw buffers", drawCmdBuffers.size());
 
     for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
     {
@@ -332,44 +331,10 @@ public:
 
       vik_log_check(vkEndCommandBuffer(drawCmdBuffers[i]));
     }
-    fprintf(stderr, "triangle: buildCommandBuffers done: %ld\n", drawCmdBuffers.size());
+    vik_log_d("buildCommandBuffers size: %ld", drawCmdBuffers.size());
   }
 
-  void draw()
-  {
-    /*
-    error("triangle: draw.\n");
-
-    VkPipelineStageFlags stageflags[] = {
-      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-    };
-
-
-    VkSubmitInfo submitInfo = {
-      .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-      .waitSemaphoreCount = 1,
-      .pWaitSemaphores = &presentCompleteSemaphore,
-      .pWaitDstStageMask = stageflags,
-      .commandBufferCount = 1,
-      //.pCommandBuffers = &drawCmdBuffers[currentBuffer],
-      .pCommandBuffers = &drawCmdBuffers[0],
-    };
-
-    error("command buffer size: %d\n", drawCmdBuffers.size());
-
-    error("vkQueueSubmit: draw.\n");
-     vkQueueSubmit(queue, 1, &submitInfo, waitFences[0]);
-
-    //VkFence fences[] = { fence };
-
-    //vkWaitForFences(device, 1, fences, VK_TRUE, INT64_MAX);
-      error("vkWaitForFences: draw.\n");
-    vkWaitForFences(device, 1, &waitFences[0], VK_TRUE, INT64_MAX);
-    //vkResetFences(device, 1, &fence);
-     error("vkResetFences: draw.\n");
-    vkResetFences(device, 1, &waitFences[0]);
-    */
-
+  void draw() {
     // Get next image in the swap chain (back/front buffer)
     vik_log_check(swapChain.acquireNextImage(presentCompleteSemaphore, &currentBuffer));
 
@@ -397,8 +362,6 @@ public:
     // Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
     // This ensures that the image is not presented to the windowing system until all commands have been submitted
     vik_log_check(swapChain.queuePresent(queue, currentBuffer, renderCompleteSemaphore));
-
-    //error("vkQueueSubmit: draw done.\n");
   }
 
   // Prepare vertex and index buffers for an indexed triangle
@@ -712,9 +675,6 @@ public:
   // Note: Override of virtual function in the base class and called from within VulkanExampleBase::prepare
   void setupFrameBuffer()
   {
-    //fprintf(stderr, "skipping framebuffer swapchain setup.\n");
-    /**/
-
     // Create a frame buffer for every image in the swapchain
     frameBuffers.resize(swapChain.imageCount);
     for (size_t i = 0; i < frameBuffers.size(); i++)
@@ -1054,14 +1014,12 @@ public:
     setupDescriptorSet();
     buildCommandBuffers();
     prepared = true;
-    fprintf(stderr, "triangle: prepare done\n");
   }
 
   virtual void render()
   {
     if (!prepared)
       return;
-    //fprintf(stderr, "triangle: render\n");
     draw();
   }
 
@@ -1081,15 +1039,12 @@ int main(const int argc, const char *argv[]) {
   app->initVulkan(window);
 
   if (window->init(app) == -1) {
-    printf("Error setting up window\n");
     delete(app);
-    return -1;
+    vik_log_f("Error setting up window");
   }
 
   window->initSwapChain(app->renderer->instance, &app->swapChain);
-  fprintf(stderr, "prepare\n");
   app->prepare();
-  fprintf(stderr, "renderLoopWrap\n");
   app->loop(window);
   delete(app);
 
