@@ -1,7 +1,7 @@
 #include <assert.h>
 
-#include "VikRenderer.hpp"
-#include "cube.hpp"
+#include "vkcRenderer.hpp"
+#include "vkcCube.hpp"
 
 CubeRenderer::CubeRenderer(uint32_t w, uint32_t h) : width(w), height(h) {
   gettimeofday(&start_tv, NULL);

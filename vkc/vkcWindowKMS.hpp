@@ -23,9 +23,8 @@
 
 #include <vulkan/vulkan_intel.h>
 
-#include "display.hpp"
-
-#include "application.hpp"
+#include "vkcWindow.hpp"
+#include "vkcApplication.hpp"
 
 static void
 page_flip_handler(int fd, unsigned int frame,

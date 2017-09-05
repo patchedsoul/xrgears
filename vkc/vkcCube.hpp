@@ -33,7 +33,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "VikRenderer.hpp"
+#include "../vkc/vkcRenderer.hpp"
 #include "VikShader.hpp"
 
 #define VK_PROTOTYPES

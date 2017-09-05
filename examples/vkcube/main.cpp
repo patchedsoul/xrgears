@@ -35,7 +35,7 @@
  * to configure when configuring vkcube
  */
 
-#include "application.hpp"
+#include "../vkc/vkcApplication.hpp"
 
 
 int main(int argc, char *argv[])

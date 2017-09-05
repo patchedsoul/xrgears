@@ -2,9 +2,9 @@
 
 #include <assert.h>
 
-#include "cube.hpp"
-#include "display.hpp"
-#include "VikRenderer.hpp"
+#include "../vkc/vkcCube.hpp"
+#include "../vkc/vkcWindow.hpp"
+#include "../vkc/vkcRenderer.hpp"
 
 class CubeApplication {
 public:

@@ -58,6 +58,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_XCB_KHR")
 
 file(GLOB VKS_SRC vks/*.cpp vks/*.h vks/*.hpp)
 file(GLOB VITAMINK_SRC vitamin-k/*.hpp)
+file(GLOB VKC_SRC vkc/*.cpp vkc/*.h vkc/*.hpp)
 
 file(GLOB XDG_SRC xdg-shell/*.c)
 
@@ -65,15 +66,20 @@ add_library(vks ${VKS_SRC})
 
 add_library(vitamin-k ${VITAMINK_SRC})
 
+add_library(vkc ${VKC_SRC})
+
 add_library(xdg-shell ${XDG_SRC})
 
 SET_TARGET_PROPERTIES(vitamin-k  PROPERTIES LINKER_LANGUAGE CXX)
 
 include_directories(vks)
+include_directories(vkc)
 include_directories(vitamin-k)
 include_directories(xdg-shell)
 
 target_link_libraries(vks vulkan xcb assimp wayland-client gbm drm m stdc++ xdg-shell)
+
+target_link_libraries(vkc vks)
 
 INCLUDE_DIRECTORIES(/usr/include/openhmd/)
 
@@ -102,7 +108,7 @@ function(buildExample EXAMPLE_NAME)
     add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
 
     if (EXAMPLE_NAME STREQUAL "vkcube")
-	target_link_libraries(${EXAMPLE_NAME} vulkan m wayland-client png drm gbm xcb vks)
+	target_link_libraries(${EXAMPLE_NAME} vulkan m wayland-client png drm gbm xcb vks vkc vitamin-k)
     else()
 	set(LINT_SOURCES ${LINT_SOURCES} ${EXAMPLE_SRC})
 	target_link_libraries(${EXAMPLE_NAME}

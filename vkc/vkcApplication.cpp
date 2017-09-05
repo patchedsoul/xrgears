@@ -1,12 +1,12 @@
 #include <assert.h>
 
-#include "application.hpp"
+#include "vkcApplication.hpp"
 
-#include "cube.hpp"
-#include "xcb.hpp"
-#include "kms.hpp"
-#include "wayland.hpp"
-#include "VikRenderer.hpp"
+#include "vkcCube.hpp"
+#include "vkcWindowXCB.hpp"
+#include "vkcWindowKMS.hpp"
+#include "vkcWindowWayland.hpp"
+#include "vkcRenderer.hpp"
 
 CubeApplication::CubeApplication(uint32_t w, uint32_t h) {
   mode = DISPLAY_MODE_AUTO;

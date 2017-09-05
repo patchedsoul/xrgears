@@ -4,9 +4,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "display.hpp"
-
-#include "application.hpp"
+#include "vkcWindow.hpp"
+#include "vkcApplication.hpp"
 
 #include "../vks/vksLog.hpp"
 
