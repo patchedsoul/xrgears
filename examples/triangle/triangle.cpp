@@ -1079,8 +1079,8 @@ Triangle *app;
 
 int main(const int argc, const char *argv[])
 {
-  for (size_t i = 0; i < argc; i++) { Triangle::args.push_back(argv[i]); };
   app = new Triangle();
+  for (size_t i = 0; i < argc; i++) { app->args.push_back(argv[i]); };
   vks::VikWindow * window = new VikWindowWayland();
   //VikWindow * window = new VikWindowXCB();
   //VikWindow * window = new VikWindowKMS();

@@ -16,9 +16,6 @@
 
 namespace vks {
 
-std::vector<const char*> Application::args;
-
-
 std::string Application::getWindowTitle() {
   std::string device(deviceProperties.deviceName);
   std::string windowTitle = title + " - " + device;

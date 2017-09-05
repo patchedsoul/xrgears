@@ -156,7 +156,7 @@ class Application {
 
   float zoom = 0;
 
-  static std::vector<const char*> args;
+  std::vector<const char*> args;
 
   bool enableTextOverlay = true;
   TextOverlay *textOverlay;

@@ -753,8 +753,8 @@ public:
 XRGears *app;
 
 int main(const int argc, const char *argv[]) {
-  for (size_t i = 0; i < argc; i++) { XRGears::args.push_back(argv[i]); };
   app = new XRGears();
+  for (size_t i = 0; i < argc; i++) { app->args.push_back(argv[i]); };
   vks::VikWindow * window = new VikWindowWayland();
   //VikWindow * window = new VikWindowXCB();
   //VikWindow * window = new VikWindowKMS();
