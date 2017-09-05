@@ -15,6 +15,7 @@
 #define vik_log_f(...) vik_log(vks::Log::FATAL, __VA_ARGS__)
 #define vik_log_f_if(...) vks::Log::log_fatal_if(__FILE__, __LINE__, __VA_ARGS__)
 
+
 namespace vks {
 class Log {
 
@@ -29,7 +30,7 @@ public:
     FATAL
   };
 
-  static std::string type_str(type t) {
+  static const char* type_str(type t) {
     switch(t) {
       case DEBUG:
         return "d";
@@ -61,9 +62,8 @@ public:
   static std::string color_code(int code) {
     if (!use_color)
       return "";
-
-    char *code_str = (char *) malloc(7);
-    sprintf(code_str, " \e[%dm", code);
+    char code_str[7];
+    snprintf(code_str, sizeof(code_str), "\e[%dm", code);
     return std::string(code_str);
   }
 
@@ -81,7 +81,7 @@ public:
   }
 
   static void log_values(const char* file, int line, type t, const char *format, va_list args) {
-    fprintf(stdout, "[%s%s%s] ", color_code(type_color(t)).c_str(), type_str(t).c_str(), color_code(0).c_str());
+    fprintf(stdout, "%s[%s]%s ", color_code(type_color(t)).c_str(), type_str(t), color_code(0).c_str());
     fprintf(stdout, "%s:%d | ", strip_file_name(file).c_str(), line);
     vfprintf(stdout, format, args);
     fprintf(stdout, "\n");
