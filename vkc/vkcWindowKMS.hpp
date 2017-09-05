@@ -216,9 +216,9 @@ public:
 
     vc->init_vk(NULL);
     vc->image_format = VK_FORMAT_R8G8B8A8_SRGB;
-    vc->init_vk_objects_part1();
+    vc->init_render_pass();
     app->init();
-    vc->init_vk_objects_part2();
+    vc->init_vk_objects();
 
     PFN_vkCreateDmaBufImageINTEL create_dma_buf_image =
         (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(vc->device, "vkCreateDmaBufImageINTEL");

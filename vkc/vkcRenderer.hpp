@@ -45,8 +45,8 @@ public:
 
     void init_vk(const char *extension);
     VkFormat choose_surface_format();
-    void init_vk_objects_part1();
-    void init_vk_objects_part2();
+    void init_render_pass();
+    void init_vk_objects();
     void init_buffer(struct CubeBuffer *b);
     void create_swapchain();
 };

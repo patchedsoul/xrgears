@@ -293,10 +293,9 @@ public:
 
     vc->image_format = vc->choose_surface_format();
 
-    vc->init_vk_objects_part1();
+    vc->init_render_pass();
     app->init();
-    vc->init_vk_objects_part2();
-
+    vc->init_vk_objects();
     vc->create_swapchain();
 
     return 0;

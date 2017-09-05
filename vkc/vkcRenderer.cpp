@@ -113,8 +113,8 @@ VkFormat Renderer::choose_surface_format() {
   return format;
 }
 
-void Renderer::init_vk_objects_part1() {
-  VkAttachmentDescription attachementDesc[] = {
+void Renderer::init_render_pass() {
+  VkAttachmentDescription attachement_desc[] = {
     {
       .format = image_format,
       .samples = (VkSampleCountFlagBits) 1,
@@ -125,51 +125,51 @@ void Renderer::init_vk_objects_part1() {
     }
   };
 
-  VkAttachmentReference atref[] = {
+  VkAttachmentReference color_attachments[] = {
     {
       .attachment = 0,
       .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
     }
   };
 
-  VkAttachmentReference atref2[] = {
+  VkAttachmentReference resolve_attachments[] = {
     {
       .attachment = VK_ATTACHMENT_UNUSED,
       .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
     }
   };
 
-  uint32_t presereve[] = { 0 };
+  uint32_t presereve_attachments[] = { 0 };
 
-  VkSubpassDescription passdesc[] = {
+  VkSubpassDescription sub_pass_desc[] = {
     {
       .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
       .inputAttachmentCount = 0,
       .colorAttachmentCount = 1,
-      .pColorAttachments = atref,
-      .pResolveAttachments = atref2,
+      .pColorAttachments = color_attachments,
+      .pResolveAttachments = resolve_attachments,
       .pDepthStencilAttachment = NULL,
       .preserveAttachmentCount = 1,
-      .pPreserveAttachments = presereve,
+      .pPreserveAttachments = presereve_attachments,
     }
   };
 
-  VkRenderPassCreateInfo passcreateinfo = {
+  VkRenderPassCreateInfo render_pass_create_info = {
     .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
     .attachmentCount = 1,
-    .pAttachments = attachementDesc,
+    .pAttachments = attachement_desc,
     .subpassCount = 1,
-    .pSubpasses = passdesc,
+    .pSubpasses = sub_pass_desc,
     .dependencyCount = 0
   };
 
   vkCreateRenderPass(device,
-                     &passcreateinfo,
+                     &render_pass_create_info,
                      NULL,
                      &render_pass);
 }
 
-void Renderer::init_vk_objects_part2() {
+void Renderer::init_vk_objects() {
   VkFenceCreateInfo fenceinfo = {
     .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
     .flags = 0
@@ -201,16 +201,6 @@ void Renderer::init_vk_objects_part2() {
                     NULL,
                     &semaphore);
 }
-
-/*
-void Renderer::init_vk_objects(Application * model)
-{
-  init_vk_objects_part1();
-  model->init(this);
-  init_vk_objects_part2();
-}
-*/
-
 
 void Renderer::init_buffer(struct CubeBuffer *b) {
 

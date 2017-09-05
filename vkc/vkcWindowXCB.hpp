@@ -108,9 +108,9 @@ public:
     init_surface(vc);
 
     //vc->init_vk_objects(app);
-    vc->init_vk_objects_part1();
+    vc->init_render_pass();
     app->init();
-    vc->init_vk_objects_part2();
+    vc->init_vk_objects();
 
     vc->image_count = 0;
 
