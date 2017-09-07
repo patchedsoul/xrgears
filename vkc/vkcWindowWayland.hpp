@@ -3,12 +3,18 @@
 #include <string.h>
 #include <stdio.h>
 
+
+#include <poll.h>
+
+#include <vulkan/vulkan.h>
+
 #include <xdg-shell-unstable-v6-client-protocol.h>
 #include <wayland-client.h>
 #include <linux/input.h>
 
 #include "vkcWindow.hpp"
 #include "vkcApplication.hpp"
+#include "vkcRenderer.hpp"
 
 #include "../vks/vksLog.hpp"
 
@@ -301,50 +307,53 @@ public:
     return 0;
   }
 
-  void
-  loop(Application* app, Renderer *vc)
-  {
-    VkResult result = VK_SUCCESS;
-    struct pollfd fds[] = {
-    { wl_display_get_fd(display), POLLIN },
-  };
+  void flush() {
+    while (wl_display_prepare_read(display) != 0)
+      wl_display_dispatch_pending(display);
+    if (wl_display_flush(display) < 0 && errno != EAGAIN) {
+      wl_display_cancel_read(display);
+      return;
+    }
+
+    pollfd fds[] = {{ wl_display_get_fd(display), POLLIN },};
+    if (poll(fds, 1, 0) > 0) {
+      wl_display_read_events(display);
+      wl_display_dispatch_pending(display);
+    } else {
+      wl_display_cancel_read(display);
+    }
+  }
+
+  void present(Renderer *vc, uint32_t index) {
+    VkSwapchainKHR swapChains[] = { vc->swap_chain, };
+    uint32_t indices[] = { index, };
+
+    VkPresentInfoKHR presentInfo = {
+      .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+      .swapchainCount = 1,
+      .pSwapchains = swapChains,
+      .pImageIndices = indices,
+      //.pResults = &result,
+    };
+
+    VkResult result = vkQueuePresentKHR(vc->queue, &presentInfo);
+    vik_log_f_if(result != VK_SUCCESS, "vkQueuePresentKHR failed.");
+  }
+
+  void loop(Application* app, Renderer *vc) {
     while (1) {
+      flush();
+
       uint32_t index;
-
-      while (wl_display_prepare_read(display) != 0)
-        wl_display_dispatch_pending(display);
-      if (wl_display_flush(display) < 0 && errno != EAGAIN) {
-        wl_display_cancel_read(display);
-        return;
-      }
-      if (poll(fds, 1, 0) > 0) {
-        wl_display_read_events(display);
-        wl_display_dispatch_pending(display);
-      } else {
-        wl_display_cancel_read(display);
-      }
-
+      VkResult result;
       result = vkAcquireNextImageKHR(vc->device, vc->swap_chain, 60,
                                      vc->semaphore, VK_NULL_HANDLE, &index);
-      if (result != VK_SUCCESS)
-        return;
+
+      vik_log_f_if(result != VK_SUCCESS, "vkAcquireNextImageKHR failed.");
 
       app->render(&vc->buffers[index]);
+      present(vc, index);
 
-      VkSwapchainKHR swapChains[] = { vc->swap_chain, };
-      uint32_t indices[] = { index, };
-
-      VkPresentInfoKHR presentInfo = {
-        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-        .swapchainCount = 1,
-        .pSwapchains = swapChains,
-        .pImageIndices = indices,
-        .pResults = &result,
-      };
-
-      vkQueuePresentKHR(vc->queue, &presentInfo);
-      if (result != VK_SUCCESS)
-        return;
     }
   }
 };

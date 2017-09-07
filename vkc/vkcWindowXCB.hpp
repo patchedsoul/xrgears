@@ -36,6 +36,8 @@ class WindowXCB : public Window {
   xcb_atom_t atom_wm_protocols;
   xcb_atom_t atom_wm_delete_window;
 
+  bool repaint = false;
+
 public:
   WindowXCB() {
     window = XCB_NONE;
@@ -132,73 +134,89 @@ public:
   void schedule_repaint()
   {
     xcb_client_message_event_t client_message;
-
     client_message.response_type = XCB_CLIENT_MESSAGE;
     client_message.format = 32;
     client_message.window = window;
     client_message.type = XCB_ATOM_NOTICE;
-
-    xcb_send_event(conn, 0, window,
-                   0, (char *) &client_message);
+    xcb_send_event(conn, 0, window, 0, (char *) &client_message);
   }
 
-  void
-  loop(Application* app, Renderer *vc)
-  {
+
+  void poll_events(Renderer *vc) {
     xcb_generic_event_t *event;
     xcb_key_press_event_t *key_press;
     xcb_client_message_event_t *client_message;
     xcb_configure_notify_event_t *configure;
 
-    while (1) {
-      bool repaint = false;
-      event = xcb_wait_for_event(conn);
-      while (event) {
-        switch (event->response_type & 0x7f) {
-          case XCB_CLIENT_MESSAGE:
-            client_message = (xcb_client_message_event_t *) event;
-            if (client_message->window != window)
-              break;
+    event = xcb_wait_for_event(conn);
+    while (event) {
+      switch (event->response_type & 0x7f) {
+        case XCB_CLIENT_MESSAGE:
+          client_message = (xcb_client_message_event_t *) event;
+          if (client_message->window != window)
+            break;
 
-            if (client_message->type == atom_wm_protocols &&
-                client_message->data.data32[0] == atom_wm_delete_window) {
-              exit(0);
+          if (client_message->type == atom_wm_protocols &&
+              client_message->data.data32[0] == atom_wm_delete_window) {
+            exit(0);
+          }
+
+          if (client_message->type == XCB_ATOM_NOTICE)
+            repaint = true;
+          break;
+
+        case XCB_CONFIGURE_NOTIFY:
+          configure = (xcb_configure_notify_event_t *) event;
+          if (vc->width != configure->width ||
+              vc->height != configure->height) {
+            if (vc->image_count > 0) {
+              vkDestroySwapchainKHR(vc->device, vc->swap_chain, NULL);
+              vc->image_count = 0;
             }
 
-            if (client_message->type == XCB_ATOM_NOTICE)
-              repaint = true;
-            break;
+            vc->width = configure->width;
+            vc->height = configure->height;
+          }
+          break;
 
-          case XCB_CONFIGURE_NOTIFY:
-            configure = (xcb_configure_notify_event_t *) event;
-            if (vc->width != configure->width ||
-                vc->height != configure->height) {
-              if (vc->image_count > 0) {
-                vkDestroySwapchainKHR(vc->device, vc->swap_chain, NULL);
-                vc->image_count = 0;
-              }
+        case XCB_EXPOSE:
+          schedule_repaint();
+          break;
 
-              vc->width = configure->width;
-              vc->height = configure->height;
-            }
-            break;
+        case XCB_KEY_PRESS:
+          key_press = (xcb_key_press_event_t *) event;
 
-          case XCB_EXPOSE:
-            schedule_repaint();
-            break;
+          if (key_press->detail == 9)
+            exit(0);
 
-          case XCB_KEY_PRESS:
-            key_press = (xcb_key_press_event_t *) event;
-
-            if (key_press->detail == 9)
-              exit(0);
-
-            break;
-        }
-        free(event);
-
-        event = xcb_poll_for_event(conn);
+          break;
       }
+      free(event);
+
+      event = xcb_poll_for_event(conn);
+    }
+  }
+
+  void present(Renderer *vc, uint32_t index) {
+    VkSwapchainKHR swapChains[] = { vc->swap_chain, };
+    uint32_t indices[] = { index, };
+
+    VkPresentInfoKHR presentInfo = {
+      .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+      .swapchainCount = 1,
+      .pSwapchains = swapChains,
+      .pImageIndices = indices,
+      //.pResults = &result,
+    };
+
+    VkResult result = vkQueuePresentKHR(vc->queue, &presentInfo);
+    vik_log_f_if(result != VK_SUCCESS, "vkQueuePresentKHR failed.");
+  }
+
+  void loop(Application* app, Renderer *vc) {
+    while (1) {
+
+      poll_events(vc);
 
       if (repaint) {
         if (vc->image_count == 0)
@@ -208,30 +226,12 @@ public:
         vkAcquireNextImageKHR(vc->device, vc->swap_chain, 60,
                               vc->semaphore, VK_NULL_HANDLE, &index);
 
-
-        // TODO: model render
         app->render(&vc->buffers[index]);
-
-        VkResult result;
-
-        uint32_t indices[] = { index, };
-
-        VkSwapchainKHR swapchains[] = { vc->swap_chain, };
-
-        VkPresentInfoKHR presentInfo = {};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = swapchains;
-        presentInfo.pImageIndices = indices;
-        presentInfo.pResults = &result;
-
-
-        vkQueuePresentKHR(vc->queue, &presentInfo);
-
+        present(vc, index);
         schedule_repaint();
       }
-
       xcb_flush(conn);
+
     }
   }
 };

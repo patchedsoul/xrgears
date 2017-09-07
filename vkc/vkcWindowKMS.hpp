@@ -25,6 +25,8 @@
 
 #include "vkcWindow.hpp"
 #include "vkcApplication.hpp"
+#include "vkcRenderer.hpp"
+#include "vksLog.hpp"
 
 static void
 page_flip_handler(int fd, unsigned int frame,
@@ -73,14 +75,36 @@ public:
     restore_vt();
   }
 
+  void init_loop() {
+    int ret = drmModeSetCrtc(fd, crtc->crtc_id, kms_buffers[0].fb,
+        0, 0, &connector->connector_id, 1, &crtc->mode);
+    vik_log_f_if(ret < 0, "modeset failed: %m");
+
+
+    ret = drmModePageFlip(fd, crtc->crtc_id, kms_buffers[0].fb,
+        DRM_MODE_PAGE_FLIP_EVENT, NULL);
+    vik_log_f_if(ret < 0, "pageflip failed: %m");
+  }
+
+  /*
+  void poll_events() {
+    char buf[16];
+    int len = read(STDIN_FILENO, buf, sizeof(buf));
+    switch (buf[0]) {
+      case 'q':
+        return;
+      case '\e':
+        if (len == 1)
+          return;
+    }
+  }
+  */
+
   void loop(Application* app, Renderer *vc)
   {
-    int len, ret;
-    char buf[16];
-    struct pollfd pfd[2];
-    struct RenderBuffer *b;
-    struct kms_buffer *kms_b;
+    init_loop();
 
+    struct pollfd pfd[2];
     pfd[0].fd = STDIN_FILENO;
     pfd[0].events = POLLIN;
     pfd[1].fd = fd;
@@ -90,20 +114,13 @@ public:
     evctx.version = 2;
     evctx.page_flip_handler = page_flip_handler;
 
-    ret = drmModeSetCrtc(fd, crtc->crtc_id, kms_buffers[0].fb,
-        0, 0, &connector->connector_id, 1, &crtc->mode);
-    vik_log_f_if(ret < 0, "modeset failed: %m");
-
-
-    ret = drmModePageFlip(fd, crtc->crtc_id, kms_buffers[0].fb,
-        DRM_MODE_PAGE_FLIP_EVENT, NULL);
-    vik_log_f_if(ret < 0, "pageflip failed: %m");
-
     while (1) {
-      ret = poll(pfd, 2, -1);
+      int ret = poll(pfd, 2, -1);
       vik_log_f_if(ret == -1, "poll failed");
       if (pfd[0].revents & POLLIN) {
-        len = read(STDIN_FILENO, buf, sizeof(buf));
+        //poll_events();
+        char buf[16];
+        int len = read(STDIN_FILENO, buf, sizeof(buf));
         switch (buf[0]) {
           case 'q':
             return;
@@ -112,16 +129,17 @@ public:
               return;
         }
       }
+
       if (pfd[1].revents & POLLIN) {
         drmHandleEvent(fd, &evctx);
-        b = &vc->buffers[vc->current & 1];
-        kms_b = &kms_buffers[vc->current & 1];
+        RenderBuffer *b = &vc->buffers[vc->current & 1];
+        kms_buffer *kms_b = &kms_buffers[vc->current & 1];
 
         app->render(b);
 
         ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
                               DRM_MODE_PAGE_FLIP_EVENT, NULL);
-        vik_log_f_if(ret < 0, "pageflip failed: %m\n");
+        vik_log_f_if(ret < 0, "pageflip failed: %m");
         vc->current++;
       }
     }
