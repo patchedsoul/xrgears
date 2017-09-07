@@ -324,24 +324,8 @@ void Renderer::present(uint32_t index) {
 void Renderer::aquire_next_image(uint32_t *index) {
   VkResult result = vkAcquireNextImageKHR(device, swap_chain, 60,
                                  semaphore, VK_NULL_HANDLE, index);
-  //vik_log_e_if(result != VK_SUCCESS, "vkAcquireNextImageKHR failed.");
-
-  switch(result) {
-    case VK_SUCCESS:
-      return;
-    case VK_TIMEOUT:
-      vik_log_e("VK_TIMEOUT");
-      break;
-    case VK_NOT_READY:
-      vik_log_e("VK_NOT_READY");
-      break;
-    case VK_SUBOPTIMAL_KHR:
-      vik_log_e("VK_SUBOPTIMAL_KHR");
-      break;
-    default:
-      vik_log_e("UNKNOWN");
-  }
-
+  vik_log_e_if(result != VK_SUCCESS, "vkAcquireNextImageKHR failed: %s",
+               vks::Log::result_string(result).c_str());
 }
 
 void Renderer::create_swapchain_if_needed() {

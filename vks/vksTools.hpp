@@ -46,8 +46,6 @@
 
 namespace vks {
 namespace tools {
-/** @brief Returns an error code as a string */
-std::string errorString(VkResult errorCode);
 
 /** @brief Returns the device type as a string */
 std::string physicalDeviceTypeString(VkPhysicalDeviceType type);
