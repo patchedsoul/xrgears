@@ -601,6 +601,6 @@ int main(int argc, char *argv[]) {
   Cube app(2560, 1440);
   app.parse_args(argc, argv);
   app.init_display();
-  app.mainloop();
+  app.loop();
   return 0;
 }

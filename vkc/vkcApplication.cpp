@@ -110,7 +110,7 @@ void Application::init_display() {
     vik_log_f("failed to initialize %s", display->name.c_str());
 }
 
-void Application::mainloop() {
+void Application::loop() {
   display->loop(this);
 }
 }

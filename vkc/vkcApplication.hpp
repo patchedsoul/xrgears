@@ -26,7 +26,7 @@ public:
    bool display_mode_from_string(const char *s);
    void parse_args(int argc, char *argv[]);
    void init_display();
-   void mainloop();
+   void loop();
 
    int init_display_mode(window_type m);
    void init_display_mode_auto();
