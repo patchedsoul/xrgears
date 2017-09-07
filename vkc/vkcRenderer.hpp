@@ -49,5 +49,10 @@ public:
     void init_vk_objects();
     void init_buffer(struct RenderBuffer *b);
     void create_swapchain();
+
+    void present(uint32_t index);
+    void aquire_next_image(uint32_t *index);
+
+    void create_swapchain_if_needed();
 };
 }

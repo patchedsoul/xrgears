@@ -305,4 +305,48 @@ void Renderer::create_swapchain() {
   }
 }
 
+void Renderer::present(uint32_t index) {
+  VkSwapchainKHR swapChains[] = { swap_chain, };
+  uint32_t indices[] = { index, };
+
+  VkPresentInfoKHR presentInfo = {
+    .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+    .swapchainCount = 1,
+    .pSwapchains = swapChains,
+    .pImageIndices = indices,
+    //.pResults = &result,
+  };
+
+  VkResult result = vkQueuePresentKHR(queue, &presentInfo);
+  vik_log_f_if(result != VK_SUCCESS, "vkQueuePresentKHR failed.");
+}
+
+void Renderer::aquire_next_image(uint32_t *index) {
+  VkResult result = vkAcquireNextImageKHR(device, swap_chain, 60,
+                                 semaphore, VK_NULL_HANDLE, index);
+  //vik_log_e_if(result != VK_SUCCESS, "vkAcquireNextImageKHR failed.");
+
+  switch(result) {
+    case VK_SUCCESS:
+      return;
+    case VK_TIMEOUT:
+      vik_log_e("VK_TIMEOUT");
+      break;
+    case VK_NOT_READY:
+      vik_log_e("VK_NOT_READY");
+      break;
+    case VK_SUBOPTIMAL_KHR:
+      vik_log_e("VK_SUBOPTIMAL_KHR");
+      break;
+    default:
+      vik_log_e("UNKNOWN");
+  }
+
+}
+
+void Renderer::create_swapchain_if_needed() {
+  if (image_count == 0)
+    create_swapchain();
+}
+
 }

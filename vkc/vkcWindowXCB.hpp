@@ -116,6 +116,8 @@ public:
 
     app->renderer->image_count = 0;
 
+    //app->renderer->create_swapchain();
+
     return 0;
   }
 
@@ -197,21 +199,7 @@ public:
     }
   }
 
-  void present(Renderer *vc, uint32_t index) {
-    VkSwapchainKHR swapChains[] = { vc->swap_chain, };
-    uint32_t indices[] = { index, };
 
-    VkPresentInfoKHR presentInfo = {
-      .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-      .swapchainCount = 1,
-      .pSwapchains = swapChains,
-      .pImageIndices = indices,
-      //.pResults = &result,
-    };
-
-    VkResult result = vkQueuePresentKHR(vc->queue, &presentInfo);
-    vik_log_f_if(result != VK_SUCCESS, "vkQueuePresentKHR failed.");
-  }
 
   void loop(Application* app) {
     while (1) {
@@ -219,15 +207,13 @@ public:
       poll_events(app->renderer);
 
       if (repaint) {
-        if (app->renderer->image_count == 0)
-          app->renderer->create_swapchain();
+
+        app->renderer->create_swapchain_if_needed();
 
         uint32_t index;
-        vkAcquireNextImageKHR(app->renderer->device, app->renderer->swap_chain, 60,
-                              app->renderer->semaphore, VK_NULL_HANDLE, &index);
-
+        app->renderer->aquire_next_image(&index);
         app->render(&app->renderer->buffers[index]);
-        present(app->renderer, index);
+        app->renderer->present(index);
         schedule_repaint();
       }
       xcb_flush(conn);

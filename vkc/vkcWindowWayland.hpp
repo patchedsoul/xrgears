@@ -324,36 +324,15 @@ public:
     }
   }
 
-  void present(Renderer *vc, uint32_t index) {
-    VkSwapchainKHR swapChains[] = { vc->swap_chain, };
-    uint32_t indices[] = { index, };
 
-    VkPresentInfoKHR presentInfo = {
-      .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-      .swapchainCount = 1,
-      .pSwapchains = swapChains,
-      .pImageIndices = indices,
-      //.pResults = &result,
-    };
-
-    VkResult result = vkQueuePresentKHR(vc->queue, &presentInfo);
-    vik_log_f_if(result != VK_SUCCESS, "vkQueuePresentKHR failed.");
-  }
 
   void loop(Application* app) {
     while (1) {
       flush();
-
       uint32_t index;
-      VkResult result;
-      result = vkAcquireNextImageKHR(app->renderer->device, app->renderer->swap_chain, 60,
-                                     app->renderer->semaphore, VK_NULL_HANDLE, &index);
-
-      vik_log_f_if(result != VK_SUCCESS, "vkAcquireNextImageKHR failed.");
-
+      app->renderer->aquire_next_image(&index);
       app->render(&app->renderer->buffers[index]);
-      present(app->renderer, index);
-
+      app->renderer->present(index);
     }
   }
 };
