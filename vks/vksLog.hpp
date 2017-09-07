@@ -15,7 +15,9 @@
 #define vik_log_w(...) vik_log(vks::Log::WARNING, __VA_ARGS__)
 #define vik_log_e(...) vik_log(vks::Log::ERROR, __VA_ARGS__)
 #define vik_log_f(...) vik_log(vks::Log::FATAL, __VA_ARGS__)
-#define vik_log_f_if(...) vks::Log::log_fatal_if(__FILE__, __LINE__, __VA_ARGS__)
+#define vik_log_if(...) vks::Log::log_if(__FILE__, __LINE__, __VA_ARGS__)
+#define vik_log_f_if(...) vik_log_if(vks::Log::FATAL, __VA_ARGS__)
+#define vik_log_e_if(...) vik_log_if(vks::Log::ERROR, __VA_ARGS__)
 
 // Macro to check and display Vulkan return results
 #define vik_log_check(f) {\
@@ -115,15 +117,13 @@ public:
       exit(1);
   }
 
-  static void log_fatal_if(const char* file, int line, bool cond, const char *format, ...) {
+  static void log_if(const char* file, int line, type t, bool cond, const char *format, ...) {
     if (!cond)
       return;
-
     va_list args;
     va_start(args, format);
-    log_values(file, line, FATAL, format, args);
+    log_values(file, line, t, format, args);
     va_end(args);
-    exit(1);
   }
 
 };
