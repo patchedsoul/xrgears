@@ -427,98 +427,6 @@ public:
     vkUpdateDescriptorSets(renderer->device, 1, writeDescriptorSet, 0, NULL);
   }
 
-
-  VkCommandBuffer build_command_buffer(struct vkc::RenderBuffer *b) {
-    VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {
-      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-      .commandPool = renderer->cmd_pool,
-      .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-      .commandBufferCount = 1,
-    };
-
-    vkAllocateCommandBuffers(renderer->device,
-                             &cmdBufferAllocateInfo,
-                             &renderer->cmd_buffer);
-
-    VkCommandBufferBeginInfo cmdBufferBeginInfo = {
-      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-      .flags = 0
-    };
-
-    vkBeginCommandBuffer(renderer->cmd_buffer, &cmdBufferBeginInfo);
-
-
-    VkClearValue clearValues[] = {
-      { .color = { .float32 = { 0.2f, 0.2f, 0.2f, 1.0f } } }
-    };
-
-    VkRenderPassBeginInfo passBeginInfo = {
-      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-      .renderPass = renderer->render_pass,
-      .framebuffer = b->framebuffer,
-      .renderArea = { { 0, 0 }, { renderer->width, renderer->height } },
-      .clearValueCount = 1,
-      .pClearValues = clearValues
-    };
-
-    vkCmdBeginRenderPass(renderer->cmd_buffer,
-                         &passBeginInfo,
-                         VK_SUBPASS_CONTENTS_INLINE);
-
-    VkBuffer buffers[] = {
-      renderer->buffer,
-      renderer->buffer,
-      renderer->buffer
-    };
-
-    VkDeviceSize sizes[] = {
-      vertex_offset,
-      colors_offset,
-      normals_offset
-    };
-
-    vkCmdBindVertexBuffers(renderer->cmd_buffer, 0, 3,
-                           buffers,
-                           sizes);
-
-    vkCmdBindPipeline(renderer->cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->pipeline);
-
-    vkCmdBindDescriptorSets(renderer->cmd_buffer,
-                            VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            renderer->pipeline_layout,
-                            0, 1,
-                            &renderer->descriptor_set, 0, NULL);
-
-    const VkViewport viewport = {
-      .x = 0,
-      .y = 0,
-      .width = (float)renderer->width,
-      .height = (float)renderer->height,
-      .minDepth = 0,
-      .maxDepth = 1,
-    };
-    vkCmdSetViewport(renderer->cmd_buffer, 0, 1, &viewport);
-
-    const VkRect2D scissor = {
-      .offset = { 0, 0 },
-      .extent = { renderer->width, renderer->height },
-    };
-    vkCmdSetScissor(renderer->cmd_buffer, 0, 1, &scissor);
-
-    vkCmdDraw(renderer->cmd_buffer, 4, 1, 0, 0);
-    vkCmdDraw(renderer->cmd_buffer, 4, 1, 4, 0);
-    vkCmdDraw(renderer->cmd_buffer, 4, 1, 8, 0);
-    vkCmdDraw(renderer->cmd_buffer, 4, 1, 12, 0);
-    vkCmdDraw(renderer->cmd_buffer, 4, 1, 16, 0);
-    vkCmdDraw(renderer->cmd_buffer, 4, 1, 20, 0);
-
-    vkCmdEndRenderPass(renderer->cmd_buffer);
-
-    vkEndCommandBuffer(renderer->cmd_buffer);
-
-    return renderer->cmd_buffer;
-  }
-
   void update_uniform_buffer(uint64_t t) {
     struct ubo cube_ubo;
 
@@ -551,9 +459,15 @@ public:
     uint64_t t = renderer->get_animation_time();
     update_uniform_buffer(t);
 
-    renderer->cmd_buffer = build_command_buffer(b);
+    VkDeviceSize sizes[] = {
+      vertex_offset,
+      colors_offset,
+      normals_offset
+    };
 
-    renderer->submit_queue(renderer->cmd_buffer);
+    renderer->build_command_buffer(b, sizes);
+
+    renderer->submit_queue();
 
     renderer->wait_and_reset_fences();
   }

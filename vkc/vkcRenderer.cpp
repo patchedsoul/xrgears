@@ -305,7 +305,7 @@ void Renderer::create_swapchain() {
   }
 }
 
-void Renderer::submit_queue(VkCommandBuffer cmd_buffer) {
+void Renderer::submit_queue() {
   VkPipelineStageFlags stageflags[] = {
     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
   };
@@ -366,6 +366,89 @@ void Renderer::wait_and_reset_fences() {
   vkWaitForFences(device, 1, fences, VK_TRUE, INT64_MAX);
   vkResetFences(device, 1, &fence);
   vkResetCommandPool(device, cmd_pool, 0);
+}
+
+void Renderer::build_command_buffer(RenderBuffer *b, VkDeviceSize* offsets) {
+  VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {
+    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+    .commandPool = cmd_pool,
+    .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+    .commandBufferCount = 1,
+  };
+
+  vkAllocateCommandBuffers(device,
+                           &cmdBufferAllocateInfo,
+                           &cmd_buffer);
+
+  VkCommandBufferBeginInfo cmdBufferBeginInfo = {
+    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    .flags = 0
+  };
+
+  vkBeginCommandBuffer(cmd_buffer, &cmdBufferBeginInfo);
+
+
+  VkClearValue clearValues[] = {
+    { .color = { .float32 = { 0.2f, 0.2f, 0.2f, 1.0f } } }
+  };
+
+  VkRenderPassBeginInfo passBeginInfo = {
+    .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+    .renderPass = render_pass,
+    .framebuffer = b->framebuffer,
+    .renderArea = { { 0, 0 }, { width, height } },
+    .clearValueCount = 1,
+    .pClearValues = clearValues
+  };
+
+  vkCmdBeginRenderPass(cmd_buffer,
+                       &passBeginInfo,
+                       VK_SUBPASS_CONTENTS_INLINE);
+
+  VkBuffer buffers[] = {
+    buffer,
+    buffer,
+    buffer
+  };
+
+  vkCmdBindVertexBuffers(cmd_buffer, 0, 3,
+                         buffers,
+                         offsets);
+
+  vkCmdBindPipeline(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+  vkCmdBindDescriptorSets(cmd_buffer,
+                          VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          pipeline_layout,
+                          0, 1,
+                          &descriptor_set, 0, NULL);
+
+  const VkViewport viewport = {
+    .x = 0,
+    .y = 0,
+    .width = (float)width,
+    .height = (float)height,
+    .minDepth = 0,
+    .maxDepth = 1,
+  };
+  vkCmdSetViewport(cmd_buffer, 0, 1, &viewport);
+
+  const VkRect2D scissor = {
+    .offset = { 0, 0 },
+    .extent = { width, height },
+  };
+  vkCmdSetScissor(cmd_buffer, 0, 1, &scissor);
+
+  vkCmdDraw(cmd_buffer, 4, 1, 0, 0);
+  vkCmdDraw(cmd_buffer, 4, 1, 4, 0);
+  vkCmdDraw(cmd_buffer, 4, 1, 8, 0);
+  vkCmdDraw(cmd_buffer, 4, 1, 12, 0);
+  vkCmdDraw(cmd_buffer, 4, 1, 16, 0);
+  vkCmdDraw(cmd_buffer, 4, 1, 20, 0);
+
+  vkCmdEndRenderPass(cmd_buffer);
+
+  vkEndCommandBuffer(cmd_buffer);
 }
 
 }
