@@ -40,6 +40,9 @@ public:
     uint32_t image_count;
     int current;
 
+    VkCommandBuffer cmd_buffer;
+    bool cmd_buffer_created = false;
+
     Renderer(uint32_t w, uint32_t h) ;
     ~Renderer() ;
 

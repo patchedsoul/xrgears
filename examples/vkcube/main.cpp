@@ -56,10 +56,6 @@ public:
 
   uint32_t vertex_offset, colors_offset, normals_offset;
 
-  VkCommandBuffer cmd_buffer;
-
-  bool cmd_buffer_created = false;
-
   void *map;
 
   struct ubo {
@@ -442,14 +438,14 @@ public:
 
     vkAllocateCommandBuffers(renderer->device,
                              &cmdBufferAllocateInfo,
-                             &cmd_buffer);
+                             &renderer->cmd_buffer);
 
     VkCommandBufferBeginInfo cmdBufferBeginInfo = {
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
       .flags = 0
     };
 
-    vkBeginCommandBuffer(cmd_buffer, &cmdBufferBeginInfo);
+    vkBeginCommandBuffer(renderer->cmd_buffer, &cmdBufferBeginInfo);
 
 
     VkClearValue clearValues[] = {
@@ -465,7 +461,7 @@ public:
       .pClearValues = clearValues
     };
 
-    vkCmdBeginRenderPass(cmd_buffer,
+    vkCmdBeginRenderPass(renderer->cmd_buffer,
                          &passBeginInfo,
                          VK_SUBPASS_CONTENTS_INLINE);
 
@@ -481,13 +477,13 @@ public:
       normals_offset
     };
 
-    vkCmdBindVertexBuffers(cmd_buffer, 0, 3,
+    vkCmdBindVertexBuffers(renderer->cmd_buffer, 0, 3,
                            buffers,
                            sizes);
 
-    vkCmdBindPipeline(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->pipeline);
+    vkCmdBindPipeline(renderer->cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->pipeline);
 
-    vkCmdBindDescriptorSets(cmd_buffer,
+    vkCmdBindDescriptorSets(renderer->cmd_buffer,
                             VK_PIPELINE_BIND_POINT_GRAPHICS,
                             renderer->pipeline_layout,
                             0, 1,
@@ -501,26 +497,26 @@ public:
       .minDepth = 0,
       .maxDepth = 1,
     };
-    vkCmdSetViewport(cmd_buffer, 0, 1, &viewport);
+    vkCmdSetViewport(renderer->cmd_buffer, 0, 1, &viewport);
 
     const VkRect2D scissor = {
       .offset = { 0, 0 },
       .extent = { renderer->width, renderer->height },
     };
-    vkCmdSetScissor(cmd_buffer, 0, 1, &scissor);
+    vkCmdSetScissor(renderer->cmd_buffer, 0, 1, &scissor);
 
-    vkCmdDraw(cmd_buffer, 4, 1, 0, 0);
-    vkCmdDraw(cmd_buffer, 4, 1, 4, 0);
-    vkCmdDraw(cmd_buffer, 4, 1, 8, 0);
-    vkCmdDraw(cmd_buffer, 4, 1, 12, 0);
-    vkCmdDraw(cmd_buffer, 4, 1, 16, 0);
-    vkCmdDraw(cmd_buffer, 4, 1, 20, 0);
+    vkCmdDraw(renderer->cmd_buffer, 4, 1, 0, 0);
+    vkCmdDraw(renderer->cmd_buffer, 4, 1, 4, 0);
+    vkCmdDraw(renderer->cmd_buffer, 4, 1, 8, 0);
+    vkCmdDraw(renderer->cmd_buffer, 4, 1, 12, 0);
+    vkCmdDraw(renderer->cmd_buffer, 4, 1, 16, 0);
+    vkCmdDraw(renderer->cmd_buffer, 4, 1, 20, 0);
 
-    vkCmdEndRenderPass(cmd_buffer);
+    vkCmdEndRenderPass(renderer->cmd_buffer);
 
-    vkEndCommandBuffer(cmd_buffer);
+    vkEndCommandBuffer(renderer->cmd_buffer);
 
-    return cmd_buffer;
+    return renderer->cmd_buffer;
   }
 
   void update_uniform_buffer(uint64_t t) {
@@ -555,9 +551,9 @@ public:
     uint64_t t = renderer->get_animation_time();
     update_uniform_buffer(t);
 
-    cmd_buffer = build_command_buffer(b);
+    renderer->cmd_buffer = build_command_buffer(b);
 
-    renderer->submit_queue(cmd_buffer);
+    renderer->submit_queue(renderer->cmd_buffer);
 
     renderer->wait_and_reset_fences();
   }
