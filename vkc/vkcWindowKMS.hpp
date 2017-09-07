@@ -44,6 +44,8 @@ class WindowKMS : public Window {
   struct gbm_device *gbm_dev;
   struct gbm_bo *gbm_bo;
 
+  bool quit = false;
+
   int fd;
 
   struct kms_buffer {
@@ -53,12 +55,24 @@ class WindowKMS : public Window {
     uint32_t stride;
   };
 
+  pollfd pfd[2];
+  drmEventContext evctx;
+
   struct kms_buffer kms_buffers[MAX_NUM_IMAGES];
 
 public:
   WindowKMS() {
     gbm_dev = NULL;
     name = "kms";
+
+    evctx = {};
+    evctx.version = 2;
+    evctx.page_flip_handler = page_flip_handler;
+
+    pfd[0].fd = STDIN_FILENO;
+    pfd[0].events = POLLIN;
+    pfd[1].events = POLLIN;
+
   }
 
   ~WindowKMS() {}
@@ -84,64 +98,52 @@ public:
     ret = drmModePageFlip(fd, crtc->crtc_id, kms_buffers[0].fb,
         DRM_MODE_PAGE_FLIP_EVENT, NULL);
     vik_log_f_if(ret < 0, "pageflip failed: %m");
+
+
+    pfd[1].fd = fd;
   }
 
-  /*
+
   void poll_events() {
     char buf[16];
     int len = read(STDIN_FILENO, buf, sizeof(buf));
+    vik_log_d("== PRESSING |%c|", buf[0]);
     switch (buf[0]) {
       case 'q':
-        return;
+        quit = 1;
       case '\e':
         if (len == 1)
-          return;
+          quit = 1;
     }
   }
-  */
 
-  void loop(Application* app, Renderer *vc)
-  {
-    init_loop();
+  void render(Application* app, Renderer *vc) {
+    drmHandleEvent(fd, &evctx);
+    RenderBuffer *b = &app->renderer->buffers[vc->current & 1];
+    kms_buffer *kms_b = &kms_buffers[vc->current & 1];
 
-    struct pollfd pfd[2];
-    pfd[0].fd = STDIN_FILENO;
-    pfd[0].events = POLLIN;
-    pfd[1].fd = fd;
-    pfd[1].events = POLLIN;
+    app->render(b);
 
-    drmEventContext evctx = {};
-    evctx.version = 2;
-    evctx.page_flip_handler = page_flip_handler;
+    int ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
+                          DRM_MODE_PAGE_FLIP_EVENT, NULL);
+    vik_log_f_if(ret < 0, "pageflip failed: %m");
+    vc->current++;
+  }
 
+  void poll_and_render(Application* app, Renderer *vc) {
+    int ret = poll(pfd, 2, -1);
+    vik_log_f_if(ret == -1, "poll failed");
+    if (pfd[0].revents & POLLIN)
+      poll_events();
+    if (pfd[1].revents & POLLIN)
+      render(app, vc);
+  }
+
+  void loop(Application* app, Renderer *vc) {
     while (1) {
-      int ret = poll(pfd, 2, -1);
-      vik_log_f_if(ret == -1, "poll failed");
-      if (pfd[0].revents & POLLIN) {
-        //poll_events();
-        char buf[16];
-        int len = read(STDIN_FILENO, buf, sizeof(buf));
-        switch (buf[0]) {
-          case 'q':
-            return;
-          case '\e':
-            if (len == 1)
-              return;
-        }
-      }
-
-      if (pfd[1].revents & POLLIN) {
-        drmHandleEvent(fd, &evctx);
-        RenderBuffer *b = &vc->buffers[vc->current & 1];
-        kms_buffer *kms_b = &kms_buffers[vc->current & 1];
-
-        app->render(b);
-
-        ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
-                              DRM_MODE_PAGE_FLIP_EVENT, NULL);
-        vik_log_f_if(ret < 0, "pageflip failed: %m");
-        vc->current++;
-      }
+      poll_and_render(app, vc);
+      if (quit)
+        return;
     }
   }
 
@@ -284,6 +286,8 @@ public:
 
       vc->init_buffer(b);
     }
+
+    init_loop();
 
     return 0;
   }

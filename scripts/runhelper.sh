@@ -1,6 +1,6 @@
 
 run_log_error () {
-  ./bin/$1 2> $1.log
+  ./bin/$1 $2 $3 2> $1.log
   cat $1.log
 }
 

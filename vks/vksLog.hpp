@@ -7,6 +7,8 @@
 #include <cstring>
 #include <iostream>
 
+#define LOG_TO_STD_ERR 0
+
 #define vik_log(...) vks::Log::log(__FILE__, __LINE__, __VA_ARGS__)
 #define vik_log_d(...) vik_log(vks::Log::DEBUG, __VA_ARGS__)
 #define vik_log_i(...) vik_log(vks::Log::INFO, __VA_ARGS__)
@@ -64,6 +66,21 @@ public:
     }
   }
 
+  static FILE *type_stream(type t) {
+#ifdef LOG_TO_STD_ERR
+    return stderr;
+#endif
+    switch(t) {
+      case DEBUG:
+      case INFO:
+      case WARNING:
+        return stdout;
+      case ERROR:
+      case FATAL:
+        return stderr;
+    }
+  }
+
   static std::string color_code(int code) {
     if (!use_color)
       return "";
@@ -86,13 +103,14 @@ public:
   }
 
   static void log_values(const char* file, int line, type t, const char *format, va_list args) {
-    fprintf(stdout, "%s[%s]%s ",
+    FILE *stream = type_stream(t);
+    fprintf(stream, "%s[%s]%s ",
             color_code(type_color(t)).c_str(),
             type_str(t),
             color_code(0).c_str());
-    fprintf(stdout, "%s:%d | ", strip_file_name(file).c_str(), line);
-    vfprintf(stdout, format, args);
-    fprintf(stdout, "\n");
+    fprintf(stream, "%s:%d | ", strip_file_name(file).c_str(), line);
+    vfprintf(stream, format, args);
+    fprintf(stream, "\n");
     if (t == FATAL)
       exit(1);
   }
