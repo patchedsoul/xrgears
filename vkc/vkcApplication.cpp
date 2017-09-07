@@ -85,7 +85,7 @@ int Application::init_display_mode(window_type m) {
     case AUTO:
       return -1;
   }
-  return display->init(this, renderer);
+  return display->init(this);
 }
 
 void Application::init_display_mode_auto() {
@@ -111,7 +111,7 @@ void Application::init_display() {
 }
 
 void Application::mainloop() {
-  display->loop(this, renderer);
+  display->loop(this);
 }
 }
 

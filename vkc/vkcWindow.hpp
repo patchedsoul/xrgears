@@ -20,7 +20,7 @@ public:
   Window() {}
   virtual ~Window() {}
 
-  virtual int init(Application* app, Renderer *vc) = 0;
-  virtual void loop(Application* app, Renderer *vc) = 0;
+  virtual int init(Application* app) = 0;
+  virtual void loop(Application* app) = 0;
 };
 }

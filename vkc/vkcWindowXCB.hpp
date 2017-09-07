@@ -48,7 +48,7 @@ public:
 
   // Return -1 on failure.
   int
-  init(Application* app, Renderer *vc)
+  init(Application* app)
   {
     xcb_screen_iterator_t iter;
     static const char title[] = "Vulkan Cube";
@@ -72,8 +72,8 @@ public:
                       window,
                       iter.data->root,
                       0, 0,
-                      vc->width,
-                      vc->height,
+                      app->renderer->width,
+                      app->renderer->height,
                       0,
                       XCB_WINDOW_CLASS_INPUT_OUTPUT,
                       iter.data->root_visual,
@@ -101,20 +101,20 @@ public:
 
     xcb_flush(conn);
 
-    vc->init_vk(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+    app->renderer->init_vk(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 
     VkBool32 ret = vkGetPhysicalDeviceXcbPresentationSupportKHR(
-          vc->physical_device, 0, conn, iter.data->root_visual);
+          app->renderer->physical_device, 0, conn, iter.data->root_visual);
     vik_log_f_if(!ret, "Vulkan not supported on given X window");
 
-    init_surface(vc);
+    init_surface(app->renderer);
 
     //vc->init_vk_objects(app);
-    vc->init_render_pass();
+    app->renderer->init_render_pass();
     app->init();
-    vc->init_vk_objects();
+    app->renderer->init_vk_objects();
 
-    vc->image_count = 0;
+    app->renderer->image_count = 0;
 
     return 0;
   }
@@ -213,21 +213,21 @@ public:
     vik_log_f_if(result != VK_SUCCESS, "vkQueuePresentKHR failed.");
   }
 
-  void loop(Application* app, Renderer *vc) {
+  void loop(Application* app) {
     while (1) {
 
-      poll_events(vc);
+      poll_events(app->renderer);
 
       if (repaint) {
-        if (vc->image_count == 0)
-          vc->create_swapchain();
+        if (app->renderer->image_count == 0)
+          app->renderer->create_swapchain();
 
         uint32_t index;
-        vkAcquireNextImageKHR(vc->device, vc->swap_chain, 60,
-                              vc->semaphore, VK_NULL_HANDLE, &index);
+        vkAcquireNextImageKHR(app->renderer->device, app->renderer->swap_chain, 60,
+                              app->renderer->semaphore, VK_NULL_HANDLE, &index);
 
-        app->render(&vc->buffers[index]);
-        present(vc, index);
+        app->render(&app->renderer->buffers[index]);
+        present(app->renderer, index);
         schedule_repaint();
       }
       xcb_flush(conn);

@@ -233,7 +233,7 @@ public:
 
   // Return -1 on failure.
   int
-  init(Application* app, Renderer *vc)
+  init(Application* app)
   {
     display = wl_display_connect(NULL);
     if (!display)
@@ -275,16 +275,16 @@ public:
     wait_for_configure = true;
     wl_surface_commit(surface);
 
-    vc->init_vk(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
+    app->renderer->init_vk(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
 
     PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR get_wayland_presentation_support =
         (PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR)
-        vkGetInstanceProcAddr(vc->instance, "vkGetPhysicalDeviceWaylandPresentationSupportKHR");
+        vkGetInstanceProcAddr(app->renderer->instance, "vkGetPhysicalDeviceWaylandPresentationSupportKHR");
     PFN_vkCreateWaylandSurfaceKHR create_wayland_surface =
         (PFN_vkCreateWaylandSurfaceKHR)
-        vkGetInstanceProcAddr(vc->instance, "vkCreateWaylandSurfaceKHR");
+        vkGetInstanceProcAddr(app->renderer->instance, "vkCreateWaylandSurfaceKHR");
 
-    if (!get_wayland_presentation_support(vc->physical_device, 0,
+    if (!get_wayland_presentation_support(app->renderer->physical_device, 0,
                                           display)) {
       vik_log_f("Vulkan not supported on given Wayland surface");
     }
@@ -295,14 +295,14 @@ public:
       .surface = surface,
     };
 
-    create_wayland_surface(vc->instance, &waylandSurfaceInfo, NULL, &vc->surface);
+    create_wayland_surface(app->renderer->instance, &waylandSurfaceInfo, NULL, &app->renderer->surface);
 
-    vc->image_format = vc->choose_surface_format();
+    app->renderer->image_format = app->renderer->choose_surface_format();
 
-    vc->init_render_pass();
+    app->renderer->init_render_pass();
     app->init();
-    vc->init_vk_objects();
-    vc->create_swapchain();
+    app->renderer->init_vk_objects();
+    app->renderer->create_swapchain();
 
     return 0;
   }
@@ -340,19 +340,19 @@ public:
     vik_log_f_if(result != VK_SUCCESS, "vkQueuePresentKHR failed.");
   }
 
-  void loop(Application* app, Renderer *vc) {
+  void loop(Application* app) {
     while (1) {
       flush();
 
       uint32_t index;
       VkResult result;
-      result = vkAcquireNextImageKHR(vc->device, vc->swap_chain, 60,
-                                     vc->semaphore, VK_NULL_HANDLE, &index);
+      result = vkAcquireNextImageKHR(app->renderer->device, app->renderer->swap_chain, 60,
+                                     app->renderer->semaphore, VK_NULL_HANDLE, &index);
 
       vik_log_f_if(result != VK_SUCCESS, "vkAcquireNextImageKHR failed.");
 
-      app->render(&vc->buffers[index]);
-      present(vc, index);
+      app->render(&app->renderer->buffers[index]);
+      present(app->renderer, index);
 
     }
   }
