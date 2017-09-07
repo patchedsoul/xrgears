@@ -305,6 +305,24 @@ void Renderer::create_swapchain() {
   }
 }
 
+void Renderer::submit_queue(VkCommandBuffer cmd_buffer) {
+  VkPipelineStageFlags stageflags[] = {
+    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+  };
+
+
+  VkSubmitInfo submitInfo = {
+    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+    .waitSemaphoreCount = 1,
+    .pWaitSemaphores = &semaphore,
+    .pWaitDstStageMask = stageflags,
+    .commandBufferCount = 1,
+    .pCommandBuffers = &cmd_buffer,
+  };
+
+  vkQueueSubmit(queue, 1, &submitInfo, fence);
+}
+
 void Renderer::present(uint32_t index) {
   VkSwapchainKHR swapChains[] = { swap_chain, };
   uint32_t indices[] = { index, };
@@ -331,6 +349,23 @@ void Renderer::aquire_next_image(uint32_t *index) {
 void Renderer::create_swapchain_if_needed() {
   if (image_count == 0)
     create_swapchain();
+}
+
+static uint64_t get_ms_from_tv(const timeval& tv) {
+  return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
+uint64_t Renderer::get_animation_time() {
+  timeval tv;
+  gettimeofday(&tv, NULL);
+  return (get_ms_from_tv(tv) - get_ms_from_tv(start_tv)) / 5;
+}
+
+void Renderer::wait_and_reset_fences() {
+  VkFence fences[] = { fence };
+  vkWaitForFences(device, 1, fences, VK_TRUE, INT64_MAX);
+  vkResetFences(device, 1, &fence);
+  vkResetCommandPool(device, cmd_pool, 0);
 }
 
 }

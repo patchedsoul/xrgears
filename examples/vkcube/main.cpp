@@ -552,47 +552,14 @@ public:
   }
 
   void render(struct vkc::RenderBuffer *b) {
-
-    struct timeval tv;
-    uint64_t t;
-
-    gettimeofday(&tv, NULL);
-
-    t = ((tv.tv_sec * 1000 + tv.tv_usec / 1000) -
-         (renderer->start_tv.tv_sec * 1000 + renderer->start_tv.tv_usec / 1000)) / 5;
-
+    uint64_t t = renderer->get_animation_time();
     update_uniform_buffer(t);
 
     cmd_buffer = build_command_buffer(b);
-    /*
-    if (!cmd_buffer_created) {
-      cmd_buffer = build_command_buffer(vc, b);
-      cmd_buffer_created = true;
-    }
-    */
 
-    VkPipelineStageFlags stageflags[] = {
-      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-    };
+    renderer->submit_queue(cmd_buffer);
 
-
-    VkSubmitInfo submitInfo = {
-      .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-      .waitSemaphoreCount = 1,
-      .pWaitSemaphores = &renderer->semaphore,
-      .pWaitDstStageMask = stageflags,
-      .commandBufferCount = 1,
-      .pCommandBuffers = &cmd_buffer,
-    };
-
-     vkQueueSubmit(renderer->queue, 1, &submitInfo, renderer->fence);
-
-    VkFence fences[] = { renderer->fence };
-
-    vkWaitForFences(renderer->device, 1, fences, VK_TRUE, INT64_MAX);
-    vkResetFences(renderer->device, 1, &renderer->fence);
-
-    vkResetCommandPool(renderer->device, renderer->cmd_pool, 0);
+    renderer->wait_and_reset_fences();
   }
 };
 

@@ -54,5 +54,10 @@ public:
     void aquire_next_image(uint32_t *index);
 
     void create_swapchain_if_needed();
+    void submit_queue(VkCommandBuffer cmd_buffer);
+
+    void wait_and_reset_fences();
+
+    uint64_t get_animation_time();
 };
 }
