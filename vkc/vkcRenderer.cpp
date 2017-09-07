@@ -368,13 +368,16 @@ void Renderer::wait_and_reset_fences() {
   vkResetCommandPool(device, cmd_pool, 0);
 }
 
-void Renderer::build_command_buffer(RenderBuffer *b, VkDeviceSize* offsets) {
+void Renderer::build_command_buffer(RenderBuffer *b) {
   VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {
     .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
     .commandPool = cmd_pool,
     .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
     .commandBufferCount = 1,
   };
+
+
+
 
   vkAllocateCommandBuffers(device,
                            &cmdBufferAllocateInfo,
@@ -409,6 +412,12 @@ void Renderer::build_command_buffer(RenderBuffer *b, VkDeviceSize* offsets) {
     buffer,
     buffer,
     buffer
+  };
+
+  VkDeviceSize offsets[] = {
+    vertex_offset,
+    colors_offset,
+    normals_offset
   };
 
   vkCmdBindVertexBuffers(cmd_buffer, 0, 3,

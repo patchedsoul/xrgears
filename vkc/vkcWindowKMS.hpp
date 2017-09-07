@@ -122,7 +122,11 @@ public:
     RenderBuffer *b = &app->renderer->buffers[app->renderer->current & 1];
     kms_buffer *kms_b = &kms_buffers[app->renderer->current & 1];
 
-    app->render(b);
+    uint64_t t = app->renderer->get_animation_time();
+    app->update_scene(t);
+    app->renderer->build_command_buffer(b);
+    app->renderer->submit_queue();
+    app->renderer->wait_and_reset_fences();
 
     int ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
                           DRM_MODE_PAGE_FLIP_EVENT, NULL);

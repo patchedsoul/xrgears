@@ -54,8 +54,6 @@
 class Cube : public vkc::Application {
 public:
 
-  uint32_t vertex_offset, colors_offset, normals_offset;
-
   void *map;
 
   struct ubo {
@@ -340,10 +338,10 @@ public:
       +0.0f, -1.0f, +0.0f  // down
     };
 
-    vertex_offset = sizeof(struct ubo);
-    colors_offset = vertex_offset + sizeof(vVertices);
-    normals_offset = colors_offset + sizeof(vColors);
-    uint32_t mem_size = normals_offset + sizeof(vNormals);
+    renderer->vertex_offset = sizeof(struct ubo);
+    renderer->colors_offset = renderer->vertex_offset + sizeof(vVertices);
+    renderer->normals_offset = renderer->colors_offset + sizeof(vColors);
+    uint32_t mem_size = renderer->normals_offset + sizeof(vNormals);
 
     VkMemoryAllocateInfo allcoinfo = {
       .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
@@ -359,9 +357,9 @@ public:
     r = vkMapMemory(renderer->device, renderer->mem, 0, mem_size, 0, &map);
     vik_log_f_if(r != VK_SUCCESS, "vkMapMemory failed");
 
-    memcpy(((char*)map + vertex_offset), vVertices, sizeof(vVertices));
-    memcpy(((char*)map + colors_offset), vColors, sizeof(vColors));
-    memcpy(((char*)map + normals_offset), vNormals, sizeof(vNormals));
+    memcpy(((char*)map + renderer->vertex_offset), vVertices, sizeof(vVertices));
+    memcpy(((char*)map + renderer->colors_offset), vColors, sizeof(vColors));
+    memcpy(((char*)map + renderer->normals_offset), vNormals, sizeof(vNormals));
 
     VkBufferCreateInfo bufferInfo = {
       .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -455,22 +453,14 @@ public:
     memcpy(map, &cube_ubo, sizeof(ubo));
   }
 
-  void render(struct vkc::RenderBuffer *b) {
-    uint64_t t = renderer->get_animation_time();
+  void update_scene(uint64_t t) {
     update_uniform_buffer(t);
-
-    VkDeviceSize sizes[] = {
-      vertex_offset,
-      colors_offset,
-      normals_offset
-    };
-
-    renderer->build_command_buffer(b, sizes);
-
-    renderer->submit_queue();
-
-    renderer->wait_and_reset_fences();
   }
+/*
+  void render(struct vkc::RenderBuffer *b) {
+
+  }
+  */
 };
 
 int main(int argc, char *argv[]) {

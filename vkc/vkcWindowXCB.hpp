@@ -212,7 +212,17 @@ public:
 
         uint32_t index;
         app->renderer->aquire_next_image(&index);
-        app->render(&app->renderer->buffers[index]);
+        //app->render();
+
+        RenderBuffer *b = &app->renderer->buffers[index];
+
+        uint64_t t = app->renderer->get_animation_time();
+        app->update_scene(t);
+        app->renderer->build_command_buffer(b);
+        app->renderer->submit_queue();
+        app->renderer->wait_and_reset_fences();
+
+
         app->renderer->present(index);
         schedule_repaint();
       }

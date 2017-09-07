@@ -43,6 +43,8 @@ public:
     VkCommandBuffer cmd_buffer;
     bool cmd_buffer_created = false;
 
+    uint32_t vertex_offset, colors_offset, normals_offset;
+
     Renderer(uint32_t w, uint32_t h) ;
     ~Renderer() ;
 
@@ -63,6 +65,8 @@ public:
 
     uint64_t get_animation_time();
 
-    void build_command_buffer(RenderBuffer *b, VkDeviceSize *offsets);
+    void build_command_buffer(RenderBuffer *b);
+
+
 };
 }
