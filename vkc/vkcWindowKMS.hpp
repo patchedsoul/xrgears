@@ -41,24 +41,15 @@ class WindowKMS : public Window {
   drmModeCrtc *crtc;
   drmModeConnector *connector;
 
-  struct gbm_device *gbm_dev;
-  struct gbm_bo *gbm_bo;
+  gbm_device *gbm_dev;
+  gbm_bo *gbm_buffer;
 
   bool quit = false;
 
   int fd;
 
-  struct kms_buffer {
-    struct gbm_bo *gbm_bo;
-    VkDeviceMemory mem;
-    uint32_t fb;
-    uint32_t stride;
-  };
-
   pollfd pfd[2];
   drmEventContext evctx;
-
-  struct kms_buffer kms_buffers[MAX_NUM_IMAGES];
 
 public:
   WindowKMS() {
@@ -88,12 +79,15 @@ public:
     restore_vt();
   }
 
-  void set_mode_and_page_flip() {
-    int ret = drmModeSetCrtc(fd, crtc->crtc_id, kms_buffers[0].fb,
+  void set_mode_and_page_flip(Renderer *r) {
+
+    SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain_obj;
+
+    int ret = drmModeSetCrtc(fd, crtc->crtc_id, sc->kms_buffers[0].fb,
         0, 0, &connector->connector_id, 1, &crtc->mode);
     vik_log_f_if(ret < 0, "modeset failed: %m");
 
-    ret = drmModePageFlip(fd, crtc->crtc_id, kms_buffers[0].fb,
+    ret = drmModePageFlip(fd, crtc->crtc_id, sc->kms_buffers[0].fb,
         DRM_MODE_PAGE_FLIP_EVENT, NULL);
     vik_log_f_if(ret < 0, "pageflip failed: %m");
 
@@ -194,23 +188,23 @@ public:
 
     r->swap_chain_obj = new SwapChainDRM();
 
-
-
     init_cb();
 
     PFN_vkCreateDmaBufImageINTEL create_dma_buf_image =
         (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(r->device, "vkCreateDmaBufImageINTEL");
 
+    SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain_obj;
+
     for (uint32_t i = 0; i < 2; i++) {
-      struct RenderBuffer *b = &r->swap_chain_obj->buffers[i];
-      struct kms_buffer *kms_b = &kms_buffers[i];
+      struct RenderBuffer *b = &sc->buffers[i];
+      struct kms_buffer *kms_b = &sc->kms_buffers[i];
       int buffer_fd, stride, ret;
 
-      kms_b->gbm_bo = gbm_bo_create(gbm_dev, r->width, r->height,
+      kms_b->gbm_buffer = gbm_bo_create(gbm_dev, r->width, r->height,
                                     GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
 
-      buffer_fd = gbm_bo_get_fd(kms_b->gbm_bo);
-      stride = gbm_bo_get_stride(kms_b->gbm_bo);
+      buffer_fd = gbm_bo_get_fd(kms_b->gbm_buffer);
+      stride = gbm_bo_get_stride(kms_b->gbm_buffer);
 
 
       VkDmaBufImageCreateInfo dmaBufInfo = {};
@@ -233,8 +227,8 @@ public:
                            &b->image);
       close(buffer_fd);
 
-      kms_b->stride = gbm_bo_get_stride(kms_b->gbm_bo);
-      uint32_t bo_handles[4] = { (uint32_t) (gbm_bo_get_handle(kms_b->gbm_bo).s32), };
+      kms_b->stride = gbm_bo_get_stride(kms_b->gbm_buffer);
+      uint32_t bo_handles[4] = { (uint32_t) (gbm_bo_get_handle(kms_b->gbm_buffer).s32), };
       uint32_t pitches[4] = { (uint32_t) stride, };
       uint32_t offsets[4] = { 0, };
       ret = drmModeAddFB2(fd, r->width, r->height,
@@ -245,7 +239,7 @@ public:
       r->init_buffer(b);
     }
 
-    set_mode_and_page_flip();
+    set_mode_and_page_flip(r);
 
     return 0;
   }
@@ -270,7 +264,9 @@ public:
 
     r->render_swapchain_drm();
 
-    kms_buffer *kms_b = &kms_buffers[r->current & 1];
+    SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain_obj;
+
+    kms_buffer *kms_b = &sc->kms_buffers[r->current & 1];
     int ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
                               DRM_MODE_PAGE_FLIP_EVENT, NULL);
     vik_log_f_if(ret < 0, "pageflip failed: %m");
