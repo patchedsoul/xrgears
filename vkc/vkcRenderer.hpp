@@ -48,7 +48,6 @@ public:
   void init_render_pass();
   void init_vk_objects();
 
-  void present(uint32_t index);
   VkResult aquire_next_image(uint32_t *index);
 
   void create_swapchain_if_needed();

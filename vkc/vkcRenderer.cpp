@@ -2,7 +2,6 @@
 #include <sys/time.h>
 
 #include "vkcRenderer.hpp"
-#include "vksApplication.hpp"
 
 namespace vkc {
 
@@ -219,25 +218,6 @@ void Renderer::submit_queue() {
   vkQueueSubmit(queue, 1, &submitInfo, fence);
 }
 
-void Renderer::present(uint32_t index) {
-
-  SwapChainVK *sc = (SwapChainVK*) swap_chain_obj;
-
-  VkSwapchainKHR swapChains[] = { sc->swap_chain, };
-  uint32_t indices[] = { index, };
-
-  VkPresentInfoKHR presentInfo = {
-    .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-    .swapchainCount = 1,
-    .pSwapchains = swapChains,
-    .pImageIndices = indices,
-    //.pResults = &result,
-  };
-
-  VkResult result = vkQueuePresentKHR(queue, &presentInfo);
-  vik_log_f_if(result != VK_SUCCESS, "vkQueuePresentKHR failed.");
-}
-
 VkResult Renderer::aquire_next_image(uint32_t *index) {
   SwapChainVK *sc = (SwapChainVK*) swap_chain_obj;
   return vkAcquireNextImageKHR(device, sc->swap_chain, 60,
@@ -377,10 +357,12 @@ void Renderer::render_swapchain_vk() {
   VkResult result = aquire_next_image(&index);
 
   switch (result) {
-    case VK_SUCCESS:
+    case VK_SUCCESS: {
       render(index);
-      present(index);
+      SwapChainVK *sc = (SwapChainVK *) swap_chain_obj;
+      sc->present(queue, index);
       break;
+    }
     case VK_TIMEOUT:
       // TODO: XCB times out
       break;
@@ -399,5 +381,4 @@ void Renderer::init_buffer(RenderBuffer *b) {
   swap_chain_obj->init_buffer(device, image_format, render_pass,
                               width, height, b);
 }
-
 }

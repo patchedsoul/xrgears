@@ -282,10 +282,9 @@ public:
         (PFN_vkCreateWaylandSurfaceKHR)
         vkGetInstanceProcAddr(r->instance, "vkCreateWaylandSurfaceKHR");
 
-    if (!get_wayland_presentation_support(r->physical_device, 0,
-                                          display)) {
+    if (!get_wayland_presentation_support(r->physical_device, 0, display))
       vik_log_f("Vulkan not supported on given Wayland surface");
-    }
+
 
     VkWaylandSurfaceCreateInfoKHR waylandSurfaceInfo = {
       .sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR,
@@ -296,7 +295,6 @@ public:
     create_wayland_surface(r->instance, &waylandSurfaceInfo, NULL, &r->surface);
 
     r->image_format = r->choose_surface_format();
-
     init_cb();
 
     r->swap_chain_obj = new SwapChainVK();
