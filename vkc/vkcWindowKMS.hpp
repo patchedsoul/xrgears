@@ -21,7 +21,7 @@
 #include <linux/vt.h>
 #include <linux/major.h>
 
-#include <vulkan/vulkan_intel.h>
+
 
 #include "vkcWindow.hpp"
 #include "vkcApplication.hpp"
@@ -190,55 +190,9 @@ public:
 
     init_cb();
 
-    PFN_vkCreateDmaBufImageINTEL create_dma_buf_image =
-        (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(r->device, "vkCreateDmaBufImageINTEL");
-
     SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain_obj;
-
-    for (uint32_t i = 0; i < 2; i++) {
-      struct RenderBuffer *b = &sc->buffers[i];
-      struct kms_buffer *kms_b = &sc->kms_buffers[i];
-      int buffer_fd, stride, ret;
-
-      kms_b->gbm_buffer = gbm_bo_create(gbm_dev, r->width, r->height,
-                                    GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
-
-      buffer_fd = gbm_bo_get_fd(kms_b->gbm_buffer);
-      stride = gbm_bo_get_stride(kms_b->gbm_buffer);
-
-
-      VkDmaBufImageCreateInfo dmaBufInfo = {};
-
-      VkExtent3D extent = {};
-      extent.width = r->width;
-      extent.height = r->height;
-      extent.depth = 1;
-
-      dmaBufInfo.sType = (VkStructureType) VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_CREATE_INFO_INTEL;
-      dmaBufInfo.fd = buffer_fd;
-      dmaBufInfo.format = r->image_format;
-      dmaBufInfo.extent = extent;
-      dmaBufInfo.strideInBytes = stride;
-
-      create_dma_buf_image(r->device,
-                           &dmaBufInfo,
-                           NULL,
-                           &kms_b->mem,
-                           &b->image);
-      close(buffer_fd);
-
-      kms_b->stride = gbm_bo_get_stride(kms_b->gbm_buffer);
-      uint32_t bo_handles[4] = { (uint32_t) (gbm_bo_get_handle(kms_b->gbm_buffer).s32), };
-      uint32_t pitches[4] = { (uint32_t) stride, };
-      uint32_t offsets[4] = { 0, };
-      ret = drmModeAddFB2(fd, r->width, r->height,
-                          DRM_FORMAT_XRGB8888, bo_handles,
-                          pitches, offsets, &kms_b->fb, 0);
-      vik_log_f_if(ret == -1, "addfb2 failed");
-
-      r->init_buffer(b);
-    }
-
+    sc->init(r->device, r->image_format, gbm_dev, fd,
+             r->width, r->height, r->render_pass);
     set_mode_and_page_flip(r);
 
     return 0;

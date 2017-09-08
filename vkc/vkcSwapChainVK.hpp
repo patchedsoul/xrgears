@@ -69,6 +69,7 @@ public:
 
     vkGetSwapchainImagesKHR(device, swap_chain, &image_count, NULL);
     assert(image_count > 0);
+    vik_log_d("Creating swap chain with %d images.", image_count);
     VkImage swap_chain_images[image_count];
     vkGetSwapchainImagesKHR(device, swap_chain, &image_count, swap_chain_images);
 
