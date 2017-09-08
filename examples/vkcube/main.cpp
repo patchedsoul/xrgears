@@ -205,9 +205,7 @@ public:
                               &renderer->pipeline);
   }
 
-  void init() {
-    VkResult r;
-
+  VkDescriptorSetLayout init_descriptor_set_layout() {
     VkDescriptorSetLayout set_layout;
     VkDescriptorSetLayoutBinding bindings = {
       .binding = 0,
@@ -229,7 +227,10 @@ public:
                                 &layoutInfo,
                                 NULL,
                                 &set_layout);
+    return set_layout;
+  }
 
+  void init_pipeline_layout(const VkDescriptorSetLayout& set_layout) {
     VkPipelineLayoutCreateInfo pipeLineInfo = {
       .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
       .setLayoutCount = 1,
@@ -240,9 +241,76 @@ public:
                            &pipeLineInfo,
                            NULL,
                            &renderer->pipeline_layout);
+  }
 
+  VkDescriptorPool init_descriptor_pool() {
+    VkDescriptorPoolSize poolsizes[] = {
+      {
+        .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .descriptorCount = 1
+      }
+    };
+
+    VkDescriptorPool descriptorPool;
+    const VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+      .pNext = NULL,
+      .flags = 0,
+      .maxSets = 1,
+      .poolSizeCount = 1,
+      .pPoolSizes = poolsizes,
+    };
+
+    vkCreateDescriptorPool(renderer->device, &descriptorPoolCreateInfo, NULL, &descriptorPool);
+
+    return descriptorPool;
+  }
+
+  void init_descriptor_sets(const VkDescriptorPool& descriptorPool,
+                            const VkDescriptorSetLayout& set_layout) {
+    VkDescriptorSetAllocateInfo descriptorAllocateInfo = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+      .descriptorPool = descriptorPool,
+      .descriptorSetCount = 1,
+      .pSetLayouts = &set_layout,
+    };
+
+    vkAllocateDescriptorSets(renderer->device, &descriptorAllocateInfo, &renderer->descriptor_set);
+  }
+
+  void update_descriptor_sets() {
+    VkDescriptorBufferInfo descriptorBufferInfo = {
+      .buffer = renderer->buffer,
+      .offset = 0,
+      .range = sizeof(struct ubo),
+    };
+
+    VkWriteDescriptorSet writeDescriptorSet[] = {
+      {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = renderer->descriptor_set,
+        .dstBinding = 0,
+        .dstArrayElement = 0,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .pBufferInfo = &descriptorBufferInfo
+      }
+    };
+
+    vkUpdateDescriptorSets(renderer->device, 1, writeDescriptorSet, 0, NULL);
+  }
+
+  void init() {
+    VkDescriptorSetLayout set_layout = init_descriptor_set_layout();
+    init_pipeline_layout(set_layout);
     init_pipeline();
+    init_vertex_buffer();
+    VkDescriptorPool descriptor_pool = init_descriptor_pool();
+    init_descriptor_sets(descriptor_pool, set_layout);
+    update_descriptor_sets();
+  }
 
+  void init_vertex_buffer() {
     static const float vVertices[] = {
       // front
       -1.0f, -1.0f, +1.0f, // point blue
@@ -342,9 +410,6 @@ public:
       +0.0f, -1.0f, +0.0f  // down
     };
 
-
-
-
     renderer->vertex_offset = sizeof(struct ubo);
     renderer->colors_offset = renderer->vertex_offset + sizeof(vVertices);
     renderer->normals_offset = renderer->colors_offset + sizeof(vColors);
@@ -361,7 +426,7 @@ public:
                      NULL,
                      &renderer->mem);
 
-    r = vkMapMemory(renderer->device, renderer->mem, 0, mem_size, 0, &map);
+    VkResult r = vkMapMemory(renderer->device, renderer->mem, 0, mem_size, 0, &map);
     vik_log_f_if(r != VK_SUCCESS, "vkMapMemory failed");
 
     memcpy(((char*)map + renderer->vertex_offset), vVertices, sizeof(vVertices));
@@ -382,54 +447,6 @@ public:
                    &renderer->buffer);
 
     vkBindBufferMemory(renderer->device, renderer->buffer, renderer->mem, 0);
-
-    VkDescriptorPoolSize poolsizes[] = {
-      {
-        .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .descriptorCount = 1
-      }      };
-
-    VkDescriptorPool descriptorPool;
-    const VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-      .pNext = NULL,
-      .flags = 0,
-      .maxSets = 1,
-      .poolSizeCount = 1,
-      .pPoolSizes = poolsizes,
-    };
-
-    vkCreateDescriptorPool(renderer->device, &descriptorPoolCreateInfo, NULL, &descriptorPool);
-
-    VkDescriptorSetAllocateInfo descriptorAllocateInfo = {
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-      .descriptorPool = descriptorPool,
-      .descriptorSetCount = 1,
-      .pSetLayouts = &set_layout,
-    };
-
-    vkAllocateDescriptorSets(renderer->device, &descriptorAllocateInfo, &renderer->descriptor_set);
-
-    VkDescriptorBufferInfo descriptorBufferInfo = {
-      .buffer = renderer->buffer,
-      .offset = 0,
-      .range = sizeof(struct ubo),
-    };
-
-
-    VkWriteDescriptorSet writeDescriptorSet[] = {
-      {
-        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = renderer->descriptor_set,
-        .dstBinding = 0,
-        .dstArrayElement = 0,
-        .descriptorCount = 1,
-        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .pBufferInfo = &descriptorBufferInfo
-      }
-    };
-
-    vkUpdateDescriptorSets(renderer->device, 1, writeDescriptorSet, 0, NULL);
   }
 
   void update_uniform_buffer(uint64_t t) {
