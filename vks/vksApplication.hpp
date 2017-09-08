@@ -31,7 +31,7 @@
 #include "vksTextOverlay.hpp"
 #include "vksCamera.hpp"
 #include "vksRenderer.hpp"
-#include "vksFrameCounter.hpp"
+#include "vksTimer.hpp"
 #include "vksSettings.hpp"
 
 #include "../vitamin-k/vikApplication.hpp"
