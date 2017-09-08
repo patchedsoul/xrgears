@@ -203,7 +203,6 @@ void Renderer::init_vk_objects() {
 }
 
 void Renderer::init_buffer(struct RenderBuffer *b) {
-
   VkImageViewCreateInfo imageviewinfo = {
     .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
     .image = b->image,
@@ -339,11 +338,9 @@ void Renderer::present(uint32_t index) {
   vik_log_f_if(result != VK_SUCCESS, "vkQueuePresentKHR failed.");
 }
 
-void Renderer::aquire_next_image(uint32_t *index) {
-  VkResult result = vkAcquireNextImageKHR(device, swap_chain, 60,
+VkResult Renderer::aquire_next_image(uint32_t *index) {
+  return vkAcquireNextImageKHR(device, swap_chain, 60,
                                  semaphore, VK_NULL_HANDLE, index);
-  vik_log_e_if(result != VK_SUCCESS, "vkAcquireNextImageKHR failed: %s",
-               vks::Log::result_string(result).c_str());
 }
 
 void Renderer::create_swapchain_if_needed() {
@@ -376,17 +373,20 @@ void Renderer::build_command_buffer(RenderBuffer *b) {
     .commandBufferCount = 1,
   };
 
-  vkAllocateCommandBuffers(device,
-                           &cmdBufferAllocateInfo,
-                           &cmd_buffer);
+  VkResult r = vkAllocateCommandBuffers(device,
+                                        &cmdBufferAllocateInfo,
+                                        &cmd_buffer);
+  vik_log_e_if(r != VK_SUCCESS, "vkAllocateCommandBuffers: %s",
+               vks::Log::result_string(r).c_str());
 
   VkCommandBufferBeginInfo cmdBufferBeginInfo = {
     .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
     .flags = 0
   };
 
-  vkBeginCommandBuffer(cmd_buffer, &cmdBufferBeginInfo);
-
+  r = vkBeginCommandBuffer(cmd_buffer, &cmdBufferBeginInfo);
+  vik_log_e_if(r != VK_SUCCESS, "vkBeginCommandBuffer: %s",
+               vks::Log::result_string(r).c_str());
 
   VkClearValue clearValues[] = {
     { .color = { .float32 = { 0.2f, 0.2f, 0.2f, 1.0f } } }
@@ -454,7 +454,9 @@ void Renderer::build_command_buffer(RenderBuffer *b) {
 
   vkCmdEndRenderPass(cmd_buffer);
 
-  vkEndCommandBuffer(cmd_buffer);
+  r = vkEndCommandBuffer(cmd_buffer);
+  vik_log_e_if(r != VK_SUCCESS,
+               "vkEndCommandBuffer: %s", vks::Log::result_string(r).c_str());
 }
 
 void Renderer::render(RenderBuffer *b) {
@@ -465,9 +467,15 @@ void Renderer::render(RenderBuffer *b) {
 
 void Renderer::render_swapchain() {
   uint32_t index;
-  aquire_next_image(&index);
-  render(&buffers[index]);
-  present(index);
+  VkResult result = aquire_next_image(&index);
+
+  if (result == VK_SUCCESS){
+    render(&buffers[index]);
+    present(index);
+  } else {
+    vik_log_e("vkAcquireNextImageKHR failed: %s",
+                 vks::Log::result_string(result).c_str());
+  }
 }
 
 }

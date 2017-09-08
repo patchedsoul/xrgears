@@ -18,10 +18,21 @@ class Window {
 public:
   std::string name;
 
+  std::function<void()> init_cb;
+  std::function<void()> update_cb;
+
   Window() {}
   virtual ~Window() {}
 
-  virtual int init(Renderer* r, std::function<void()> app_init) = 0;
-  virtual void loop(Application* app) = 0;
+  void set_init_cb(std::function<void()> cb) {
+    init_cb = cb;
+  }
+
+  void set_update_cb(std::function<void()> cb) {
+    update_cb = cb;
+  }
+
+  virtual int init(Renderer *r) = 0;
+  virtual void loop(Renderer *r) = 0;
 };
 }

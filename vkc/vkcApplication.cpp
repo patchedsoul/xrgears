@@ -86,8 +86,13 @@ int Application::init_display_mode(window_type m) {
       return -1;
   }
 
-  std::function< void() > callback = std::bind( &Application::init, this );
-  return display->init(renderer, callback);
+  std::function<void()> init_cb = std::bind(&Application::init, this);
+  std::function<void()> update_cb = std::bind(&Application::update_scene, this);
+
+  display->set_init_cb(init_cb);
+  display->set_update_cb(update_cb);
+
+  return display->init(renderer);
 }
 
 void Application::init_display_mode_auto() {
@@ -113,7 +118,7 @@ void Application::init_display() {
 }
 
 void Application::loop() {
-  display->loop(this);
+  display->loop(renderer);
 }
 }
 

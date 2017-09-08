@@ -232,9 +232,7 @@ public:
   }
 
   // Return -1 on failure.
-  int
-  init(Renderer* r, std::function<void()> app_init)
-  {
+  int init(Renderer* r) {
     display = wl_display_connect(NULL);
     if (!display)
       return -1;
@@ -299,7 +297,7 @@ public:
 
     r->image_format = r->choose_surface_format();
 
-    app_init();
+    init_cb();
 
     r->create_swapchain();
 
@@ -323,13 +321,11 @@ public:
     }
   }
 
-
-
-  void loop(Application* app) {
+  void loop(Renderer *r) {
     while (1) {
       flush();
-      app->update_scene();
-      app->renderer->render_swapchain();
+      update_cb();
+      r->render_swapchain();
     }
   }
 };

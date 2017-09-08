@@ -47,7 +47,7 @@ public:
   ~WindowXCB() {}
 
   // Return -1 on failure.
-  int init(Renderer* r, std::function<void()> app_init) {
+  int init(Renderer* r) {
     xcb_screen_iterator_t iter;
     static const char title[] = "Vulkan Cube";
 
@@ -107,7 +107,7 @@ public:
 
     init_surface(r);
 
-    app_init();
+    init_cb();
 
     r->image_count = 0;
 
@@ -188,14 +188,14 @@ public:
     }
   }
 
-  void loop(Application* app) {
+  void loop(Renderer *r) {
     while (1) {
-      poll_events(app->renderer);
+      poll_events(r);
 
       if (repaint) {
-        app->renderer->create_swapchain_if_needed();
-        app->update_scene();
-        app->renderer->render_swapchain();
+        r->create_swapchain_if_needed();
+        update_cb();
+        r->render_swapchain();
         schedule_repaint();
       }
       xcb_flush(conn);

@@ -72,7 +72,6 @@ public:
     pfd[0].fd = STDIN_FILENO;
     pfd[0].events = POLLIN;
     pfd[1].events = POLLIN;
-
   }
 
   ~WindowKMS() {}
@@ -102,50 +101,6 @@ public:
   }
 
 
-  void poll_events() {
-    char buf[16];
-    int len = read(STDIN_FILENO, buf, sizeof(buf));
-    vik_log_d("== PRESSING |%c|", buf[0]);
-    switch (buf[0]) {
-      case 'q':
-        quit = 1;
-      case '\e':
-        if (len == 1)
-          quit = 1;
-    }
-  }
-
-  void render(Application* app) {
-    drmHandleEvent(fd, &evctx);
-
-    app->update_scene();
-
-    RenderBuffer *b = &app->renderer->buffers[app->renderer->current & 1];
-    app->renderer->render(b);
-
-    kms_buffer *kms_b = &kms_buffers[app->renderer->current & 1];
-    int ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
-                          DRM_MODE_PAGE_FLIP_EVENT, NULL);
-    vik_log_f_if(ret < 0, "pageflip failed: %m");
-    app->renderer->current++;
-  }
-
-  void poll_and_render(Application* app) {
-    int ret = poll(pfd, 2, -1);
-    vik_log_f_if(ret == -1, "poll failed");
-    if (pfd[0].revents & POLLIN)
-      poll_events();
-    if (pfd[1].revents & POLLIN)
-      render(app);
-  }
-
-  void loop(Application* app) {
-    while (1) {
-      poll_and_render(app);
-      if (quit)
-        return;
-    }
-  }
 
   int init_vt() {
     struct termios tio;
@@ -197,7 +152,7 @@ public:
   }
 
   // Return -1 on failure.
-  int init(Renderer* r, std::function<void()> app_init) {
+  int init(Renderer* r) {
     drmModeRes *resources;
     drmModeEncoder *encoder;
     int i;
@@ -227,7 +182,7 @@ public:
     crtc = drmModeGetCrtc(fd, encoder->crtc_id);
     vik_log_f_if(!crtc, "failed to get crtc\n");
     vik_log_i("mode info: hdisplay %d, vdisplay %d",
-           crtc->mode.hdisplay, crtc->mode.vdisplay);
+              crtc->mode.hdisplay, crtc->mode.vdisplay);
 
     r->width = crtc->mode.hdisplay;
     r->height = crtc->mode.vdisplay;
@@ -237,7 +192,7 @@ public:
     r->init_vk(NULL);
     r->image_format = VK_FORMAT_R8G8B8A8_SRGB;
 
-    app_init();
+    init_cb();
 
     PFN_vkCreateDmaBufImageINTEL create_dma_buf_image =
         (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(r->device, "vkCreateDmaBufImageINTEL");
@@ -290,5 +245,51 @@ public:
 
     return 0;
   }
+
+  void poll_events() {
+    char buf[16];
+    int len = read(STDIN_FILENO, buf, sizeof(buf));
+    vik_log_d("== PRESSING |%c|", buf[0]);
+    switch (buf[0]) {
+      case 'q':
+        quit = 1;
+      case '\e':
+        if (len == 1)
+          quit = 1;
+    }
+  }
+
+  void render(Renderer *r) {
+    drmHandleEvent(fd, &evctx);
+
+    update_cb();
+
+    RenderBuffer *b = &r->buffers[r->current & 1];
+    r->render(b);
+
+    kms_buffer *kms_b = &kms_buffers[r->current & 1];
+    int ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
+                              DRM_MODE_PAGE_FLIP_EVENT, NULL);
+    vik_log_f_if(ret < 0, "pageflip failed: %m");
+    r->current++;
+  }
+
+  void poll_and_render(Renderer *r) {
+    int ret = poll(pfd, 2, -1);
+    vik_log_f_if(ret == -1, "poll failed");
+    if (pfd[0].revents & POLLIN)
+      poll_events();
+    if (pfd[1].revents & POLLIN)
+      render(r);
+  }
+
+  void loop(Renderer *r) {
+    while (1) {
+      poll_and_render(r);
+      if (quit)
+        return;
+    }
+  }
+
 };
 }
