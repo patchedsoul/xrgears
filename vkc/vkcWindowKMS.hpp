@@ -79,23 +79,6 @@ public:
     restore_vt();
   }
 
-  void set_mode_and_page_flip(Renderer *r) {
-
-    SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain_obj;
-
-    int ret = drmModeSetCrtc(fd, crtc->crtc_id, sc->kms_buffers[0].fb,
-        0, 0, &connector->connector_id, 1, &crtc->mode);
-    vik_log_f_if(ret < 0, "modeset failed: %m");
-
-    ret = drmModePageFlip(fd, crtc->crtc_id, sc->kms_buffers[0].fb,
-        DRM_MODE_PAGE_FLIP_EVENT, NULL);
-    vik_log_f_if(ret < 0, "pageflip failed: %m");
-
-    pfd[1].fd = fd;
-  }
-
-
-
   int init_vt() {
     struct termios tio;
     struct stat buf;
@@ -157,6 +140,8 @@ public:
     fd = open("/dev/dri/card0", O_RDWR);
     vik_log_f_if(fd == -1, "failed to open /dev/dri/card0\n");
 
+    pfd[1].fd = fd;
+
     /* Get KMS resources and find the first active connecter. We'll use that
       connector and the crtc driving it in the mode it's currently running. */
     resources = drmModeGetResources(fd);
@@ -193,7 +178,7 @@ public:
     SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain_obj;
     sc->init(r->device, r->image_format, gbm_dev, fd,
              r->width, r->height, r->render_pass);
-    set_mode_and_page_flip(r);
+    sc->set_mode_and_page_flip(fd, crtc, connector);
 
     return 0;
   }

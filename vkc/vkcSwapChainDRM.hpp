@@ -96,5 +96,16 @@ public:
                   width, height, b);
     }
   }
+
+  void set_mode_and_page_flip(int fd, drmModeCrtc *crtc, drmModeConnector *connector) {
+    int ret = drmModeSetCrtc(fd, crtc->crtc_id, kms_buffers[0].fb,
+        0, 0, &connector->connector_id, 1, &crtc->mode);
+    vik_log_f_if(ret < 0, "modeset failed: %m");
+
+    ret = drmModePageFlip(fd, crtc->crtc_id, kms_buffers[0].fb,
+        DRM_MODE_PAGE_FLIP_EVENT, NULL);
+    vik_log_f_if(ret < 0, "pageflip failed: %m");
+  }
+
 };
 }
