@@ -453,14 +453,11 @@ public:
     memcpy(map, &cube_ubo, sizeof(ubo));
   }
 
-  void update_scene(uint64_t t) {
+  void update_scene() {
+    uint64_t t = renderer->get_animation_time();
     update_uniform_buffer(t);
   }
-/*
-  void render(struct vkc::RenderBuffer *b) {
 
-  }
-  */
 };
 
 int main(int argc, char *argv[]) {

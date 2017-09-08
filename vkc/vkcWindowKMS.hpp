@@ -120,8 +120,7 @@ public:
   void render(Application* app) {
     drmHandleEvent(fd, &evctx);
 
-    uint64_t t = app->renderer->get_animation_time();
-    app->update_scene(t);
+    app->update_scene();
 
     RenderBuffer *b = &app->renderer->buffers[app->renderer->current & 1];
     app->renderer->render(b);

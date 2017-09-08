@@ -209,8 +209,7 @@ public:
       if (repaint) {
         app->renderer->create_swapchain_if_needed();
 
-        uint64_t t = app->renderer->get_animation_time();
-        app->update_scene(t);
+        app->update_scene();
 
         app->renderer->render_swapchain();
 

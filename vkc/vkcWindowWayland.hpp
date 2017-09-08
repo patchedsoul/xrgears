@@ -329,8 +329,7 @@ public:
   void loop(Application* app) {
     while (1) {
       flush();
-      uint64_t t = app->renderer->get_animation_time();
-      app->update_scene(t);
+      app->update_scene();
       app->renderer->render_swapchain();
     }
   }

@@ -33,7 +33,7 @@ public:
 
    virtual void init() = 0;
    //virtual void render(struct RenderBuffer *b) = 0;
-   virtual void update_scene(uint64_t t) = 0;
+   virtual void update_scene() = 0;
 
 };
 }
