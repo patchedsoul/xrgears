@@ -42,8 +42,6 @@ class WindowKMS : public Window {
   gbm_device *gbm_dev;
   gbm_bo *gbm_buffer;
 
-  bool quit = false;
-
   int fd;
 
   pollfd pfd[2];
@@ -187,10 +185,10 @@ public:
     vik_log_d("== PRESSING |%c|", buf[0]);
     switch (buf[0]) {
       case 'q':
-        quit = 1;
+        quit_cb();
       case '\e':
         if (len == 1)
-          quit = 1;
+          quit_cb();
     }
   }
 
@@ -211,21 +209,13 @@ public:
     sc->current++;
   }
 
-  void poll_and_render(Renderer *r) {
+  void iter(Renderer *r) {
     int ret = poll(pfd, 2, -1);
     vik_log_f_if(ret == -1, "poll failed");
     if (pfd[0].revents & POLLIN)
       poll_events();
     if (pfd[1].revents & POLLIN)
       render(r);
-  }
-
-  void loop(Renderer *r) {
-    while (1) {
-      poll_and_render(r);
-      if (quit)
-        return;
-    }
   }
 
 };

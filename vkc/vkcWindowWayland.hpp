@@ -322,12 +322,10 @@ public:
     }
   }
 
-  void loop(Renderer *r) {
-    while (1) {
-      flush();
-      update_cb();
-      r->render_swapchain_vk();
-    }
+  void iter(Renderer *r) {
+    flush();
+    update_cb();
+    r->render_swapchain_vk();
   }
 };
 }

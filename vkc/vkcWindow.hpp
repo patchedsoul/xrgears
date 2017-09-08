@@ -20,6 +20,7 @@ public:
 
   std::function<void()> init_cb;
   std::function<void()> update_cb;
+  std::function<void()> quit_cb;
 
   Window() {}
   virtual ~Window() {}
@@ -32,7 +33,11 @@ public:
     update_cb = cb;
   }
 
+  void set_quit_cb(std::function<void()> cb) {
+    quit_cb = cb;
+  }
+
   virtual int init(Renderer *r) = 0;
-  virtual void loop(Renderer *r) = 0;
+  virtual void iter(Renderer *r) = 0;
 };
 }

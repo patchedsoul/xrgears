@@ -88,9 +88,13 @@ int Application::init_display_mode(window_type m) {
 
   std::function<void()> init_cb = std::bind(&Application::init, this);
   std::function<void()> update_cb = std::bind(&Application::update_scene, this);
+  //std::function<void()> quit = std::bind(&Application::update_scene, this);
+
+  std::function<void()> quit_cb = [this]() { quit = true; };
 
   display->set_init_cb(init_cb);
   display->set_update_cb(update_cb);
+  display->set_quit_cb(quit_cb);
 
   return display->init(renderer);
 }
@@ -118,7 +122,8 @@ void Application::init_display() {
 }
 
 void Application::loop() {
-  display->loop(renderer);
+  while (!quit)
+    display->iter(renderer);
 }
 }
 

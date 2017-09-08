@@ -187,18 +187,16 @@ public:
     }
   }
 
-  void loop(Renderer *r) {
-    while (1) {
-      poll_events(r);
+  void iter(Renderer *r) {
+    poll_events(r);
 
-      if (repaint) {
-        r->create_swapchain_if_needed();
-        update_cb();
-        r->render_swapchain_vk();
-        schedule_repaint();
-      }
-      xcb_flush(conn);
+    if (repaint) {
+      r->create_swapchain_if_needed();
+      update_cb();
+      r->render_swapchain_vk();
+      schedule_repaint();
     }
+    xcb_flush(conn);
   }
 };
 }

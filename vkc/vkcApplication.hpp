@@ -16,6 +16,8 @@ public:
    Window *display;
    enum window_type mode;
 
+   bool quit = false;
+
    static inline bool streq(const char *a, const char *b) {
      return strcmp(a, b) == 0;
    }
