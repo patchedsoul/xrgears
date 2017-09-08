@@ -4,7 +4,6 @@
 #include <functional>
 
 namespace vkc {
-class Application;
 class Renderer;
 
 enum window_type {

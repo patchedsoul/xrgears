@@ -32,9 +32,7 @@ public:
   VkSurfaceKHR surface;
   VkFormat image_format;
 
-
   VkCommandBuffer cmd_buffer;
-  bool cmd_buffer_created = false;
 
   uint32_t vertex_offset, colors_offset, normals_offset;
 
@@ -45,10 +43,6 @@ public:
   VkFormat choose_surface_format();
   void init_render_pass();
   void init_vk_objects();
-
-  VkResult aquire_next_image(uint32_t *index);
-
-  void create_swapchain_if_needed();
   void submit_queue();
 
   void wait_and_reset_fences();
@@ -60,7 +54,5 @@ public:
   void render(uint32_t index);
 
   void render_swapchain_vk();
-
-  void init_buffer(RenderBuffer *b);
 };
 }

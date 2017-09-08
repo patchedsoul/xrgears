@@ -218,22 +218,6 @@ void Renderer::submit_queue() {
   vkQueueSubmit(queue, 1, &submitInfo, fence);
 }
 
-VkResult Renderer::aquire_next_image(uint32_t *index) {
-  SwapChainVK *sc = (SwapChainVK*) swap_chain;
-  return vkAcquireNextImageKHR(device, sc->swap_chain, 60,
-                                 semaphore, VK_NULL_HANDLE, index);
-}
-
-void Renderer::create_swapchain_if_needed() {
-  if (swap_chain == nullptr) {
-    swap_chain = new SwapChainVK();
-    //SwapChainVK *sc = (SwapChainVK*) swap_chain_obj;
-    SwapChainVK* sc = (SwapChainVK*) swap_chain;
-    sc->init(device, physical_device, surface,
-             image_format, width, height, render_pass);
-  }
-}
-
 static uint64_t get_ms_from_tv(const timeval& tv) {
   return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
@@ -353,16 +337,13 @@ void Renderer::render(uint32_t index) {
 }
 
 void Renderer::render_swapchain_vk() {
-  uint32_t index;
-  VkResult result = aquire_next_image(&index);
-
+  SwapChainVK *sc = (SwapChainVK *) swap_chain;
+  VkResult result = sc->aquire_next_image(device, semaphore);
   switch (result) {
-    case VK_SUCCESS: {
-      render(index);
-      SwapChainVK *sc = (SwapChainVK *) swap_chain;
-      sc->present(queue, index);
+    case VK_SUCCESS:
+      render(sc->present_index);
+      sc->present(queue);
       break;
-    }
     case VK_TIMEOUT:
       // TODO: XCB times out
       break;
@@ -371,10 +352,5 @@ void Renderer::render_swapchain_vk() {
                  vks::Log::result_string(result).c_str());
       break;
   }
-}
-
-void Renderer::init_buffer(RenderBuffer *b) {
-  swap_chain->init_buffer(device, image_format, render_pass,
-                              width, height, b);
 }
 }

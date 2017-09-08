@@ -12,6 +12,7 @@ class SwapChainVK : public SwapChain {
 public:
   VkSwapchainKHR swap_chain;
   uint32_t image_count = 0;
+  uint32_t present_index = 0;
 
   SwapChainVK() {
   }
@@ -80,9 +81,14 @@ public:
     }
   }
 
-  void present(VkQueue queue, uint32_t index) {
+  VkResult aquire_next_image(VkDevice device, VkSemaphore semaphore) {
+    return vkAcquireNextImageKHR(device, swap_chain, 60,
+                                 semaphore, VK_NULL_HANDLE, &present_index);
+  }
+
+  void present(VkQueue queue) {
     VkSwapchainKHR swapChains[] = { swap_chain, };
-    uint32_t indices[] = { index, };
+    uint32_t indices[] = { present_index, };
 
     VkPresentInfoKHR presentInfo = {
       .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,

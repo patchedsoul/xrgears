@@ -187,11 +187,20 @@ public:
     }
   }
 
+  void create_swapchain_if_needed(Renderer *r) {
+    if (r->swap_chain == nullptr) {
+      r->swap_chain = new SwapChainVK();
+      SwapChainVK* sc = (SwapChainVK*) r->swap_chain;
+      sc->init(r->device, r->physical_device, r->surface,
+               r->image_format, r->width, r->height, r->render_pass);
+    }
+  }
+
   void iter(Renderer *r) {
     poll_events(r);
 
     if (repaint) {
-      r->create_swapchain_if_needed();
+      create_swapchain_if_needed(r);
       update_cb();
       r->render_swapchain_vk();
       schedule_repaint();

@@ -13,6 +13,8 @@
 
 #include <string>
 
+#include "vikWindow.hpp"
+
 #include "vksApplication.hpp"
 
 namespace vks {
