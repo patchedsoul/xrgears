@@ -44,6 +44,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 #include "../vkc/vkcRenderer.hpp"
 #include "VikShader.hpp"
@@ -453,15 +454,10 @@ public:
     struct ubo cube_ubo;
 
     glm::mat4 t_matrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -8.0f));
-
-    glm::vec3 r_vec = glm::vec3(45.0f + (0.25f * t),
-                                45.0f - (0.5f * t),
-                                10.0f + (0.15f * t));
-
-    glm::mat4  r_matrix = glm::mat4();
-    r_matrix = glm::rotate(r_matrix, glm::radians(r_vec.x), glm::vec3(-1.0f, 0.0f, 0.0f));
-    r_matrix = glm::rotate(r_matrix, glm::radians(r_vec.y), glm::vec3(0.0f, -1.0f, 0.0f));
-    r_matrix = glm::rotate(r_matrix, glm::radians(r_vec.z), glm::vec3(0.0f, 0.0f, -1.0f));
+    glm::mat4 r_matrix = glm::eulerAngleYXZ(
+          glm::radians(45.0f + (0.25f * t)),
+          glm::radians(45.0f - (0.5f * t)),
+          glm::radians(10.0f + (0.15f * t)));
 
     float aspect = (float) renderer->height / (float) renderer->width;
 

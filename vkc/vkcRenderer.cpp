@@ -376,9 +376,6 @@ void Renderer::build_command_buffer(RenderBuffer *b) {
     .commandBufferCount = 1,
   };
 
-
-
-
   vkAllocateCommandBuffers(device,
                            &cmdBufferAllocateInfo,
                            &cmd_buffer);
