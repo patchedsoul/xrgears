@@ -64,42 +64,7 @@ public:
 
   Cube(uint32_t w, uint32_t h) : vkc::Application(w, h) {}
 
-  void init() {
-    VkResult r;
-
-    VkDescriptorSetLayout set_layout;
-    VkDescriptorSetLayoutBinding bindings = {
-      .binding = 0,
-      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      .descriptorCount = 1,
-      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-      .pImmutableSamplers = NULL
-    };
-
-    VkDescriptorSetLayoutCreateInfo layoutInfo = {
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-      .pNext = NULL,
-      .flags = 0,
-      .bindingCount = 1,
-      .pBindings = &bindings
-    };
-
-    vkCreateDescriptorSetLayout(renderer->device,
-                                &layoutInfo,
-                                NULL,
-                                &set_layout);
-
-    VkPipelineLayoutCreateInfo pipeLineInfo = {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-      .setLayoutCount = 1,
-      .pSetLayouts = &set_layout
-    };
-
-    vkCreatePipelineLayout(renderer->device,
-                           &pipeLineInfo,
-                           NULL,
-                           &renderer->pipeline_layout);
-
+  void init_pipeline() {
     VkVertexInputBindingDescription vertexBinding[] = {
       {
         .binding = 0,
@@ -238,6 +203,45 @@ public:
                               &pipeLineCreateInfo,
                               NULL,
                               &renderer->pipeline);
+  }
+
+  void init() {
+    VkResult r;
+
+    VkDescriptorSetLayout set_layout;
+    VkDescriptorSetLayoutBinding bindings = {
+      .binding = 0,
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .descriptorCount = 1,
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+      .pImmutableSamplers = NULL
+    };
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+      .pNext = NULL,
+      .flags = 0,
+      .bindingCount = 1,
+      .pBindings = &bindings
+    };
+
+    vkCreateDescriptorSetLayout(renderer->device,
+                                &layoutInfo,
+                                NULL,
+                                &set_layout);
+
+    VkPipelineLayoutCreateInfo pipeLineInfo = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+      .setLayoutCount = 1,
+      .pSetLayouts = &set_layout
+    };
+
+    vkCreatePipelineLayout(renderer->device,
+                           &pipeLineInfo,
+                           NULL,
+                           &renderer->pipeline_layout);
+
+    init_pipeline();
 
     static const float vVertices[] = {
       // front
@@ -337,6 +341,9 @@ public:
       +0.0f, -1.0f, +0.0f, // down
       +0.0f, -1.0f, +0.0f  // down
     };
+
+
+
 
     renderer->vertex_offset = sizeof(struct ubo);
     renderer->colors_offset = renderer->vertex_offset + sizeof(vVertices);
