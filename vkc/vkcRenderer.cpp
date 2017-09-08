@@ -460,4 +460,17 @@ void Renderer::build_command_buffer(RenderBuffer *b) {
   vkEndCommandBuffer(cmd_buffer);
 }
 
+void Renderer::render(RenderBuffer *b) {
+  build_command_buffer(b);
+  submit_queue();
+  wait_and_reset_fences();
+}
+
+void Renderer::render_swapchain() {
+  uint32_t index;
+  aquire_next_image(&index);
+  render(&buffers[index]);
+  present(index);
+}
+
 }

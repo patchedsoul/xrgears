@@ -67,6 +67,10 @@ public:
 
     void build_command_buffer(RenderBuffer *b);
 
+    void render(RenderBuffer *b);
+
+    void render_swapchain();
+
 
 };
 }

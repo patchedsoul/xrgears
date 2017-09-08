@@ -119,15 +119,14 @@ public:
 
   void render(Application* app) {
     drmHandleEvent(fd, &evctx);
-    RenderBuffer *b = &app->renderer->buffers[app->renderer->current & 1];
-    kms_buffer *kms_b = &kms_buffers[app->renderer->current & 1];
 
     uint64_t t = app->renderer->get_animation_time();
     app->update_scene(t);
-    app->renderer->build_command_buffer(b);
-    app->renderer->submit_queue();
-    app->renderer->wait_and_reset_fences();
 
+    RenderBuffer *b = &app->renderer->buffers[app->renderer->current & 1];
+    app->renderer->render(b);
+
+    kms_buffer *kms_b = &kms_buffers[app->renderer->current & 1];
     int ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
                           DRM_MODE_PAGE_FLIP_EVENT, NULL);
     vik_log_f_if(ret < 0, "pageflip failed: %m");
