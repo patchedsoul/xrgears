@@ -85,7 +85,9 @@ int Application::init_display_mode(window_type m) {
     case AUTO:
       return -1;
   }
-  return display->init(this);
+
+  std::function< void() > callback = std::bind( &Application::init, this );
+  return display->init(renderer, callback);
 }
 
 void Application::init_display_mode_auto() {

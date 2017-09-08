@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <functional>
 
 namespace vkc {
 class Application;
@@ -20,7 +21,7 @@ public:
   Window() {}
   virtual ~Window() {}
 
-  virtual int init(Application* app) = 0;
+  virtual int init(Renderer* r, std::function<void()> app_init) = 0;
   virtual void loop(Application* app) = 0;
 };
 }

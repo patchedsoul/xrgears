@@ -233,7 +233,7 @@ public:
 
   // Return -1 on failure.
   int
-  init(Application* app)
+  init(Renderer* r, std::function<void()> app_init)
   {
     display = wl_display_connect(NULL);
     if (!display)
@@ -275,16 +275,16 @@ public:
     wait_for_configure = true;
     wl_surface_commit(surface);
 
-    app->renderer->init_vk(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
+    r->init_vk(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
 
     PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR get_wayland_presentation_support =
         (PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR)
-        vkGetInstanceProcAddr(app->renderer->instance, "vkGetPhysicalDeviceWaylandPresentationSupportKHR");
+        vkGetInstanceProcAddr(r->instance, "vkGetPhysicalDeviceWaylandPresentationSupportKHR");
     PFN_vkCreateWaylandSurfaceKHR create_wayland_surface =
         (PFN_vkCreateWaylandSurfaceKHR)
-        vkGetInstanceProcAddr(app->renderer->instance, "vkCreateWaylandSurfaceKHR");
+        vkGetInstanceProcAddr(r->instance, "vkCreateWaylandSurfaceKHR");
 
-    if (!get_wayland_presentation_support(app->renderer->physical_device, 0,
+    if (!get_wayland_presentation_support(r->physical_device, 0,
                                           display)) {
       vik_log_f("Vulkan not supported on given Wayland surface");
     }
@@ -295,14 +295,14 @@ public:
       .surface = surface,
     };
 
-    create_wayland_surface(app->renderer->instance, &waylandSurfaceInfo, NULL, &app->renderer->surface);
+    create_wayland_surface(r->instance, &waylandSurfaceInfo, NULL, &r->surface);
 
-    app->renderer->image_format = app->renderer->choose_surface_format();
+    r->image_format = r->choose_surface_format();
 
-    app->renderer->init_render_pass();
-    app->init();
-    app->renderer->init_vk_objects();
-    app->renderer->create_swapchain();
+    r->init_render_pass();
+    app_init();
+    r->init_vk_objects();
+    r->create_swapchain();
 
     return 0;
   }

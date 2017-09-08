@@ -451,7 +451,7 @@ public:
   }
 
   void update_uniform_buffer(uint64_t t) {
-    struct ubo cube_ubo;
+    ubo cube_ubo;
 
     glm::mat4 t_matrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -8.0f));
     glm::mat4 r_matrix = glm::eulerAngleYXZ(

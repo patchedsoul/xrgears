@@ -199,7 +199,7 @@ public:
   }
 
   // Return -1 on failure.
-  int init(Application *app) {
+  int init(Renderer* r, std::function<void()> app_init) {
     drmModeRes *resources;
     drmModeEncoder *encoder;
     int i;
@@ -231,26 +231,26 @@ public:
     vik_log_i("mode info: hdisplay %d, vdisplay %d",
            crtc->mode.hdisplay, crtc->mode.vdisplay);
 
-    app->renderer->width = crtc->mode.hdisplay;
-    app->renderer->height = crtc->mode.vdisplay;
+    r->width = crtc->mode.hdisplay;
+    r->height = crtc->mode.vdisplay;
 
     gbm_dev = gbm_create_device(fd);
 
-    app->renderer->init_vk(NULL);
-    app->renderer->image_format = VK_FORMAT_R8G8B8A8_SRGB;
-    app->renderer->init_render_pass();
-    app->init();
-    app->renderer->init_vk_objects();
+    r->init_vk(NULL);
+    r->image_format = VK_FORMAT_R8G8B8A8_SRGB;
+    r->init_render_pass();
+    app_init();
+    r->init_vk_objects();
 
     PFN_vkCreateDmaBufImageINTEL create_dma_buf_image =
-        (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(app->renderer->device, "vkCreateDmaBufImageINTEL");
+        (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(r->device, "vkCreateDmaBufImageINTEL");
 
     for (uint32_t i = 0; i < 2; i++) {
-      struct RenderBuffer *b = &app->renderer->buffers[i];
+      struct RenderBuffer *b = &r->buffers[i];
       struct kms_buffer *kms_b = &kms_buffers[i];
       int buffer_fd, stride, ret;
 
-      kms_b->gbm_bo = gbm_bo_create(gbm_dev, app->renderer->width, app->renderer->height,
+      kms_b->gbm_bo = gbm_bo_create(gbm_dev, r->width, r->height,
                                     GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
 
       buffer_fd = gbm_bo_get_fd(kms_b->gbm_bo);
@@ -260,17 +260,17 @@ public:
       VkDmaBufImageCreateInfo dmaBufInfo = {};
 
       VkExtent3D extent = {};
-      extent.width = app->renderer->width;
-      extent.height = app->renderer->height;
+      extent.width = r->width;
+      extent.height = r->height;
       extent.depth = 1;
 
       dmaBufInfo.sType = (VkStructureType) VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_CREATE_INFO_INTEL;
       dmaBufInfo.fd = buffer_fd;
-      dmaBufInfo.format = app->renderer->image_format;
+      dmaBufInfo.format = r->image_format;
       dmaBufInfo.extent = extent;
       dmaBufInfo.strideInBytes = stride;
 
-      create_dma_buf_image(app->renderer->device,
+      create_dma_buf_image(r->device,
                            &dmaBufInfo,
                            NULL,
                            &kms_b->mem,
@@ -281,12 +281,12 @@ public:
       uint32_t bo_handles[4] = { (uint32_t) (gbm_bo_get_handle(kms_b->gbm_bo).s32), };
       uint32_t pitches[4] = { (uint32_t) stride, };
       uint32_t offsets[4] = { 0, };
-      ret = drmModeAddFB2(fd, app->renderer->width, app->renderer->height,
+      ret = drmModeAddFB2(fd, r->width, r->height,
                           DRM_FORMAT_XRGB8888, bo_handles,
                           pitches, offsets, &kms_b->fb, 0);
       vik_log_f_if(ret == -1, "addfb2 failed");
 
-      app->renderer->init_buffer(b);
+      r->init_buffer(b);
     }
 
     init_loop();

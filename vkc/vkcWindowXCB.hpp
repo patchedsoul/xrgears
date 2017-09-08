@@ -47,9 +47,7 @@ public:
   ~WindowXCB() {}
 
   // Return -1 on failure.
-  int
-  init(Application* app)
-  {
+  int init(Renderer* r, std::function<void()> app_init) {
     xcb_screen_iterator_t iter;
     static const char title[] = "Vulkan Cube";
 
@@ -72,8 +70,8 @@ public:
                       window,
                       iter.data->root,
                       0, 0,
-                      app->renderer->width,
-                      app->renderer->height,
+                      r->width,
+                      r->height,
                       0,
                       XCB_WINDOW_CLASS_INPUT_OUTPUT,
                       iter.data->root_visual,
@@ -101,36 +99,32 @@ public:
 
     xcb_flush(conn);
 
-    app->renderer->init_vk(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+    r->init_vk(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 
     VkBool32 ret = vkGetPhysicalDeviceXcbPresentationSupportKHR(
-          app->renderer->physical_device, 0, conn, iter.data->root_visual);
+          r->physical_device, 0, conn, iter.data->root_visual);
     vik_log_f_if(!ret, "Vulkan not supported on given X window");
 
-    init_surface(app->renderer);
+    init_surface(r);
 
-    //vc->init_vk_objects(app);
-    app->renderer->init_render_pass();
-    app->init();
-    app->renderer->init_vk_objects();
-
-    app->renderer->image_count = 0;
-
-    //app->renderer->create_swapchain();
+    r->init_render_pass();
+    app_init();
+    r->init_vk_objects();
+    r->image_count = 0;
 
     return 0;
   }
 
-  void init_surface(Renderer *vc) {
+  void init_surface(Renderer *r) {
     VkXcbSurfaceCreateInfoKHR surfaceInfo = {};
 
     surfaceInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
     surfaceInfo.connection = conn;
     surfaceInfo.window = window;
 
-    vkCreateXcbSurfaceKHR(vc->instance, &surfaceInfo, NULL, &vc->surface);
+    vkCreateXcbSurfaceKHR(r->instance, &surfaceInfo, NULL, &r->surface);
 
-    vc->image_format = vc->choose_surface_format();
+    r->image_format = r->choose_surface_format();
   }
 
   void schedule_repaint()
@@ -144,7 +138,7 @@ public:
   }
 
 
-  void poll_events(Renderer *vc) {
+  void poll_events(Renderer *r) {
     xcb_generic_event_t *event;
     xcb_key_press_event_t *key_press;
     xcb_client_message_event_t *client_message;
@@ -169,28 +163,24 @@ public:
 
         case XCB_CONFIGURE_NOTIFY:
           configure = (xcb_configure_notify_event_t *) event;
-          if (vc->width != configure->width ||
-              vc->height != configure->height) {
-            if (vc->image_count > 0) {
-              vkDestroySwapchainKHR(vc->device, vc->swap_chain, NULL);
-              vc->image_count = 0;
+          if (r->width != configure->width ||
+              r->height != configure->height) {
+            if (r->image_count > 0) {
+              vkDestroySwapchainKHR(r->device, r->swap_chain, NULL);
+              r->image_count = 0;
             }
 
-            vc->width = configure->width;
-            vc->height = configure->height;
+            r->width = configure->width;
+            r->height = configure->height;
           }
           break;
-
         case XCB_EXPOSE:
           schedule_repaint();
           break;
-
         case XCB_KEY_PRESS:
           key_press = (xcb_key_press_event_t *) event;
-
           if (key_press->detail == 9)
             exit(0);
-
           break;
       }
       free(event);
@@ -199,24 +189,17 @@ public:
     }
   }
 
-
-
   void loop(Application* app) {
     while (1) {
-
       poll_events(app->renderer);
 
       if (repaint) {
         app->renderer->create_swapchain_if_needed();
-
         app->update_scene();
-
         app->renderer->render_swapchain();
-
         schedule_repaint();
       }
       xcb_flush(conn);
-
     }
   }
 };
