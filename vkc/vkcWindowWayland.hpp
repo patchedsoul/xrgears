@@ -325,7 +325,7 @@ public:
     while (1) {
       flush();
       update_cb();
-      r->render_swapchain();
+      r->render_swapchain_vk();
     }
   }
 };

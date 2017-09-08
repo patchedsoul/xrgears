@@ -459,19 +459,20 @@ void Renderer::build_command_buffer(VkFramebuffer frame_buffer) {
                "vkEndCommandBuffer: %s", vks::Log::result_string(r).c_str());
 }
 
-void Renderer::render(RenderBuffer *b) {
+void Renderer::render(uint32_t index) {
+  RenderBuffer *b = &buffers[index];
   build_command_buffer(b->framebuffer);
   submit_queue();
   wait_and_reset_fences();
 }
 
-void Renderer::render_swapchain() {
+void Renderer::render_swapchain_vk() {
   uint32_t index;
   VkResult result = aquire_next_image(&index);
 
   switch (result) {
     case VK_SUCCESS:
-      render(&buffers[index]);
+      render(index);
       present(index);
       break;
     case VK_TIMEOUT:
@@ -482,6 +483,10 @@ void Renderer::render_swapchain() {
                  vks::Log::result_string(result).c_str());
       break;
   }
+}
+
+void Renderer::render_swapchain_drm() {
+  render(current & 1);
 }
 
 }

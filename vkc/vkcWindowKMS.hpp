@@ -264,8 +264,7 @@ public:
 
     update_cb();
 
-    RenderBuffer *b = &r->buffers[r->current & 1];
-    r->render(b);
+    r->render_swapchain_drm();
 
     kms_buffer *kms_b = &kms_buffers[r->current & 1];
     int ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,

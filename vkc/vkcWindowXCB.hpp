@@ -191,7 +191,7 @@ public:
       if (repaint) {
         r->create_swapchain_if_needed();
         update_cb();
-        r->render_swapchain();
+        r->render_swapchain_vk();
         schedule_repaint();
       }
       xcb_flush(conn);

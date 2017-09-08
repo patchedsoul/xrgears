@@ -67,10 +67,9 @@ public:
 
     void build_command_buffer(VkFramebuffer frame_buffer);
 
-    void render(RenderBuffer *b);
+    void render(uint32_t index);
 
-    void render_swapchain();
-
-
+    void render_swapchain_vk();
+    void render_swapchain_drm();
 };
 }
