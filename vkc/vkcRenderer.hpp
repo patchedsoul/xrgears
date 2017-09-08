@@ -5,10 +5,11 @@
 
 #include "vkcSwapChainVK.hpp"
 #include "vkcSwapChainDRM.hpp"
+#include "vikRenderer.hpp"
 
 namespace vkc {
 
-class Renderer {
+class Renderer : public vik::Renderer {
 public:
   SwapChain *swap_chain;
 

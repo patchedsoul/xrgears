@@ -4,13 +4,15 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../vitamin-k/vikApplication.hpp"
+
 #include "../vkc/vkcWindow.hpp"
 
 namespace vkc {
 
 class Renderer;
 
-class Application {
+class Application : public vik::Application {
 public:
    Renderer *renderer;
    Window *display;

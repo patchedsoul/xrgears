@@ -3,7 +3,7 @@
 namespace vik {
 class SwapChain {
 public:
-    SwapChain();
-    ~SwapChain();
+    SwapChain() {}
+    ~SwapChain() {}
 };
 }

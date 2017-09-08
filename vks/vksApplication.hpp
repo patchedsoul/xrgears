@@ -34,12 +34,12 @@
 #include "vksFrameCounter.hpp"
 #include "vksSettings.hpp"
 
-
+#include "../vitamin-k/vikApplication.hpp"
 
 namespace vks {
 class Window;
 
-class Application {
+class Application : public vik::Application {
 
  public:
   vks::Renderer *renderer;

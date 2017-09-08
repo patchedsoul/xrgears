@@ -19,7 +19,7 @@
 
 namespace vks {
 
-class Window {
+class Window : public vik::Window {
  public:
   Window() {}
   ~Window() {}

@@ -3,7 +3,7 @@
 namespace vik {
 class Application {
 public:
-    Application();
-    ~Application();
+    Application() {}
+    ~Application()  {}
 };
 }

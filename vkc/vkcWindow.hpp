@@ -3,6 +3,8 @@
 #include <string>
 #include <functional>
 
+#include "vikWindow.hpp"
+
 namespace vkc {
 class Renderer;
 
@@ -13,7 +15,7 @@ enum window_type {
   WAYLAND,
 };
 
-class Window {
+class Window : public vik::Window {
 public:
   std::string name;
 

@@ -2,6 +2,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include "vikSwapchain.hpp"
+
 #define MAX_NUM_IMAGES 4
 
 namespace vkc {
@@ -12,7 +14,7 @@ struct RenderBuffer {
   VkFramebuffer framebuffer;
 };
 
-class SwapChain {
+class SwapChain : public vik::SwapChain {
 public:
   RenderBuffer buffers[MAX_NUM_IMAGES];
 
