@@ -202,113 +202,10 @@ void Renderer::init_vk_objects() {
                     &semaphore);
 }
 
-void Renderer::init_buffer(struct RenderBuffer *b) {
-  VkImageViewCreateInfo imageviewinfo = {
-    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-    .image = b->image,
-    .viewType = VK_IMAGE_VIEW_TYPE_2D,
-    .format = image_format,
-    .components = {
-      .r = VK_COMPONENT_SWIZZLE_R,
-      .g = VK_COMPONENT_SWIZZLE_G,
-      .b = VK_COMPONENT_SWIZZLE_B,
-      .a = VK_COMPONENT_SWIZZLE_A,
-    },
-    .subresourceRange = {
-      .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-      .baseMipLevel = 0,
-      .levelCount = 1,
-      .baseArrayLayer = 0,
-      .layerCount = 1,
-    },
-  };
-
-  vkCreateImageView(device,
-                    &imageviewinfo,
-                    NULL,
-                    &b->view);
-
-
-  VkFramebufferCreateInfo framebufferinfo = {
-    .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-    .renderPass = render_pass,
-    .attachmentCount = 1,
-    .pAttachments = &b->view,
-    .width = width,
-    .height = height,
-    .layers = 1
-  };
-
-  vkCreateFramebuffer(device,
-                      &framebufferinfo,
-                      NULL,
-                      &b->framebuffer);
-}
-
-
-void Renderer::create_swapchain() {
-  VkSurfaceCapabilitiesKHR surface_caps;
-  vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface,
-                                            &surface_caps);
-  assert(surface_caps.supportedCompositeAlpha &
-         VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
-
-  VkBool32 supported;
-  vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, 0, surface, &supported);
-  assert(supported);
-
-  uint32_t count;
-  vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface,
-                                            &count, NULL);
-  VkPresentModeKHR present_modes[count];
-  vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface,
-                                            &count, present_modes);
-  int i;
-  VkPresentModeKHR present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
-  for (i = 0; i < count; i++) {
-    if (present_modes[i] == VK_PRESENT_MODE_FIFO_KHR) {
-      present_mode = VK_PRESENT_MODE_FIFO_KHR;
-      break;
-    }
-  }
-
-  uint32_t queueFamilyIndices[] { 0 };
-
-  VkSwapchainCreateInfoKHR swapchainfo = {
-    .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-    .surface = surface,
-    .minImageCount = 2,
-    .imageFormat = image_format,
-    .imageColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR,
-    .imageExtent = { width, height },
-    .imageArrayLayers = 1,
-    .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-    .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
-    .queueFamilyIndexCount = 1,
-    .pQueueFamilyIndices = queueFamilyIndices,
-    .preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
-    .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-    .presentMode = present_mode,
-  };
-
-  vkCreateSwapchainKHR(device, &swapchainfo, NULL, &swap_chain);
-
-  vkGetSwapchainImagesKHR(device, swap_chain, &image_count, NULL);
-  assert(image_count > 0);
-  VkImage swap_chain_images[image_count];
-  vkGetSwapchainImagesKHR(device, swap_chain, &image_count, swap_chain_images);
-
-  for (uint32_t i = 0; i < image_count; i++) {
-    buffers[i].image = swap_chain_images[i];
-    init_buffer(&buffers[i]);
-  }
-}
-
 void Renderer::submit_queue() {
   VkPipelineStageFlags stageflags[] = {
     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
   };
-
 
   VkSubmitInfo submitInfo = {
     .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -323,7 +220,10 @@ void Renderer::submit_queue() {
 }
 
 void Renderer::present(uint32_t index) {
-  VkSwapchainKHR swapChains[] = { swap_chain, };
+
+  SwapChainVK *sc = (SwapChainVK*) swap_chain_obj;
+
+  VkSwapchainKHR swapChains[] = { sc->swap_chain, };
   uint32_t indices[] = { index, };
 
   VkPresentInfoKHR presentInfo = {
@@ -339,13 +239,19 @@ void Renderer::present(uint32_t index) {
 }
 
 VkResult Renderer::aquire_next_image(uint32_t *index) {
-  return vkAcquireNextImageKHR(device, swap_chain, 60,
+  SwapChainVK *sc = (SwapChainVK*) swap_chain_obj;
+  return vkAcquireNextImageKHR(device, sc->swap_chain, 60,
                                  semaphore, VK_NULL_HANDLE, index);
 }
 
 void Renderer::create_swapchain_if_needed() {
-  if (image_count == 0)
-    create_swapchain();
+  if (swap_chain_obj == nullptr) {
+    swap_chain_obj = new SwapChainVK();
+    //SwapChainVK *sc = (SwapChainVK*) swap_chain_obj;
+    SwapChainVK* sc = (SwapChainVK*) swap_chain_obj;
+    sc->init(device, physical_device, surface,
+             image_format, width, height, render_pass);
+  }
 }
 
 static uint64_t get_ms_from_tv(const timeval& tv) {
@@ -460,7 +366,7 @@ void Renderer::build_command_buffer(VkFramebuffer frame_buffer) {
 }
 
 void Renderer::render(uint32_t index) {
-  RenderBuffer *b = &buffers[index];
+  RenderBuffer *b = &swap_chain_obj->buffers[index];
   build_command_buffer(b->framebuffer);
   submit_queue();
   wait_and_reset_fences();
@@ -487,6 +393,11 @@ void Renderer::render_swapchain_vk() {
 
 void Renderer::render_swapchain_drm() {
   render(current & 1);
+}
+
+void Renderer::init_buffer(RenderBuffer *b) {
+  swap_chain_obj->init_buffer(device, image_format, render_pass,
+                              width, height, b);
 }
 
 }

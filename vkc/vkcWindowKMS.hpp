@@ -192,13 +192,17 @@ public:
     r->init_vk(NULL);
     r->image_format = VK_FORMAT_R8G8B8A8_SRGB;
 
+    r->swap_chain_obj = new SwapChainDRM();
+
+
+
     init_cb();
 
     PFN_vkCreateDmaBufImageINTEL create_dma_buf_image =
         (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(r->device, "vkCreateDmaBufImageINTEL");
 
     for (uint32_t i = 0; i < 2; i++) {
-      struct RenderBuffer *b = &r->buffers[i];
+      struct RenderBuffer *b = &r->swap_chain_obj->buffers[i];
       struct kms_buffer *kms_b = &kms_buffers[i];
       int buffer_fd, stride, ret;
 

@@ -3,21 +3,15 @@
 #define VK_PROTOTYPES
 #include <vulkan/vulkan.h>
 
-#define MAX_NUM_IMAGES 4
-
 #include "vkcSwapChainVK.hpp"
 #include "vkcSwapChainDRM.hpp"
 
 namespace vkc {
-struct RenderBuffer {
-  VkImage image;
-  VkImageView view;
-  VkFramebuffer framebuffer;
-};
 
 class Renderer {
 public:
-  VkSwapchainKHR swap_chain;
+  SwapChain *swap_chain_obj;
+
   VkInstance instance;
   VkPhysicalDevice physical_device;
   VkDevice device;
@@ -34,11 +28,11 @@ public:
 
   uint32_t width, height;
 
-  struct timeval start_tv;
+  timeval start_tv;
   VkSurfaceKHR surface;
   VkFormat image_format;
-  struct RenderBuffer buffers[MAX_NUM_IMAGES];
-  uint32_t image_count = 0;
+
+
   int current;
 
   VkCommandBuffer cmd_buffer;
@@ -53,8 +47,6 @@ public:
   VkFormat choose_surface_format();
   void init_render_pass();
   void init_vk_objects();
-  void init_buffer(struct RenderBuffer *b);
-  void create_swapchain();
 
   void present(uint32_t index);
   VkResult aquire_next_image(uint32_t *index);
@@ -72,5 +64,7 @@ public:
 
   void render_swapchain_vk();
   void render_swapchain_drm();
+
+  void init_buffer(RenderBuffer *b);
 };
 }

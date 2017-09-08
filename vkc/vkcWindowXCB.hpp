@@ -160,9 +160,12 @@ public:
           configure = (xcb_configure_notify_event_t *) event;
           if (r->width != configure->width ||
               r->height != configure->height) {
-            if (r->image_count > 0) {
-              vkDestroySwapchainKHR(r->device, r->swap_chain, NULL);
-              r->image_count = 0;
+
+            SwapChainVK *sc = (SwapChainVK*) r->swap_chain_obj;
+
+            if (sc != nullptr && sc->image_count > 0) {
+              vkDestroySwapchainKHR(r->device, sc->swap_chain, NULL);
+              sc->image_count = 0;
             }
 
             r->width = configure->width;

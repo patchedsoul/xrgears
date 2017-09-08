@@ -299,7 +299,10 @@ public:
 
     init_cb();
 
-    r->create_swapchain();
+    r->swap_chain_obj = new SwapChainVK();
+    SwapChainVK* sc = (SwapChainVK* ) r->swap_chain_obj;
+    sc->init(r->device, r->physical_device, r->surface,
+             r->image_format, r->width, r->height, r->render_pass);
 
     return 0;
   }

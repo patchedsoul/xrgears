@@ -4,7 +4,11 @@
 
 namespace vkc {
 class SwapChainDRM : public SwapChain {
-    SwapChainDRM();
-    ~SwapChainDRM();
+public:
+  SwapChainDRM() {
+    }
+
+    ~SwapChainDRM() {
+    }
 };
 }
