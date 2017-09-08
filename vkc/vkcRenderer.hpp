@@ -10,7 +10,7 @@ namespace vkc {
 
 class Renderer {
 public:
-  SwapChain *swap_chain_obj;
+  SwapChain *swap_chain;
 
   VkInstance instance;
   VkPhysicalDevice physical_device;

@@ -219,16 +219,16 @@ void Renderer::submit_queue() {
 }
 
 VkResult Renderer::aquire_next_image(uint32_t *index) {
-  SwapChainVK *sc = (SwapChainVK*) swap_chain_obj;
+  SwapChainVK *sc = (SwapChainVK*) swap_chain;
   return vkAcquireNextImageKHR(device, sc->swap_chain, 60,
                                  semaphore, VK_NULL_HANDLE, index);
 }
 
 void Renderer::create_swapchain_if_needed() {
-  if (swap_chain_obj == nullptr) {
-    swap_chain_obj = new SwapChainVK();
+  if (swap_chain == nullptr) {
+    swap_chain = new SwapChainVK();
     //SwapChainVK *sc = (SwapChainVK*) swap_chain_obj;
-    SwapChainVK* sc = (SwapChainVK*) swap_chain_obj;
+    SwapChainVK* sc = (SwapChainVK*) swap_chain;
     sc->init(device, physical_device, surface,
              image_format, width, height, render_pass);
   }
@@ -346,7 +346,7 @@ void Renderer::build_command_buffer(VkFramebuffer frame_buffer) {
 }
 
 void Renderer::render(uint32_t index) {
-  RenderBuffer *b = &swap_chain_obj->buffers[index];
+  RenderBuffer *b = &swap_chain->buffers[index];
   build_command_buffer(b->framebuffer);
   submit_queue();
   wait_and_reset_fences();
@@ -359,7 +359,7 @@ void Renderer::render_swapchain_vk() {
   switch (result) {
     case VK_SUCCESS: {
       render(index);
-      SwapChainVK *sc = (SwapChainVK *) swap_chain_obj;
+      SwapChainVK *sc = (SwapChainVK *) swap_chain;
       sc->present(queue, index);
       break;
     }
@@ -374,7 +374,7 @@ void Renderer::render_swapchain_vk() {
 }
 
 void Renderer::init_buffer(RenderBuffer *b) {
-  swap_chain_obj->init_buffer(device, image_format, render_pass,
+  swap_chain->init_buffer(device, image_format, render_pass,
                               width, height, b);
 }
 }

@@ -161,7 +161,7 @@ public:
           if (r->width != configure->width ||
               r->height != configure->height) {
 
-            SwapChainVK *sc = (SwapChainVK*) r->swap_chain_obj;
+            SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
 
             if (sc != nullptr && sc->image_count > 0) {
               vkDestroySwapchainKHR(r->device, sc->swap_chain, NULL);

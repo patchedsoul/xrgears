@@ -21,8 +21,6 @@
 #include <linux/vt.h>
 #include <linux/major.h>
 
-
-
 #include "vkcWindow.hpp"
 #include "vkcApplication.hpp"
 #include "vkcRenderer.hpp"
@@ -171,11 +169,11 @@ public:
     r->init_vk(NULL);
     r->image_format = VK_FORMAT_R8G8B8A8_SRGB;
 
-    r->swap_chain_obj = new SwapChainDRM();
+    r->swap_chain = new SwapChainDRM();
 
     init_cb();
 
-    SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain_obj;
+    SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain;
     sc->init(r->device, r->image_format, gbm_dev, fd,
              r->width, r->height, r->render_pass);
     sc->set_mode_and_page_flip(fd, crtc, connector);
@@ -201,7 +199,7 @@ public:
 
     update_cb();
 
-    SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain_obj;
+    SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain;
 
     int index = sc->current & 1;
 

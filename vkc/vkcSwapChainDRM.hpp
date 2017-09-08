@@ -36,8 +36,8 @@ struct kms_buffer {
 };
 
 class SwapChainDRM : public SwapChain {
-public:
 
+public:
   kms_buffer kms_buffers[MAX_NUM_IMAGES];
   int current;
 
