@@ -89,16 +89,14 @@ public:
     restore_vt();
   }
 
-  void init_loop() {
+  void set_mode_and_page_flip() {
     int ret = drmModeSetCrtc(fd, crtc->crtc_id, kms_buffers[0].fb,
         0, 0, &connector->connector_id, 1, &crtc->mode);
     vik_log_f_if(ret < 0, "modeset failed: %m");
 
-
     ret = drmModePageFlip(fd, crtc->crtc_id, kms_buffers[0].fb,
         DRM_MODE_PAGE_FLIP_EVENT, NULL);
     vik_log_f_if(ret < 0, "pageflip failed: %m");
-
 
     pfd[1].fd = fd;
   }
@@ -238,9 +236,8 @@ public:
 
     r->init_vk(NULL);
     r->image_format = VK_FORMAT_R8G8B8A8_SRGB;
-    r->init_render_pass();
+
     app_init();
-    r->init_vk_objects();
 
     PFN_vkCreateDmaBufImageINTEL create_dma_buf_image =
         (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(r->device, "vkCreateDmaBufImageINTEL");
@@ -289,7 +286,7 @@ public:
       r->init_buffer(b);
     }
 
-    init_loop();
+    set_mode_and_page_flip();
 
     return 0;
   }

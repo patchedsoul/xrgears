@@ -301,16 +301,6 @@ public:
     vkUpdateDescriptorSets(renderer->device, 1, writeDescriptorSet, 0, NULL);
   }
 
-  void init() {
-    VkDescriptorSetLayout set_layout = init_descriptor_set_layout();
-    init_pipeline_layout(set_layout);
-    init_pipeline();
-    init_vertex_buffer();
-    VkDescriptorPool descriptor_pool = init_descriptor_pool();
-    init_descriptor_sets(descriptor_pool, set_layout);
-    update_descriptor_sets();
-  }
-
   void init_vertex_buffer() {
     static const float vVertices[] = {
       // front
@@ -476,6 +466,20 @@ public:
   void update_scene() {
     uint64_t t = renderer->get_animation_time();
     update_uniform_buffer(t);
+  }
+
+  void init() {
+    renderer->init_render_pass();
+
+    VkDescriptorSetLayout set_layout = init_descriptor_set_layout();
+    init_pipeline_layout(set_layout);
+    init_pipeline();
+    init_vertex_buffer();
+    VkDescriptorPool descriptor_pool = init_descriptor_pool();
+    init_descriptor_sets(descriptor_pool, set_layout);
+    update_descriptor_sets();
+
+    renderer->init_vk_objects();
   }
 
 };

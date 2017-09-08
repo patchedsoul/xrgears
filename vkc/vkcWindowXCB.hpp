@@ -107,9 +107,8 @@ public:
 
     init_surface(r);
 
-    r->init_render_pass();
     app_init();
-    r->init_vk_objects();
+
     r->image_count = 0;
 
     return 0;

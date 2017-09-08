@@ -299,9 +299,8 @@ public:
 
     r->image_format = r->choose_surface_format();
 
-    r->init_render_pass();
     app_init();
-    r->init_vk_objects();
+
     r->create_swapchain();
 
     return 0;
