@@ -106,10 +106,7 @@ public:
     vik_log_f_if(!ret, "Vulkan not supported on given X window");
 
     init_surface(r);
-
     init_cb();
-
-    r->image_count = 0;
 
     return 0;
   }
@@ -126,8 +123,7 @@ public:
     r->image_format = r->choose_surface_format();
   }
 
-  void schedule_repaint()
-  {
+  void schedule_repaint() {
     xcb_client_message_event_t client_message;
     client_message.response_type = XCB_CLIENT_MESSAGE;
     client_message.format = 32;

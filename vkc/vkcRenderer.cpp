@@ -365,7 +365,7 @@ void Renderer::wait_and_reset_fences() {
   vkResetCommandPool(device, cmd_pool, 0);
 }
 
-void Renderer::build_command_buffer(RenderBuffer *b) {
+void Renderer::build_command_buffer(VkFramebuffer frame_buffer) {
   VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {
     .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
     .commandPool = cmd_pool,
@@ -395,7 +395,7 @@ void Renderer::build_command_buffer(RenderBuffer *b) {
   VkRenderPassBeginInfo passBeginInfo = {
     .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
     .renderPass = render_pass,
-    .framebuffer = b->framebuffer,
+    .framebuffer = frame_buffer,
     .renderArea = { { 0, 0 }, { width, height } },
     .clearValueCount = 1,
     .pClearValues = clearValues
@@ -460,7 +460,7 @@ void Renderer::build_command_buffer(RenderBuffer *b) {
 }
 
 void Renderer::render(RenderBuffer *b) {
-  build_command_buffer(b);
+  build_command_buffer(b->framebuffer);
   submit_queue();
   wait_and_reset_fences();
 }
@@ -469,12 +469,18 @@ void Renderer::render_swapchain() {
   uint32_t index;
   VkResult result = aquire_next_image(&index);
 
-  if (result == VK_SUCCESS){
-    render(&buffers[index]);
-    present(index);
-  } else {
-    vik_log_e("vkAcquireNextImageKHR failed: %s",
+  switch (result) {
+    case VK_SUCCESS:
+      render(&buffers[index]);
+      present(index);
+      break;
+    case VK_TIMEOUT:
+      // TODO: XCB times out
+      break;
+    default:
+      vik_log_e("vkAcquireNextImageKHR failed: %s",
                  vks::Log::result_string(result).c_str());
+      break;
   }
 }
 

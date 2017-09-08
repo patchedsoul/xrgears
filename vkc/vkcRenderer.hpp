@@ -37,7 +37,7 @@ public:
     VkSurfaceKHR surface;
     VkFormat image_format;
     struct RenderBuffer buffers[MAX_NUM_IMAGES];
-    uint32_t image_count;
+    uint32_t image_count = 0;
     int current;
 
     VkCommandBuffer cmd_buffer;
@@ -65,7 +65,7 @@ public:
 
     uint64_t get_animation_time();
 
-    void build_command_buffer(RenderBuffer *b);
+    void build_command_buffer(VkFramebuffer frame_buffer);
 
     void render(RenderBuffer *b);
 
