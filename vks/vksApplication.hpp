@@ -153,6 +153,6 @@ class Application : public vik::Application {
   void list_gpus();
 
   VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin);
-  std::string getWindowTitle();
+  std::string make_title_string();
 };
 }

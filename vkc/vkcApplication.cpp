@@ -10,7 +10,7 @@
 namespace vkc {
 
 Application::Application(uint32_t w, uint32_t h) {
-  mode = AUTO;
+  type = AUTO;
   renderer = new Renderer(w, h);
 }
 
@@ -18,18 +18,18 @@ Application::~Application() {
   delete renderer;
 }
 
-bool Application::display_mode_from_string(const char *s) {
+bool Application::window_type_from_string(const char *s) {
   if (streq(s, "auto")) {
-    mode = AUTO;
+    type = AUTO;
     return true;
   } else if (streq(s, "kms")) {
-    mode = KMS;
+    type = KMS;
     return true;
   } else if (streq(s, "xcb")) {
-    mode = XCB;
+    type = XCB_SIMPLE;
     return true;
   } else if (streq(s, "wayland")) {
-    mode = WAYLAND;
+    type = WAYLAND_XDG;
     return true;
   } else {
     return false;
@@ -51,7 +51,7 @@ void Application::parse_args(int argc, char *argv[]) {
   while ((opt = getopt(argc, argv, optstring)) != -1) {
     switch (opt) {
       case 'm':
-        if (!display_mode_from_string(optarg))
+        if (!window_type_from_string(optarg))
           vik_log_e("option -m given bad display mode");
         break;
       case '?':
@@ -71,16 +71,20 @@ void Application::parse_args(int argc, char *argv[]) {
 }
 
 
-int Application::init_display_mode(window_type m) {
-  switch (mode) {
+int Application::init_window(window_type m) {
+  switch (type) {
     case KMS:
-      display = new WindowKMS();
+      window = new WindowKMS();
       break;
-    case XCB:
-      display = new WindowXCB();
+    case XCB_SIMPLE:
+      window = new WindowXCB();
       break;
-    case WAYLAND:
-      display = new WindowWayland();
+    case WAYLAND_XDG:
+      window = new WindowWayland();
+      break;
+    case WAYLAND_LEGACY:
+      break;
+    case XCB_MOUSE:
       break;
     case AUTO:
       return -1;
@@ -90,38 +94,38 @@ int Application::init_display_mode(window_type m) {
   std::function<void()> update_cb = std::bind(&Application::update_scene, this);
   std::function<void()> quit_cb = [this]() { quit = true; };
 
-  display->set_init_cb(init_cb);
-  display->set_update_cb(update_cb);
-  display->set_quit_cb(quit_cb);
+  window->set_init_cb(init_cb);
+  window->set_update_cb(update_cb);
+  window->set_quit_cb(quit_cb);
 
-  return display->init(renderer);
+  return window->init(renderer);
 }
 
-void Application::init_display_mode_auto() {
-  mode = WAYLAND;
-  if (init_display_mode(mode) == -1) {
+void Application::init_window_auto() {
+  type = WAYLAND_XDG;
+  if (init_window(type) == -1) {
     vik_log_e("failed to initialize wayland, falling back to xcb");
-    delete(display);
-    mode = XCB;
-    if (init_display_mode(mode) == -1) {
+    delete(window);
+    type = XCB_SIMPLE;
+    if (init_window(type) == -1) {
       vik_log_e("failed to initialize xcb, falling back to kms");
-      delete(display);
-      mode = KMS;
-      init_display_mode(mode);
+      delete(window);
+      type = KMS;
+      init_window(type);
     }
   }
 }
 
-void Application::init_display() {
-  if (mode == AUTO)
-    init_display_mode_auto();
-  else if (init_display_mode(mode) == -1)
-    vik_log_f("failed to initialize %s", display->name.c_str());
+void Application::init_window() {
+  if (type == AUTO)
+    init_window_auto();
+  else if (init_window(type) == -1)
+    vik_log_f("failed to initialize %s", window->name.c_str());
 }
 
 void Application::loop() {
   while (!quit)
-    display->iter(renderer);
+    window->iter(renderer);
 }
 }
 

@@ -96,7 +96,7 @@ void Application::parse_arguments(const int argc, const char *argv[]) {
   }
 }
 
-std::string Application::getWindowTitle() {
+std::string Application::make_title_string() {
   std::string device(deviceProperties.deviceName);
   std::string windowTitle = title + " - " + device;
   if (!enableTextOverlay)
@@ -252,7 +252,7 @@ void Application::check_tick_finnished(Window *window) {
   if (timer.tick_finnished()) {
     timer.update_fps();
     if (!enableTextOverlay)
-      window->update_window_title(getWindowTitle());
+      window->update_window_title(make_title_string());
     else
       updateTextOverlay();
     timer.reset();

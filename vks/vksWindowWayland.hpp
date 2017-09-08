@@ -370,7 +370,7 @@ class WindowWayland : public Window {
                                     hmd_refresh,
                                     hmd_output);
 
-    std::string windowTitle = app->getWindowTitle();
+    std::string windowTitle = app->make_title_string();
     wl_shell_surface_set_title(shell_surface, windowTitle.c_str());
 
     return 0;
