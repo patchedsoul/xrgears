@@ -39,6 +39,7 @@ class SwapChainDRM : public SwapChain {
 public:
 
   kms_buffer kms_buffers[MAX_NUM_IMAGES];
+  int current;
 
   SwapChainDRM() {
   }
@@ -57,7 +58,7 @@ public:
       int buffer_fd, stride, ret;
 
       kms_b->gbm_buffer = gbm_bo_create(gbm_dev, width, height,
-                                    GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
+                                        GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
 
       buffer_fd = gbm_bo_get_fd(kms_b->gbm_buffer);
       stride = gbm_bo_get_stride(kms_b->gbm_buffer);

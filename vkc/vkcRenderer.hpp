@@ -33,8 +33,6 @@ public:
   VkFormat image_format;
 
 
-  int current;
-
   VkCommandBuffer cmd_buffer;
   bool cmd_buffer_created = false;
 
@@ -62,7 +60,6 @@ public:
   void render(uint32_t index);
 
   void render_swapchain_vk();
-  void render_swapchain_drm();
 
   void init_buffer(RenderBuffer *b);
 };

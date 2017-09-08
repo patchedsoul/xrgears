@@ -373,10 +373,6 @@ void Renderer::render_swapchain_vk() {
   }
 }
 
-void Renderer::render_swapchain_drm() {
-  render(current & 1);
-}
-
 void Renderer::init_buffer(RenderBuffer *b) {
   swap_chain_obj->init_buffer(device, image_format, render_pass,
                               width, height, b);

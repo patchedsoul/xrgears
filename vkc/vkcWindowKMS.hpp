@@ -201,15 +201,16 @@ public:
 
     update_cb();
 
-    r->render_swapchain_drm();
-
     SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain_obj;
 
-    kms_buffer *kms_b = &sc->kms_buffers[r->current & 1];
+    int index = sc->current & 1;
+
+    r->render(index);
+    kms_buffer *kms_b = &sc->kms_buffers[index];
     int ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
                               DRM_MODE_PAGE_FLIP_EVENT, NULL);
     vik_log_f_if(ret < 0, "pageflip failed: %m");
-    r->current++;
+    sc->current++;
   }
 
   void poll_and_render(Renderer *r) {
