@@ -5,7 +5,8 @@
 
 #define MAX_NUM_IMAGES 4
 
-
+#include "vkcSwapChainVK.hpp"
+#include "vkcSwapChainDRM.hpp"
 
 namespace vkc {
 struct RenderBuffer {
