@@ -318,6 +318,7 @@ void Application::setupRenderPass() {
 
 
   // VK_KHX_multiview
+  /*
   VkRenderPassMultiviewCreateInfoKHX renderPassMvInfo = {};
   renderPassMvInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHX;
   renderPassMvInfo.subpassCount = 1;
@@ -336,6 +337,7 @@ void Application::setupRenderPass() {
 
   renderPassInfo.pNext = &renderPassMvInfo;
   renderPassInfo.pNext = NULL;
+  */
   // VK_KHX_multiview
 
   vik_log_check(vkCreateRenderPass(renderer->device, &renderPassInfo, nullptr, &renderer->renderPass));
