@@ -83,6 +83,10 @@ public:
   void createPipelineCache();
   void prepareFrame();
   void submitFrame();
+  void setupDepthStencil();
+  void setupFrameBuffer();
+  void setupRenderPass();
+
   void init_text_overlay(const std::string &title);
 
   void init_physical_device();

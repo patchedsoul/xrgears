@@ -74,9 +74,6 @@ class Application : public vik::Application {
   virtual void viewChanged();
   virtual void keyPressed(uint32_t);
   virtual void buildCommandBuffers();
-  virtual void setupDepthStencil();
-  virtual void setupFrameBuffer();
-  virtual void setupRenderPass();
   virtual void getEnabledFeatures();
   virtual void prepare();
 
