@@ -266,11 +266,11 @@ class WindowWayland : public Window {
         break;
       case KEY_P:
         if (state)
-          app->timer.toggle_animation_pause();
+          app->renderer->timer.toggle_animation_pause();
         break;
       case KEY_F1:
-        if (state && app->enableTextOverlay)
-          app->textOverlay->visible = !app->textOverlay->visible;
+        if (state && app->renderer->enableTextOverlay)
+          app->renderer->textOverlay->visible = !app->renderer->textOverlay->visible;
         break;
       case KEY_ESC:
         app->quit = true;
@@ -370,7 +370,7 @@ class WindowWayland : public Window {
                                     hmd_refresh,
                                     hmd_output);
 
-    std::string windowTitle = app->make_title_string();
+    std::string windowTitle = app->renderer->make_title_string(app->title);
     wl_shell_surface_set_title(shell_surface, windowTitle.c_str());
 
     return 0;

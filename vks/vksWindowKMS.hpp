@@ -132,7 +132,7 @@ public:
       if (pfd[1].revents & POLLIN) {
         drmHandleEvent(fd, &evctx);
         //b = &vc->buffers[app->frameCounter & 1];
-        kms_b = &kms_buffers[app->timer.frames_since_tick & 1];
+        kms_b = &kms_buffers[app->renderer->timer.frames_since_tick & 1];
 
         //app->model.render(vc, b);
 
@@ -143,7 +143,7 @@ public:
         ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
                               DRM_MODE_PAGE_FLIP_EVENT, NULL);
         vik_log_f_if(ret < 0, "pageflip failed: %m");
-        app->timer.increment();
+        app->renderer->timer.increment();
       }
     }
 
@@ -239,8 +239,8 @@ public:
     vik_log_i("mode info: hdisplay %d, vdisplay %d",
            crtc->mode.hdisplay, crtc->mode.vdisplay);
 
-    app->width = crtc->mode.hdisplay;
-    app->height = crtc->mode.vdisplay;
+    app->renderer->width = crtc->mode.hdisplay;
+    app->renderer->height = crtc->mode.vdisplay;
 
     gbm_dev = gbm_create_device(fd);
 
@@ -251,7 +251,7 @@ public:
 */
 
     PFN_vkCreateDmaBufImageINTEL create_dma_buf_image =
-        (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(app->device, "vkCreateDmaBufImageINTEL");
+        (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(app->renderer->device, "vkCreateDmaBufImageINTEL");
 
     /*
     error("Swap chain images: %d\n", app->swapChain.imageCount);
@@ -262,7 +262,7 @@ public:
 
     //VkImage dmaBufImages[2];
 
-    app->frameBuffers.resize(1);
+    app->renderer->frameBuffers.resize(1);
 
 
     for (uint32_t i = 0; i < 2; i++) {
@@ -271,7 +271,7 @@ public:
       struct render_buffer *b = &render_buffers[i];
       int buffer_fd, stride, ret;
 
-      kms_b->gbm_bo = gbm_bo_create(gbm_dev, app->width, app->height,
+      kms_b->gbm_bo = gbm_bo_create(gbm_dev, app->renderer->width, app->renderer->height,
                                     GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT);
 
       vik_log_d("Created kms buffer %p", kms_b);
@@ -283,8 +283,8 @@ public:
       VkDmaBufImageCreateInfo dmaBufInfo = {};
 
       VkExtent3D extent = {};
-      extent.width = app->width;
-      extent.height = app->height;
+      extent.width = app->renderer->width;
+      extent.height = app->renderer->height;
       extent.depth = 1;
 
       //error("kms: Using color format %d\n", app->swapChain.colorFormat);
@@ -297,7 +297,7 @@ public:
       dmaBufInfo.strideInBytes = stride;
 
       vik_log_d("Creating dmabuf image %d", i);
-      create_dma_buf_image(app->device,
+      create_dma_buf_image(app->renderer->device,
                            &dmaBufInfo,
                            NULL,
                            &kms_b->mem,
@@ -314,7 +314,7 @@ public:
       uint32_t bo_handles[4] = { (uint32_t) (gbm_bo_get_handle(kms_b->gbm_bo).s32), };
       uint32_t pitches[4] = { (uint32_t) stride, };
       uint32_t offsets[4] = { 0, };
-      ret = drmModeAddFB2(fd, app->width, app->height,
+      ret = drmModeAddFB2(fd, app->renderer->width, app->renderer->height,
                           DRM_FORMAT_XRGB8888, bo_handles,
                           pitches, offsets, &kms_b->fb, 0);
       vik_log_f_if(ret == -1, "drmModeAddFB2 failed");
@@ -350,7 +350,7 @@ public:
       },
     };
 
-    vkCreateImageView(app->device,
+    vkCreateImageView(app->renderer->device,
                       &imageviewinfo,
                       NULL,
                       &b->view);
@@ -358,20 +358,20 @@ public:
 
     VkFramebufferCreateInfo framebufferinfo = {
       .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-      .renderPass = app->renderPass,
+      .renderPass = app->renderer->renderPass,
       .attachmentCount = 1,
       .pAttachments = &b->view,
-      .width = app->width,
-      .height = app->height,
+      .width = app->renderer->width,
+      .height = app->renderer->height,
       .layers = 1
     };
 
-    vkCreateFramebuffer(app->device,
+    vkCreateFramebuffer(app->renderer->device,
                         &framebufferinfo,
                         NULL,
-                        &app->frameBuffers[0]);
+                        &app->renderer->frameBuffers[0]);
 
-    vik_log_d("init framebuffer %p done.", &app->frameBuffers[0]);
+    vik_log_d("init framebuffer %p done.", &app->renderer->frameBuffers[0]);
   }
 
   const char* requiredExtensionName() {

@@ -130,14 +130,14 @@ class WindowXCB : public Window {
         XCB_EVENT_MASK_BUTTON_RELEASE;
 
     if (app->settings.fullscreen) {
-      app->width = app->destWidth = screen->width_in_pixels;
-      app->height = app->destHeight = screen->height_in_pixels;
+      app->renderer->width = app->renderer->destWidth = screen->width_in_pixels;
+      app->renderer->height = app->renderer->destHeight = screen->height_in_pixels;
     }
 
     xcb_create_window(connection,
                       XCB_COPY_FROM_PARENT,
                       window, screen->root,
-                      0, 0, app->width, app->height, 0,
+                      0, 0, app->renderer->width, app->renderer->height, 0,
                       XCB_WINDOW_CLASS_INPUT_OUTPUT,
                       screen->root_visual,
                       value_mask, value_list);
@@ -150,7 +150,7 @@ class WindowXCB : public Window {
                         window, (*reply).atom, 4, 32, 1,
                         &(*atom_wm_delete_window).atom);
 
-    std::string windowTitle = app->make_title_string();
+    std::string windowTitle = app->renderer->make_title_string(app->title);
     xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
                         window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
                         app->title.size(), windowTitle.c_str());
@@ -250,11 +250,11 @@ class WindowXCB : public Window {
             app->camera.keys.right = true;
             break;
           case KEY_P:
-            app->timer.toggle_animation_pause();
+            app->renderer->timer.toggle_animation_pause();
             break;
           case KEY_F1:
-            if (app->enableTextOverlay)
-              app->textOverlay->visible = !app->textOverlay->visible;
+            if (app->renderer->enableTextOverlay)
+              app->renderer->textOverlay->visible = !app->renderer->textOverlay->visible;
             break;
         }
       }
@@ -286,10 +286,10 @@ class WindowXCB : public Window {
         break;
       case XCB_CONFIGURE_NOTIFY: {
         const xcb_configure_notify_event_t *cfgEvent = (const xcb_configure_notify_event_t *)event;
-        if ((app->prepared) && ((cfgEvent->width != app->width) || (cfgEvent->height != app->height))) {
-          app->destWidth = cfgEvent->width;
-          app->destHeight = cfgEvent->height;
-          if ((app->destWidth > 0) && (app->destHeight > 0))
+        if ((app->prepared) && ((cfgEvent->width != app->renderer->width) || (cfgEvent->height != app->renderer->height))) {
+          app->renderer->destWidth = cfgEvent->width;
+          app->renderer->destHeight = cfgEvent->height;
+          if ((app->renderer->destWidth > 0) && (app->renderer->destHeight > 0))
             app->windowResize();
         }
       }

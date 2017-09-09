@@ -98,14 +98,14 @@ public:
 
   XRGears() : Application() {
     title = "XR Gears";
-    enableTextOverlay = true;
+    renderer->enableTextOverlay = true;
     camera.type = Camera::CameraType::firstperson;
     camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
     camera.setTranslation(glm::vec3(2.2f, 3.2f, -7.6));
-    camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
+    camera.setPerspective(60.0f, (float)renderer->width / (float)renderer->height, 0.1f, 256.0f);
 
     camera.movementSpeed = 5.0f;
-    timer.animation_timer_speed *= 0.25f;
+    renderer->timer.animation_timer_speed *= 0.25f;
     //paused = true;
   }
 
@@ -113,13 +113,13 @@ public:
   {
     delete offscreenPass;
 
-    vkDestroyPipeline(device, pipelines.pbr, nullptr);
+    vkDestroyPipeline(renderer->device, pipelines.pbr, nullptr);
 
     if (enableSky)
       delete skyBox;
 
-    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+    vkDestroyPipelineLayout(renderer->device, pipelineLayout, nullptr);
+    vkDestroyDescriptorSetLayout(renderer->device, descriptorSetLayout, nullptr);
 
     delete hmdDistortion;
 
@@ -129,7 +129,7 @@ public:
     for (auto& node : nodes)
       delete(node);
 
-    vkDestroySemaphore(device, offscreenSemaphore, nullptr);
+    vkDestroySemaphore(renderer->device, offscreenSemaphore, nullptr);
 
     delete vikCamera;
     delete hmd;
@@ -138,36 +138,36 @@ public:
   // Enable physical device features required for this example
   virtual void getEnabledFeatures() {
     // Geometry shader support is required for this example
-    if (deviceFeatures.geometryShader)
-      enabledFeatures.geometryShader = VK_TRUE;
+    if (renderer->deviceFeatures.geometryShader)
+      renderer->enabledFeatures.geometryShader = VK_TRUE;
     else
       vik_log_f("Feature not supported: Selected GPU does not support geometry shaders!");
 
     // Multiple viewports must be supported
-    if (deviceFeatures.multiViewport)
-      enabledFeatures.multiViewport = VK_TRUE;
+    if (renderer->deviceFeatures.multiViewport)
+      renderer->enabledFeatures.multiViewport = VK_TRUE;
     else
       vik_log_f("Feature not supported: Selected GPU does not support multi viewports!");
   }
 
   void buildCommandBuffers() {
-    vik_log_d("Draw command buffers size: %ld", drawCmdBuffers.size());
+    vik_log_d("Draw command buffers size: %ld", renderer->drawCmdBuffers.size());
 
     if (enableDistortion)
-      for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
-        buildWarpCommandBuffer(drawCmdBuffers[i], frameBuffers[i]);
+      for (int32_t i = 0; i < renderer->drawCmdBuffers.size(); ++i)
+        buildWarpCommandBuffer(renderer->drawCmdBuffers[i], renderer->frameBuffers[i]);
     else
-      for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
-        buildPbrCommandBuffer(drawCmdBuffers[i], frameBuffers[i], false);
+      for (int32_t i = 0; i < renderer->drawCmdBuffers.size(); ++i)
+        buildPbrCommandBuffer(renderer->drawCmdBuffers[i], renderer->frameBuffers[i], false);
   }
 
   inline VkRenderPassBeginInfo defaultRenderPassBeginInfo() {
     VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
-    renderPassBeginInfo.renderPass = renderPass;
+    renderPassBeginInfo.renderPass = renderer->renderPass;
     renderPassBeginInfo.renderArea.offset.x = 0;
     renderPassBeginInfo.renderArea.offset.y = 0;
-    renderPassBeginInfo.renderArea.extent.width = width;
-    renderPassBeginInfo.renderArea.extent.height = height;
+    renderPassBeginInfo.renderArea.extent.width = renderer->width;
+    renderPassBeginInfo.renderArea.extent.height = renderer->height;
     return renderPassBeginInfo;
   }
 
@@ -189,11 +189,11 @@ public:
     vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     VkViewport viewport = vks::initializers::viewport(
-          (float) width, (float) height,
+          (float) renderer->width, (float) renderer->height,
           0.0f, 1.0f);
     vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
 
-    VkRect2D scissor = vks::initializers::rect2D(width, height, 0, 0);
+    VkRect2D scissor = vks::initializers::rect2D(renderer->width, renderer->height, 0, 0);
     vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
     // Final composition as full screen quad
@@ -207,11 +207,11 @@ public:
   // Build command buffer for rendering the scene to the offscreen frame buffer attachments
   void buildOffscreenCommandBuffer() {
     if (offScreenCmdBuffer == VK_NULL_HANDLE)
-      offScreenCmdBuffer = Application::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+      offScreenCmdBuffer = renderer->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 
     // Create a semaphore used to synchronize offscreen rendering and usage
     VkSemaphoreCreateInfo semaphoreCreateInfo = vks::initializers::semaphoreCreateInfo();
-    vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &offscreenSemaphore));
+    vik_log_check(vkCreateSemaphore(renderer->device, &semaphoreCreateInfo, nullptr, &offscreenSemaphore));
 
     VkFramebuffer unused;
 
@@ -270,32 +270,32 @@ public:
   }
 
   void setMonoViewPortAndScissors(VkCommandBuffer cmdBuffer) {
-    VkViewport viewport = vks::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
+    VkViewport viewport = vks::initializers::viewport((float)renderer->width, (float)renderer->height, 0.0f, 1.0f);
     vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
 
-    VkRect2D scissor = vks::initializers::rect2D(width, height, 0, 0);
+    VkRect2D scissor = vks::initializers::rect2D(renderer->width, renderer->height, 0, 0);
     vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
   }
 
   void setStereoViewPortAndScissors(VkCommandBuffer cmdBuffer) {
     VkViewport viewports[2];
     // Left
-    viewports[0] = { 0, 0, (float)width / 2.0f, (float)height, 0.0, 1.0f };
+    viewports[0] = { 0, 0, (float)renderer->width / 2.0f, (float)renderer->height, 0.0, 1.0f };
     // Right
-    viewports[1] = { (float)width / 2.0f, 0, (float)width / 2.0f, (float)height, 0.0, 1.0f };
+    viewports[1] = { (float)renderer->width / 2.0f, 0, (float)renderer->width / 2.0f, (float)renderer->height, 0.0, 1.0f };
 
     vkCmdSetViewport(cmdBuffer, 0, 2, viewports);
 
     VkRect2D scissorRects[2] = {
-      vks::initializers::rect2D(width/2, height, 0, 0),
-      vks::initializers::rect2D(width/2, height, width / 2, 0),
+      vks::initializers::rect2D(renderer->width/2, renderer->height, 0, 0),
+      vks::initializers::rect2D(renderer->width/2, renderer->height, renderer->width / 2, 0),
     };
     vkCmdSetScissor(cmdBuffer, 0, 2, scissorRects);
   }
 
   void loadAssets() {
     if (enableSky)
-      skyBox->loadAssets(vertexLayout, vksDevice, queue);
+      skyBox->loadAssets(vertexLayout, renderer->vksDevice, renderer->queue);
   }
 
   void initGears() {
@@ -338,15 +338,15 @@ public:
 
       nodes[i] = new VikNodeGear();
       nodes[i]->setInfo(&gearNodeInfo);
-      ((VikNodeGear*)nodes[i])->generate(vksDevice, &gearInfo, queue);
+      ((VikNodeGear*)nodes[i])->generate(renderer->vksDevice, &gearInfo, renderer->queue);
     }
 
     VikNodeModel* teapotNode = new VikNodeModel();
     teapotNode->loadModel("teapot.dae",
                           vertexLayout,
                           0.25f,
-                          vksDevice,
-                          queue);
+                          renderer->vksDevice,
+                          renderer->queue);
 
     Material teapotMaterial = Material("Cream", glm::vec3(1.0f, 1.0f, 0.7f), 1.0f, 1.0f);
     teapotNode->setMateral(teapotMaterial);
@@ -413,7 +413,7 @@ public:
           poolSizes.data(),
           6);
 
-    vik_log_check(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &descriptorPool));
+    vik_log_check(vkCreateDescriptorPool(renderer->device, &descriptorPoolInfo, nullptr, &renderer->descriptorPool));
   }
 
   void setupDescriptorSetLayout()
@@ -447,7 +447,7 @@ public:
     VkDescriptorSetLayoutCreateInfo descriptorLayout =
         vks::initializers::descriptorSetLayoutCreateInfo(setLayoutBindings);
 
-    vik_log_check(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &descriptorSetLayout));
+    vik_log_check(vkCreateDescriptorSetLayout(renderer->device, &descriptorLayout, nullptr, &descriptorSetLayout));
 
     VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
         vks::initializers::pipelineLayoutCreateInfo(&descriptorSetLayout, 1);
@@ -463,14 +463,14 @@ public:
     pPipelineLayoutCreateInfo.pushConstantRangeCount = pushConstantRanges.size();
     pPipelineLayoutCreateInfo.pPushConstantRanges = pushConstantRanges.data();
 
-    vik_log_check(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+    vik_log_check(vkCreatePipelineLayout(renderer->device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
   }
 
   void setupDescriptorSet() {
     if (enableSky) {
       VkDescriptorSetAllocateInfo allocInfo =
           vks::initializers::descriptorSetAllocateInfo(
-            descriptorPool,
+            renderer->descriptorPool,
             &descriptorSetLayout,
             1);
 
@@ -478,7 +478,7 @@ public:
     }
 
     for (auto& node : nodes)
-      node->createDescriptorSet(device, descriptorPool, descriptorSetLayout,
+      node->createDescriptorSet(renderer->device, renderer->descriptorPool, descriptorSetLayout,
                                 &uniformBuffers.lights.descriptor,
                                 &vikCamera->uniformBuffer.descriptor,
                                 skyBox);
@@ -526,9 +526,9 @@ public:
 
     // Load shaders
     std::array<VkPipelineShaderStageCreateInfo, 3> shaderStages;
-    shaderStages[0] = VikShader::load(device, "xrgears/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    shaderStages[1] = VikShader::load(device, "xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-    shaderStages[2] = VikShader::load(device, "xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
+    shaderStages[0] = VikShader::load(renderer->device, "xrgears/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+    shaderStages[1] = VikShader::load(renderer->device, "xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+    shaderStages[2] = VikShader::load(renderer->device, "xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 
     VkGraphicsPipelineCreateInfo pipelineCreateInfo;
 
@@ -536,7 +536,7 @@ public:
     if (enableDistortion)
       usedPass = offscreenPass->getRenderPass();
     else
-      usedPass = renderPass;
+      usedPass =renderer->renderPass;
 
     pipelineCreateInfo = vks::initializers::pipelineCreateInfo(pipelineLayout, usedPass);
 
@@ -571,21 +571,21 @@ public:
 
 
 
-    vik_log_check(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.pbr));
+    vik_log_check(vkCreateGraphicsPipelines(renderer->device, renderer->pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.pbr));
 
     if (enableSky)
-      skyBox->createPipeline(&pipelineCreateInfo, pipelineCache);
+      skyBox->createPipeline(&pipelineCreateInfo, renderer->pipelineCache);
   }
 
   // Prepare and initialize uniform buffer containing shader uniforms
   void prepareUniformBuffers()
   {
-    VikBuffer::create(vksDevice, &uniformBuffers.lights, sizeof(uboLights));
+    VikBuffer::create(renderer->vksDevice, &uniformBuffers.lights, sizeof(uboLights));
 
-    vikCamera->prepareUniformBuffers(vksDevice);
+    vikCamera->prepareUniformBuffers(renderer->vksDevice);
 
     for (auto& node : nodes)
-      node->prepareUniformBuffer(vksDevice);
+      node->prepareUniformBuffer(renderer->vksDevice);
 
     updateUniformBuffers();
   }
@@ -599,7 +599,7 @@ public:
     sv.view[1] = vikCamera->uboCamera.view[1];
 
     for (auto& node : nodes)
-      node->updateUniformBuffer(sv, timer.animation_timer);
+      node->updateUniformBuffer(sv, renderer->timer.animation_timer);
 
     updateLights();
   }
@@ -612,21 +612,21 @@ public:
     uboLights.lights[2] = glm::vec4( p, -p*0.5f,  p, 1.0f);
     uboLights.lights[3] = glm::vec4( p, -p*0.5f, -p, 1.0f);
 
-    if (!timer.animation_paused)
+    if (!renderer->timer.animation_paused)
     {
-      uboLights.lights[0].x = sin(glm::radians(timer.animation_timer * 360.0f)) * 20.0f;
-      uboLights.lights[0].z = cos(glm::radians(timer.animation_timer * 360.0f)) * 20.0f;
-      uboLights.lights[1].x = cos(glm::radians(timer.animation_timer * 360.0f)) * 20.0f;
-      uboLights.lights[1].y = sin(glm::radians(timer.animation_timer * 360.0f)) * 20.0f;
+      uboLights.lights[0].x = sin(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
+      uboLights.lights[0].z = cos(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
+      uboLights.lights[1].x = cos(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
+      uboLights.lights[1].y = sin(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
     }
 
     memcpy(uniformBuffers.lights.mapped, &uboLights, sizeof(uboLights));
   }
 
   void draw() {
-    Application::prepareFrame();
+    renderer->prepareFrame();
 
-    submitInfo.commandBufferCount = 1;
+    renderer->submitInfo.commandBufferCount = 1;
 
     if (enableDistortion) {
       // The scene render command buffer has to wait for the offscreen
@@ -643,27 +643,27 @@ public:
       // Offscreen rendering
 
       // Wait for swap chain presentation to finish
-      submitInfo.pWaitSemaphores = &semaphores.presentComplete;
+      renderer->submitInfo.pWaitSemaphores = &renderer->semaphores.presentComplete;
       // Signal ready with offscreen semaphore
-      submitInfo.pSignalSemaphores = &offscreenSemaphore;
+      renderer->submitInfo.pSignalSemaphores = &offscreenSemaphore;
 
       // Submit work
 
-      submitInfo.pCommandBuffers = &offScreenCmdBuffer;
-      vik_log_check(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+      renderer->submitInfo.pCommandBuffers = &offScreenCmdBuffer;
+      vik_log_check(vkQueueSubmit(renderer->queue, 1, &renderer->submitInfo, VK_NULL_HANDLE));
 
       // Scene rendering
 
       // Wait for offscreen semaphore
-      submitInfo.pWaitSemaphores = &offscreenSemaphore;
+      renderer->submitInfo.pWaitSemaphores = &offscreenSemaphore;
       // Signal ready with render complete semaphpre
-      submitInfo.pSignalSemaphores = &semaphores.renderComplete;
+      renderer->submitInfo.pSignalSemaphores = &renderer->semaphores.renderComplete;
     }
 
     // Submit to queue
-    submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];
-    vik_log_check(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
-    Application::submitFrame();
+    renderer->submitInfo.pCommandBuffers = &renderer->drawCmdBuffers[renderer->currentBuffer];
+    vik_log_check(vkQueueSubmit(renderer->queue, 1, &renderer->submitInfo, VK_NULL_HANDLE));
+    renderer->submitFrame();
   }
 
   void prepare() {
@@ -673,13 +673,13 @@ public:
       if (enableHMDCam)
         vikCamera = new VikCameraHMD(hmd);
       else
-        vikCamera = new VikCameraStereo(width, height);
+        vikCamera = new VikCameraStereo(renderer->width, renderer->height);
     } else {
       vikCamera = new VikCamera();
     }
 
     if (enableSky)
-      skyBox = new VikSkyBox(device);
+      skyBox = new VikSkyBox(renderer->device);
 
     Application::prepare();
     loadAssets();
@@ -690,16 +690,16 @@ public:
     setupDescriptorSetLayout();
 
     if (enableDistortion) {
-      offscreenPass = new VikOffscreenPass(device);
-      offscreenPass->prepareOffscreenFramebuffer(vksDevice, physicalDevice);
-      hmdDistortion = new VikDistortion(device);
-      hmdDistortion->generateQuads(vksDevice);
-      hmdDistortion->prepareUniformBuffer(vksDevice);
+      offscreenPass = new VikOffscreenPass(renderer->device);
+      offscreenPass->prepareOffscreenFramebuffer(renderer->vksDevice, renderer->physicalDevice);
+      hmdDistortion = new VikDistortion(renderer->device);
+      hmdDistortion->generateQuads(renderer->vksDevice);
+      hmdDistortion->prepareUniformBuffer(renderer->vksDevice);
       hmdDistortion->updateUniformBufferWarp(hmd->openHmdDevice);
       hmdDistortion->createDescriptorSetLayout();
       hmdDistortion->createPipeLineLayout();
-      hmdDistortion->createPipeLine(renderPass, pipelineCache);
-      hmdDistortion->createDescriptorSet(offscreenPass, descriptorPool);
+      hmdDistortion->createPipeLine(renderer->renderPass, renderer->pipelineCache);
+      hmdDistortion->createDescriptorSet(offscreenPass, renderer->descriptorPool);
     }
 
     preparePipelines();
@@ -717,10 +717,10 @@ public:
     if (!prepared)
       return;
 
-    vkDeviceWaitIdle(device);
+    vkDeviceWaitIdle(renderer->device);
     draw();
-    vkDeviceWaitIdle(device);
-    if (!timer.animation_paused)
+    vkDeviceWaitIdle(renderer->device);
+    if (!renderer->timer.animation_paused)
       updateUniformBuffers();
   }
 
@@ -754,10 +754,10 @@ int main(const int argc, const char *argv[]) {
   vks::Window * window = new vks::WindowWayland();
   //VikWindow * window = new vks::WindowXCB();
   //VikWindow * window = new vks::WindowKMS();
-  app->initVulkan(window);
+  app->renderer->initVulkan(&app->settings, window, app->name);
   window->init(app);
 
-  window->initSwapChain(app->renderer->instance, &app->swapChain);
+  window->initSwapChain(app->renderer->instance, &app->renderer->swapChain);
   app->prepare();
   app->loop(window);
   delete(app);

@@ -26,23 +26,23 @@ class WindowKhrDisplay  : public Window {
   }
 
   void initSwapChain(vks::Application *app) {
-    createDirect2DisplaySurface(app, app->width, app->height);
-    app->swapChain.initSurfaceCommon();
+    createDirect2DisplaySurface(app, app->renderer->width, app->renderer->height);
+    app->renderer->swapChain.initSurfaceCommon();
   }
 
   void createDirect2DisplaySurface(vks::Application * app, uint32_t width, uint32_t height) {
     uint32_t displayPropertyCount;
 
     // Get display property
-    vkGetPhysicalDeviceDisplayPropertiesKHR(app->physicalDevice, &displayPropertyCount, NULL);
+    vkGetPhysicalDeviceDisplayPropertiesKHR(app->renderer->physicalDevice, &displayPropertyCount, NULL);
     VkDisplayPropertiesKHR* pDisplayProperties = new VkDisplayPropertiesKHR[displayPropertyCount];
-    vkGetPhysicalDeviceDisplayPropertiesKHR(app->physicalDevice, &displayPropertyCount, pDisplayProperties);
+    vkGetPhysicalDeviceDisplayPropertiesKHR(app->renderer->physicalDevice, &displayPropertyCount, pDisplayProperties);
 
     // Get plane property
     uint32_t planePropertyCount;
-    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(app->physicalDevice, &planePropertyCount, NULL);
+    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(app->renderer->physicalDevice, &planePropertyCount, NULL);
     VkDisplayPlanePropertiesKHR* pPlaneProperties = new VkDisplayPlanePropertiesKHR[planePropertyCount];
-    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(app->physicalDevice, &planePropertyCount, pPlaneProperties);
+    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(app->renderer->physicalDevice, &planePropertyCount, pPlaneProperties);
 
     VkDisplayKHR display = VK_NULL_HANDLE;
     VkDisplayModeKHR displayMode;
@@ -52,9 +52,9 @@ class WindowKhrDisplay  : public Window {
     for (uint32_t i = 0; i < displayPropertyCount; ++i) {
       display = pDisplayProperties[i].display;
       uint32_t modeCount;
-      vkGetDisplayModePropertiesKHR(app->physicalDevice, display, &modeCount, NULL);
+      vkGetDisplayModePropertiesKHR(app->renderer->physicalDevice, display, &modeCount, NULL);
       pModeProperties = new VkDisplayModePropertiesKHR[modeCount];
-      vkGetDisplayModePropertiesKHR(app->physicalDevice, display, &modeCount, pModeProperties);
+      vkGetDisplayModePropertiesKHR(app->renderer->physicalDevice, display, &modeCount, pModeProperties);
 
       for (uint32_t j = 0; j < modeCount; ++j) {
         const VkDisplayModePropertiesKHR* mode = &pModeProperties[j];
@@ -78,11 +78,11 @@ class WindowKhrDisplay  : public Window {
     for (uint32_t i = 0; i < planePropertyCount; i++) {
       uint32_t planeIndex = i;
       uint32_t displayCount;
-      vkGetDisplayPlaneSupportedDisplaysKHR(app->physicalDevice, planeIndex, &displayCount, NULL);
+      vkGetDisplayPlaneSupportedDisplaysKHR(app->renderer->physicalDevice, planeIndex, &displayCount, NULL);
       if (pDisplays)
         delete [] pDisplays;
       pDisplays = new VkDisplayKHR[displayCount];
-      vkGetDisplayPlaneSupportedDisplaysKHR(app->physicalDevice, planeIndex, &displayCount, pDisplays);
+      vkGetDisplayPlaneSupportedDisplaysKHR(app->renderer->physicalDevice, planeIndex, &displayCount, pDisplays);
 
       // Find a display that matches the current plane
       bestPlaneIndex = UINT32_MAX;
@@ -98,7 +98,7 @@ class WindowKhrDisplay  : public Window {
     vik_log_f_if(bestPlaneIndex == UINT32_MAX, "Can't find a plane for displaying!");
 
     VkDisplayPlaneCapabilitiesKHR planeCap;
-    vkGetDisplayPlaneCapabilitiesKHR(app->physicalDevice, displayMode, bestPlaneIndex, &planeCap);
+    vkGetDisplayPlaneCapabilitiesKHR(app->renderer->physicalDevice, displayMode, bestPlaneIndex, &planeCap);
     VkDisplayPlaneAlphaFlagBitsKHR alphaMode;
 
     if (planeCap.supportedAlpha & VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR)
@@ -121,7 +121,7 @@ class WindowKhrDisplay  : public Window {
     surfaceInfo.imageExtent.width = width;
     surfaceInfo.imageExtent.height = height;
 
-    VkResult result = vkCreateDisplayPlaneSurfaceKHR(app->renderer->instance, &surfaceInfo, NULL, &app->swapChain.surface);
+    VkResult result = vkCreateDisplayPlaneSurfaceKHR(app->renderer->instance, &surfaceInfo, NULL, &app->renderer->swapChain.surface);
     vik_log_f_if(result !=VK_SUCCESS, "Failed to create surface!");
 
     delete[] pDisplays;
