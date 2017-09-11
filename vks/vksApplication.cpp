@@ -10,9 +10,8 @@
 #include <string>
 
 #include "vksApplication.hpp"
-
-#include "vksWindowXCB.hpp"
-#include "../vitamin-k/VikShader.hpp"
+#include "VikAssets.hpp"
+#include "vksWindow.hpp"
 
 namespace vks {
 
@@ -176,7 +175,4 @@ void Application::windowResize() {
 
   prepared = true;
 }
-
-
-
 }
