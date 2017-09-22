@@ -66,7 +66,7 @@ class WindowWayland : public Window {
     wl_display_disconnect(display);
   }
 
-  void iter(vks::Application *app) {
+  void iterate(vks::Application *app) {
     while (wl_display_prepare_read(display) != 0)
       wl_display_dispatch_pending(display);
     wl_display_flush(display);

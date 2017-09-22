@@ -91,7 +91,7 @@ void Application::loop() {
     renderer->timer.start();
     check_view_update();
 
-    window->iter(this);
+    window->iterate(this);
 
     render();
     renderer->timer.increment();

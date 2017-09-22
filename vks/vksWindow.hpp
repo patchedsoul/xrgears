@@ -25,7 +25,7 @@ class Window : public vik::Window {
   ~Window() {}
 
   virtual int init(Application *app) = 0;
-  virtual void iter(Application *app) = 0;
+  virtual void iterate(Application *app) = 0;
 
   virtual const std::vector<const char*> required_extensions() = 0;
   virtual void init_swap_chain(Renderer *r) = 0;

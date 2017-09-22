@@ -89,7 +89,7 @@ public:
   virtual void update_window_title(const std::string& title) {
   }
 
-  virtual void iter(Application *app) {
+  virtual void iterate(Application *app) {
 
   }
 

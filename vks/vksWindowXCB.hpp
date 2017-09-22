@@ -91,7 +91,7 @@ class WindowXCB : public Window {
     r->swapChain.initSurfaceCommon();
   }
 
-  void iter(vks::Application *app) {
+  void iterate(vks::Application *app) {
     xcb_generic_event_t *event;
     //xcb_flush(connection);
     while ((event = xcb_poll_for_event(connection))) {
