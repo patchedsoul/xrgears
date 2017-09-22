@@ -19,7 +19,8 @@ Application::~Application() {
 }
 
 void Application::parse_args(int argc, char *argv[]) {
-  settings.parse_args(argc, argv);
+  if (!settings.parse_args(argc, argv))
+    vik_log_f("Invalid arguments.");
 }
 
 int Application::init_window(vik::Window::window_type m) {
