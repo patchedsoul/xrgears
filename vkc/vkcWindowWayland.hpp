@@ -275,14 +275,7 @@ public:
 
     r->init_vk(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
 
-    PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR get_wayland_presentation_support =
-        (PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR)
-        vkGetInstanceProcAddr(r->instance, "vkGetPhysicalDeviceWaylandPresentationSupportKHR");
-    PFN_vkCreateWaylandSurfaceKHR create_wayland_surface =
-        (PFN_vkCreateWaylandSurfaceKHR)
-        vkGetInstanceProcAddr(r->instance, "vkCreateWaylandSurfaceKHR");
-
-    if (!get_wayland_presentation_support(r->physical_device, 0, display))
+    if (!vkGetPhysicalDeviceWaylandPresentationSupportKHR(r->physical_device, 0, display))
       vik_log_f("Vulkan not supported on given Wayland surface");
 
     VkWaylandSurfaceCreateInfoKHR waylandSurfaceInfo = {};
@@ -290,7 +283,7 @@ public:
     waylandSurfaceInfo.display = display;
     waylandSurfaceInfo.surface = surface;
 
-    create_wayland_surface(r->instance, &waylandSurfaceInfo, NULL, &r->surface);
+    vkCreateWaylandSurfaceKHR(r->instance, &waylandSurfaceInfo, NULL, &r->surface);
 
     r->image_format = r->choose_surface_format();
     init_cb();

@@ -66,7 +66,7 @@ class WindowWayland : public Window {
     wl_display_disconnect(display);
   }
 
-  void flush(vks::Application *app) {
+  void iter(vks::Application *app) {
     while (wl_display_prepare_read(display) != 0)
       wl_display_dispatch_pending(display);
     wl_display_flush(display);
@@ -78,18 +78,18 @@ class WindowWayland : public Window {
     wl_shell_surface_set_title(shell_surface, title.c_str());
   }
 
-  void initSwapChain(const VkInstance &instance, vks::SwapChain* swapChain) {
+  void init_swap_chain(Renderer *r) {
     VkResult err = VK_SUCCESS;
 
     VkWaylandSurfaceCreateInfoKHR surfaceCreateInfo = {};
     surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
     surfaceCreateInfo.display = display;
     surfaceCreateInfo.surface = surface;
-    err = vkCreateWaylandSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &swapChain->surface);
+    err = vkCreateWaylandSurfaceKHR(r->instance, &surfaceCreateInfo, nullptr, &r->swapChain.surface);
 
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
 
-    swapChain->initSurfaceCommon();
+    r->swapChain.initSurfaceCommon();
   }
 
   static void registryGlobalCb(void *data, wl_registry *registry, uint32_t name,
@@ -371,12 +371,12 @@ class WindowWayland : public Window {
                                     hmd_output);
 
     std::string windowTitle = app->renderer->make_title_string(app->title);
-    wl_shell_surface_set_title(shell_surface, windowTitle.c_str());
+    update_window_title(windowTitle);
 
     return 0;
   }
 
-  const std::vector<const char*> requiredExtensionName() {
+  const std::vector<const char*> required_extensions() {
     return {VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME };
   }
 

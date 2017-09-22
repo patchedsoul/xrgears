@@ -75,7 +75,7 @@ class WindowXCB : public Window {
     xcb_disconnect(connection);
   }
 
-  void initSwapChain(const VkInstance &instance, vks::SwapChain* swapChain) {
+  void init_swap_chain(const VkInstance &instance, vks::SwapChain* swapChain) {
     VkResult err = VK_SUCCESS;
 
     VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
@@ -89,7 +89,7 @@ class WindowXCB : public Window {
     swapChain->initSurfaceCommon();
   }
 
-  void flush(vks::Application *app) {
+  void iter(vks::Application *app) {
     xcb_generic_event_t *event;
     //xcb_flush(connection);
     while ((event = xcb_poll_for_event(connection))) {
@@ -299,7 +299,7 @@ class WindowXCB : public Window {
     }
   }
 
-  const std::vector<const char*> requiredExtensionName() {
+  const std::vector<const char*> required_extensions() {
     return {VK_KHR_XCB_SURFACE_EXTENSION_NAME };
   }
 };

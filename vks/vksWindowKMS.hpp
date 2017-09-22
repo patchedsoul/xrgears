@@ -82,7 +82,7 @@ public:
     restore_vt();
   }
 
-  void initSwapChain(const VkInstance &instance, vks::SwapChain* swapChain) {
+  void init_swap_chain(const VkInstance &instance, vks::SwapChain* swapChain) {
 
   }
 
@@ -373,7 +373,7 @@ public:
     vik_log_d("init framebuffer %p done.", &app->renderer->frameBuffers[0]);
   }
 
-  const std::vector<const char*> requiredExtensionName() {
+  const std::vector<const char*> required_extensions() {
     return std::vector<const char*>();
   }
 

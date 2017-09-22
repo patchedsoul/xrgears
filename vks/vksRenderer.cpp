@@ -75,7 +75,7 @@ VkResult Renderer::createInstance(Window *window, const std::string& name) {
   std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
 
   // Enable surface extensions depending on os
-  for (const char* windowExtension : window->requiredExtensionName())
+  for (const char* windowExtension : window->required_extensions())
     instanceExtensions.push_back(windowExtension);
 
   instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);

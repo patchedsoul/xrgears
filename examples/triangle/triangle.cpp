@@ -853,7 +853,7 @@ int main(const int argc, const char *argv[]) {
     vik_log_f("Error setting up window");
   }
 
-  window->initSwapChain(app->renderer->instance, &app->renderer->swapChain);
+  window->init_swap_chain(app->renderer);
   app->prepare();
   app->loop(window);
   delete(app);

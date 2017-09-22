@@ -21,11 +21,11 @@ class WindowKhrDisplay  : public Window {
   explicit WindowKhrDisplay() {}
   ~WindowKhrDisplay() {}
 
-  const std::vector<const char*> requiredExtensionName() {
+  const std::vector<const char*> required_extensions() {
     return { VK_KHR_DISPLAY_EXTENSION_NAME };
   }
 
-  void initSwapChain(vks::Application *app) {
+  void init_swap_chain(vks::Application *app) {
     createDirect2DisplaySurface(app, app->renderer->width, app->renderer->height);
     app->renderer->swapChain.initSurfaceCommon();
   }
