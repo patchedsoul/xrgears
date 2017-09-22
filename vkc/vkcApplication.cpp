@@ -1,5 +1,6 @@
 #include <assert.h>
 
+
 #include "vkcApplication.hpp"
 
 #include "vkcWindowXCB.hpp"
@@ -18,40 +19,8 @@ Application::~Application() {
 }
 
 void Application::parse_args(int argc, char *argv[]) {
-  /* Setting '+' in the optstring is the same as setting POSIXLY_CORRECT in
-       * the enviroment. It tells getopt to stop parsing argv when it encounters
-       * the first non-option argument; it also prevents getopt from permuting
-       * argv during parsing.
-       *
-       * The initial ':' in the optstring makes getopt return ':' when an option
-       * is missing a required argument.
-       */
-  static const char *optstring = "+:nm:o:";
-
-  int opt;
-  while ((opt = getopt(argc, argv, optstring)) != -1) {
-    switch (opt) {
-      case 'm':
-        settings.type = vik::Window::window_type_from_string(optarg);
-        if (settings.type == vik::Window::INVALID)
-          vik_log_f("option -m given bad display mode");
-        break;
-      case '?':
-        vik_log_f("invalid option '-%c'", optopt);
-        break;
-      case ':':
-        vik_log_f("option -%c requires an argument", optopt);
-        break;
-      default:
-        assert(!"unreachable");
-        break;
-    }
-  }
-
-  if (optind != argc)
-    vik_log_w("trailing args");
+  settings.parse_args(argc, argv);
 }
-
 
 int Application::init_window(vik::Window::window_type m) {
   switch (settings.type) {
