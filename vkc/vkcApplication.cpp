@@ -10,7 +10,7 @@
 namespace vkc {
 
 Application::Application(uint32_t w, uint32_t h) {
-  type = AUTO;
+  type = vik::Window::AUTO;
   renderer = new Renderer(w, h);
 }
 
@@ -20,16 +20,16 @@ Application::~Application() {
 
 bool Application::window_type_from_string(const char *s) {
   if (streq(s, "auto")) {
-    type = AUTO;
+    type = vik::Window::AUTO;
     return true;
   } else if (streq(s, "kms")) {
-    type = KMS;
+    type = vik::Window::KMS;
     return true;
   } else if (streq(s, "xcb")) {
-    type = XCB_SIMPLE;
+    type = vik::Window::XCB_SIMPLE;
     return true;
   } else if (streq(s, "wayland")) {
-    type = WAYLAND_XDG;
+    type = vik::Window::WAYLAND_XDG;
     return true;
   } else {
     return false;
@@ -71,22 +71,22 @@ void Application::parse_args(int argc, char *argv[]) {
 }
 
 
-int Application::init_window(window_type m) {
+int Application::init_window(vik::Window::window_type m) {
   switch (type) {
-    case KMS:
+    case vik::Window::KMS:
       window = new WindowKMS();
       break;
-    case XCB_SIMPLE:
+    case vik::Window::XCB_SIMPLE:
       window = new WindowXCB();
       break;
-    case WAYLAND_XDG:
+    case vik::Window::WAYLAND_XDG:
       window = new WindowWayland();
       break;
-    case WAYLAND_LEGACY:
+    case vik::Window::WAYLAND_LEGACY:
       break;
-    case XCB_MOUSE:
+    case vik::Window::XCB_MOUSE:
       break;
-    case AUTO:
+    case vik::Window::AUTO:
       return -1;
   }
 
@@ -102,22 +102,22 @@ int Application::init_window(window_type m) {
 }
 
 void Application::init_window_auto() {
-  type = WAYLAND_XDG;
+  type = vik::Window::WAYLAND_XDG;
   if (init_window(type) == -1) {
     vik_log_e("failed to initialize wayland, falling back to xcb");
     delete(window);
-    type = XCB_SIMPLE;
+    type = vik::Window::XCB_SIMPLE;
     if (init_window(type) == -1) {
       vik_log_e("failed to initialize xcb, falling back to kms");
       delete(window);
-      type = KMS;
+      type = vik::Window::KMS;
       init_window(type);
     }
   }
 }
 
 void Application::init_window() {
-  if (type == AUTO)
+  if (type == vik::Window::AUTO)
     init_window_auto();
   else if (init_window(type) == -1)
     vik_log_f("failed to initialize %s", window->name.c_str());

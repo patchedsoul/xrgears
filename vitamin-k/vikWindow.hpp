@@ -3,7 +3,17 @@
 namespace vik {
 class Window {
 public:
-    Window() {}
-    ~Window() {}
+
+  enum window_type {
+    AUTO = 0,
+    KMS,
+    XCB_SIMPLE,
+    XCB_MOUSE,
+    WAYLAND_XDG,
+    WAYLAND_LEGACY
+  };
+
+  Window() {}
+  ~Window() {}
 };
 }

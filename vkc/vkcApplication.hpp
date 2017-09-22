@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../vitamin-k/vikApplication.hpp"
+#include "vikApplication.hpp"
 
-#include "../vkc/vkcWindow.hpp"
+#include "vkcWindow.hpp"
 
 namespace vkc {
 
@@ -16,7 +16,7 @@ class Application : public vik::Application {
 public:
    Renderer *renderer;
    Window *window;
-   enum window_type type;
+   enum vik::Window::window_type type;
 
    bool quit = false;
 
@@ -32,7 +32,7 @@ public:
    void init_window();
    void loop();
 
-   int init_window(window_type m);
+   int init_window(vik::Window::window_type m);
    void init_window_auto();
 
    virtual void init() = 0;
