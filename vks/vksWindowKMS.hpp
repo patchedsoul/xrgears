@@ -330,41 +330,40 @@ public:
 
   void init_buffer(vks::Application *app, struct render_buffer *b) {
 
-    VkImageViewCreateInfo imageviewinfo = {
-      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-      .image = b->image,
-      .viewType = VK_IMAGE_VIEW_TYPE_2D,
-      .format = VK_FORMAT_R8G8B8A8_SRGB,
-      .components = {
-        .r = VK_COMPONENT_SWIZZLE_R,
-        .g = VK_COMPONENT_SWIZZLE_G,
-        .b = VK_COMPONENT_SWIZZLE_B,
-        .a = VK_COMPONENT_SWIZZLE_A,
-      },
-      .subresourceRange = {
-        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-        .baseMipLevel = 0,
-        .levelCount = 1,
-        .baseArrayLayer = 0,
-        .layerCount = 1,
-      },
-    };
+    VkComponentMapping component_mapping;
+    component_mapping.r = VK_COMPONENT_SWIZZLE_R;
+    component_mapping.g = VK_COMPONENT_SWIZZLE_G;
+    component_mapping.b = VK_COMPONENT_SWIZZLE_B;
+    component_mapping.a = VK_COMPONENT_SWIZZLE_A;
+
+    VkImageSubresourceRange subresource_range;
+    subresource_range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    subresource_range.baseMipLevel = 0;
+    subresource_range.levelCount = 1;
+    subresource_range.baseArrayLayer = 0;
+    subresource_range.layerCount = 1;
+
+    VkImageViewCreateInfo imageviewinfo;
+    imageviewinfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    imageviewinfo.image = b->image;
+    imageviewinfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    imageviewinfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+    imageviewinfo.components = component_mapping;
+    imageviewinfo.subresourceRange = subresource_range;
 
     vkCreateImageView(app->renderer->device,
                       &imageviewinfo,
                       NULL,
                       &b->view);
 
-
-    VkFramebufferCreateInfo framebufferinfo = {
-      .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-      .renderPass = app->renderer->renderPass,
-      .attachmentCount = 1,
-      .pAttachments = &b->view,
-      .width = app->renderer->width,
-      .height = app->renderer->height,
-      .layers = 1
-    };
+    VkFramebufferCreateInfo framebufferinfo;
+    framebufferinfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    framebufferinfo.renderPass = app->renderer->renderPass;
+    framebufferinfo.attachmentCount = 1;
+    framebufferinfo.pAttachments = &b->view;
+    framebufferinfo.width = app->renderer->width;
+    framebufferinfo.height = app->renderer->height;
+    framebufferinfo.layers = 1;
 
     vkCreateFramebuffer(app->renderer->device,
                         &framebufferinfo,

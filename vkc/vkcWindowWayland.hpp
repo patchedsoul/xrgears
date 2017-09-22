@@ -285,12 +285,10 @@ public:
     if (!get_wayland_presentation_support(r->physical_device, 0, display))
       vik_log_f("Vulkan not supported on given Wayland surface");
 
-
-    VkWaylandSurfaceCreateInfoKHR waylandSurfaceInfo = {
-      .sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR,
-      .display = display,
-      .surface = surface,
-    };
+    VkWaylandSurfaceCreateInfoKHR waylandSurfaceInfo = {};
+    waylandSurfaceInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+    waylandSurfaceInfo.display = display;
+    waylandSurfaceInfo.surface = surface;
 
     create_wayland_surface(r->instance, &waylandSurfaceInfo, NULL, &r->surface);
 

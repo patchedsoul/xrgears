@@ -105,96 +105,89 @@ public:
       }
     };
 
-    VkPipelineVertexInputStateCreateInfo vi_create_info = {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-      .vertexBindingDescriptionCount = 3,
-      .pVertexBindingDescriptions = vertexBinding,
-      .vertexAttributeDescriptionCount = 3,
-      .pVertexAttributeDescriptions = vertexAttribute
-    };
+    VkPipelineVertexInputStateCreateInfo vi_create_info = {};
+    vi_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vi_create_info.vertexBindingDescriptionCount = 3;
+    vi_create_info.pVertexBindingDescriptions = vertexBinding;
+    vi_create_info.vertexAttributeDescriptionCount = 3;
+    vi_create_info.pVertexAttributeDescriptions = vertexAttribute;
 
     VkPipelineShaderStageCreateInfo stagesInfo[] =  {
       VikShader::load(renderer->device, "vkcube/vkcube.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
       VikShader::load(renderer->device, "vkcube/vkcube.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT),
     };
 
-    VkPipelineInputAssemblyStateCreateInfo assmblyInfo = {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-      .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
-      .primitiveRestartEnable = false,
-    };
+    VkPipelineInputAssemblyStateCreateInfo assmblyInfo = {};
+    assmblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    assmblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+    assmblyInfo.primitiveRestartEnable = false;
 
-    VkPipelineViewportStateCreateInfo viewPorInfo = {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-      .viewportCount = 1,
-      .scissorCount = 1,
-    };
-
-    VkPipelineRasterizationStateCreateInfo rasterInfo = {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-      .rasterizerDiscardEnable = false,
-      .polygonMode = VK_POLYGON_MODE_FILL,
-      .cullMode = VK_CULL_MODE_BACK_BIT,
-      .frontFace = VK_FRONT_FACE_CLOCKWISE,
-      .lineWidth = 1.0f,
-    };
-
-    VkPipelineMultisampleStateCreateInfo multiInfo = {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-      .rasterizationSamples = (VkSampleCountFlagBits) 1,
-    };
+    VkPipelineViewportStateCreateInfo viewPorInfo = {};
+    viewPorInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewPorInfo.viewportCount = 1;
+    viewPorInfo.scissorCount = 1;
 
 
-    VkPipelineDepthStencilStateCreateInfo sencilinfo = {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO
-    };
+    VkPipelineRasterizationStateCreateInfo rasterInfo = {};
+    rasterInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    rasterInfo.rasterizerDiscardEnable = false;
+    rasterInfo.polygonMode = VK_POLYGON_MODE_FILL;
+    rasterInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasterInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterInfo.lineWidth = 1.0f;
 
 
-    VkPipelineColorBlendAttachmentState attachments [] = {
-      { .colorWriteMask = VK_COLOR_COMPONENT_A_BIT |
+    VkPipelineMultisampleStateCreateInfo multiInfo = {};
+    multiInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multiInfo.rasterizationSamples = (VkSampleCountFlagBits) 1;
+
+
+    VkPipelineDepthStencilStateCreateInfo sencilinfo = {};
+    sencilinfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+
+
+    std::array<VkPipelineColorBlendAttachmentState,1> attachments = {};
+    attachments[0].colorWriteMask =
+        VK_COLOR_COMPONENT_A_BIT |
         VK_COLOR_COMPONENT_R_BIT |
         VK_COLOR_COMPONENT_G_BIT |
-        VK_COLOR_COMPONENT_B_BIT },
-    };
+        VK_COLOR_COMPONENT_B_BIT;
 
-    VkPipelineColorBlendStateCreateInfo colorinfo = {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-      .attachmentCount = 1,
-      .pAttachments = attachments
-    };
+    VkPipelineColorBlendStateCreateInfo colorinfo = {};
+    colorinfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    colorinfo.attachmentCount = 1;
+    colorinfo.pAttachments = attachments.data();
 
     VkDynamicState dynamicStates []  = {
       VK_DYNAMIC_STATE_VIEWPORT,
       VK_DYNAMIC_STATE_SCISSOR,
     };
 
-    VkPipelineDynamicStateCreateInfo dynamicinfo =  {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-      .dynamicStateCount = 2,
-      .pDynamicStates = dynamicStates,
-    };
+    VkPipelineDynamicStateCreateInfo dynamicinfo = {};
+    dynamicinfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamicinfo.dynamicStateCount = 2;
+    dynamicinfo.pDynamicStates = dynamicStates;
 
     VkPipeline basehandle = { 0 };
 
-    VkGraphicsPipelineCreateInfo pipeLineCreateInfo = {
-      .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-      .stageCount = 2,
-      .pStages = stagesInfo,
-      .pVertexInputState = &vi_create_info,
-      .pInputAssemblyState = &assmblyInfo,
-      .pViewportState = &viewPorInfo,
-      .pRasterizationState = &rasterInfo,
-      .pMultisampleState = &multiInfo,
-      .pDepthStencilState = &sencilinfo,
-      .pColorBlendState = &colorinfo,
-      .pDynamicState = &dynamicinfo,
-      .flags = 0,
-      .layout = renderer->pipeline_layout,
-      .renderPass = renderer->render_pass,
-      .subpass = 0,
-      .basePipelineHandle = basehandle,
-      .basePipelineIndex = 0
-    };
+    VkGraphicsPipelineCreateInfo pipeLineCreateInfo = {};
+    pipeLineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipeLineCreateInfo.stageCount = 2;
+    pipeLineCreateInfo.pStages = stagesInfo;
+    pipeLineCreateInfo.pVertexInputState = &vi_create_info;
+    pipeLineCreateInfo.pInputAssemblyState = &assmblyInfo;
+    pipeLineCreateInfo.pViewportState = &viewPorInfo;
+    pipeLineCreateInfo.pRasterizationState = &rasterInfo;
+    pipeLineCreateInfo.pMultisampleState = &multiInfo;
+    pipeLineCreateInfo.pDepthStencilState = &sencilinfo;
+    pipeLineCreateInfo.pColorBlendState = &colorinfo;
+    pipeLineCreateInfo.pDynamicState = &dynamicinfo;
+    pipeLineCreateInfo.flags = 0;
+    pipeLineCreateInfo.layout = renderer->pipeline_layout;
+    pipeLineCreateInfo.renderPass = renderer->render_pass;
+    pipeLineCreateInfo.subpass = 0;
+    pipeLineCreateInfo.basePipelineHandle = basehandle;
+    pipeLineCreateInfo.basePipelineIndex = 0;
 
     VkPipelineCache cache = { VK_NULL_HANDLE };
 
@@ -207,23 +200,22 @@ public:
   }
 
   VkDescriptorSetLayout init_descriptor_set_layout() {
+
+    VkDescriptorSetLayoutBinding bindings = {};
+    bindings.binding = 0;
+    bindings.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    bindings.descriptorCount = 1;
+    bindings.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    bindings.pImmutableSamplers = NULL;
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.pNext = NULL;
+    layoutInfo.flags = 0;
+    layoutInfo.bindingCount = 1;
+    layoutInfo.pBindings = &bindings;
+
     VkDescriptorSetLayout set_layout;
-    VkDescriptorSetLayoutBinding bindings = {
-      .binding = 0,
-      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      .descriptorCount = 1,
-      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-      .pImmutableSamplers = NULL
-    };
-
-    VkDescriptorSetLayoutCreateInfo layoutInfo = {
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-      .pNext = NULL,
-      .flags = 0,
-      .bindingCount = 1,
-      .pBindings = &bindings
-    };
-
     vkCreateDescriptorSetLayout(renderer->device,
                                 &layoutInfo,
                                 NULL,
@@ -232,11 +224,10 @@ public:
   }
 
   void init_pipeline_layout(const VkDescriptorSetLayout& set_layout) {
-    VkPipelineLayoutCreateInfo pipeLineInfo = {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-      .setLayoutCount = 1,
-      .pSetLayouts = &set_layout
-    };
+    VkPipelineLayoutCreateInfo pipeLineInfo = {};
+    pipeLineInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipeLineInfo.setLayoutCount = 1;
+    pipeLineInfo.pSetLayouts = &set_layout;
 
     vkCreatePipelineLayout(renderer->device,
                            &pipeLineInfo,
@@ -245,23 +236,19 @@ public:
   }
 
   VkDescriptorPool init_descriptor_pool() {
-    VkDescriptorPoolSize poolsizes[] = {
-      {
-        .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .descriptorCount = 1
-      }
-    };
+    std::array<VkDescriptorPoolSize,1> poolsizes = {};
+    poolsizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolsizes[0].descriptorCount = 1;
+
+    VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
+    descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    descriptorPoolCreateInfo.pNext = NULL;
+    descriptorPoolCreateInfo.flags = 0;
+    descriptorPoolCreateInfo.maxSets = 1;
+    descriptorPoolCreateInfo.poolSizeCount = 1;
+    descriptorPoolCreateInfo.pPoolSizes = poolsizes.data();
 
     VkDescriptorPool descriptorPool;
-    const VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-      .pNext = NULL,
-      .flags = 0,
-      .maxSets = 1,
-      .poolSizeCount = 1,
-      .pPoolSizes = poolsizes,
-    };
-
     vkCreateDescriptorPool(renderer->device, &descriptorPoolCreateInfo, NULL, &descriptorPool);
 
     return descriptorPool;
@@ -269,36 +256,31 @@ public:
 
   void init_descriptor_sets(const VkDescriptorPool& descriptorPool,
                             const VkDescriptorSetLayout& set_layout) {
-    VkDescriptorSetAllocateInfo descriptorAllocateInfo = {
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-      .descriptorPool = descriptorPool,
-      .descriptorSetCount = 1,
-      .pSetLayouts = &set_layout,
-    };
+    VkDescriptorSetAllocateInfo descriptorAllocateInfo = {};
+    descriptorAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    descriptorAllocateInfo.descriptorPool = descriptorPool;
+    descriptorAllocateInfo.descriptorSetCount = 1;
+    descriptorAllocateInfo.pSetLayouts = &set_layout;
 
     vkAllocateDescriptorSets(renderer->device, &descriptorAllocateInfo, &renderer->descriptor_set);
   }
 
   void update_descriptor_sets() {
-    VkDescriptorBufferInfo descriptorBufferInfo = {
-      .buffer = renderer->buffer,
-      .offset = 0,
-      .range = sizeof(struct ubo),
-    };
+    VkDescriptorBufferInfo descriptorBufferInfo = {};
+    descriptorBufferInfo.buffer = renderer->buffer;
+    descriptorBufferInfo.offset = 0;
+    descriptorBufferInfo.range = sizeof(struct ubo);
 
-    VkWriteDescriptorSet writeDescriptorSet[] = {
-      {
-        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = renderer->descriptor_set,
-        .dstBinding = 0,
-        .dstArrayElement = 0,
-        .descriptorCount = 1,
-        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .pBufferInfo = &descriptorBufferInfo
-      }
-    };
+    std::array<VkWriteDescriptorSet,1> writeDescriptorSet = {};
+    writeDescriptorSet[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorSet[0].dstSet = renderer->descriptor_set;
+    writeDescriptorSet[0].dstBinding = 0;
+    writeDescriptorSet[0].dstArrayElement = 0;
+    writeDescriptorSet[0].descriptorCount = 1;
+    writeDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    writeDescriptorSet[0].pBufferInfo = &descriptorBufferInfo;
 
-    vkUpdateDescriptorSets(renderer->device, 1, writeDescriptorSet, 0, NULL);
+    vkUpdateDescriptorSets(renderer->device, 1, writeDescriptorSet.data(), 0, NULL);
   }
 
   void init_vertex_buffer() {
@@ -406,11 +388,10 @@ public:
     renderer->normals_offset = renderer->colors_offset + sizeof(vColors);
     uint32_t mem_size = renderer->normals_offset + sizeof(vNormals);
 
-    VkMemoryAllocateInfo allcoinfo = {
-      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-      .allocationSize = mem_size,
-      .memoryTypeIndex = 0,
-    };
+    VkMemoryAllocateInfo allcoinfo;
+    allcoinfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allcoinfo.allocationSize = mem_size;
+    allcoinfo.memoryTypeIndex = 0;
 
     vkAllocateMemory(renderer->device,
                      &allcoinfo,
@@ -424,13 +405,11 @@ public:
     memcpy(((char*)map + renderer->colors_offset), vColors, sizeof(vColors));
     memcpy(((char*)map + renderer->normals_offset), vNormals, sizeof(vNormals));
 
-    VkBufferCreateInfo bufferInfo = {
-      .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-      .size = mem_size,
-      .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
-      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-      .flags = 0
-    };
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = mem_size;
+    bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.flags = 0;
 
     vkCreateBuffer(renderer->device,
                    &bufferInfo,

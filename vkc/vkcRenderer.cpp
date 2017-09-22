@@ -1,6 +1,8 @@
 #include <assert.h>
 #include <sys/time.h>
 
+#include <array>
+
 #include "vkcRenderer.hpp"
 
 namespace vkc {
@@ -113,54 +115,42 @@ VkFormat Renderer::choose_surface_format() {
 }
 
 void Renderer::init_render_pass() {
-  VkAttachmentDescription attachement_desc[] = {
-    {
-      .format = image_format,
-      .samples = (VkSampleCountFlagBits) 1,
-      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-      .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-    }
-  };
 
-  VkAttachmentReference color_attachments[] = {
-    {
-      .attachment = 0,
-      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    }
-  };
+  std::array<VkAttachmentDescription, 1> attachments = {};
+  attachments[0].format = image_format;
+  attachments[0].samples = (VkSampleCountFlagBits) 1;
+  attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-  VkAttachmentReference resolve_attachments[] = {
-    {
-      .attachment = VK_ATTACHMENT_UNUSED,
-      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    }
-  };
+  std::array<VkAttachmentReference, 1> color_attachments = {};
+  color_attachments[0].attachment = 0;
+  color_attachments[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+  std::array<VkAttachmentReference, 1> resolve_attachments = {};
+  resolve_attachments[0].attachment = VK_ATTACHMENT_UNUSED;
+  resolve_attachments[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
   uint32_t presereve_attachments[] = { 0 };
 
-  VkSubpassDescription sub_pass_desc[] = {
-    {
-      .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-      .inputAttachmentCount = 0,
-      .colorAttachmentCount = 1,
-      .pColorAttachments = color_attachments,
-      .pResolveAttachments = resolve_attachments,
-      .pDepthStencilAttachment = NULL,
-      .preserveAttachmentCount = 1,
-      .pPreserveAttachments = presereve_attachments,
-    }
-  };
+  std::array<VkSubpassDescription, 1> sub_pass_desc = {};
+  sub_pass_desc[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+  sub_pass_desc[0].inputAttachmentCount = 0;
+  sub_pass_desc[0].colorAttachmentCount = 1;
+  sub_pass_desc[0].pColorAttachments = color_attachments.data();
+  sub_pass_desc[0].pResolveAttachments = resolve_attachments.data();
+  sub_pass_desc[0].pDepthStencilAttachment = NULL;
+  sub_pass_desc[0].preserveAttachmentCount = 1;
+  sub_pass_desc[0].pPreserveAttachments = presereve_attachments;
 
-  VkRenderPassCreateInfo render_pass_create_info = {
-    .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-    .attachmentCount = 1,
-    .pAttachments = attachement_desc,
-    .subpassCount = 1,
-    .pSubpasses = sub_pass_desc,
-    .dependencyCount = 0
-  };
+  VkRenderPassCreateInfo render_pass_create_info = {};
+  render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  render_pass_create_info.attachmentCount = 1;
+  render_pass_create_info.pAttachments = attachments.data();
+  render_pass_create_info.subpassCount = 1;
+  render_pass_create_info.pSubpasses = sub_pass_desc.data();
+  render_pass_create_info.dependencyCount = 0;
 
   vkCreateRenderPass(device,
                      &render_pass_create_info,
@@ -169,31 +159,27 @@ void Renderer::init_render_pass() {
 }
 
 void Renderer::init_vk_objects() {
-  VkFenceCreateInfo fenceinfo = {
-    .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-    .flags = 0
-  };
+  VkFenceCreateInfo fenceinfo = {};
+  fenceinfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+  fenceinfo.flags = 0;
 
   vkCreateFence(device,
                 &fenceinfo,
                 NULL,
                 &fence);
 
-
-  const VkCommandPoolCreateInfo commandpoolinfo = {
-    .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-    .queueFamilyIndex = 0,
-    .flags = 0
-  };
+  VkCommandPoolCreateInfo commandpoolinfo = {};
+  commandpoolinfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+  commandpoolinfo.queueFamilyIndex = 0;
+  commandpoolinfo.flags = 0;
 
   vkCreateCommandPool(device,
                       &commandpoolinfo,
                       NULL,
                       &cmd_pool);
 
-  VkSemaphoreCreateInfo semaphoreinfo = {
-    .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-  };
+  VkSemaphoreCreateInfo semaphoreinfo = {};
+  semaphoreinfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
   vkCreateSemaphore(device,
                     &semaphoreinfo,
@@ -206,14 +192,13 @@ void Renderer::submit_queue() {
     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
   };
 
-  VkSubmitInfo submitInfo = {
-    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-    .waitSemaphoreCount = 1,
-    .pWaitSemaphores = &semaphore,
-    .pWaitDstStageMask = stageflags,
-    .commandBufferCount = 1,
-    .pCommandBuffers = &cmd_buffer,
-  };
+  VkSubmitInfo submitInfo = {};
+  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  submitInfo.waitSemaphoreCount = 1;
+  submitInfo.pWaitSemaphores = &semaphore;
+  submitInfo.pWaitDstStageMask = stageflags;
+  submitInfo.commandBufferCount = 1;
+  submitInfo.pCommandBuffers = &cmd_buffer;
 
   vkQueueSubmit(queue, 1, &submitInfo, fence);
 }
@@ -236,12 +221,11 @@ void Renderer::wait_and_reset_fences() {
 }
 
 void Renderer::build_command_buffer(VkFramebuffer frame_buffer) {
-  VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {
-    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-    .commandPool = cmd_pool,
-    .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-    .commandBufferCount = 1,
-  };
+  VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {};
+  cmdBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  cmdBufferAllocateInfo.commandPool = cmd_pool;
+  cmdBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+  cmdBufferAllocateInfo.commandBufferCount = 1;
 
   VkResult r = vkAllocateCommandBuffers(device,
                                         &cmdBufferAllocateInfo,
@@ -249,27 +233,30 @@ void Renderer::build_command_buffer(VkFramebuffer frame_buffer) {
   vik_log_e_if(r != VK_SUCCESS, "vkAllocateCommandBuffers: %s",
                vks::Log::result_string(r).c_str());
 
-  VkCommandBufferBeginInfo cmdBufferBeginInfo = {
-    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-    .flags = 0
-  };
+  VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
+  cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  cmdBufferBeginInfo.flags = 0;
 
   r = vkBeginCommandBuffer(cmd_buffer, &cmdBufferBeginInfo);
   vik_log_e_if(r != VK_SUCCESS, "vkBeginCommandBuffer: %s",
                vks::Log::result_string(r).c_str());
 
-  VkClearValue clearValues[] = {
-    { .color = { .float32 = { 0.2f, 0.2f, 0.2f, 1.0f } } }
-  };
+  std::array<VkClearValue,1> clearValues = {};
+  clearValues[0].color = { { 0.2f, 0.2f, 0.2f, 1.0f } };
 
-  VkRenderPassBeginInfo passBeginInfo = {
-    .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-    .renderPass = render_pass,
-    .framebuffer = frame_buffer,
-    .renderArea = { { 0, 0 }, { width, height } },
-    .clearValueCount = 1,
-    .pClearValues = clearValues
-  };
+  VkRenderPassBeginInfo passBeginInfo = {};
+  passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  passBeginInfo.renderPass = render_pass;
+  passBeginInfo.framebuffer = frame_buffer;
+  passBeginInfo.renderArea = { { 0, 0 }, { width, height } };
+  /*
+    passBeginInfo.renderArea.offset.x = 0;
+    passBeginInfo.renderArea.offset.y = 0;
+    passBeginInfo.renderArea.extent.width = width;
+    passBeginInfo.renderArea.extent.height = height;
+    */
+  passBeginInfo.clearValueCount = 1;
+  passBeginInfo.pClearValues = clearValues.data();
 
   vkCmdBeginRenderPass(cmd_buffer,
                        &passBeginInfo,

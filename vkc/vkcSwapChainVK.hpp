@@ -49,22 +49,21 @@ public:
 
     uint32_t queueFamilyIndices[] { 0 };
 
-    VkSwapchainCreateInfoKHR swapchainfo = {
-      .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-      .surface = surface,
-      .minImageCount = 2,
-      .imageFormat = image_format,
-      .imageColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR,
-      .imageExtent = { width, height },
-      .imageArrayLayers = 1,
-      .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-      .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
-      .queueFamilyIndexCount = 1,
-      .pQueueFamilyIndices = queueFamilyIndices,
-      .preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
-      .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-      .presentMode = present_mode,
-    };
+    VkSwapchainCreateInfoKHR swapchainfo = {};
+    swapchainfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    swapchainfo.surface = surface;
+    swapchainfo.minImageCount = 2;
+    swapchainfo.imageFormat = image_format;
+    swapchainfo.imageColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+    swapchainfo.imageExtent = { width, height };
+    swapchainfo.imageArrayLayers = 1;
+    swapchainfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    swapchainfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    swapchainfo.queueFamilyIndexCount = 1;
+    swapchainfo.pQueueFamilyIndices = queueFamilyIndices;
+    swapchainfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    swapchainfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    swapchainfo.presentMode = present_mode;
 
     vkCreateSwapchainKHR(device, &swapchainfo, NULL, &swap_chain);
 
@@ -90,13 +89,12 @@ public:
     VkSwapchainKHR swapChains[] = { swap_chain, };
     uint32_t indices[] = { present_index, };
 
-    VkPresentInfoKHR presentInfo = {
-      .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-      .swapchainCount = 1,
-      .pSwapchains = swapChains,
-      .pImageIndices = indices,
-      //.pResults = &result,
-    };
+    VkPresentInfoKHR presentInfo = {};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = swapChains;
+    presentInfo.pImageIndices = indices;
+    //presentInfo.pResults = &result,
 
     VkResult result = vkQueuePresentKHR(queue, &presentInfo);
     vik_log_f_if(result != VK_SUCCESS, "vkQueuePresentKHR failed.");
