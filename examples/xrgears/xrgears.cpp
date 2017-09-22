@@ -750,7 +750,7 @@ public:
 
 XRGears *app;
 
-int main(const int argc, const char *argv[]) {
+int main(int argc, char *argv[]) {
   app = new XRGears();
   app->parse_arguments(argc, argv);
   app->prepare();

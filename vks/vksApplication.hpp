@@ -78,7 +78,7 @@ class Application : public vik::Application {
 
   void loop();
   void update_camera(float frame_time);
-  void parse_arguments(const int argc, const char *argv[]);
+  void parse_arguments(int argc, char *argv[]);
 
   void windowResize();
 

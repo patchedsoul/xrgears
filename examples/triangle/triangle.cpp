@@ -840,7 +840,7 @@ public:
   }
 };
 
-int main(const int argc, const char *argv[]) {
+int main(int argc, char *argv[]) {
   Triangle *app = new Triangle();
   app->parse_arguments(argc, argv);
   app->prepare();

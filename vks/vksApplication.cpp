@@ -30,45 +30,8 @@ Application::~Application() {
   delete renderer;
 }
 
-void Application::parse_arguments(const int argc, const char *argv[]) {
-  std::vector<const char*> args;
-  for (size_t i = 0; i < argc; i++) { args.push_back(argv[i]); };
-
-  // Parse command line arguments
-  for (size_t i = 0; i < args.size(); i++) {
-    if (args[i] == std::string("-validation"))
-      settings.validation = true;
-    if (args[i] == std::string("-vsync"))
-      settings.vsync = true;
-    if (args[i] == std::string("-fullscreen"))
-      settings.fullscreen = true;
-
-    /*
-    if ((args[i] == std::string("-w")) || (args[i] == std::string("-width"))) {
-      char* endptr;
-      uint32_t w = strtol(args[i + 1], &endptr, 10);
-      if (endptr != args[i + 1]) renderer->width = w;
-    }
-    */
-    if ((args[i] == std::string("-g")) || (args[i] == std::string("-gpu"))) {
-      char* endptr;
-      uint32_t gpu_index = strtol(args[i + 1], &endptr, 10);
-      if (endptr != args[i + 1]) settings.gpu_index = gpu_index;
-    }
-
-    /*
-    if ((args[i] == std::string("-h")) || (args[i] == std::string("-height"))) {
-      char* endptr;
-      uint32_t h = strtol(args[i + 1], &endptr, 10);
-      if (endptr != args[i + 1]) renderer->height = h;
-    }
-    */
-
-    // List available GPUs
-    if (args[i] == std::string("-listgpus"))
-      settings.list_gpus_and_exit = true;
-  }
-
+void Application::parse_arguments(int argc, char *argv[]) {
+  settings.parse_args(argc, argv);
   renderer->set_settings(&settings);
 }
 
