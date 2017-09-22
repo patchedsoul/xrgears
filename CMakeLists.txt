@@ -126,7 +126,11 @@ FILE(GLOB EXAMPLE_DIRS RELATIVE
 
 # Build all examples
 foreach(EXAMPLE ${EXAMPLE_DIRS})
-    buildExample(${EXAMPLE})
+    if (EXAMPLE STREQUAL "glfw-test")
+	message("skipping glfw test for now.")
+    else()
+	buildExample(${EXAMPLE})
+    endif()
 endforeach(EXAMPLE)
 
 #add_custom_target(shaders
