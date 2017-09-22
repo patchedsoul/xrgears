@@ -374,8 +374,9 @@ public:
     vik_log_d("init framebuffer %p done.", &app->renderer->frameBuffers[0]);
   }
 
-  const char* requiredExtensionName() {
-    return "";
+  const std::vector<const char*> requiredExtensionName() {
+    return std::vector<const char*>();
   }
+
 };
 }

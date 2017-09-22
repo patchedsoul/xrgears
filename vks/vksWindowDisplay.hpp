@@ -21,8 +21,8 @@ class WindowKhrDisplay  : public Window {
   explicit WindowKhrDisplay() {}
   ~WindowKhrDisplay() {}
 
-  const char* requiredExtensionName() {
-    return VK_KHR_DISPLAY_EXTENSION_NAME;
+  const std::vector<const char*> requiredExtensionName() {
+    return { VK_KHR_DISPLAY_EXTENSION_NAME };
   }
 
   void initSwapChain(vks::Application *app) {

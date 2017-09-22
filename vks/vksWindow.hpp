@@ -26,7 +26,7 @@ class Window : public vik::Window {
 
   virtual int init(vks::Application *app) = 0;
 
-  virtual const char* requiredExtensionName() = 0;
+  virtual const std::vector<const char*> requiredExtensionName() = 0;
   virtual void initSwapChain(const VkInstance &instance, vks::SwapChain* swapChain) = 0;
   virtual void update_window_title(const std::string& title) = 0;
   virtual void flush(Application *app) = 0;

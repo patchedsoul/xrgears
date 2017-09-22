@@ -376,8 +376,9 @@ class WindowWayland : public Window {
     return 0;
   }
 
-  const char* requiredExtensionName() {
-    return VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
+  const std::vector<const char*> requiredExtensionName() {
+    return {VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME };
   }
+
 };
 }

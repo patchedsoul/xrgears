@@ -299,8 +299,8 @@ class WindowXCB : public Window {
     }
   }
 
-  const char* requiredExtensionName() {
-    return VK_KHR_XCB_SURFACE_EXTENSION_NAME;
+  const std::vector<const char*> requiredExtensionName() {
+    return {VK_KHR_XCB_SURFACE_EXTENSION_NAME };
   }
 };
 }
