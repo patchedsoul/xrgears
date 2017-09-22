@@ -737,6 +737,7 @@ public:
   }
 
   virtual void keyPressed(uint32_t keyCode) {
+    /*
     switch (keyCode) {
       case KEY_KPADD:
         changeEyeSeparation(0.005);
@@ -745,6 +746,7 @@ public:
         changeEyeSeparation(-0.005);
         break;
     }
+    */
   }
 };
 

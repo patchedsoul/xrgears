@@ -21,16 +21,17 @@
 
 #include "vksLog.hpp"
 
-#define KEY_ESCAPE 0x9
-#define KEY_F1 0x43
+#define XCB_KEY_ESCAPE 0x9
+#define XCB_KEY_F1 0x43
+#define XCB_KEY_W 0x19
+#define XCB_KEY_A 0x26
+#define XCB_KEY_S 0x27
+#define XCB_KEY_D 0x28
+#define XCB_KEY_P 0x21
+/*
 #define KEY_F2 0x44
 #define KEY_F3 0x45
 #define KEY_F4 0x46
-#define KEY_W 0x19
-#define KEY_A 0x26
-#define KEY_S 0x27
-#define KEY_D 0x28
-#define KEY_P 0x21
 #define KEY_SPACE 0x41
 
 #define KEY_KPADD 0x56
@@ -42,6 +43,7 @@
 #define KEY_N 0x39
 #define KEY_O 0x20
 #define KEY_T 0x1C
+*/
 
 namespace vks {
 class WindowXCB : public Window {
@@ -75,18 +77,18 @@ class WindowXCB : public Window {
     xcb_disconnect(connection);
   }
 
-  void init_swap_chain(const VkInstance &instance, vks::SwapChain* swapChain) {
+  void init_swap_chain(Renderer *r) {
     VkResult err = VK_SUCCESS;
 
     VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
     surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
     surfaceCreateInfo.connection = connection;
     surfaceCreateInfo.window = window;
-    err = vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &swapChain->surface);
+    err = vkCreateXcbSurfaceKHR(r->instance, &surfaceCreateInfo, nullptr, &r->swapChain.surface);
 
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
 
-    swapChain->initSurfaceCommon();
+    r->swapChain.initSurfaceCommon();
   }
 
   void iter(vks::Application *app) {
@@ -237,22 +239,22 @@ class WindowXCB : public Window {
       case XCB_KEY_PRESS: {
         const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
         switch (keyEvent->detail) {
-          case KEY_W:
+          case XCB_KEY_W:
             app->camera.keys.up = true;
             break;
-          case KEY_S:
+          case XCB_KEY_S:
             app->camera.keys.down = true;
             break;
-          case KEY_A:
+          case XCB_KEY_A:
             app->camera.keys.left = true;
             break;
-          case KEY_D:
+          case XCB_KEY_D:
             app->camera.keys.right = true;
             break;
-          case KEY_P:
+          case XCB_KEY_P:
             app->renderer->timer.toggle_animation_pause();
             break;
-          case KEY_F1:
+          case XCB_KEY_F1:
             if (app->renderer->enableTextOverlay)
               app->renderer->textOverlay->visible = !app->renderer->textOverlay->visible;
             break;
@@ -262,19 +264,19 @@ class WindowXCB : public Window {
       case XCB_KEY_RELEASE: {
         const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
         switch (keyEvent->detail) {
-          case KEY_W:
+          case XCB_KEY_W:
             app->camera.keys.up = false;
             break;
-          case KEY_S:
+          case XCB_KEY_S:
             app->camera.keys.down = false;
             break;
-          case KEY_A:
+          case XCB_KEY_A:
             app->camera.keys.left = false;
             break;
-          case KEY_D:
+          case XCB_KEY_D:
             app->camera.keys.right = false;
             break;
-          case KEY_ESCAPE:
+          case XCB_KEY_ESCAPE:
             app->quit = true;
             break;
         }

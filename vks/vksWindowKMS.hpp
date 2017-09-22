@@ -82,7 +82,14 @@ public:
     restore_vt();
   }
 
-  void init_swap_chain(const VkInstance &instance, vks::SwapChain* swapChain) {
+  void init_swap_chain(Renderer *r) {
+
+  }
+
+  virtual void update_window_title(const std::string& title) {
+  }
+
+  virtual void iter(Application *app) {
 
   }
 

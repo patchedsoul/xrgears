@@ -33,6 +33,10 @@ public:
       return XCB_SIMPLE;
     else if (streq(s, "wayland"))
       return WAYLAND_XDG;
+    else if (streq(s, "xcb-input"))
+      return XCB_MOUSE;
+    else if (streq(s, "wayland-legacy"))
+      return WAYLAND_LEGACY;
     else
       return INVALID;
   }

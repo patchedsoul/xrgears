@@ -13,6 +13,9 @@
 #include "VikAssets.hpp"
 #include "vksWindow.hpp"
 #include "vksWindowWayland.hpp"
+#include "vksWindowKMS.hpp"
+#include "vksWindowXCB.hpp"
+//#include "vksWindowDisplay.hpp"
 
 namespace vks {
 
@@ -44,9 +47,20 @@ void Application::check_view_update() {
 
 void Application::prepare() {
 
-  window = new vks::WindowWayland();
-  //VikWindow * window = new vks::WindowXCB();
-  //VikWindow * window = new vks::WindowKMS();
+  switch (settings.type) {
+    case vik::Window::WAYLAND_LEGACY:
+      window = new vks::WindowWayland();
+      break;
+    case vik::Window::XCB_MOUSE:
+      window = new vks::WindowXCB();
+      break;
+    case vik::Window::KMS:
+      window = new vks::WindowKMS();
+      break;
+    default:
+      vik_log_f("Unsupported window backend.");
+  }
+
   renderer->initVulkan(window, name);
   window->init(this);
   window->init_swap_chain(renderer);
