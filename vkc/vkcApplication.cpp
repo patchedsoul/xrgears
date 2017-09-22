@@ -18,22 +18,17 @@ Application::~Application() {
   delete renderer;
 }
 
-bool Application::window_type_from_string(const char *s) {
-  if (streq(s, "auto")) {
-    type = vik::Window::AUTO;
-    return true;
-  } else if (streq(s, "kms")) {
-    type = vik::Window::KMS;
-    return true;
-  } else if (streq(s, "xcb")) {
-    type = vik::Window::XCB_SIMPLE;
-    return true;
-  } else if (streq(s, "wayland")) {
-    type = vik::Window::WAYLAND_XDG;
-    return true;
-  } else {
-    return false;
-  }
+vik::Window::window_type Application::window_type_from_string(const char *s) {
+  if (streq(s, "auto"))
+    return vik::Window::AUTO;
+  else if (streq(s, "kms"))
+    return vik::Window::KMS;
+  else if (streq(s, "xcb"))
+    return vik::Window::XCB_SIMPLE;
+  else if (streq(s, "wayland"))
+    return vik::Window::WAYLAND_XDG;
+  else
+    return vik::Window::INVALID;
 }
 
 void Application::parse_args(int argc, char *argv[]) {
@@ -51,8 +46,9 @@ void Application::parse_args(int argc, char *argv[]) {
   while ((opt = getopt(argc, argv, optstring)) != -1) {
     switch (opt) {
       case 'm':
-        if (!window_type_from_string(optarg))
-          vik_log_e("option -m given bad display mode");
+        type = window_type_from_string(optarg);
+        if (type == vik::Window::INVALID)
+          vik_log_f("option -m given bad display mode");
         break;
       case '?':
         vik_log_f("invalid option '-%c'", optopt);

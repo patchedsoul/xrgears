@@ -10,7 +10,8 @@ public:
     XCB_SIMPLE,
     XCB_MOUSE,
     WAYLAND_XDG,
-    WAYLAND_LEGACY
+    WAYLAND_LEGACY,
+    INVALID
   };
 
   Window() {}

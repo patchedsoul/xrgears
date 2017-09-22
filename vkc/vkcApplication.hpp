@@ -27,7 +27,8 @@ public:
    Application(uint32_t w, uint32_t h);
    ~Application();
 
-   bool window_type_from_string(const char *s);
+   vik::Window::window_type window_type_from_string(const char *s);
+
    void parse_args(int argc, char *argv[]);
    void init_window();
    void loop();
