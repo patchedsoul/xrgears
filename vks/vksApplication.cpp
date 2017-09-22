@@ -17,18 +17,13 @@
 namespace vks {
 
 Application::Application() {
-  // Check for a valid asset path
-  struct stat info;
-  if (stat(VikAssets::getAssetPath().c_str(), &info) != 0)
-    vik_log_f("Error: Could not find asset path in %s", VikAssets::getAssetPath().c_str());
-
   renderer = new Renderer();
 
   std::function<void()> set_window_resize_cb = [this]() { windowResize(); };
-  std::function<void()> enabled_features_cb = [this]() { getEnabledFeatures(); };
-
-  renderer->set_enabled_features_cb(enabled_features_cb);
   renderer->set_window_resize_cb(set_window_resize_cb);
+
+  std::function<void()> enabled_features_cb = [this]() { getEnabledFeatures(); };
+  renderer->set_enabled_features_cb(enabled_features_cb);
 }
 
 Application::~Application() {
@@ -73,6 +68,8 @@ void Application::parse_arguments(const int argc, const char *argv[]) {
     if (args[i] == std::string("-listgpus"))
       settings.list_gpus_and_exit = true;
   }
+
+  renderer->set_settings(&settings);
 }
 
 void Application::check_view_update() {
@@ -87,7 +84,7 @@ void Application::prepare() {
   window = new vks::WindowWayland();
   //VikWindow * window = new vks::WindowXCB();
   //VikWindow * window = new vks::WindowKMS();
-  renderer->initVulkan(&settings, window, name);
+  renderer->initVulkan(window, name);
   window->init(this);
   window->init_swap_chain(renderer);
 

@@ -31,7 +31,6 @@
 #include "vksCamera.hpp"
 #include "vksRenderer.hpp"
 #include "vksTimer.hpp"
-#include "vksSettings.hpp"
 
 #include "vikApplication.hpp"
 
@@ -42,7 +41,6 @@ class Application : public vik::Application {
 
  public:
   Renderer *renderer;
-  Settings settings;
   Camera camera;
   Window *window;
 

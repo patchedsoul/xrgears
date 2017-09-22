@@ -2,7 +2,9 @@
 
 #include <stdint.h>
 
-namespace vks {
+#include "vikWindow.hpp"
+
+namespace vik {
 class Settings {
 public:
     /** @brief Activates validation layers (and message output) when set to true */
@@ -15,5 +17,7 @@ public:
     uint32_t gpu_index = 0;
 
     bool list_gpus_and_exit = false;
+
+    enum Window::window_type type = Window::AUTO;
 };
 }

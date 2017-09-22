@@ -8,11 +8,11 @@
 
 #include "vikRenderer.hpp"
 
-#include "vksSettings.hpp"
 #include "vksDevice.hpp"
 #include "vksSwapChain.hpp"
 #include "vksTimer.hpp"
 #include "vksTextOverlay.hpp"
+#include "vikSettings.hpp"
 
 namespace vks {
 
@@ -20,11 +20,9 @@ class Window;
 
 class Renderer : public vik::Renderer {
 public:
-
   Timer timer;
   SwapChain swapChain;
   Device *vksDevice;
-  Settings* settings;
   TextOverlay *textOverlay;
 
   VkInstance instance;
@@ -73,8 +71,12 @@ public:
 
   bool enableTextOverlay = true;
 
+  vik::Settings *settings;
+
   Renderer();
   ~Renderer();
+
+  void set_settings(vik::Settings *s);
 
   void createCommandPool();
   bool checkCommandBuffers();
@@ -97,7 +99,7 @@ public:
 
   VkResult createInstance(Window *window, const std::string& name);
   VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin);
-  void initVulkan(Settings *settings, Window *window, const std::string& name);
+  void initVulkan(Window *window, const std::string& name);
   void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free);
   void check_tick_finnished(Window *window, const std::string &title);
 

@@ -4,9 +4,8 @@
 
 namespace vks {
 
-Renderer::Renderer() {
+Renderer::Renderer() {}
 
-}
 Renderer::~Renderer() {
   if (enableTextOverlay)
     delete textOverlay;
@@ -42,6 +41,10 @@ Renderer::~Renderer() {
     vks::debug::freeDebugCallback(instance);
 
   vkDestroyInstance(instance, nullptr);
+}
+
+void Renderer::set_settings(vik::Settings *s) {
+  settings = s;
 }
 
 void Renderer::init_text_overlay(const std::string& title) {
@@ -275,9 +278,8 @@ void Renderer::init_debugging() {
   vks::debug::setupDebugging(instance, debugReportFlags, VK_NULL_HANDLE);
 }
 
-void Renderer::initVulkan(Settings *s, Window *window, const std::string &name) {
+void Renderer::initVulkan(Window *window, const std::string &name) {
   VkResult err;
-  settings = s;
 
   // Vulkan instance
   err = createInstance(window, name);

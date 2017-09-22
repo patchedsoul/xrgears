@@ -10,25 +10,11 @@
 namespace vkc {
 
 Application::Application(uint32_t w, uint32_t h) {
-  type = vik::Window::AUTO;
   renderer = new Renderer(w, h);
 }
 
 Application::~Application() {
   delete renderer;
-}
-
-vik::Window::window_type Application::window_type_from_string(const char *s) {
-  if (streq(s, "auto"))
-    return vik::Window::AUTO;
-  else if (streq(s, "kms"))
-    return vik::Window::KMS;
-  else if (streq(s, "xcb"))
-    return vik::Window::XCB_SIMPLE;
-  else if (streq(s, "wayland"))
-    return vik::Window::WAYLAND_XDG;
-  else
-    return vik::Window::INVALID;
 }
 
 void Application::parse_args(int argc, char *argv[]) {
@@ -46,8 +32,8 @@ void Application::parse_args(int argc, char *argv[]) {
   while ((opt = getopt(argc, argv, optstring)) != -1) {
     switch (opt) {
       case 'm':
-        type = window_type_from_string(optarg);
-        if (type == vik::Window::INVALID)
+        settings.type = vik::Window::window_type_from_string(optarg);
+        if (settings.type == vik::Window::INVALID)
           vik_log_f("option -m given bad display mode");
         break;
       case '?':
@@ -68,7 +54,7 @@ void Application::parse_args(int argc, char *argv[]) {
 
 
 int Application::init_window(vik::Window::window_type m) {
-  switch (type) {
+  switch (settings.type) {
     case vik::Window::KMS:
       window = new WindowKMS();
       break;
@@ -98,24 +84,24 @@ int Application::init_window(vik::Window::window_type m) {
 }
 
 void Application::init_window_auto() {
-  type = vik::Window::WAYLAND_XDG;
-  if (init_window(type) == -1) {
+  settings.type = vik::Window::WAYLAND_XDG;
+  if (init_window(settings.type) == -1) {
     vik_log_e("failed to initialize wayland, falling back to xcb");
     delete(window);
-    type = vik::Window::XCB_SIMPLE;
-    if (init_window(type) == -1) {
+    settings.type = vik::Window::XCB_SIMPLE;
+    if (init_window(settings.type) == -1) {
       vik_log_e("failed to initialize xcb, falling back to kms");
       delete(window);
-      type = vik::Window::KMS;
-      init_window(type);
+      settings.type = vik::Window::KMS;
+      init_window(settings.type);
     }
   }
 }
 
 void Application::init_window() {
-  if (type == vik::Window::AUTO)
+  if (settings.type == vik::Window::AUTO)
     init_window_auto();
-  else if (init_window(type) == -1)
+  else if (init_window(settings.type) == -1)
     vik_log_f("failed to initialize %s", window->name.c_str());
 }
 
