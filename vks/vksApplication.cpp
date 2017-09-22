@@ -12,6 +12,7 @@
 #include "vksApplication.hpp"
 #include "VikAssets.hpp"
 #include "vksWindow.hpp"
+#include "vksWindowWayland.hpp"
 
 namespace vks {
 
@@ -75,6 +76,14 @@ void Application::check_view_update() {
 }
 
 void Application::prepare() {
+
+  window = new vks::WindowWayland();
+  //VikWindow * window = new vks::WindowXCB();
+  //VikWindow * window = new vks::WindowKMS();
+  renderer->initVulkan(&settings, window, name);
+  window->init(this);
+  window->init_swap_chain(renderer);
+
   if (renderer->vksDevice->enableDebugMarkers)
     vks::debugmarker::setup(renderer->device);
   renderer->createCommandPool();
@@ -93,7 +102,7 @@ void Application::prepare() {
   vik_log_d("prepare done");
 }
 
-void Application::loop(Window *window) {
+void Application::loop() {
   renderer->destWidth = renderer->width;
   renderer->destHeight = renderer->height;
 

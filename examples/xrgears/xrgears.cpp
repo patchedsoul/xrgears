@@ -667,6 +667,8 @@ public:
   }
 
   void prepare() {
+    Application::prepare();
+
     hmd = new VikHMD();
 
     if (enableStereo) {
@@ -681,7 +683,7 @@ public:
     if (enableSky)
       skyBox = new VikSkyBox(renderer->device);
 
-    Application::prepare();
+
     loadAssets();
     initGears();
     prepareVertices();
@@ -751,14 +753,8 @@ XRGears *app;
 int main(const int argc, const char *argv[]) {
   app = new XRGears();
   app->parse_arguments(argc, argv);
-  vks::Window * window = new vks::WindowWayland();
-  //VikWindow * window = new vks::WindowXCB();
-  //VikWindow * window = new vks::WindowKMS();
-  app->renderer->initVulkan(&app->settings, window, app->name);
-  window->init(app);
-  window->init_swap_chain(app->renderer);
   app->prepare();
-  app->loop(window);
+  app->loop();
   delete(app);
 
   return 0;

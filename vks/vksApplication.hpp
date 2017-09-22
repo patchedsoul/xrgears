@@ -44,6 +44,7 @@ class Application : public vik::Application {
   Renderer *renderer;
   Settings settings;
   Camera camera;
+  Window *window;
 
   bool prepared = false;
   bool viewUpdated = false;
@@ -77,7 +78,7 @@ class Application : public vik::Application {
   virtual void getEnabledFeatures();
   virtual void prepare();
 
-  void loop(Window *window);
+  void loop();
   void update_camera(float frame_time);
   void parse_arguments(const int argc, const char *argv[]);
 

@@ -843,19 +843,8 @@ public:
 int main(const int argc, const char *argv[]) {
   Triangle *app = new Triangle();
   app->parse_arguments(argc, argv);
-  vks::Window * window = new vks::WindowWayland();
-  //VikWindow * window = new vks::WindowXCB();
-  //VikWindow * window = new vks::WindowKMS();
-  app->renderer->initVulkan(&app->settings, window, app->name);
-
-  if (window->init(app) == -1) {
-    delete(app);
-    vik_log_f("Error setting up window");
-  }
-
-  window->init_swap_chain(app->renderer);
   app->prepare();
-  app->loop(window);
+  app->loop();
   delete(app);
 
   return 0;
