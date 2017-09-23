@@ -79,21 +79,5 @@ public:
                           width, height, &buffers[i].framebuffer);
     }
   }
-
-  void present(VkQueue queue, uint32_t index) {
-    VkSwapchainKHR swapChains[] = { swap_chain, };
-    uint32_t indices[] = { index, };
-
-    VkPresentInfoKHR presentInfo = {};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
-    presentInfo.pImageIndices = indices;
-    //presentInfo.pResults = &result,
-
-    VkResult result = vkQueuePresentKHR(queue, &presentInfo);
-    vik_log_f_if(result != VK_SUCCESS, "vkQueuePresentKHR failed.");
-  }
-
 };
 }

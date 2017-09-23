@@ -329,29 +329,7 @@ class SwapChain : public vik::SwapChainVK {
     update_swap_chain_images();
   }
 
-  /**
-  * Queue an image for presentation
-  *
-  * @param queue Presentation queue for presenting the image
-  * @param imageIndex Index of the swapchain image to queue for presentation
-  * @param waitSemaphore (Optional) Semaphore that is waited on before the image is presented (only used if != VK_NULL_HANDLE)
-  *
-  * @return VkResult of the queue presentation
-  */
-  VkResult queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE) {
-    VkPresentInfoKHR presentInfo = {};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    presentInfo.pNext = NULL;
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = &swap_chain;
-    presentInfo.pImageIndices = &imageIndex;
-    // Check if a wait semaphore has been specified to wait for before presenting the image
-    if (waitSemaphore != VK_NULL_HANDLE) {
-      presentInfo.pWaitSemaphores = &waitSemaphore;
-      presentInfo.waitSemaphoreCount = 1;
-    }
-    return vkQueuePresentKHR(queue, &presentInfo);
-  }
+
 
 
   /**

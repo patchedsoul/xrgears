@@ -31,5 +31,28 @@ public:
                                  semaphore, VK_NULL_HANDLE, index);
   }
 
+  /**
+  * Queue an image for presentation
+  *
+  * @param queue Presentation queue for presenting the image
+  * @param imageIndex Index of the swapchain image to queue for presentation
+  * @param waitSemaphore (Optional) Semaphore that is waited on before the image is presented (only used if != VK_NULL_HANDLE)
+  *
+  * @return VkResult of the queue presentation
+  */
+  VkResult present(VkQueue queue, uint32_t index, VkSemaphore semaphore = VK_NULL_HANDLE) {
+    VkPresentInfoKHR presentInfo = {};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = &swap_chain;
+    presentInfo.pImageIndices = &index;
+    // Check if a wait semaphore has been specified to wait for before presenting the image
+    if (semaphore != VK_NULL_HANDLE) {
+      presentInfo.pWaitSemaphores = &semaphore;
+      presentInfo.waitSemaphoreCount = 1;
+    }
+    return vkQueuePresentKHR(queue, &presentInfo);
+  }
+
 };
 }

@@ -352,7 +352,7 @@ public:
     // Present the current buffer to the swap chain
     // Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
     // This ensures that the image is not presented to the windowing system until all commands have been submitted
-    vik_log_check(renderer->swapChain.queuePresent(renderer->queue, renderer->currentBuffer, renderCompleteSemaphore));
+    vik_log_check(renderer->swapChain.present(renderer->queue, renderer->currentBuffer, renderCompleteSemaphore));
   }
 
   // Prepare vertex and index buffers for an indexed triangle

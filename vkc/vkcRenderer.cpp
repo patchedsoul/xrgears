@@ -340,7 +340,7 @@ void Renderer::render_swapchain_vk() {
   switch (result) {
     case VK_SUCCESS:
       render(present_index);
-      sc->present(queue, present_index);
+      vik_log_check(sc->present(queue, present_index));
       break;
     case VK_TIMEOUT:
       // TODO: XCB times out

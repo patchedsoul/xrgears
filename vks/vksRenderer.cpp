@@ -216,7 +216,7 @@ void Renderer::submitFrame() {
     waitSemaphore = semaphores.renderComplete;
   }
 
-  vik_log_check(swapChain.queuePresent(queue, currentBuffer, waitSemaphore));
+  vik_log_check(swapChain.present(queue, currentBuffer, waitSemaphore));
   vik_log_check(vkQueueWaitIdle(queue));
 }
 
