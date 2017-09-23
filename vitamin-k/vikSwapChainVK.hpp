@@ -8,8 +8,8 @@ namespace vik {
 class SwapChainVK : public SwapChain {
 public:
 
+  /** @brief Handle to the current swap chain, required for recreation */
   VkSwapchainKHR swap_chain = VK_NULL_HANDLE;
-  uint32_t image_count = 0;
 
   SwapChainVK() {}
   ~SwapChainVK() {}

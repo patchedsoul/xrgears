@@ -47,6 +47,7 @@ public:
     image_count = 4;
     buffers.resize(image_count);
     kms_buffers.resize(image_count);
+    frame_buffers.resize(image_count);
   }
 
   ~SwapChainDRM() {
@@ -58,7 +59,7 @@ public:
         (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(device, "vkCreateDmaBufImageINTEL");
 
     for (uint32_t i = 0; i < image_count; i++) {
-      vik::RenderBuffer *b = &buffers[i];
+      vik::SwapChainBuffer *b = &buffers[i];
       kms_buffer *kms_b = &kms_buffers[i];
       int buffer_fd, stride, ret;
 
@@ -101,7 +102,7 @@ public:
       create_image_view(device, b->image,
                         image_format, &b->view);
       create_frame_buffer(device, render_pass, &b->view,
-                          width, height, &b->framebuffer);
+                          width, height, &frame_buffers[i]);
     }
   }
 

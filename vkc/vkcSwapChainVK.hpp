@@ -92,9 +92,10 @@ public:
 
   void update_frame_buffers(VkDevice device, uint32_t width,
                             uint32_t height, VkRenderPass render_pass) {
+    frame_buffers.resize(image_count);
     for (uint32_t i = 0; i < image_count; i++) {
       create_frame_buffer(device, render_pass, &buffers[i].view,
-                          width, height, &buffers[i].framebuffer);
+                          width, height, &frame_buffers[i]);
     }
   }
 

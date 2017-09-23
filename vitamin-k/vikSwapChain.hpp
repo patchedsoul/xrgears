@@ -8,12 +8,6 @@
 
 namespace vik {
 
-struct RenderBuffer {
-  VkImage image;
-  VkImageView view;
-  VkFramebuffer framebuffer;
-};
-
 struct SwapChainBuffer {
   VkImage image;
   VkImageView view;
@@ -21,7 +15,10 @@ struct SwapChainBuffer {
 
 class SwapChain {
 public:
-  std::vector<RenderBuffer> buffers;
+  std::vector<SwapChainBuffer> buffers;
+  std::vector<VkFramebuffer> frame_buffers;
+
+  uint32_t image_count = 0;
 
   SwapChain() {}
   ~SwapChain() {}

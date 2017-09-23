@@ -40,9 +40,6 @@ class SwapChain : public vik::SwapChainVK {
  public:
   VkSurfaceFormatKHR surface_format;
 
-  /** @brief Handle to the current swap chain, required for recreation */
-
-  std::vector<vik::SwapChainBuffer> buffers;
   // Index of the deteced graphics and presenting device queue
   /** @brief Queue family index of the detected graphics and presenting device queue */
   uint32_t queueNodeIndex = UINT32_MAX;

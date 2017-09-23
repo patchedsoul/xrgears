@@ -11,18 +11,15 @@ Renderer::~Renderer() {
     delete textOverlay;
 
   swapChain.cleanup();
-  if (descriptorPool != VK_NULL_HANDLE) {
+  if (descriptorPool != VK_NULL_HANDLE)
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-  }
+
   destroyCommandBuffers();
   vkDestroyRenderPass(device, renderPass, nullptr);
-  for (uint32_t i = 0; i < frameBuffers.size(); i++) {
+  for (uint32_t i = 0; i < frameBuffers.size(); i++)
     vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
-  }
 
-  for (auto& shaderModule : shaderModules) {
-    vkDestroyShaderModule(device, shaderModule, nullptr);
-  }
+
   vkDestroyImageView(device, depthStencil.view, nullptr);
   vkDestroyImage(device, depthStencil.image, nullptr);
   vkFreeMemory(device, depthStencil.mem, nullptr);
@@ -52,9 +49,9 @@ void Renderer::prepare() {
 
   createCommandBuffers();
   setupDepthStencil();
-  setupRenderPass();
+  create_render_pass();
   createPipelineCache();
-  setupFrameBuffer();
+  create_frame_buffers();
   if (enableTextOverlay)
     init_text_overlay();
 }
@@ -422,7 +419,7 @@ void Renderer::resize() {
 
   for (uint32_t i = 0; i < frameBuffers.size(); i++)
     vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
-  setupFrameBuffer();
+  create_frame_buffers();
 
   // Command buffers need to be recreated as they may store
   // references to the recreated frame buffer
@@ -459,7 +456,7 @@ void Renderer::submit_text_overlay() {
   submitInfo.pSignalSemaphores = &semaphores.renderComplete;
 }
 
-void Renderer::setupFrameBuffer() {
+void Renderer::create_frame_buffers() {
   vik_log_d("setupFrameBuffer");
 
 
@@ -486,7 +483,7 @@ void Renderer::setupFrameBuffer() {
   }
 }
 
-void Renderer::setupRenderPass() {
+void Renderer::create_render_pass() {
   std::array<VkAttachmentDescription, 2> attachments = {};
   // Color attachment
   attachments[0].format = swapChain.surface_format.format;

@@ -59,7 +59,6 @@ public:
 
   std::vector<VkCommandBuffer> drawCmdBuffers;
   std::vector<VkFramebuffer> frameBuffers;
-  std::vector<VkShaderModule> shaderModules;
 
   std::vector<const char*> enabledExtensions;
 
@@ -88,8 +87,8 @@ public:
   void prepareFrame();
   void submitFrame();
   void setupDepthStencil();
-  void setupFrameBuffer();
-  void setupRenderPass();
+  void create_frame_buffers();
+  void create_render_pass();
 
   void init_text_overlay();
 
