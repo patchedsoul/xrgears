@@ -1,8 +1,5 @@
 #pragma once
 
-#define VK_PROTOTYPES
-#include <vulkan/vulkan.h>
-
 #include "vkcSwapChainVK.hpp"
 #include "vkcSwapChainDRM.hpp"
 #include "vikRenderer.hpp"
@@ -12,13 +9,7 @@ namespace vkc {
 class Renderer : public vik::Renderer {
 public:
   vik::SwapChain *swap_chain;
-  std::vector<VkFramebuffer> frame_buffers;
 
-  VkInstance instance;
-  VkPhysicalDevice physical_device;
-  VkDevice device;
-  VkRenderPass render_pass;
-  VkQueue queue;
   VkPipelineLayout pipeline_layout;
   VkPipeline pipeline;
   VkDeviceMemory mem;

@@ -10,14 +10,14 @@ Renderer::~Renderer() {
   if (enableTextOverlay)
     delete textOverlay;
 
-  swapChain.cleanup();
+  swap_chain.cleanup();
   if (descriptorPool != VK_NULL_HANDLE)
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 
   destroyCommandBuffers();
   vkDestroyRenderPass(device, renderPass, nullptr);
-  for (uint32_t i = 0; i < frameBuffers.size(); i++)
-    vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
+  for (uint32_t i = 0; i < frame_buffers.size(); i++)
+    vkDestroyFramebuffer(device, frame_buffers[i], nullptr);
 
 
   vkDestroyImageView(device, depthStencil.view, nullptr);
@@ -45,7 +45,7 @@ void Renderer::prepare() {
     vks::debugmarker::setup(device);
   createCommandPool();
 
-  swapChain.create(&width, &height, settings->vsync);
+  swap_chain.create(&width, &height, settings->vsync);
 
   createCommandBuffers();
   setupDepthStencil();
@@ -69,8 +69,8 @@ void Renderer::init_text_overlay() {
   textOverlay = new TextOverlay(
         vksDevice,
         queue,
-        &frameBuffers,
-        swapChain.surface_format.format,
+        &frame_buffers,
+        swap_chain.surface_format.format,
         depthFormat,
         &width,
         &height,
@@ -120,9 +120,9 @@ bool Renderer::checkCommandBuffers() {
 void Renderer::createCommandBuffers() {
   // Create one command buffer for each swap chain image and reuse for rendering
 
-  vik_log_d("Swapchain image count %d", swapChain.image_count);
+  vik_log_d("Swapchain image count %d", swap_chain.image_count);
 
-  drawCmdBuffers.resize(swapChain.image_count);
+  drawCmdBuffers.resize(swap_chain.image_count);
 
   VkCommandBufferAllocateInfo cmdBufAllocateInfo =
       vks::initializers::commandBufferAllocateInfo(
@@ -196,7 +196,7 @@ void Renderer::check_tick_finnished(Window *window, const std::string& title) {
 
 void Renderer::prepareFrame() {
   // Acquire the next image from the swap chain
-  VkResult err = swapChain.acquire_next_image(device, semaphores.presentComplete, &currentBuffer);
+  VkResult err = swap_chain.acquire_next_image(device, semaphores.presentComplete, &currentBuffer);
   // Recreate the swapchain if it's no longer compatible with the surface (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
   if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR))
     window_resize_cb();
@@ -213,7 +213,7 @@ void Renderer::submitFrame() {
     waitSemaphore = semaphores.renderComplete;
   }
 
-  vik_log_check(swapChain.present(queue, currentBuffer, waitSemaphore));
+  vik_log_check(swap_chain.present(queue, currentBuffer, waitSemaphore));
   vik_log_check(vkQueueWaitIdle(queue));
 }
 
@@ -334,7 +334,7 @@ void Renderer::initVulkan(const std::string &name, const std::vector<const char*
   VkBool32 validDepthFormat = vks::tools::getSupportedDepthFormat(physicalDevice, &depthFormat);
   assert(validDepthFormat);
 
-  swapChain.set_context(instance, physicalDevice, device);
+  swap_chain.set_context(instance, physicalDevice, device);
 
   init_semaphores();
 
@@ -368,7 +368,7 @@ void Renderer::init_semaphores() {
 void Renderer::createCommandPool() {
   VkCommandPoolCreateInfo cmdPoolInfo = {};
   cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-  cmdPoolInfo.queueFamilyIndex = swapChain.queueNodeIndex;
+  cmdPoolInfo.queueFamilyIndex = swap_chain.queueNodeIndex;
   cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
   vik_log_check(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
 }
@@ -409,7 +409,7 @@ void Renderer::resize() {
   height = destHeight;
   // TODO: Create kms swapchain here.
 
-  swapChain.create(&width, &height, settings->vsync);
+  swap_chain.create(&width, &height, settings->vsync);
   // Recreate the frame buffers
 
   vkDestroyImageView(device, depthStencil.view, nullptr);
@@ -417,8 +417,8 @@ void Renderer::resize() {
   vkFreeMemory(device, depthStencil.mem, nullptr);
   setupDepthStencil();
 
-  for (uint32_t i = 0; i < frameBuffers.size(); i++)
-    vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
+  for (uint32_t i = 0; i < frame_buffers.size(); i++)
+    vkDestroyFramebuffer(device, frame_buffers[i], nullptr);
   create_frame_buffers();
 
   // Command buffers need to be recreated as they may store
@@ -476,17 +476,17 @@ void Renderer::create_frame_buffers() {
   frameBufferCreateInfo.layers = 1;
 
   // Create frame buffers for every swap chain image
-  frameBuffers.resize(swapChain.image_count);
-  for (uint32_t i = 0; i < frameBuffers.size(); i++) {
-    attachments[0] = swapChain.buffers[i].view;
-    vik_log_check(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
+  frame_buffers.resize(swap_chain.image_count);
+  for (uint32_t i = 0; i < frame_buffers.size(); i++) {
+    attachments[0] = swap_chain.buffers[i].view;
+    vik_log_check(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frame_buffers[i]));
   }
 }
 
 void Renderer::create_render_pass() {
   std::array<VkAttachmentDescription, 2> attachments = {};
   // Color attachment
-  attachments[0].format = swapChain.surface_format.format;
+  attachments[0].format = swap_chain.surface_format.format;
   attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
   attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
   attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;

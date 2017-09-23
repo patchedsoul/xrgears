@@ -116,7 +116,7 @@ class WindowKhrDisplay  : public Window {
     surfaceInfo.imageExtent.width = r->width;
     surfaceInfo.imageExtent.height = r->height;
 
-    VkResult result = vkCreateDisplayPlaneSurfaceKHR(r->instance, &surfaceInfo, NULL, &r->swapChain.surface);
+    VkResult result = vkCreateDisplayPlaneSurfaceKHR(r->instance, &surfaceInfo, NULL, &r->swap_chain.surface);
     vik_log_f_if(result !=VK_SUCCESS, "Failed to create surface!");
 
     delete[] pDisplays;
@@ -124,7 +124,7 @@ class WindowKhrDisplay  : public Window {
     delete[] pDisplayProperties;
     delete[] pPlaneProperties;
 
-    r->swapChain.select_queue_and_format();
+    r->swap_chain.select_queue_and_format();
   }
 
   void update_window_title(const std::string& title) {}

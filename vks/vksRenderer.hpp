@@ -21,25 +21,21 @@ class Window;
 class Renderer : public vik::Renderer {
 public:
   Timer timer;
-  SwapChain swapChain;
+  SwapChain swap_chain;
   Device *vksDevice;
   TextOverlay *textOverlay;
 
-  VkInstance instance;
 
-  VkPhysicalDevice physicalDevice;
+
   VkPhysicalDeviceProperties deviceProperties;
   VkPhysicalDeviceFeatures deviceFeatures;
   VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
   VkPhysicalDeviceFeatures enabledFeatures{};
 
-  VkDevice device;
-  VkQueue queue;
   VkFormat depthFormat;
   VkCommandPool cmdPool;
   VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
   VkSubmitInfo submitInfo;
-  VkRenderPass renderPass;
   VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
   VkPipelineCache pipelineCache;
 
@@ -58,7 +54,7 @@ public:
   } semaphores;
 
   std::vector<VkCommandBuffer> drawCmdBuffers;
-  std::vector<VkFramebuffer> frameBuffers;
+
 
   std::vector<const char*> enabledExtensions;
 

@@ -154,10 +154,10 @@ public:
 
     if (enableDistortion)
       for (int32_t i = 0; i < renderer->drawCmdBuffers.size(); ++i)
-        buildWarpCommandBuffer(renderer->drawCmdBuffers[i], renderer->frameBuffers[i]);
+        buildWarpCommandBuffer(renderer->drawCmdBuffers[i], renderer->frame_buffers[i]);
     else
       for (int32_t i = 0; i < renderer->drawCmdBuffers.size(); ++i)
-        buildPbrCommandBuffer(renderer->drawCmdBuffers[i], renderer->frameBuffers[i], false);
+        buildPbrCommandBuffer(renderer->drawCmdBuffers[i], renderer->frame_buffers[i], false);
   }
 
   inline VkRenderPassBeginInfo defaultRenderPassBeginInfo() {

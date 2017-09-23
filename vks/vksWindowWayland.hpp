@@ -85,11 +85,11 @@ class WindowWayland : public Window {
     surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
     surfaceCreateInfo.display = display;
     surfaceCreateInfo.surface = surface;
-    err = vkCreateWaylandSurfaceKHR(r->instance, &surfaceCreateInfo, nullptr, &r->swapChain.surface);
+    err = vkCreateWaylandSurfaceKHR(r->instance, &surfaceCreateInfo, nullptr, &r->swap_chain.surface);
 
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
 
-    r->swapChain.select_queue_and_format();
+    r->swap_chain.select_queue_and_format();
   }
 
   static void registryGlobalCb(void *data, wl_registry *registry, uint32_t name,
