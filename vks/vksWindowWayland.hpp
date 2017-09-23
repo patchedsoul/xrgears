@@ -89,7 +89,7 @@ class WindowWayland : public Window {
 
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
 
-    r->swapChain.initSurfaceCommon();
+    r->swapChain.select_queue_and_format();
   }
 
   static void registryGlobalCb(void *data, wl_registry *registry, uint32_t name,

@@ -88,7 +88,7 @@ class WindowXCB : public Window {
 
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
 
-    r->swapChain.initSurfaceCommon();
+    r->swapChain.select_queue_and_format();
   }
 
   void iterate(vks::Application *app) {

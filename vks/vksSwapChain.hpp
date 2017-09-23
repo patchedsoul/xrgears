@@ -54,7 +54,7 @@ class SwapChain : public vik::SwapChain {
   /** @brief Queue family index of the detected graphics and presenting device queue */
   uint32_t queueNodeIndex = UINT32_MAX;
 
-  void initSurfaceCommon() {
+  uint32_t select_queue() {
     // Get available queue family properties
     uint32_t queueCount;
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, NULL);
@@ -105,8 +105,10 @@ class SwapChain : public vik::SwapChain {
     if (graphicsQueueNodeIndex != presentQueueNodeIndex)
       vik_log_f("Separate graphics and presenting queues are not supported yet!");
 
-    queueNodeIndex = graphicsQueueNodeIndex;
+    return graphicsQueueNodeIndex;
+  }
 
+  void select_format() {
     // Get list of supported surface formats
     uint32_t formatCount;
     vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, NULL));
@@ -146,6 +148,11 @@ class SwapChain : public vik::SwapChain {
     }
   }
 
+  void select_queue_and_format() {
+    queueNodeIndex = select_queue();
+    select_format();
+  }
+
   /**
   * Set instance, physical and logical device to use for the swapchain and get all required function pointers
   *
@@ -160,28 +167,7 @@ class SwapChain : public vik::SwapChain {
     device = d;
   }
 
-  /**
-  * Create the swapchain and get it's images with given width and height
-  *
-  * @param width Pointer to the width of the swapchain (may be adjusted to fit the requirements of the swapchain)
-  * @param height Pointer to the height of the swapchain (may be adjusted to fit the requirements of the swapchain)
-  * @param vsync (Optional) Can be used to force vsync'd rendering (by using VK_PRESENT_MODE_FIFO_KHR as presentation mode)
-  */
-  void create(uint32_t *width, uint32_t *height, bool vsync = false) {
-    VkSwapchainKHR oldSwapchain = swapChain;
-
-    // Get physical device surface properties and formats
-    VkSurfaceCapabilitiesKHR surfCaps;
-    vik_log_check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfCaps));
-
-    // Get available present modes
-    uint32_t presentModeCount;
-    vik_log_check(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, NULL));
-    assert(presentModeCount > 0);
-
-    std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-    vik_log_check(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes.data()));
-
+  VkExtent2D select_extent(const VkSurfaceCapabilitiesKHR &surfCaps, uint32_t *width, uint32_t *height) {
     VkExtent2D swapchainExtent = {};
     // If width (and height) equals the special value 0xFFFFFFFF, the size of the surface will be set by the swapchain
     if (surfCaps.currentExtent.width == (uint32_t)-1) {
@@ -195,8 +181,10 @@ class SwapChain : public vik::SwapChain {
       *width = surfCaps.currentExtent.width;
       *height = surfCaps.currentExtent.height;
     }
+    return swapchainExtent;
+  }
 
-
+  VkPresentModeKHR select_present_mode(bool vsync) {
     // Select a present mode for the swapchain
 
     // The VK_PRESENT_MODE_FIFO_KHR mode must always be present as per spec
@@ -205,32 +193,47 @@ class SwapChain : public vik::SwapChain {
 
     // If v-sync is not requested, try to find a mailbox mode
     // It's the lowest latency non-tearing present mode available
-    if (!vsync) {
-      for (size_t i = 0; i < presentModeCount; i++) {
-        if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
-          swapchainPresentMode = VK_PRESENT_MODE_MAILBOX_KHR;
-          break;
-        }
-        if ((swapchainPresentMode != VK_PRESENT_MODE_MAILBOX_KHR) && (presentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR))
-          swapchainPresentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+    if (vsync)
+      return swapchainPresentMode;
+
+    // Get available present modes
+    uint32_t presentModeCount;
+    vik_log_check(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice,surface, &presentModeCount, NULL));
+    assert(presentModeCount > 0);
+
+    std::vector<VkPresentModeKHR> presentModes(presentModeCount);
+    vik_log_check(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes.data()));
+
+    for (size_t i = 0; i < presentModes.size(); i++) {
+      if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
+        swapchainPresentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+        break;
       }
+      if ((swapchainPresentMode != VK_PRESENT_MODE_MAILBOX_KHR) && (presentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR))
+        swapchainPresentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
     }
+    return swapchainPresentMode;
+  }
 
-    // Determine the number of images
-    uint32_t desiredNumberOfSwapchainImages = surfCaps.minImageCount + 1;
-    if ((surfCaps.maxImageCount > 0) && (desiredNumberOfSwapchainImages > surfCaps.maxImageCount))
-      desiredNumberOfSwapchainImages = surfCaps.maxImageCount;
+  // Determine the number of swapchain images
+  uint32_t select_image_count(const VkSurfaceCapabilitiesKHR &surfCaps) {
+    uint32_t count = surfCaps.minImageCount + 1;
+    if ((surfCaps.maxImageCount > 0) && (count > surfCaps.maxImageCount))
+      count = surfCaps.maxImageCount;
+    return count;
+  }
 
-    // Find the transformation of the surface
-    VkSurfaceTransformFlagsKHR preTransform;
+  // Find the transformation of the surface
+  VkSurfaceTransformFlagBitsKHR select_transform_flags(const VkSurfaceCapabilitiesKHR &surfCaps) {
     if (surfCaps.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
       // We prefer a non-rotated transform
-      preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+      return VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     else
-      preTransform = surfCaps.currentTransform;
+      return surfCaps.currentTransform;
+  }
 
-    // Find a supported composite alpha format (not all devices support alpha opaque)
-    VkCompositeAlphaFlagBitsKHR compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+  // Find a supported composite alpha format (not all devices support alpha opaque)
+  VkCompositeAlphaFlagBitsKHR select_composite_alpha(const VkSurfaceCapabilitiesKHR &surfCaps) {
     // Simply select the first composite alpha format available
     std::vector<VkCompositeAlphaFlagBitsKHR> compositeAlphaFlags = {
       VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
@@ -239,49 +242,49 @@ class SwapChain : public vik::SwapChain {
       VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
     };
 
-    for (auto& compositeAlphaFlag : compositeAlphaFlags) {
-      if (surfCaps.supportedCompositeAlpha & compositeAlphaFlag) {
-        compositeAlpha = compositeAlphaFlag;
-        break;
-      }
-    }
+    for (auto& compositeAlphaFlag : compositeAlphaFlags)
+      if (surfCaps.supportedCompositeAlpha & compositeAlphaFlag)
+        return compositeAlphaFlag;
 
-    VkSwapchainCreateInfoKHR swapchainCI = {};
-    swapchainCI.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchainCI.pNext = NULL;
-    swapchainCI.surface = surface;
-    swapchainCI.minImageCount = desiredNumberOfSwapchainImages;
-    swapchainCI.imageFormat = colorFormat;
-    swapchainCI.imageColorSpace = colorSpace;
-    swapchainCI.imageExtent = { swapchainExtent.width, swapchainExtent.height };
-    swapchainCI.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    swapchainCI.preTransform = (VkSurfaceTransformFlagBitsKHR)preTransform;
-    swapchainCI.imageArrayLayers = 1;
-    swapchainCI.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    swapchainCI.queueFamilyIndexCount = 0;
-    swapchainCI.pQueueFamilyIndices = NULL;
-    swapchainCI.presentMode = swapchainPresentMode;
-    swapchainCI.oldSwapchain = oldSwapchain;
-    // Setting clipped to VK_TRUE allows the implementation to discard rendering outside of the surface area
-    swapchainCI.clipped = VK_TRUE;
-    swapchainCI.compositeAlpha = compositeAlpha;
+    return VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+  }
 
-    // Set additional usage flag for blitting from the swapchain images if supported
+  bool is_blit_supported() {
     VkFormatProperties formatProps;
     vkGetPhysicalDeviceFormatProperties(physicalDevice, colorFormat, &formatProps);
-    if (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT) {
-      swapchainCI.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    }
+    return formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT;
+  }
 
-    vik_log_check(vkCreateSwapchainKHR(device, &swapchainCI, nullptr, &swapChain));
+  void destroy_swap_chain(const VkSwapchainKHR &sc) {
+    for (uint32_t i = 0; i < imageCount; i++)
+      vkDestroyImageView(device, buffers[i].view, nullptr);
+    vkDestroySwapchainKHR(device, sc, nullptr);
+  }
 
-    // If an existing swap chain is re-created, destroy the old swap chain
-    // This also cleans up all the presentable images
-    if (oldSwapchain != VK_NULL_HANDLE) {
-      for (uint32_t i = 0; i < imageCount; i++)
-        vkDestroyImageView(device, buffers[i].view, nullptr);
-      vkDestroySwapchainKHR(device, oldSwapchain, nullptr);
-    }
+  void create_image_view(const VkImage& image, VkImageView *view) {
+    VkImageViewCreateInfo colorAttachmentView = {};
+    colorAttachmentView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    colorAttachmentView.pNext = NULL;
+    colorAttachmentView.format = colorFormat;
+    colorAttachmentView.components = {
+      VK_COMPONENT_SWIZZLE_R,
+      VK_COMPONENT_SWIZZLE_G,
+      VK_COMPONENT_SWIZZLE_B,
+      VK_COMPONENT_SWIZZLE_A
+    };
+    colorAttachmentView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    colorAttachmentView.subresourceRange.baseMipLevel = 0;
+    colorAttachmentView.subresourceRange.levelCount = 1;
+    colorAttachmentView.subresourceRange.baseArrayLayer = 0;
+    colorAttachmentView.subresourceRange.layerCount = 1;
+    colorAttachmentView.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    colorAttachmentView.flags = 0;
+    colorAttachmentView.image = image;
+
+    vik_log_check(vkCreateImageView(device, &colorAttachmentView, nullptr, view));
+  }
+
+  void update_swap_chain_images() {
     vik_log_check(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL));
 
     // Get the swap chain images
@@ -291,30 +294,62 @@ class SwapChain : public vik::SwapChain {
     // Get the swap chain buffers containing the image and imageview
     buffers.resize(imageCount);
     for (uint32_t i = 0; i < imageCount; i++) {
-      VkImageViewCreateInfo colorAttachmentView = {};
-      colorAttachmentView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-      colorAttachmentView.pNext = NULL;
-      colorAttachmentView.format = colorFormat;
-      colorAttachmentView.components = {
-        VK_COMPONENT_SWIZZLE_R,
-        VK_COMPONENT_SWIZZLE_G,
-        VK_COMPONENT_SWIZZLE_B,
-        VK_COMPONENT_SWIZZLE_A
-      };
-      colorAttachmentView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-      colorAttachmentView.subresourceRange.baseMipLevel = 0;
-      colorAttachmentView.subresourceRange.levelCount = 1;
-      colorAttachmentView.subresourceRange.baseArrayLayer = 0;
-      colorAttachmentView.subresourceRange.layerCount = 1;
-      colorAttachmentView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-      colorAttachmentView.flags = 0;
-
       buffers[i].image = images[i];
-
-      colorAttachmentView.image = buffers[i].image;
-
-      vik_log_check(vkCreateImageView(device, &colorAttachmentView, nullptr, &buffers[i].view));
+      create_image_view(images[i], &buffers[i].view);
     }
+  }
+
+  /**
+  * Create the swapchain and get it's images with given width and height
+  *
+  * @param width Pointer to the width of the swapchain (may be adjusted to fit the requirements of the swapchain)
+  * @param height Pointer to the height of the swapchain (may be adjusted to fit the requirements of the swapchain)
+  * @param vsync (Optional) Can be used to force vsync'd rendering (by using VK_PRESENT_MODE_FIFO_KHR as presentation mode)
+  */
+  void create(uint32_t *width, uint32_t *height, bool vsync = false) {
+    // Get physical device surface properties and formats
+    VkSurfaceCapabilitiesKHR surfCaps;
+    vik_log_check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfCaps));
+
+    VkSwapchainCreateInfoKHR swap_chain_info = {};
+    swap_chain_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    swap_chain_info.pNext = NULL;
+
+    swap_chain_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    swap_chain_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    swap_chain_info.imageArrayLayers = 1;
+    swap_chain_info.queueFamilyIndexCount = 0;
+    swap_chain_info.pQueueFamilyIndices = NULL;
+    // Setting clipped to VK_TRUE allows the implementation to discard rendering outside of the surface area
+    swap_chain_info.clipped = VK_TRUE;
+
+    swap_chain_info.surface = surface;
+    swap_chain_info.imageFormat = colorFormat;
+    swap_chain_info.imageColorSpace = colorSpace;
+
+    VkSwapchainKHR oldSwapchain = swapChain;
+    swap_chain_info.oldSwapchain = oldSwapchain;
+
+    VkExtent2D swapchainExtent = select_extent(surfCaps, width, height);
+    swap_chain_info.imageExtent = { swapchainExtent.width, swapchainExtent.height };
+
+    swap_chain_info.minImageCount = select_image_count(surfCaps);
+    swap_chain_info.preTransform = select_transform_flags(surfCaps);
+    swap_chain_info.presentMode = select_present_mode(vsync);
+    swap_chain_info.compositeAlpha = select_composite_alpha(surfCaps);
+
+    // Set additional usage flag for blitting from the swapchain images if supported
+    if (is_blit_supported())
+      swap_chain_info.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+    vik_log_check(vkCreateSwapchainKHR(device, &swap_chain_info, nullptr, &swapChain));
+
+    // If an existing swap chain is re-created, destroy the old swap chain
+    // This also cleans up all the presentable images
+    if (oldSwapchain != VK_NULL_HANDLE)
+      destroy_swap_chain(oldSwapchain);
+
+    update_swap_chain_images();
   }
 
   /**

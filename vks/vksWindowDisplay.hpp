@@ -27,7 +27,7 @@ class WindowKhrDisplay  : public Window {
 
   void init_swap_chain(vks::Application *app) {
     createDirect2DisplaySurface(app, app->renderer->width, app->renderer->height);
-    app->renderer->swapChain.initSurfaceCommon();
+    app->renderer->swapChain.select_queue_and_format();
   }
 
   void createDirect2DisplaySurface(vks::Application * app, uint32_t width, uint32_t height) {
