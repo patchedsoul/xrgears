@@ -38,10 +38,15 @@ struct kms_buffer {
 class SwapChainDRM : public vik::SwapChain {
 
 public:
-  kms_buffer kms_buffers[MAX_NUM_IMAGES];
+
+  std::vector<kms_buffer> kms_buffers;
   int current;
+  uint32_t image_count;
 
   SwapChainDRM() {
+    image_count = 4;
+    buffers.resize(image_count);
+    kms_buffers.resize(image_count);
   }
 
   ~SwapChainDRM() {
@@ -52,7 +57,7 @@ public:
     PFN_vkCreateDmaBufImageINTEL create_dma_buf_image =
         (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(device, "vkCreateDmaBufImageINTEL");
 
-    for (uint32_t i = 0; i < 2; i++) {
+    for (uint32_t i = 0; i < image_count; i++) {
       vik::RenderBuffer *b = &buffers[i];
       kms_buffer *kms_b = &kms_buffers[i];
       int buffer_fd, stride, ret;

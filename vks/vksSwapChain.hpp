@@ -258,9 +258,8 @@ class SwapChain : public vik::SwapChainVK {
     vik_log_check(vkGetSwapchainImagesKHR(device, swap_chain, &image_count, NULL));
 
     // Get the swap chain images
-    std::vector<VkImage> images;
-    images.resize(image_count);
-    vik_log_check(vkGetSwapchainImagesKHR(device, swap_chain, &image_count, images.data()));
+    VkImage images[image_count];
+    vik_log_check(vkGetSwapchainImagesKHR(device, swap_chain, &image_count, images));
 
     // Get the swap chain buffers containing the image and imageview
     buffers.resize(image_count);

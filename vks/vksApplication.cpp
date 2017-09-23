@@ -13,7 +13,6 @@
 #include "VikAssets.hpp"
 #include "vksWindow.hpp"
 #include "vksWindowWayland.hpp"
-#include "vksWindowKMS.hpp"
 #include "vksWindowXCB.hpp"
 #include "vksWindowDisplay.hpp"
 
@@ -53,9 +52,6 @@ void Application::prepare() {
       break;
     case vik::Window::XCB_MOUSE:
       window = new vks::WindowXCB();
-      break;
-    case vik::Window::KMS:
-      window = new vks::WindowKMS();
       break;
     case vik::Window::KHR_DISPLAY:
       window = new vks::WindowKhrDisplay();

@@ -2,9 +2,9 @@
 
 #include <vulkan/vulkan.h>
 
-#include "../vks/vksLog.hpp"
+#include <vector>
 
-#define MAX_NUM_IMAGES 4
+#include "../vks/vksLog.hpp"
 
 namespace vik {
 
@@ -21,7 +21,7 @@ struct SwapChainBuffer {
 
 class SwapChain {
 public:
-  RenderBuffer buffers[MAX_NUM_IMAGES];
+  std::vector<RenderBuffer> buffers;
 
   SwapChain() {}
   ~SwapChain() {}

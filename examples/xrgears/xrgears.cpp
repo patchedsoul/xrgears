@@ -40,7 +40,6 @@
 #include "vksWindowXCB.hpp"
 #include "vksWindowWayland.hpp"
 #include "vksWindowDisplay.hpp"
-#include "vksWindowKMS.hpp"
 #include "vksLog.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0

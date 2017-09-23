@@ -81,6 +81,8 @@ public:
     VkImage swap_chain_images[image_count];
     vkGetSwapchainImagesKHR(device, swap_chain, &image_count, swap_chain_images);
 
+    buffers.resize(image_count);
+
     for (uint32_t i = 0; i < image_count; i++) {
       buffers[i].image = swap_chain_images[i];
       create_image_view(device, buffers[i].image,
