@@ -46,7 +46,7 @@ class SwapChain : public vik::SwapChainVK {
   VkFormat colorFormat;
   VkColorSpaceKHR colorSpace;
   /** @brief Handle to the current swap chain, required for recreation */
-  VkSwapchainKHR swapChain = VK_NULL_HANDLE;
+
   uint32_t imageCount;
   std::vector<VkImage> images;
   std::vector<SwapChainBuffer> buffers;
@@ -262,11 +262,11 @@ class SwapChain : public vik::SwapChainVK {
   }
 
   void update_swap_chain_images() {
-    vik_log_check(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL));
+    vik_log_check(vkGetSwapchainImagesKHR(device, swap_chain, &imageCount, NULL));
 
     // Get the swap chain images
     images.resize(imageCount);
-    vik_log_check(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, images.data()));
+    vik_log_check(vkGetSwapchainImagesKHR(device, swap_chain, &imageCount, images.data()));
 
     // Get the swap chain buffers containing the image and imageview
     buffers.resize(imageCount);
@@ -304,7 +304,7 @@ class SwapChain : public vik::SwapChainVK {
     swap_chain_info.imageFormat = colorFormat;
     swap_chain_info.imageColorSpace = colorSpace;
 
-    VkSwapchainKHR oldSwapchain = swapChain;
+    VkSwapchainKHR oldSwapchain = swap_chain;
     swap_chain_info.oldSwapchain = oldSwapchain;
 
     VkExtent2D swapchainExtent = select_extent(surfCaps, width, height);
@@ -319,7 +319,7 @@ class SwapChain : public vik::SwapChainVK {
     if (is_blit_supported())
       swap_chain_info.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
-    vik_log_check(vkCreateSwapchainKHR(device, &swap_chain_info, nullptr, &swapChain));
+    vik_log_check(vkCreateSwapchainKHR(device, &swap_chain_info, nullptr, &swap_chain));
 
     // If an existing swap chain is re-created, destroy the old swap chain
     // This also cleans up all the presentable images
@@ -327,22 +327,6 @@ class SwapChain : public vik::SwapChainVK {
       destroy_swap_chain(oldSwapchain);
 
     update_swap_chain_images();
-  }
-
-  /**
-  * Acquires the next image in the swap chain
-  *
-  * @param presentCompleteSemaphore (Optional) Semaphore that is signaled when the image is ready for use
-  * @param imageIndex Pointer to the image index that will be increased if the next image could be acquired
-  *
-  * @note The function will always wait until the next image has been acquired by setting timeout to UINT64_MAX
-  *
-  * @return VkResult of the image acquisition
-  */
-  VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t *imageIndex) {
-    // By setting timeout to UINT64_MAX we will always wait until the next image has been acquired or an actual error is thrown
-    // With that we don't have to handle VK_NOT_READY
-    return vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, presentCompleteSemaphore, nullptr, imageIndex);
   }
 
   /**
@@ -359,7 +343,7 @@ class SwapChain : public vik::SwapChainVK {
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.pNext = NULL;
     presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = &swapChain;
+    presentInfo.pSwapchains = &swap_chain;
     presentInfo.pImageIndices = &imageIndex;
     // Check if a wait semaphore has been specified to wait for before presenting the image
     if (waitSemaphore != VK_NULL_HANDLE) {
@@ -374,17 +358,17 @@ class SwapChain : public vik::SwapChainVK {
   * Destroy and free Vulkan resources used for the swapchain
   */
   void cleanup() {
-    if (swapChain != VK_NULL_HANDLE) {
+    if (swap_chain != VK_NULL_HANDLE) {
       for (uint32_t i = 0; i < imageCount; i++)
         vkDestroyImageView(device, buffers[i].view, nullptr);
     }
 
     if (surface != VK_NULL_HANDLE) {
-      vkDestroySwapchainKHR(device, swapChain, nullptr);
+      vkDestroySwapchainKHR(device, swap_chain, nullptr);
       vkDestroySurfaceKHR(instance, surface, nullptr);
     }
     surface = VK_NULL_HANDLE;
-    swapChain = VK_NULL_HANDLE;
+    swap_chain = VK_NULL_HANDLE;
   }
 };
 }

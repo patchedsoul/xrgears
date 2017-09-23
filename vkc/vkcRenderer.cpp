@@ -335,11 +335,12 @@ void Renderer::render(uint32_t index) {
 
 void Renderer::render_swapchain_vk() {
   SwapChainVK *sc = (SwapChainVK *) swap_chain;
-  VkResult result = sc->aquire_next_image(device, semaphore);
+  uint32_t present_index = 0;
+  VkResult result = sc->acquire_next_image(device, semaphore, &present_index);
   switch (result) {
     case VK_SUCCESS:
-      render(sc->present_index);
-      sc->present(queue);
+      render(present_index);
+      sc->present(queue, present_index);
       break;
     case VK_TIMEOUT:
       // TODO: XCB times out
