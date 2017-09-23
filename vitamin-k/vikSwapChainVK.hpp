@@ -9,6 +9,7 @@ class SwapChainVK : public SwapChain {
 public:
 
   VkSwapchainKHR swap_chain = VK_NULL_HANDLE;
+  uint32_t image_count = 0;
 
   SwapChainVK() {}
   ~SwapChainVK() {}

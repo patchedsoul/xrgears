@@ -28,11 +28,6 @@
 
 namespace vks {
 
-typedef struct _SwapChainBuffers {
-  VkImage image;
-  VkImageView view;
-} SwapChainBuffer;
-
 class SwapChain : public vik::SwapChainVK {
  public:
   VkSurfaceKHR surface;
@@ -47,9 +42,8 @@ class SwapChain : public vik::SwapChainVK {
   VkColorSpaceKHR colorSpace;
   /** @brief Handle to the current swap chain, required for recreation */
 
-  uint32_t imageCount;
   std::vector<VkImage> images;
-  std::vector<SwapChainBuffer> buffers;
+  std::vector<vik::SwapChainBuffer> buffers;
   // Index of the deteced graphics and presenting device queue
   /** @brief Queue family index of the detected graphics and presenting device queue */
   uint32_t queueNodeIndex = UINT32_MAX;
@@ -198,7 +192,7 @@ class SwapChain : public vik::SwapChainVK {
 
     // Get available present modes
     uint32_t presentModeCount;
-    vik_log_check(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice,surface, &presentModeCount, NULL));
+    vik_log_check(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, NULL));
     assert(presentModeCount > 0);
 
     std::vector<VkPresentModeKHR> presentModes(presentModeCount);
@@ -256,21 +250,21 @@ class SwapChain : public vik::SwapChainVK {
   }
 
   void destroy_swap_chain(const VkSwapchainKHR &sc) {
-    for (uint32_t i = 0; i < imageCount; i++)
+    for (uint32_t i = 0; i < image_count; i++)
       vkDestroyImageView(device, buffers[i].view, nullptr);
     vkDestroySwapchainKHR(device, sc, nullptr);
   }
 
   void update_swap_chain_images() {
-    vik_log_check(vkGetSwapchainImagesKHR(device, swap_chain, &imageCount, NULL));
+    vik_log_check(vkGetSwapchainImagesKHR(device, swap_chain, &image_count, NULL));
 
     // Get the swap chain images
-    images.resize(imageCount);
-    vik_log_check(vkGetSwapchainImagesKHR(device, swap_chain, &imageCount, images.data()));
+    images.resize(image_count);
+    vik_log_check(vkGetSwapchainImagesKHR(device, swap_chain, &image_count, images.data()));
 
     // Get the swap chain buffers containing the image and imageview
-    buffers.resize(imageCount);
-    for (uint32_t i = 0; i < imageCount; i++) {
+    buffers.resize(image_count);
+    for (uint32_t i = 0; i < image_count; i++) {
       buffers[i].image = images[i];
       create_image_view(device, images[i], colorFormat, &buffers[i].view);
     }
@@ -329,15 +323,12 @@ class SwapChain : public vik::SwapChainVK {
     update_swap_chain_images();
   }
 
-
-
-
   /**
   * Destroy and free Vulkan resources used for the swapchain
   */
   void cleanup() {
     if (swap_chain != VK_NULL_HANDLE) {
-      for (uint32_t i = 0; i < imageCount; i++)
+      for (uint32_t i = 0; i < image_count; i++)
         vkDestroyImageView(device, buffers[i].view, nullptr);
     }
 

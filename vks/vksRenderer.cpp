@@ -123,9 +123,9 @@ bool Renderer::checkCommandBuffers() {
 void Renderer::createCommandBuffers() {
   // Create one command buffer for each swap chain image and reuse for rendering
 
-  vik_log_d("Swapchain image count %d", swapChain.imageCount);
+  vik_log_d("Swapchain image count %d", swapChain.image_count);
 
-  drawCmdBuffers.resize(swapChain.imageCount);
+  drawCmdBuffers.resize(swapChain.image_count);
 
   VkCommandBufferAllocateInfo cmdBufAllocateInfo =
       vks::initializers::commandBufferAllocateInfo(
@@ -479,7 +479,7 @@ void Renderer::setupFrameBuffer() {
   frameBufferCreateInfo.layers = 1;
 
   // Create frame buffers for every swap chain image
-  frameBuffers.resize(swapChain.imageCount);
+  frameBuffers.resize(swapChain.image_count);
   for (uint32_t i = 0; i < frameBuffers.size(); i++) {
     attachments[0] = swapChain.buffers[i].view;
     vik_log_check(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));

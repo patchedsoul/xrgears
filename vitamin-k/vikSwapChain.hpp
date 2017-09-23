@@ -14,6 +14,11 @@ struct RenderBuffer {
   VkFramebuffer framebuffer;
 };
 
+struct SwapChainBuffer {
+  VkImage image;
+  VkImageView view;
+};
+
 class SwapChain {
 public:
   RenderBuffer buffers[MAX_NUM_IMAGES];

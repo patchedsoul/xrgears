@@ -10,8 +10,6 @@ namespace vkc {
 class SwapChainVK : public vik::SwapChainVK {
 
 public:
-  uint32_t image_count = 0;
-
   SwapChainVK() {
   }
 
@@ -20,16 +18,12 @@ public:
 
   void init(VkDevice device, VkPhysicalDevice physical_device, VkSurfaceKHR surface,
             VkFormat image_format, uint32_t width, uint32_t height, VkRenderPass render_pass) {
-    VkSurfaceCapabilitiesKHR surface_caps;
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface,
-                                              &surface_caps);
-    assert(surface_caps.supportedCompositeAlpha &
-           VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
+    create(device, physical_device, surface, image_format, width, height);
+    update_swap_chain_images(device, width, height, render_pass, image_format);
+  }
 
-    VkBool32 supported;
-    vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, 0, surface, &supported);
-    assert(supported);
-
+  VkPresentModeKHR select_present_mode(VkPhysicalDevice physical_device,
+                                       VkSurfaceKHR surface) {
     uint32_t count;
     vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface,
                                               &count, NULL);
@@ -44,8 +38,21 @@ public:
         break;
       }
     }
+    return present_mode;
+  }
 
-    uint32_t queueFamilyIndices[] { 0 };
+  void create(VkDevice device, VkPhysicalDevice physical_device,
+              VkSurfaceKHR surface, VkFormat image_format,
+              uint32_t width, uint32_t height) {
+    VkSurfaceCapabilitiesKHR surface_caps;
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface,
+                                              &surface_caps);
+    assert(surface_caps.supportedCompositeAlpha &
+           VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
+
+    VkBool32 supported;
+    vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, 0, surface, &supported);
+    assert(supported);
 
     VkSwapchainCreateInfoKHR swapchainfo = {};
     swapchainfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -58,13 +65,18 @@ public:
     swapchainfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     swapchainfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchainfo.queueFamilyIndexCount = 1;
-    swapchainfo.pQueueFamilyIndices = queueFamilyIndices;
+    swapchainfo.pQueueFamilyIndices = { 0 };
     swapchainfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     swapchainfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    swapchainfo.presentMode = present_mode;
+    swapchainfo.presentMode = select_present_mode(physical_device,
+                                                  surface);
 
     vkCreateSwapchainKHR(device, &swapchainfo, NULL, &swap_chain);
+  }
 
+  void update_swap_chain_images(VkDevice device, uint32_t width,
+                                uint32_t height, VkRenderPass render_pass,
+                                VkFormat image_format) {
     vkGetSwapchainImagesKHR(device, swap_chain, &image_count, NULL);
     assert(image_count > 0);
     vik_log_d("Creating swap chain with %d images.", image_count);
