@@ -14,6 +14,7 @@ public:
     XCB_MOUSE,
     WAYLAND_XDG,
     WAYLAND_LEGACY,
+    KHR_DISPLAY,
     INVALID
   };
 
@@ -37,6 +38,8 @@ public:
       return XCB_MOUSE;
     else if (streq(s, "wayland-legacy"))
       return WAYLAND_LEGACY;
+    else if (streq(s, "khr-display"))
+      return KHR_DISPLAY;
     else
       return INVALID;
   }

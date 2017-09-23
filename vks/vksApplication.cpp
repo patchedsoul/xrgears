@@ -15,7 +15,7 @@
 #include "vksWindowWayland.hpp"
 #include "vksWindowKMS.hpp"
 #include "vksWindowXCB.hpp"
-//#include "vksWindowDisplay.hpp"
+#include "vksWindowDisplay.hpp"
 
 namespace vks {
 
@@ -56,6 +56,9 @@ void Application::prepare() {
       break;
     case vik::Window::KMS:
       window = new vks::WindowKMS();
+      break;
+    case vik::Window::KHR_DISPLAY:
+      window = new vks::WindowKhrDisplay();
       break;
     default:
       vik_log_f("Unsupported window backend.");
