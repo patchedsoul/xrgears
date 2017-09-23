@@ -53,8 +53,8 @@ public:
         (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(device, "vkCreateDmaBufImageINTEL");
 
     for (uint32_t i = 0; i < 2; i++) {
-      struct vik::RenderBuffer *b = &buffers[i];
-      struct kms_buffer *kms_b = &kms_buffers[i];
+      vik::RenderBuffer *b = &buffers[i];
+      kms_buffer *kms_b = &kms_buffers[i];
       int buffer_fd, stride, ret;
 
       kms_b->gbm_buffer = gbm_bo_create(gbm_dev, width, height,

@@ -42,7 +42,6 @@ class SwapChain : public vik::SwapChainVK {
 
   /** @brief Handle to the current swap chain, required for recreation */
 
-  std::vector<VkImage> images;
   std::vector<vik::SwapChainBuffer> buffers;
   // Index of the deteced graphics and presenting device queue
   /** @brief Queue family index of the detected graphics and presenting device queue */
@@ -259,6 +258,7 @@ class SwapChain : public vik::SwapChainVK {
     vik_log_check(vkGetSwapchainImagesKHR(device, swap_chain, &image_count, NULL));
 
     // Get the swap chain images
+    std::vector<VkImage> images;
     images.resize(image_count);
     vik_log_check(vkGetSwapchainImagesKHR(device, swap_chain, &image_count, images.data()));
 

@@ -85,7 +85,8 @@ void Renderer::create_vulkan_swapchain() {
   swap_chain = new SwapChainVK();
   SwapChainVK* sc = (SwapChainVK*) swap_chain;
   sc->create(device, physical_device, surface, image_format, width, height);
-  sc->update_swap_chain_images(device, width, height, render_pass, image_format);
+  sc->update_images(device, image_format);
+  sc->update_frame_buffers(device, width, height, render_pass);
 }
 
 VkFormat Renderer::choose_surface_format() {

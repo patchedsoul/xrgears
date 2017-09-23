@@ -67,9 +67,14 @@ public:
     vkCreateSwapchainKHR(device, &swapchainfo, NULL, &swap_chain);
   }
 
-  void update_swap_chain_images(VkDevice device, uint32_t width,
-                                uint32_t height, VkRenderPass render_pass,
-                                VkFormat image_format) {
+  void destroy(VkDevice device) {
+    if (image_count > 0) {
+      vkDestroySwapchainKHR(device, swap_chain, NULL);
+      image_count = 0;
+    }
+  }
+
+  void update_images(VkDevice device, VkFormat image_format) {
     vkGetSwapchainImagesKHR(device, swap_chain, &image_count, NULL);
     assert(image_count > 0);
     vik_log_d("Creating swap chain with %d images.", image_count);
@@ -80,9 +85,16 @@ public:
       buffers[i].image = swap_chain_images[i];
       create_image_view(device, buffers[i].image,
                         image_format, &buffers[i].view);
+    }
+  }
+
+  void update_frame_buffers(VkDevice device, uint32_t width,
+                            uint32_t height, VkRenderPass render_pass) {
+    for (uint32_t i = 0; i < image_count; i++) {
       create_frame_buffer(device, render_pass, &buffers[i].view,
                           width, height, &buffers[i].framebuffer);
     }
   }
+
 };
 }
