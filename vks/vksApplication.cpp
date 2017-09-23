@@ -61,24 +61,14 @@ void Application::prepare() {
       vik_log_f("Unsupported window backend.");
   }
 
-  renderer->initVulkan(window, name);
+  renderer->initVulkan(name, window->required_extensions());
   window->init(this);
   window->init_swap_chain(renderer);
 
-  if (renderer->vksDevice->enableDebugMarkers)
-    vks::debugmarker::setup(renderer->device);
-  renderer->createCommandPool();
-  // TODO: create DRM swapchain here
+  renderer->prepare();
 
-  renderer->swapChain.create(&renderer->width, &renderer->height, settings.vsync);
-
-  renderer->createCommandBuffers();
-  renderer->setupDepthStencil();
-  renderer->setupRenderPass();
-  renderer->createPipelineCache();
-  renderer->setupFrameBuffer();
-
-  renderer->init_text_overlay(title);
+  if (renderer->enableTextOverlay)
+    renderer->updateTextOverlay(title);
 
   vik_log_d("prepare done");
 }
@@ -114,9 +104,6 @@ void Application::update_camera(float frame_time) {
 void Application::viewChanged() {}
 void Application::keyPressed(uint32_t) {}
 void Application::buildCommandBuffers() {}
-
-
-
 void Application::getEnabledFeatures() {}
 
 void Application::windowResize() {
@@ -124,30 +111,8 @@ void Application::windowResize() {
     return;
   prepared = false;
 
-  // Ensure all operations on the device have been finished before destroying resources
-  vkDeviceWaitIdle(renderer->device);
+  renderer->resize();
 
-  // Recreate swap chain
-  renderer->width = renderer->destWidth;
-  renderer->height = renderer->destHeight;
-  // TODO: Create kms swapchain here.
-
-  renderer->swapChain.create(&renderer->width, &renderer->height, settings.vsync);
-  // Recreate the frame buffers
-
-  vkDestroyImageView(renderer->device, renderer->depthStencil.view, nullptr);
-  vkDestroyImage(renderer->device, renderer->depthStencil.image, nullptr);
-  vkFreeMemory(renderer->device, renderer->depthStencil.mem, nullptr);
-  renderer->setupDepthStencil();
-
-  for (uint32_t i = 0; i < renderer->frameBuffers.size(); i++)
-    vkDestroyFramebuffer(renderer->device, renderer->frameBuffers[i], nullptr);
-  renderer->setupFrameBuffer();
-
-  // Command buffers need to be recreated as they may store
-  // references to the recreated frame buffer
-  renderer->destroyCommandBuffers();
-  renderer->createCommandBuffers();
   buildCommandBuffers();
 
   vkDeviceWaitIdle(renderer->device);
@@ -157,7 +122,7 @@ void Application::windowResize() {
     renderer->updateTextOverlay(title);
   }
 
-  camera.updateAspectRatio((float)renderer->width / (float)renderer->height);
+  camera.updateAspectRatio(renderer->get_aspect_ratio());
 
   // Notify derived class
   //windowResized();

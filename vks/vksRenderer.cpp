@@ -43,31 +43,44 @@ Renderer::~Renderer() {
   vkDestroyInstance(instance, nullptr);
 }
 
+void Renderer::prepare() {
+  if (vksDevice->enableDebugMarkers)
+    vks::debugmarker::setup(device);
+  createCommandPool();
+
+  swapChain.create(&width, &height, settings->vsync);
+
+  createCommandBuffers();
+  setupDepthStencil();
+  setupRenderPass();
+  createPipelineCache();
+  setupFrameBuffer();
+  if (enableTextOverlay)
+    init_text_overlay();
+}
+
 void Renderer::set_settings(vik::Settings *s) {
   settings = s;
 }
 
-void Renderer::init_text_overlay(const std::string& title) {
-  if (enableTextOverlay) {
-    // Load the text rendering shaders
-    std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-    shaderStages.push_back(VikShader::load(device, "base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
-    shaderStages.push_back(VikShader::load(device, "base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
+void Renderer::init_text_overlay() {
+  // Load the text rendering shaders
+  std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+  shaderStages.push_back(VikShader::load(device, "base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
+  shaderStages.push_back(VikShader::load(device, "base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
 
-    textOverlay = new TextOverlay(
-          vksDevice,
-          queue,
-          &frameBuffers,
-          swapChain.colorFormat,
-          depthFormat,
-          &width,
-          &height,
-          shaderStages);
-    updateTextOverlay(title);
-  }
+  textOverlay = new TextOverlay(
+        vksDevice,
+        queue,
+        &frameBuffers,
+        swapChain.colorFormat,
+        depthFormat,
+        &width,
+        &height,
+        shaderStages);
 }
 
-VkResult Renderer::createInstance(Window *window, const std::string& name) {
+VkResult Renderer::createInstance(const std::string& name, const std::vector<const char*> &extensions) {
 
   VkApplicationInfo appInfo = {};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -78,7 +91,7 @@ VkResult Renderer::createInstance(Window *window, const std::string& name) {
   std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
 
   // Enable surface extensions depending on os
-  for (const char* windowExtension : window->required_extensions())
+  for (const char* windowExtension : extensions)
     instanceExtensions.push_back(windowExtension);
 
   instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
@@ -278,11 +291,11 @@ void Renderer::init_debugging() {
   vks::debug::setupDebugging(instance, debugReportFlags, VK_NULL_HANDLE);
 }
 
-void Renderer::initVulkan(Window *window, const std::string &name) {
+void Renderer::initVulkan(const std::string &name, const std::vector<const char*> &extensions) {
   VkResult err;
 
   // Vulkan instance
-  err = createInstance(window, name);
+  err = createInstance(name, extensions);
 
   vik_log_f_if(err, "Could not create Vulkan instance: %s",
                vks::Log::result_string(err).c_str());
@@ -384,6 +397,37 @@ void Renderer::updateTextOverlay(const std::string& title) {
   std::string deviceName(deviceProperties.deviceName);
 
   textOverlay->update(title, ss.str(), deviceName);
+}
+
+float Renderer::get_aspect_ratio() {
+  return (float)width / (float)height;
+}
+
+void Renderer::resize() {
+  // Ensure all operations on the device have been finished before destroying resources
+  vkDeviceWaitIdle(device);
+
+  // Recreate swap chain
+  width = destWidth;
+  height = destHeight;
+  // TODO: Create kms swapchain here.
+
+  swapChain.create(&width, &height, settings->vsync);
+  // Recreate the frame buffers
+
+  vkDestroyImageView(device, depthStencil.view, nullptr);
+  vkDestroyImage(device, depthStencil.image, nullptr);
+  vkFreeMemory(device, depthStencil.mem, nullptr);
+  setupDepthStencil();
+
+  for (uint32_t i = 0; i < frameBuffers.size(); i++)
+    vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
+  setupFrameBuffer();
+
+  // Command buffers need to be recreated as they may store
+  // references to the recreated frame buffer
+  destroyCommandBuffers();
+  createCommandBuffers();
 }
 
 void Renderer::submit_text_overlay() {
