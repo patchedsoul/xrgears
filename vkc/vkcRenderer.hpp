@@ -11,7 +11,7 @@ namespace vkc {
 
 class Renderer : public vik::Renderer {
 public:
-  SwapChain *swap_chain;
+  vik::SwapChain *swap_chain;
 
   VkInstance instance;
   VkPhysicalDevice physical_device;

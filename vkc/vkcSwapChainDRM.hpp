@@ -24,7 +24,7 @@
 #include <linux/vt.h>
 #include <linux/major.h>
 
-#include "vkcSwapChain.hpp"
+#include "vikSwapchain.hpp"
 
 namespace vkc {
 
@@ -35,7 +35,7 @@ struct kms_buffer {
   uint32_t stride;
 };
 
-class SwapChainDRM : public SwapChain {
+class SwapChainDRM : public vik::SwapChain {
 
 public:
   kms_buffer kms_buffers[MAX_NUM_IMAGES];
@@ -53,7 +53,7 @@ public:
         (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(device, "vkCreateDmaBufImageINTEL");
 
     for (uint32_t i = 0; i < 2; i++) {
-      struct RenderBuffer *b = &buffers[i];
+      struct vik::RenderBuffer *b = &buffers[i];
       struct kms_buffer *kms_b = &kms_buffers[i];
       int buffer_fd, stride, ret;
 

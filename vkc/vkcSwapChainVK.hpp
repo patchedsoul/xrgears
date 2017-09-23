@@ -2,12 +2,12 @@
 
 #include <vulkan/vulkan.h>
 
-#include "vkcSwapChain.hpp"
+#include "vikSwapchainVK.hpp"
 #include "../vks/vksLog.hpp"
 
 namespace vkc {
 
-class SwapChainVK : public SwapChain {
+class SwapChainVK : public vik::SwapChainVK {
 
 public:
   VkSwapchainKHR swap_chain;

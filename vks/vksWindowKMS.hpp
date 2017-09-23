@@ -58,8 +58,6 @@ class WindowKMS : public Window {
      //VkFramebuffer framebuffer;
   };
 
-  #define MAX_NUM_IMAGES 3
-
   struct kms_buffer kms_buffers[MAX_NUM_IMAGES];
   struct render_buffer render_buffers[MAX_NUM_IMAGES];
 

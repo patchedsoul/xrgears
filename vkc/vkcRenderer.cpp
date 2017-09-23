@@ -327,7 +327,7 @@ void Renderer::build_command_buffer(VkFramebuffer frame_buffer) {
 }
 
 void Renderer::render(uint32_t index) {
-  RenderBuffer *b = &swap_chain->buffers[index];
+  vik::RenderBuffer *b = &swap_chain->buffers[index];
   build_command_buffer(b->framebuffer);
   submit_queue();
   wait_and_reset_fences();

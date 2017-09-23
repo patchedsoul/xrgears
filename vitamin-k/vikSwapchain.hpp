@@ -4,9 +4,20 @@
 
 #include "../vks/vksLog.hpp"
 
+#define MAX_NUM_IMAGES 4
+
 namespace vik {
+
+struct RenderBuffer {
+  VkImage image;
+  VkImageView view;
+  VkFramebuffer framebuffer;
+};
+
 class SwapChain {
 public:
+  RenderBuffer buffers[MAX_NUM_IMAGES];
+
   SwapChain() {}
   ~SwapChain() {}
 

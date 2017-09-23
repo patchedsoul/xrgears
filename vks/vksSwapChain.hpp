@@ -24,7 +24,7 @@
 #include "vksTools.hpp"
 
 #include "vksLog.hpp"
-#include "vikSwapchain.hpp"
+#include "vikSwapchainVK.hpp"
 
 namespace vks {
 
