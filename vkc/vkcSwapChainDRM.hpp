@@ -93,8 +93,10 @@ public:
                           pitches, offsets, &kms_b->fb, 0);
       vik_log_f_if(ret == -1, "addfb2 failed");
 
-      init_buffer(device, image_format, render_pass,
-                  width, height, b);
+      create_image_view(device, b->image,
+                        image_format, &b->view);
+      create_frame_buffer(device, render_pass, &b->view,
+                          width, height, &b->framebuffer);
     }
   }
 

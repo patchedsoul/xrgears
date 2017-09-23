@@ -261,29 +261,6 @@ class SwapChain : public vik::SwapChain {
     vkDestroySwapchainKHR(device, sc, nullptr);
   }
 
-  void create_image_view(const VkImage& image, VkImageView *view) {
-    VkImageViewCreateInfo colorAttachmentView = {};
-    colorAttachmentView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    colorAttachmentView.pNext = NULL;
-    colorAttachmentView.format = colorFormat;
-    colorAttachmentView.components = {
-      VK_COMPONENT_SWIZZLE_R,
-      VK_COMPONENT_SWIZZLE_G,
-      VK_COMPONENT_SWIZZLE_B,
-      VK_COMPONENT_SWIZZLE_A
-    };
-    colorAttachmentView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    colorAttachmentView.subresourceRange.baseMipLevel = 0;
-    colorAttachmentView.subresourceRange.levelCount = 1;
-    colorAttachmentView.subresourceRange.baseArrayLayer = 0;
-    colorAttachmentView.subresourceRange.layerCount = 1;
-    colorAttachmentView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    colorAttachmentView.flags = 0;
-    colorAttachmentView.image = image;
-
-    vik_log_check(vkCreateImageView(device, &colorAttachmentView, nullptr, view));
-  }
-
   void update_swap_chain_images() {
     vik_log_check(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL));
 
@@ -295,7 +272,7 @@ class SwapChain : public vik::SwapChain {
     buffers.resize(imageCount);
     for (uint32_t i = 0; i < imageCount; i++) {
       buffers[i].image = images[i];
-      create_image_view(images[i], &buffers[i].view);
+      create_image_view(device, images[i], colorFormat, &buffers[i].view);
     }
   }
 

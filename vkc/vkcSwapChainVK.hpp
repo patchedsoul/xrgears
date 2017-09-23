@@ -75,8 +75,10 @@ public:
 
     for (uint32_t i = 0; i < image_count; i++) {
       buffers[i].image = swap_chain_images[i];
-      init_buffer(device, image_format, render_pass,
-                  width, height, &buffers[i]);
+      create_image_view(device, buffers[i].image,
+                        image_format, &buffers[i].view);
+      create_frame_buffer(device, render_pass, &buffers[i].view,
+                          width, height, &buffers[i].framebuffer);
     }
   }
 
