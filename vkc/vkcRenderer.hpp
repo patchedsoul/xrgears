@@ -46,6 +46,8 @@ public:
   void init_vk_objects();
   void submit_queue();
 
+  void create_vulkan_swapchain();
+
   void wait_and_reset_fences();
 
   uint64_t get_animation_time();

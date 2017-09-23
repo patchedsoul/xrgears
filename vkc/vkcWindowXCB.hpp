@@ -108,6 +108,8 @@ public:
     init_surface(r);
     init_cb();
 
+    vik_log_d("init xcb done");
+
     return 0;
   }
 
@@ -161,6 +163,8 @@ public:
           if (r->width != configure->width ||
               r->height != configure->height) {
 
+                vik_log_d("XCB_CONFIGURE_NOTIFY %dx%d", r->width, r->height);
+
             SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
 
             if (sc != nullptr && sc->image_count > 0) {
@@ -173,6 +177,8 @@ public:
           }
           break;
         case XCB_EXPOSE:
+          vik_log_d("XCB_EXPOSE");
+          r->create_vulkan_swapchain(); // if needed
           schedule_repaint();
           break;
         case XCB_KEY_PRESS:
@@ -187,20 +193,11 @@ public:
     }
   }
 
-  void create_swapchain_if_needed(Renderer *r) {
-    if (r->swap_chain == nullptr) {
-      r->swap_chain = new SwapChainVK();
-      SwapChainVK* sc = (SwapChainVK*) r->swap_chain;
-      sc->init(r->device, r->physical_device, r->surface,
-               r->image_format, r->width, r->height, r->render_pass);
-    }
-  }
-
   void iter(Renderer *r) {
     poll_events(r);
 
     if (repaint) {
-      create_swapchain_if_needed(r);
+
       update_cb();
       r->render_swapchain_vk();
       schedule_repaint();

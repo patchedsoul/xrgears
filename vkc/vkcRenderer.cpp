@@ -80,6 +80,16 @@ void Renderer::init_vk(const char *extension) {
   vkGetDeviceQueue(device, 0, 0, &queue);
 }
 
+void Renderer::create_vulkan_swapchain() {
+  if (swap_chain == nullptr) {
+    vik_log_d("Creating vk swapchain");
+    swap_chain = new SwapChainVK();
+    SwapChainVK* sc = (SwapChainVK*) swap_chain;
+    sc->init(device, physical_device, surface,
+             image_format, width, height, render_pass);
+  }
+}
+
 VkFormat Renderer::choose_surface_format() {
   uint32_t num_formats = 0;
   vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface,

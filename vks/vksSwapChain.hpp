@@ -41,16 +41,6 @@ class SwapChain : public vik::SwapChain {
   VkInstance instance;
   VkDevice device;
   VkPhysicalDevice physicalDevice;
-  // Function pointers
-  PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR;
-  PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR;
-  PFN_vkGetPhysicalDeviceSurfaceFormatsKHR fpGetPhysicalDeviceSurfaceFormatsKHR;
-  PFN_vkGetPhysicalDeviceSurfacePresentModesKHR fpGetPhysicalDeviceSurfacePresentModesKHR;
-  PFN_vkCreateSwapchainKHR fpCreateSwapchainKHR;
-  PFN_vkDestroySwapchainKHR fpDestroySwapchainKHR;
-  PFN_vkGetSwapchainImagesKHR fpGetSwapchainImagesKHR;
-  PFN_vkAcquireNextImageKHR fpAcquireNextImageKHR;
-  PFN_vkQueuePresentKHR fpQueuePresentKHR;
 
  public:
   VkFormat colorFormat;
@@ -78,7 +68,7 @@ class SwapChain : public vik::SwapChain {
     // Will be used to present the swap chain images to the windowing system
     std::vector<VkBool32> supportsPresent(queueCount);
     for (uint32_t i = 0; i < queueCount; i++)
-      fpGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &supportsPresent[i]);
+      vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &supportsPresent[i]);
 
     // Search for a graphics and a present queue in the array of queue
     // families, try to find one that supports both
@@ -113,17 +103,17 @@ class SwapChain : public vik::SwapChain {
 
     // todo : Add support for separate graphics and presenting queue
     if (graphicsQueueNodeIndex != presentQueueNodeIndex)
-      vik_log_f("Separate graphics and presenting queues are not supported yet!", "Fatal error");
+      vik_log_f("Separate graphics and presenting queues are not supported yet!");
 
     queueNodeIndex = graphicsQueueNodeIndex;
 
     // Get list of supported surface formats
     uint32_t formatCount;
-    vik_log_check(fpGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, NULL));
+    vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, NULL));
     assert(formatCount > 0);
 
     std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
-    vik_log_check(fpGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, surfaceFormats.data()));
+    vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, surfaceFormats.data()));
 
     // If the surface format list only includes one entry with VK_FORMAT_UNDEFINED,
     // there is no preferered format, so we assume VK_FORMAT_B8G8R8A8_UNORM
@@ -164,20 +154,10 @@ class SwapChain : public vik::SwapChain {
   * @param device Logical representation of the device to create the swapchain for
   *
   */
-  void connect(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device) {
-    this->instance = instance;
-    this->physicalDevice = physicalDevice;
-    this->device = device;
-    GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceSurfaceSupportKHR);
-    GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceSurfaceCapabilitiesKHR);
-    GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceSurfaceFormatsKHR);
-    GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceSurfacePresentModesKHR);
-
-    GET_DEVICE_PROC_ADDR(device, CreateSwapchainKHR);
-    GET_DEVICE_PROC_ADDR(device, DestroySwapchainKHR);
-    GET_DEVICE_PROC_ADDR(device, GetSwapchainImagesKHR);
-    GET_DEVICE_PROC_ADDR(device, AcquireNextImageKHR);
-    GET_DEVICE_PROC_ADDR(device, QueuePresentKHR);
+  void connect(VkInstance i, VkPhysicalDevice p, VkDevice d) {
+    instance = i;
+    physicalDevice = p;
+    device = d;
   }
 
   /**
@@ -192,15 +172,15 @@ class SwapChain : public vik::SwapChain {
 
     // Get physical device surface properties and formats
     VkSurfaceCapabilitiesKHR surfCaps;
-    vik_log_check(fpGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfCaps));
+    vik_log_check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfCaps));
 
     // Get available present modes
     uint32_t presentModeCount;
-    vik_log_check(fpGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, NULL));
+    vik_log_check(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, NULL));
     assert(presentModeCount > 0);
 
     std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-    vik_log_check(fpGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes.data()));
+    vik_log_check(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes.data()));
 
     VkExtent2D swapchainExtent = {};
     // If width (and height) equals the special value 0xFFFFFFFF, the size of the surface will be set by the swapchain
@@ -293,20 +273,20 @@ class SwapChain : public vik::SwapChain {
       swapchainCI.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     }
 
-    vik_log_check(fpCreateSwapchainKHR(device, &swapchainCI, nullptr, &swapChain));
+    vik_log_check(vkCreateSwapchainKHR(device, &swapchainCI, nullptr, &swapChain));
 
     // If an existing swap chain is re-created, destroy the old swap chain
     // This also cleans up all the presentable images
     if (oldSwapchain != VK_NULL_HANDLE) {
       for (uint32_t i = 0; i < imageCount; i++)
         vkDestroyImageView(device, buffers[i].view, nullptr);
-      fpDestroySwapchainKHR(device, oldSwapchain, nullptr);
+      vkDestroySwapchainKHR(device, oldSwapchain, nullptr);
     }
-    vik_log_check(fpGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL));
+    vik_log_check(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL));
 
     // Get the swap chain images
     images.resize(imageCount);
-    vik_log_check(fpGetSwapchainImagesKHR(device, swapChain, &imageCount, images.data()));
+    vik_log_check(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, images.data()));
 
     // Get the swap chain buffers containing the image and imageview
     buffers.resize(imageCount);
@@ -350,7 +330,7 @@ class SwapChain : public vik::SwapChain {
   VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t *imageIndex) {
     // By setting timeout to UINT64_MAX we will always wait until the next image has been acquired or an actual error is thrown
     // With that we don't have to handle VK_NOT_READY
-    return fpAcquireNextImageKHR(device, swapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, imageIndex);
+    return vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, presentCompleteSemaphore, nullptr, imageIndex);
   }
 
   /**
@@ -374,7 +354,7 @@ class SwapChain : public vik::SwapChain {
       presentInfo.pWaitSemaphores = &waitSemaphore;
       presentInfo.waitSemaphoreCount = 1;
     }
-    return fpQueuePresentKHR(queue, &presentInfo);
+    return vkQueuePresentKHR(queue, &presentInfo);
   }
 
 
@@ -388,7 +368,7 @@ class SwapChain : public vik::SwapChain {
     }
 
     if (surface != VK_NULL_HANDLE) {
-      fpDestroySwapchainKHR(device, swapChain, nullptr);
+      vkDestroySwapchainKHR(device, swapChain, nullptr);
       vkDestroySurfaceKHR(instance, surface, nullptr);
     }
     surface = VK_NULL_HANDLE;
