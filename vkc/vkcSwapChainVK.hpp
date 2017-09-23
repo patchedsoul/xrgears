@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "vikSwapchainVK.hpp"
+#include "vikSwapChainVK.hpp"
 #include "../vks/vksLog.hpp"
 
 namespace vkc {

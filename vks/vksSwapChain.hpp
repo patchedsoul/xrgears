@@ -24,7 +24,7 @@
 #include "vksTools.hpp"
 
 #include "vksLog.hpp"
-#include "vikSwapchainVK.hpp"
+#include "vikSwapChainVK.hpp"
 
 namespace vks {
 
@@ -33,7 +33,7 @@ typedef struct _SwapChainBuffers {
   VkImageView view;
 } SwapChainBuffer;
 
-class SwapChain : public vik::SwapChain {
+class SwapChain : public vik::SwapChainVK {
  public:
   VkSurfaceKHR surface;
 

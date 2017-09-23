@@ -24,7 +24,7 @@
 #include <linux/vt.h>
 #include <linux/major.h>
 
-#include "vikSwapchain.hpp"
+#include "vikSwapChain.hpp"
 
 namespace vkc {
 

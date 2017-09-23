@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "vikSwapchain.hpp"
+#include "vikSwapChain.hpp"
 
 namespace vik {
 class SwapChainVK : public SwapChain {
