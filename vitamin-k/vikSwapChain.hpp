@@ -16,7 +16,6 @@ struct SwapChainBuffer {
 class SwapChain {
 public:
   std::vector<SwapChainBuffer> buffers;
-  std::vector<VkFramebuffer> frame_buffers;
 
   uint32_t image_count = 0;
 
@@ -46,25 +45,5 @@ public:
 
     vik_log_check(vkCreateImageView(device, &view_create_info, nullptr, view));
   }
-
-  void create_frame_buffer(const VkDevice &device,
-                           const VkRenderPass &render_pass, VkImageView *view,
-                           uint32_t width, uint32_t height,
-                           VkFramebuffer *frame_buffer) {
-    VkFramebufferCreateInfo framebufferinfo = {};
-    framebufferinfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferinfo.renderPass = render_pass;
-    framebufferinfo.attachmentCount = 1;
-    framebufferinfo.pAttachments = view;
-    framebufferinfo.width = width;
-    framebufferinfo.height = height;
-    framebufferinfo.layers = 1;
-
-    vkCreateFramebuffer(device,
-                        &framebufferinfo,
-                        NULL,
-                        frame_buffer);
-  }
-
 };
 }

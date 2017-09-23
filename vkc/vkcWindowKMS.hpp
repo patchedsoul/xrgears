@@ -174,6 +174,7 @@ public:
     SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain;
     sc->init(r->device, r->image_format, gbm_dev, fd,
              r->width, r->height, r->render_pass);
+    r->create_frame_buffers();
     sc->set_mode_and_page_flip(fd, crtc, connector);
 
     return 0;

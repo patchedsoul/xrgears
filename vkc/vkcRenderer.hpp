@@ -12,6 +12,7 @@ namespace vkc {
 class Renderer : public vik::Renderer {
 public:
   vik::SwapChain *swap_chain;
+  std::vector<VkFramebuffer> frame_buffers;
 
   VkInstance instance;
   VkPhysicalDevice physical_device;
@@ -57,5 +58,28 @@ public:
   void render(uint32_t index);
 
   void render_swapchain_vk();
+
+  void create_frame_buffer(VkImageView *view, VkFramebuffer *frame_buffer) {
+    VkFramebufferCreateInfo framebufferinfo = {};
+    framebufferinfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    framebufferinfo.renderPass = render_pass;
+    framebufferinfo.attachmentCount = 1;
+    framebufferinfo.pAttachments = view;
+    framebufferinfo.width = width;
+    framebufferinfo.height = height;
+    framebufferinfo.layers = 1;
+    vkCreateFramebuffer(device,
+                        &framebufferinfo,
+                        NULL,
+                        frame_buffer);
+  }
+
+  void create_frame_buffers() {
+    frame_buffers.resize(swap_chain->image_count);
+    for (uint32_t i = 0; i < swap_chain->image_count; i++) {
+      create_frame_buffer(&swap_chain->buffers[i].view, &frame_buffers[i]);
+    }
+  }
+
 };
 }

@@ -41,13 +41,11 @@ public:
 
   std::vector<kms_buffer> kms_buffers;
   int current;
-  uint32_t image_count;
 
   SwapChainDRM() {
     image_count = 4;
     buffers.resize(image_count);
     kms_buffers.resize(image_count);
-    frame_buffers.resize(image_count);
   }
 
   ~SwapChainDRM() {
@@ -101,8 +99,6 @@ public:
 
       create_image_view(device, b->image,
                         image_format, &b->view);
-      create_frame_buffer(device, render_pass, &b->view,
-                          width, height, &frame_buffers[i]);
     }
   }
 

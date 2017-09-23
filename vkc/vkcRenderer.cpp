@@ -86,7 +86,7 @@ void Renderer::create_vulkan_swapchain() {
   SwapChainVK* sc = (SwapChainVK*) swap_chain;
   sc->create(device, physical_device, surface, image_format, width, height);
   sc->update_images(device, image_format);
-  sc->update_frame_buffers(device, width, height, render_pass);
+  create_frame_buffers();
 }
 
 VkFormat Renderer::choose_surface_format() {
@@ -326,7 +326,7 @@ void Renderer::build_command_buffer(VkFramebuffer frame_buffer) {
 }
 
 void Renderer::render(uint32_t index) {
-  build_command_buffer(swap_chain->frame_buffers[index]);
+  build_command_buffer(frame_buffers[index]);
   submit_queue();
   wait_and_reset_fences();
 }
