@@ -178,7 +178,8 @@ public:
           break;
         case XCB_EXPOSE:
           vik_log_d("XCB_EXPOSE");
-          r->create_vulkan_swapchain(); // if needed
+          if (r->swap_chain == nullptr)
+            r->create_vulkan_swapchain(); // if needed
           schedule_repaint();
           break;
         case XCB_KEY_PRESS:

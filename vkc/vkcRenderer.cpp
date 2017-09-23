@@ -81,13 +81,11 @@ void Renderer::init_vk(const char *extension) {
 }
 
 void Renderer::create_vulkan_swapchain() {
-  if (swap_chain == nullptr) {
-    vik_log_d("Creating vk swapchain");
-    swap_chain = new SwapChainVK();
-    SwapChainVK* sc = (SwapChainVK*) swap_chain;
-    sc->init(device, physical_device, surface,
-             image_format, width, height, render_pass);
-  }
+  vik_log_d("Creating vk swapchain");
+  swap_chain = new SwapChainVK();
+  SwapChainVK* sc = (SwapChainVK*) swap_chain;
+  sc->create(device, physical_device, surface, image_format, width, height);
+  sc->update_swap_chain_images(device, width, height, render_pass, image_format);
 }
 
 VkFormat Renderer::choose_surface_format() {

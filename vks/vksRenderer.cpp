@@ -73,7 +73,7 @@ void Renderer::init_text_overlay() {
         vksDevice,
         queue,
         &frameBuffers,
-        swapChain.colorFormat,
+        swapChain.surface_format.format,
         depthFormat,
         &width,
         &height,
@@ -337,7 +337,7 @@ void Renderer::initVulkan(const std::string &name, const std::vector<const char*
   VkBool32 validDepthFormat = vks::tools::getSupportedDepthFormat(physicalDevice, &depthFormat);
   assert(validDepthFormat);
 
-  swapChain.connect(instance, physicalDevice, device);
+  swapChain.set_context(instance, physicalDevice, device);
 
   init_semaphores();
 
@@ -489,7 +489,7 @@ void Renderer::setupFrameBuffer() {
 void Renderer::setupRenderPass() {
   std::array<VkAttachmentDescription, 2> attachments = {};
   // Color attachment
-  attachments[0].format = swapChain.colorFormat;
+  attachments[0].format = swapChain.surface_format.format;
   attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
   attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
   attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;

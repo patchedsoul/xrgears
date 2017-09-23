@@ -16,12 +16,6 @@ public:
   ~SwapChainVK() {
   }
 
-  void init(VkDevice device, VkPhysicalDevice physical_device, VkSurfaceKHR surface,
-            VkFormat image_format, uint32_t width, uint32_t height, VkRenderPass render_pass) {
-    create(device, physical_device, surface, image_format, width, height);
-    update_swap_chain_images(device, width, height, render_pass, image_format);
-  }
-
   VkPresentModeKHR select_present_mode(VkPhysicalDevice physical_device,
                                        VkSurfaceKHR surface) {
     uint32_t count;
@@ -65,7 +59,6 @@ public:
     swapchainfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     swapchainfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchainfo.queueFamilyIndexCount = 1;
-    swapchainfo.pQueueFamilyIndices = { 0 };
     swapchainfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     swapchainfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     swapchainfo.presentMode = select_present_mode(physical_device,

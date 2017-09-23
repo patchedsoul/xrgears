@@ -35,11 +35,11 @@ class SwapChain : public vik::SwapChainVK {
  private:
   VkInstance instance;
   VkDevice device;
-  VkPhysicalDevice physicalDevice;
+  VkPhysicalDevice physical_device;
 
  public:
-  VkFormat colorFormat;
-  VkColorSpaceKHR colorSpace;
+  VkSurfaceFormatKHR surface_format;
+
   /** @brief Handle to the current swap chain, required for recreation */
 
   std::vector<VkImage> images;
@@ -51,18 +51,18 @@ class SwapChain : public vik::SwapChainVK {
   uint32_t select_queue() {
     // Get available queue family properties
     uint32_t queueCount;
-    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, NULL);
+    vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queueCount, NULL);
     assert(queueCount >= 1);
 
     std::vector<VkQueueFamilyProperties> queueProps(queueCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, queueProps.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queueCount, queueProps.data());
 
     // Iterate over each queue to learn whether it supports presenting:
     // Find a queue with present support
     // Will be used to present the swap chain images to the windowing system
     std::vector<VkBool32> supportsPresent(queueCount);
     for (uint32_t i = 0; i < queueCount; i++)
-      vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &supportsPresent[i]);
+      vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, i, surface, &supportsPresent[i]);
 
     // Search for a graphics and a present queue in the array of queue
     // families, try to find one that supports both
@@ -104,29 +104,29 @@ class SwapChain : public vik::SwapChainVK {
 
   void select_format() {
     // Get list of supported surface formats
-    uint32_t formatCount;
-    vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, NULL));
-    assert(formatCount > 0);
+    uint32_t count;
+    vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &count, NULL));
+    assert(count > 0);
 
-    std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
-    vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, surfaceFormats.data()));
+    std::vector<VkSurfaceFormatKHR> formats(count);
+    vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &count, formats.data()));
 
     // If the surface format list only includes one entry with VK_FORMAT_UNDEFINED,
     // there is no preferered format, so we assume VK_FORMAT_B8G8R8A8_UNORM
-    if ((formatCount == 1) && (surfaceFormats[0].format == VK_FORMAT_UNDEFINED)) {
+    if ((count == 1) && (formats[0].format == VK_FORMAT_UNDEFINED)) {
       vik_log_d("Using color format VK_FORMAT_B8G8R8A8_UNORM\n");
-      colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
-      colorSpace = surfaceFormats[0].colorSpace;
+      surface_format.format = VK_FORMAT_B8G8R8A8_UNORM;
+      surface_format.colorSpace = formats[0].colorSpace;
     } else {
       // iterate over the list of available surface format and
       // check for the presence of VK_FORMAT_B8G8R8A8_UNORM
       bool found_B8G8R8A8_UNORM = false;
       vik_log_d("Iterating surface formats");
-      for (auto&& surfaceFormat : surfaceFormats) {
+      for (auto&& surfaceFormat : formats) {
         if (surfaceFormat.format == VK_FORMAT_B8G8R8A8_UNORM) {
           vik_log_d("Using color format %d", surfaceFormat.format);
-          colorFormat = surfaceFormat.format;
-          colorSpace = surfaceFormat.colorSpace;
+          surface_format.format = surfaceFormat.format;
+          surface_format.colorSpace = surfaceFormat.colorSpace;
           found_B8G8R8A8_UNORM = true;
           break;
         }
@@ -135,9 +135,9 @@ class SwapChain : public vik::SwapChainVK {
       // in case VK_FORMAT_B8G8R8A8_UNORM is not available
       // select the first available color format
       if (!found_B8G8R8A8_UNORM) {
-        vik_log_d("B8G8R8A8_UNORM not found. Using %d\n", surfaceFormats[0].format);
-        colorFormat = surfaceFormats[0].format;
-        colorSpace = surfaceFormats[0].colorSpace;
+        vik_log_d("B8G8R8A8_UNORM not found. Using %d\n", formats[0].format);
+        surface_format.format = formats[0].format;
+        surface_format.colorSpace = formats[0].colorSpace;
       }
     }
   }
@@ -155,9 +155,9 @@ class SwapChain : public vik::SwapChainVK {
   * @param device Logical representation of the device to create the swapchain for
   *
   */
-  void connect(VkInstance i, VkPhysicalDevice p, VkDevice d) {
+  void set_context(VkInstance i, VkPhysicalDevice p, VkDevice d) {
     instance = i;
-    physicalDevice = p;
+    physical_device = p;
     device = d;
   }
 
@@ -192,11 +192,11 @@ class SwapChain : public vik::SwapChainVK {
 
     // Get available present modes
     uint32_t presentModeCount;
-    vik_log_check(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, NULL));
+    vik_log_check(vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &presentModeCount, NULL));
     assert(presentModeCount > 0);
 
     std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-    vik_log_check(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes.data()));
+    vik_log_check(vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &presentModeCount, presentModes.data()));
 
     for (size_t i = 0; i < presentModes.size(); i++) {
       if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -245,7 +245,7 @@ class SwapChain : public vik::SwapChainVK {
 
   bool is_blit_supported() {
     VkFormatProperties formatProps;
-    vkGetPhysicalDeviceFormatProperties(physicalDevice, colorFormat, &formatProps);
+    vkGetPhysicalDeviceFormatProperties(physical_device, surface_format.format, &formatProps);
     return formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT;
   }
 
@@ -266,7 +266,7 @@ class SwapChain : public vik::SwapChainVK {
     buffers.resize(image_count);
     for (uint32_t i = 0; i < image_count; i++) {
       buffers[i].image = images[i];
-      create_image_view(device, images[i], colorFormat, &buffers[i].view);
+      create_image_view(device, images[i], surface_format.format, &buffers[i].view);
     }
   }
 
@@ -280,23 +280,21 @@ class SwapChain : public vik::SwapChainVK {
   void create(uint32_t *width, uint32_t *height, bool vsync = false) {
     // Get physical device surface properties and formats
     VkSurfaceCapabilitiesKHR surfCaps;
-    vik_log_check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfCaps));
+    vik_log_check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &surfCaps));
 
     VkSwapchainCreateInfoKHR swap_chain_info = {};
     swap_chain_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swap_chain_info.pNext = NULL;
 
     swap_chain_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     swap_chain_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swap_chain_info.imageArrayLayers = 1;
     swap_chain_info.queueFamilyIndexCount = 0;
-    swap_chain_info.pQueueFamilyIndices = NULL;
     // Setting clipped to VK_TRUE allows the implementation to discard rendering outside of the surface area
     swap_chain_info.clipped = VK_TRUE;
 
     swap_chain_info.surface = surface;
-    swap_chain_info.imageFormat = colorFormat;
-    swap_chain_info.imageColorSpace = colorSpace;
+    swap_chain_info.imageFormat = surface_format.format;
+    swap_chain_info.imageColorSpace = surface_format.colorSpace;
 
     VkSwapchainKHR oldSwapchain = swap_chain;
     swap_chain_info.oldSwapchain = oldSwapchain;

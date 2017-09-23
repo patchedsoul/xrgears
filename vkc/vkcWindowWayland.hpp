@@ -287,11 +287,7 @@ public:
 
     r->image_format = r->choose_surface_format();
     init_cb();
-
-    r->swap_chain = new SwapChainVK();
-    SwapChainVK* sc = (SwapChainVK* ) r->swap_chain;
-    sc->init(r->device, r->physical_device, r->surface,
-             r->image_format, r->width, r->height, r->render_pass);
+    r->create_vulkan_swapchain();
 
     return 0;
   }
