@@ -119,10 +119,10 @@ public:
     surfaceInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
     surfaceInfo.connection = conn;
     surfaceInfo.window = window;
-    if (swap_chain == nullptr)
-      swap_chain = new vik::SwapChainVK();
+    if (r->swap_chain == nullptr)
+      r->swap_chain = new vik::SwapChainVK();
 
-    vik::SwapChainVK *sc = (vik::SwapChainVK*) swap_chain;
+    vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
     sc->set_context(r->instance, r->physical_device, r->device);
 
     vkCreateXcbSurfaceKHR(r->instance, &surfaceInfo, NULL, &sc->surface);
@@ -170,7 +170,7 @@ public:
 
             vik_log_d("XCB_CONFIGURE_NOTIFY %dx%d", r->width, r->height);
 
-            vik::SwapChainVK *sc = (vik::SwapChainVK*) swap_chain;
+            vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
 
             if (sc != nullptr)
               sc->destroy();
@@ -183,14 +183,14 @@ public:
           vik_log_d("XCB_EXPOSE");
           //if (r->swap_chain == nullptr) {
         {
-          if (swap_chain == nullptr) {
-            swap_chain = new vik::SwapChainVK();
+          if (r->swap_chain == nullptr) {
+            r->swap_chain = new vik::SwapChainVK();
           }
-          vik::SwapChainVK *sc = (vik::SwapChainVK*) swap_chain;
+          vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
           sc->set_context(r->instance, r->physical_device, r->device);
           sc->create_simple(r->width, r->height);
           sc->update_images();
-          r->create_frame_buffers(swap_chain);
+          r->create_frame_buffers(r->swap_chain);
         }
           schedule_repaint();
           break;
@@ -212,7 +212,7 @@ public:
     if (repaint) {
 
       update_cb();
-      r->render_swapchain_vk((vik::SwapChainVK*) swap_chain);
+      r->render_swapchain_vk((vik::SwapChainVK*) r->swap_chain);
       schedule_repaint();
     }
     xcb_flush(conn);

@@ -8,6 +8,9 @@ namespace vkc {
 
 class Renderer : public vik::Renderer {
 public:
+
+  vik::SwapChain *swap_chain;
+
   VkPipelineLayout pipeline_layout;
   VkPipeline pipeline;
   VkDeviceMemory mem;

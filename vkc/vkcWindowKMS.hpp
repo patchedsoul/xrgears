@@ -166,17 +166,17 @@ public:
 
     r->init_vk(NULL);
 
-    swap_chain = new vik::SwapChainDRM();
+    r->swap_chain = new vik::SwapChainDRM();
 
     init_cb();
 
-    vik::SwapChainDRM *sc = (vik::SwapChainDRM*) swap_chain;
+    vik::SwapChainDRM *sc = (vik::SwapChainDRM*) r->swap_chain;
 
     sc->surface_format.format = VK_FORMAT_R8G8B8A8_SRGB;
 
     sc->init(r->device, sc->surface_format.format, gbm_dev, fd,
              r->width, r->height, r->render_pass);
-    r->create_frame_buffers(swap_chain);
+    r->create_frame_buffers(r->swap_chain);
     sc->set_mode_and_page_flip(fd, crtc, connector);
 
     return 0;
@@ -200,7 +200,7 @@ public:
 
     update_cb();
 
-    vik::SwapChainDRM *sc = (vik::SwapChainDRM*) swap_chain;
+    vik::SwapChainDRM *sc = (vik::SwapChainDRM*) r->swap_chain;
 
     int index = sc->current & 1;
 

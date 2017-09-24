@@ -9,8 +9,6 @@ namespace vik {
 class Window {
 public:
 
-  SwapChain *swap_chain;
-
   enum window_type {
     AUTO = 0,
     KMS,
