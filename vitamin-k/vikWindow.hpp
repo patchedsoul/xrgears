@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <functional>
+
 #include "vikSwapChain.hpp"
 
 namespace vik {
@@ -20,8 +22,26 @@ public:
     INVALID
   };
 
+  std::string name;
+
+  std::function<void()> init_cb;
+  std::function<void()> update_cb;
+  std::function<void()> quit_cb;
+
   Window() {}
   ~Window() {}
+
+  void set_init_cb(std::function<void()> cb) {
+    init_cb = cb;
+  }
+
+  void set_update_cb(std::function<void()> cb) {
+    update_cb = cb;
+  }
+
+  void set_quit_cb(std::function<void()> cb) {
+    quit_cb = cb;
+  }
 
   static inline bool streq(const char *a, const char *b) {
     return strcmp(a, b) == 0;
