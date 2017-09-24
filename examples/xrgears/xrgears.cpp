@@ -162,7 +162,7 @@ public:
 
   inline VkRenderPassBeginInfo defaultRenderPassBeginInfo() {
     VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
-    renderPassBeginInfo.renderPass = renderer->renderPass;
+    renderPassBeginInfo.renderPass = renderer->render_pass;
     renderPassBeginInfo.renderArea.offset.x = 0;
     renderPassBeginInfo.renderArea.offset.y = 0;
     renderPassBeginInfo.renderArea.extent.width = renderer->width;
@@ -535,7 +535,7 @@ public:
     if (enableDistortion)
       usedPass = offscreenPass->getRenderPass();
     else
-      usedPass =renderer->renderPass;
+      usedPass =renderer->render_pass;
 
     pipelineCreateInfo = vks::initializers::pipelineCreateInfo(pipelineLayout, usedPass);
 
@@ -692,14 +692,14 @@ public:
 
     if (enableDistortion) {
       offscreenPass = new VikOffscreenPass(renderer->device);
-      offscreenPass->prepareOffscreenFramebuffer(renderer->vksDevice, renderer->physicalDevice);
+      offscreenPass->prepareOffscreenFramebuffer(renderer->vksDevice, renderer->physical_device);
       hmdDistortion = new VikDistortion(renderer->device);
       hmdDistortion->generateQuads(renderer->vksDevice);
       hmdDistortion->prepareUniformBuffer(renderer->vksDevice);
       hmdDistortion->updateUniformBufferWarp(hmd->openHmdDevice);
       hmdDistortion->createDescriptorSetLayout();
       hmdDistortion->createPipeLineLayout();
-      hmdDistortion->createPipeLine(renderer->renderPass, renderer->pipelineCache);
+      hmdDistortion->createPipeLine(renderer->render_pass, renderer->pipelineCache);
       hmdDistortion->createDescriptorSet(offscreenPass, renderer->descriptorPool);
     }
 

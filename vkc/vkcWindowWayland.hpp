@@ -309,7 +309,7 @@ public:
     }
   }
 
-  void iter(Renderer *r) {
+  void iterate(Renderer *r) {
     flush();
     update_cb();
     r->render_swapchain_vk();

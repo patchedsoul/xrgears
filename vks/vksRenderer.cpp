@@ -15,7 +15,7 @@ Renderer::~Renderer() {
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 
   destroyCommandBuffers();
-  vkDestroyRenderPass(device, renderPass, nullptr);
+  vkDestroyRenderPass(device, render_pass, nullptr);
   for (uint32_t i = 0; i < frame_buffers.size(); i++)
     vkDestroyFramebuffer(device, frame_buffers[i], nullptr);
 
@@ -249,7 +249,7 @@ void Renderer::init_physical_device() {
     selectedDevice = settings->gpu_index;
   }
 
-  physicalDevice = physicalDevices[selectedDevice];
+  physical_device = physicalDevices[selectedDevice];
 }
 
 void Renderer::list_gpus() {
@@ -275,9 +275,9 @@ void Renderer::list_gpus() {
 void Renderer::get_physical_device_properties() {
   // Store properties (including limits), features and memory properties
   // of the phyiscal device (so that examples can check against them)
-  vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
-  vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
-  vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemoryProperties);
+  vkGetPhysicalDeviceProperties(physical_device, &deviceProperties);
+  vkGetPhysicalDeviceFeatures(physical_device, &deviceFeatures);
+  vkGetPhysicalDeviceMemoryProperties(physical_device, &deviceMemoryProperties);
 }
 
 void Renderer::init_debugging() {
@@ -311,7 +311,7 @@ void Renderer::initVulkan(const std::string &name, const std::vector<const char*
   // Vulkan device creation
   // This is handled by a separate class that gets a logical device representation
   // and encapsulates functions related to a device
-  vksDevice = new vks::Device(physicalDevice);
+  vksDevice = new vks::Device(physical_device);
 
   /*
   enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
@@ -331,10 +331,10 @@ void Renderer::initVulkan(const std::string &name, const std::vector<const char*
   vkGetDeviceQueue(device, vksDevice->queueFamilyIndices.graphics, 0, &queue);
 
   // Find a suitable depth format
-  VkBool32 validDepthFormat = vks::tools::getSupportedDepthFormat(physicalDevice, &depthFormat);
+  VkBool32 validDepthFormat = vks::tools::getSupportedDepthFormat(physical_device, &depthFormat);
   assert(validDepthFormat);
 
-  swap_chain.set_context(instance, physicalDevice, device);
+  swap_chain.set_context(instance, physical_device, device);
 
   init_semaphores();
 
@@ -468,7 +468,7 @@ void Renderer::create_frame_buffers() {
   VkFramebufferCreateInfo frameBufferCreateInfo = {};
   frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
   frameBufferCreateInfo.pNext = NULL;
-  frameBufferCreateInfo.renderPass = renderPass;
+  frameBufferCreateInfo.renderPass = render_pass;
   frameBufferCreateInfo.attachmentCount = 2;
   frameBufferCreateInfo.pAttachments = attachments;
   frameBufferCreateInfo.width = width;
@@ -575,7 +575,7 @@ void Renderer::create_render_pass() {
   */
   // VK_KHX_multiview
 
-  vik_log_check(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass));
+  vik_log_check(vkCreateRenderPass(device, &renderPassInfo, nullptr, &render_pass));
   vik_log_d("renderpass setup complete");
 }
 

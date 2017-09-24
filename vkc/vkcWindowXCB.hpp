@@ -192,7 +192,7 @@ public:
     }
   }
 
-  void iter(Renderer *r) {
+  void iterate(Renderer *r) {
     poll_events(r);
 
     if (repaint) {

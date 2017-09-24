@@ -261,7 +261,7 @@ public:
     VkRenderPassBeginInfo renderPassBeginInfo = {};
     renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassBeginInfo.pNext = nullptr;
-    renderPassBeginInfo.renderPass = renderer->renderPass;
+    renderPassBeginInfo.renderPass = renderer->render_pass;
     renderPassBeginInfo.renderArea.offset.x = 0;
     renderPassBeginInfo.renderArea.offset.y = 0;
     renderPassBeginInfo.renderArea.extent.width = renderer->width;
@@ -619,7 +619,7 @@ public:
     // The layout used for this pipeline (can be shared among multiple pipelines using the same layout)
     pipelineCreateInfo.layout = pipelineLayout;
     // Renderpass this pipeline is attached to
-    pipelineCreateInfo.renderPass = renderer->renderPass;
+    pipelineCreateInfo.renderPass = renderer->render_pass;
 
     // Construct the differnent states making up the pipeline
 
@@ -743,7 +743,7 @@ public:
     pipelineCreateInfo.pMultisampleState = &multisampleState;
     pipelineCreateInfo.pViewportState = &viewportState;
     pipelineCreateInfo.pDepthStencilState = &depthStencilState;
-    pipelineCreateInfo.renderPass = renderer->renderPass;
+    pipelineCreateInfo.renderPass = renderer->render_pass;
     pipelineCreateInfo.pDynamicState = &dynamicState;
 
     // Create rendering pipeline using the specified states

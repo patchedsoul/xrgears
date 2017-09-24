@@ -210,7 +210,7 @@ public:
     sc->current++;
   }
 
-  void iter(Renderer *r) {
+  void iterate(Renderer *r) {
     int ret = poll(pfd, 2, -1);
     vik_log_f_if(ret == -1, "poll failed");
     if (pfd[0].revents & POLLIN)

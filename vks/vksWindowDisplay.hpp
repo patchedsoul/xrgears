@@ -29,15 +29,15 @@ class WindowKhrDisplay  : public Window {
     uint32_t displayPropertyCount;
 
     // Get display property
-    vkGetPhysicalDeviceDisplayPropertiesKHR(r->physicalDevice, &displayPropertyCount, NULL);
+    vkGetPhysicalDeviceDisplayPropertiesKHR(r->physical_device, &displayPropertyCount, NULL);
     VkDisplayPropertiesKHR* pDisplayProperties = new VkDisplayPropertiesKHR[displayPropertyCount];
-    vkGetPhysicalDeviceDisplayPropertiesKHR(r->physicalDevice, &displayPropertyCount, pDisplayProperties);
+    vkGetPhysicalDeviceDisplayPropertiesKHR(r->physical_device, &displayPropertyCount, pDisplayProperties);
 
     // Get plane property
     uint32_t planePropertyCount;
-    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(r->physicalDevice, &planePropertyCount, NULL);
+    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(r->physical_device, &planePropertyCount, NULL);
     VkDisplayPlanePropertiesKHR* pPlaneProperties = new VkDisplayPlanePropertiesKHR[planePropertyCount];
-    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(r->physicalDevice, &planePropertyCount, pPlaneProperties);
+    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(r->physical_device, &planePropertyCount, pPlaneProperties);
 
     VkDisplayKHR display = VK_NULL_HANDLE;
     VkDisplayModeKHR displayMode;
@@ -47,9 +47,9 @@ class WindowKhrDisplay  : public Window {
     for (uint32_t i = 0; i < displayPropertyCount; ++i) {
       display = pDisplayProperties[i].display;
       uint32_t modeCount;
-      vkGetDisplayModePropertiesKHR(r->physicalDevice, display, &modeCount, NULL);
+      vkGetDisplayModePropertiesKHR(r->physical_device, display, &modeCount, NULL);
       pModeProperties = new VkDisplayModePropertiesKHR[modeCount];
-      vkGetDisplayModePropertiesKHR(r->physicalDevice, display, &modeCount, pModeProperties);
+      vkGetDisplayModePropertiesKHR(r->physical_device, display, &modeCount, pModeProperties);
 
       for (uint32_t j = 0; j < modeCount; ++j) {
         const VkDisplayModePropertiesKHR* mode = &pModeProperties[j];
@@ -73,11 +73,11 @@ class WindowKhrDisplay  : public Window {
     for (uint32_t i = 0; i < planePropertyCount; i++) {
       uint32_t planeIndex = i;
       uint32_t displayCount;
-      vkGetDisplayPlaneSupportedDisplaysKHR(r->physicalDevice, planeIndex, &displayCount, NULL);
+      vkGetDisplayPlaneSupportedDisplaysKHR(r->physical_device, planeIndex, &displayCount, NULL);
       if (pDisplays)
         delete [] pDisplays;
       pDisplays = new VkDisplayKHR[displayCount];
-      vkGetDisplayPlaneSupportedDisplaysKHR(r->physicalDevice, planeIndex, &displayCount, pDisplays);
+      vkGetDisplayPlaneSupportedDisplaysKHR(r->physical_device, planeIndex, &displayCount, pDisplays);
 
       // Find a display that matches the current plane
       bestPlaneIndex = UINT32_MAX;
@@ -93,7 +93,7 @@ class WindowKhrDisplay  : public Window {
     vik_log_f_if(bestPlaneIndex == UINT32_MAX, "Can't find a plane for displaying!");
 
     VkDisplayPlaneCapabilitiesKHR planeCap;
-    vkGetDisplayPlaneCapabilitiesKHR(r->physicalDevice, displayMode, bestPlaneIndex, &planeCap);
+    vkGetDisplayPlaneCapabilitiesKHR(r->physical_device, displayMode, bestPlaneIndex, &planeCap);
     VkDisplayPlaneAlphaFlagBitsKHR alphaMode;
 
     if (planeCap.supportedAlpha & VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR)

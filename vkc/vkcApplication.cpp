@@ -77,7 +77,7 @@ void Application::init_window() {
 
 void Application::loop() {
   while (!quit)
-    window->iter(renderer);
+    window->iterate(renderer);
 }
 }
 

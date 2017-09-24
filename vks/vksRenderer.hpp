@@ -25,8 +25,6 @@ public:
   Device *vksDevice;
   TextOverlay *textOverlay;
 
-
-
   VkPhysicalDeviceProperties deviceProperties;
   VkPhysicalDeviceFeatures deviceFeatures;
   VkPhysicalDeviceMemoryProperties deviceMemoryProperties;

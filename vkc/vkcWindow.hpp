@@ -32,6 +32,6 @@ public:
   }
 
   virtual int init(Renderer *r) = 0;
-  virtual void iter(Renderer *r) = 0;
+  virtual void iterate(Renderer *r) = 0;
 };
 }
