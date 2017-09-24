@@ -13,7 +13,8 @@ Renderer::~Renderer() {
   if (enableTextOverlay)
     delete textOverlay;
 
-  swap_chain->cleanup();
+  SwapChain *sc = (SwapChain*) swap_chain;
+  sc->cleanup();
   if (descriptorPool != VK_NULL_HANDLE)
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 
@@ -48,7 +49,8 @@ void Renderer::prepare() {
     vks::debugmarker::setup(device);
   createCommandPool();
 
-  swap_chain->create(&width, &height, settings->vsync);
+  SwapChain *sc = (SwapChain*) swap_chain;
+  sc->create(&width, &height, settings->vsync);
 
   createCommandBuffers();
   setupDepthStencil();
@@ -199,7 +201,8 @@ void Renderer::check_tick_finnished(Window *window, const std::string& title) {
 
 void Renderer::prepareFrame() {
   // Acquire the next image from the swap chain
-  VkResult err = swap_chain->acquire_next_image(semaphores.presentComplete, &currentBuffer);
+  SwapChain *sc = (SwapChain*) swap_chain;
+  VkResult err = sc->acquire_next_image(semaphores.presentComplete, &currentBuffer);
   // Recreate the swapchain if it's no longer compatible with the surface (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
   if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR))
     window_resize_cb();
@@ -216,7 +219,8 @@ void Renderer::submitFrame() {
     waitSemaphore = semaphores.renderComplete;
   }
 
-  vik_log_check(swap_chain->present(queue, currentBuffer, waitSemaphore));
+  SwapChain *sc = (SwapChain*) swap_chain;
+  vik_log_check(sc->present(queue, currentBuffer, waitSemaphore));
   vik_log_check(vkQueueWaitIdle(queue));
 }
 
@@ -369,7 +373,8 @@ void Renderer::init_semaphores() {
 void Renderer::createCommandPool() {
   VkCommandPoolCreateInfo cmdPoolInfo = {};
   cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-  cmdPoolInfo.queueFamilyIndex = swap_chain->queueNodeIndex;
+  SwapChain *sc = (SwapChain*) swap_chain;
+  cmdPoolInfo.queueFamilyIndex = sc->queueNodeIndex;
   cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
   vik_log_check(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
 }
@@ -410,7 +415,8 @@ void Renderer::resize() {
   height = destHeight;
   // TODO: Create kms swapchain here.
 
-  swap_chain->create(&width, &height, settings->vsync);
+  SwapChain *sc = (SwapChain*) swap_chain;
+  sc->create(&width, &height, settings->vsync);
   // Recreate the frame buffers
 
   vkDestroyImageView(device, depthStencil.view, nullptr);

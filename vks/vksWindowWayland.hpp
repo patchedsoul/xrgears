@@ -82,17 +82,20 @@ class WindowWayland : public Window {
     VkResult err = VK_SUCCESS;
 
     r->swap_chain = new SwapChain();
-    r->swap_chain->set_context(r->instance, r->physical_device, r->device);
+
+    SwapChain *sc = (SwapChain*) r->swap_chain;
+
+    sc->set_context(r->instance, r->physical_device, r->device);
 
     VkWaylandSurfaceCreateInfoKHR surfaceCreateInfo = {};
     surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
     surfaceCreateInfo.display = display;
     surfaceCreateInfo.surface = surface;
-    err = vkCreateWaylandSurfaceKHR(r->instance, &surfaceCreateInfo, nullptr, &r->swap_chain->surface);
+    err = vkCreateWaylandSurfaceKHR(r->instance, &surfaceCreateInfo, nullptr, &sc->surface);
 
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
 
-    r->swap_chain->select_queue_and_format();
+    sc->select_queue_and_format();
   }
 
   static void registryGlobalCb(void *data, wl_registry *registry, uint32_t name,

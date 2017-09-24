@@ -5,6 +5,8 @@
 
 #include <vector>
 
+#include "vikSwapChain.hpp"
+
 namespace vik {
 class Renderer {
 public:
@@ -18,6 +20,8 @@ public:
 
   uint32_t width;
   uint32_t height;
+
+  SwapChain *swap_chain;
 
   Renderer() {}
   ~Renderer() {}

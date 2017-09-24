@@ -21,7 +21,6 @@ class Window;
 class Renderer : public vik::Renderer {
 public:
   Timer timer;
-  SwapChain *swap_chain;
   Device *vksDevice;
   TextOverlay *textOverlay;
 
