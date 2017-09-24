@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vkcSwapChainVK.hpp"
+#include "vikSwapChainVK.hpp"
 #include "vkcSwapChainDRM.hpp"
 #include "vikRenderer.hpp"
 
@@ -39,7 +39,7 @@ public:
 
   void render(uint32_t index);
 
-  void render_swapchain_vk(SwapChainVK *swap_chain);
+  void render_swapchain_vk(vik::SwapChainVK *swap_chain);
 
   void create_frame_buffer(VkImageView *view, VkFramebuffer *frame_buffer) {
     VkFramebufferCreateInfo framebufferinfo = {};

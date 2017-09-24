@@ -290,7 +290,7 @@ void Renderer::render(uint32_t index) {
   wait_and_reset_fences();
 }
 
-void Renderer::render_swapchain_vk(SwapChainVK *swap_chain) {
+void Renderer::render_swapchain_vk(vik::SwapChainVK *swap_chain) {
   uint32_t present_index = 0;
   VkResult result = swap_chain->acquire_next_image(semaphore, &present_index);
   switch (result) {
