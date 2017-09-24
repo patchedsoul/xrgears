@@ -3,11 +3,13 @@
 #include <assert.h>
 #include <sys/time.h>
 
+#include <vulkan/vulkan.h>
+
 #include <array>
 
-#include "vikSwapChainVK.hpp"
-#include "vikSwapChainDRM.hpp"
-#include "vikRenderer.hpp"
+#include "../vitamin-k/vikSwapChainVK.hpp"
+#include "../vitamin-k/vikSwapChainDRM.hpp"
+#include "../vitamin-k/vikRenderer.hpp"
 
 namespace vkc {
 
