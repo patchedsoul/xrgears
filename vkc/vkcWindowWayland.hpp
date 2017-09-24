@@ -301,6 +301,16 @@ public:
     return 0;
   }
 
+  const std::vector<const char*> required_extensions() {
+    return { VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME };
+  }
+
+  void init_swap_chain(vik::Renderer *r) {
+
+  }
+
+  void update_window_title(const std::string& title) {}
+
   void flush() {
     while (wl_display_prepare_read(display) != 0)
       wl_display_dispatch_pending(display);
@@ -323,5 +333,8 @@ public:
     update_cb();
     r->render_swapchain_vk((vik::SwapChainVK*) r->swap_chain);
   }
+
+
+
 };
 }

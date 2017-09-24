@@ -25,7 +25,7 @@ class WindowKhrDisplay  : public Window {
     return { VK_KHR_DISPLAY_EXTENSION_NAME };
   }
 
-  void init_swap_chain(Renderer *r) {
+  void init_swap_chain(vik::Renderer *r) {
 
     r->swap_chain = new SwapChain();
     SwapChain *sc = (SwapChain*) r->swap_chain;

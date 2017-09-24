@@ -6,6 +6,7 @@
 #include <functional>
 
 #include "vikSwapChain.hpp"
+#include "vikRenderer.hpp"
 
 namespace vik {
 class Window {
@@ -65,6 +66,10 @@ public:
     else
       return INVALID;
   }
+
+  virtual const std::vector<const char*> required_extensions() = 0;
+  virtual void init_swap_chain(Renderer *r) = 0;
+  virtual void update_window_title(const std::string& title) = 0;
 
 };
 }

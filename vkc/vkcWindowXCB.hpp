@@ -113,6 +113,16 @@ public:
     return 0;
   }
 
+  const std::vector<const char*> required_extensions() {
+    return { VK_KHR_XCB_SURFACE_EXTENSION_NAME };
+  }
+
+  void init_swap_chain(vik::Renderer *r) {
+
+  }
+
+  void update_window_title(const std::string& title) {}
+
   void init_surface(Renderer *r) {
     VkXcbSurfaceCreateInfoKHR surfaceInfo = {};
 

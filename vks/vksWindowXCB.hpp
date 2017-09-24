@@ -77,7 +77,7 @@ class WindowXCB : public Window {
     xcb_disconnect(connection);
   }
 
-  void init_swap_chain(Renderer *r) {
+  void init_swap_chain(vik::Renderer *r) {
     VkResult err = VK_SUCCESS;
 
     r->swap_chain = new SwapChain();

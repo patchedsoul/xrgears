@@ -78,7 +78,7 @@ class WindowWayland : public Window {
     wl_shell_surface_set_title(shell_surface, title.c_str());
   }
 
-  void init_swap_chain(Renderer *r) {
+  void init_swap_chain(vik::Renderer *r) {
     VkResult err = VK_SUCCESS;
 
     r->swap_chain = new SwapChain();
