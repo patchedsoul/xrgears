@@ -82,7 +82,7 @@ void Renderer::init_text_overlay() {
         shaderStages);
 }
 
-VkResult Renderer::createInstance(const std::string& name, const std::vector<const char*> &extensions) {
+VkResult Renderer::create_instance(const std::string& name, const std::vector<const char*> &extensions) {
 
   VkApplicationInfo appInfo = {};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -299,7 +299,7 @@ void Renderer::initVulkan(const std::string &name, const std::vector<const char*
   VkResult err;
 
   // Vulkan instance
-  err = createInstance(name, extensions);
+  err = create_instance(name, extensions);
 
   vik_log_f_if(err, "Could not create Vulkan instance: %s",
                vks::Log::result_string(err).c_str());

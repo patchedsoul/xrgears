@@ -89,7 +89,7 @@ public:
   void init_semaphores();
   void list_gpus();
 
-  VkResult createInstance(const std::string& name, const std::vector<const char *> &extensions);
+  VkResult create_instance(const std::string& name, const std::vector<const char *> &extensions);
   VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin);
   void initVulkan(const std::string& name, const std::vector<const char *> &extensions);
   void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free);
