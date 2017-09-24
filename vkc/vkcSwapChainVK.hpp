@@ -16,8 +16,7 @@ public:
   ~SwapChainVK() {
   }
 
-  VkPresentModeKHR select_present_mode(VkPhysicalDevice physical_device,
-                                       VkSurfaceKHR surface) {
+  VkPresentModeKHR select_present_mode(VkPhysicalDevice physical_device) {
     uint32_t count;
     vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface,
                                               &count, NULL);
@@ -36,7 +35,6 @@ public:
   }
 
   void create(VkDevice device, VkPhysicalDevice physical_device,
-              VkSurfaceKHR surface, VkFormat image_format,
               uint32_t width, uint32_t height) {
     VkSurfaceCapabilitiesKHR surface_caps;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface,
@@ -61,8 +59,7 @@ public:
     swapchainfo.queueFamilyIndexCount = 1;
     swapchainfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     swapchainfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    swapchainfo.presentMode = select_present_mode(physical_device,
-                                                  surface);
+    swapchainfo.presentMode = select_present_mode(physical_device);
 
     vkCreateSwapchainKHR(device, &swapchainfo, NULL, &swap_chain);
   }
@@ -74,7 +71,7 @@ public:
     }
   }
 
-  void update_images(VkDevice device, VkFormat image_format) {
+  void update_images(VkDevice device) {
     vkGetSwapchainImagesKHR(device, swap_chain, &image_count, NULL);
     assert(image_count > 0);
     vik_log_d("Creating swap chain with %d images.", image_count);

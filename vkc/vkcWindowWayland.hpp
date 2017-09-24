@@ -283,11 +283,19 @@ public:
     waylandSurfaceInfo.display = display;
     waylandSurfaceInfo.surface = surface;
 
-    vkCreateWaylandSurfaceKHR(r->instance, &waylandSurfaceInfo, NULL, &r->surface);
+    r->swap_chain = new SwapChainVK();
+    SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
+    vik_log_f_if(sc == NULL, "no swapchain!");
+    vkCreateWaylandSurfaceKHR(r->instance, &waylandSurfaceInfo, NULL, &sc->surface);
 
-    r->image_format = r->choose_surface_format();
+    sc->choose_surface_format(r->physical_device);
     init_cb();
-    r->create_vulkan_swapchain();
+
+
+    sc->create(r->device, r->physical_device, r->width, r->height);
+    sc->update_images(r->device);
+    r->create_frame_buffers();
+
 
     return 0;
   }

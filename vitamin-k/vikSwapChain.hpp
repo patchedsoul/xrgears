@@ -45,5 +45,6 @@ public:
 
     vik_log_check(vkCreateImageView(device, &view_create_info, nullptr, view));
   }
+
 };
 }

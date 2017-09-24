@@ -20,8 +20,6 @@ public:
   VkCommandPool cmd_pool;
 
   timeval start_tv;
-  VkSurfaceKHR surface;
-  VkFormat image_format;
 
   VkCommandBuffer cmd_buffer;
 
@@ -31,12 +29,9 @@ public:
   ~Renderer() ;
 
   void init_vk(const char *extension);
-  VkFormat choose_surface_format();
   void init_render_pass();
   void init_vk_objects();
   void submit_queue();
-
-  void create_vulkan_swapchain();
 
   void wait_and_reset_fences();
 

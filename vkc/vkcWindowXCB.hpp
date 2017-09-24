@@ -119,10 +119,14 @@ public:
     surfaceInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
     surfaceInfo.connection = conn;
     surfaceInfo.window = window;
+    if (r->swap_chain == nullptr)
+      r->swap_chain = new SwapChainVK();
 
-    vkCreateXcbSurfaceKHR(r->instance, &surfaceInfo, NULL, &r->surface);
+    SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
 
-    r->image_format = r->choose_surface_format();
+    vkCreateXcbSurfaceKHR(r->instance, &surfaceInfo, NULL, &sc->surface);
+
+    sc->choose_surface_format(r->physical_device);
   }
 
   void schedule_repaint() {
@@ -163,7 +167,7 @@ public:
           if (r->width != configure->width ||
               r->height != configure->height) {
 
-                vik_log_d("XCB_CONFIGURE_NOTIFY %dx%d", r->width, r->height);
+            vik_log_d("XCB_CONFIGURE_NOTIFY %dx%d", r->width, r->height);
 
             SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
 
@@ -176,8 +180,15 @@ public:
           break;
         case XCB_EXPOSE:
           vik_log_d("XCB_EXPOSE");
+          //if (r->swap_chain == nullptr) {
+        {
           if (r->swap_chain == nullptr)
-            r->create_vulkan_swapchain(); // if needed
+            r->swap_chain = new SwapChainVK();
+          SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
+          sc->create(r->device, r->physical_device, r->width, r->height);
+          sc->update_images(r->device);
+          r->create_frame_buffers();
+        }
           schedule_repaint();
           break;
         case XCB_KEY_PRESS:

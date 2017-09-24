@@ -82,53 +82,11 @@ void Renderer::init_vk(const char *extension) {
   vkGetDeviceQueue(device, 0, 0, &queue);
 }
 
-void Renderer::create_vulkan_swapchain() {
-  vik_log_d("Creating vk swapchain");
-  swap_chain = new SwapChainVK();
-  SwapChainVK* sc = (SwapChainVK*) swap_chain;
-  sc->create(device, physical_device, surface, image_format, width, height);
-  sc->update_images(device, image_format);
-  create_frame_buffers();
-}
-
-VkFormat Renderer::choose_surface_format() {
-  uint32_t num_formats = 0;
-  vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface,
-                                       &num_formats, NULL);
-  assert(num_formats > 0);
-
-  VkSurfaceFormatKHR formats[num_formats];
-
-  vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface,
-                                       &num_formats, formats);
-
-  VkFormat format = VK_FORMAT_UNDEFINED;
-  for (int i = 0; i < num_formats; i++) {
-    switch (formats[i].format) {
-      case VK_FORMAT_R8G8B8A8_SRGB:
-      case VK_FORMAT_B8G8R8A8_SRGB:
-        /* These formats are all fine */
-        format = formats[i].format;
-        break;
-      case VK_FORMAT_R8G8B8_SRGB:
-      case VK_FORMAT_B8G8R8_SRGB:
-      case VK_FORMAT_R5G6B5_UNORM_PACK16:
-      case VK_FORMAT_B5G6R5_UNORM_PACK16:
-        /* We would like to support these but they don't seem to work. */
-      default:
-        continue;
-    }
-  }
-
-  assert(format != VK_FORMAT_UNDEFINED);
-
-  return format;
-}
-
 void Renderer::init_render_pass() {
 
   std::array<VkAttachmentDescription, 1> attachments = {};
-  attachments[0].format = image_format;
+  SwapChainVK *sc = (SwapChainVK*) swap_chain;
+  attachments[0].format = sc->image_format;
   attachments[0].samples = (VkSampleCountFlagBits) 1;
   attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
   attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;

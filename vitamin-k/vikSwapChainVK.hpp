@@ -11,6 +11,9 @@ public:
   /** @brief Handle to the current swap chain, required for recreation */
   VkSwapchainKHR swap_chain = VK_NULL_HANDLE;
 
+  VkSurfaceKHR surface;
+  VkFormat image_format;
+
   SwapChainVK() {}
   ~SwapChainVK() {}
 
@@ -53,6 +56,39 @@ public:
       presentInfo.waitSemaphoreCount = 1;
     }
     return vkQueuePresentKHR(queue, &presentInfo);
+  }
+
+  void choose_surface_format(VkPhysicalDevice physical_device) {
+    uint32_t num_formats = 0;
+
+    vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface,
+                                         &num_formats, NULL);
+    assert(num_formats > 0);
+
+    VkSurfaceFormatKHR formats[num_formats];
+
+    vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface,
+                                         &num_formats, formats);
+
+    image_format = VK_FORMAT_UNDEFINED;
+    for (int i = 0; i < num_formats; i++) {
+      switch (formats[i].format) {
+        case VK_FORMAT_R8G8B8A8_SRGB:
+        case VK_FORMAT_B8G8R8A8_SRGB:
+          /* These formats are all fine */
+          image_format = formats[i].format;
+          break;
+        case VK_FORMAT_R8G8B8_SRGB:
+        case VK_FORMAT_B8G8R8_SRGB:
+        case VK_FORMAT_R5G6B5_UNORM_PACK16:
+        case VK_FORMAT_B5G6R5_UNORM_PACK16:
+          /* We would like to support these but they don't seem to work. */
+        default:
+          continue;
+      }
+    }
+
+    assert(image_format != VK_FORMAT_UNDEFINED);
   }
 
 };

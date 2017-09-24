@@ -165,14 +165,13 @@ public:
     gbm_dev = gbm_create_device(fd);
 
     r->init_vk(NULL);
-    r->image_format = VK_FORMAT_R8G8B8A8_SRGB;
 
     r->swap_chain = new SwapChainDRM();
 
     init_cb();
 
     SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain;
-    sc->init(r->device, r->image_format, gbm_dev, fd,
+    sc->init(r->device, VK_FORMAT_R8G8B8A8_SRGB, gbm_dev, fd,
              r->width, r->height, r->render_pass);
     r->create_frame_buffers();
     sc->set_mode_and_page_flip(fd, crtc, connector);
