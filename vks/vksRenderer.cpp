@@ -201,7 +201,7 @@ void Renderer::check_tick_finnished(Window *window, const std::string& title) {
 
 void Renderer::prepareFrame() {
   // Acquire the next image from the swap chain
-  SwapChain *sc = (SwapChain*) swap_chain;
+  vik::SwapChainVK *sc = (vik::SwapChainVK*) swap_chain;
   VkResult err = sc->acquire_next_image(semaphores.presentComplete, &currentBuffer);
   // Recreate the swapchain if it's no longer compatible with the surface (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
   if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR))
@@ -219,7 +219,7 @@ void Renderer::submitFrame() {
     waitSemaphore = semaphores.renderComplete;
   }
 
-  SwapChain *sc = (SwapChain*) swap_chain;
+  vik::SwapChainVK *sc = (vik::SwapChainVK*) swap_chain;
   vik_log_check(sc->present(queue, currentBuffer, waitSemaphore));
   vik_log_check(vkQueueWaitIdle(queue));
 }
