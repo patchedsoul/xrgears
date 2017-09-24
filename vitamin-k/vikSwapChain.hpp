@@ -18,7 +18,7 @@ public:
   std::vector<SwapChainBuffer> buffers;
 
   uint32_t image_count = 0;
-  VkFormat image_format;
+  VkSurfaceFormatKHR surface_format;
 
   SwapChain() {}
   ~SwapChain() {}

@@ -75,13 +75,13 @@ public:
     vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface,
                                          &num_formats, formats);
 
-    image_format = VK_FORMAT_UNDEFINED;
+    surface_format.format = VK_FORMAT_UNDEFINED;
     for (int i = 0; i < num_formats; i++) {
       switch (formats[i].format) {
         case VK_FORMAT_R8G8B8A8_SRGB:
         case VK_FORMAT_B8G8R8A8_SRGB:
           /* These formats are all fine */
-          image_format = formats[i].format;
+          surface_format.format = formats[i].format;
           break;
         case VK_FORMAT_R8G8B8_SRGB:
         case VK_FORMAT_B8G8R8_SRGB:
@@ -93,7 +93,7 @@ public:
       }
     }
 
-    assert(image_format != VK_FORMAT_UNDEFINED);
+    assert(surface_format.format != VK_FORMAT_UNDEFINED);
   }
 
   /**
@@ -108,6 +108,53 @@ public:
     instance = i;
     physical_device = p;
     device = d;
+  }
+
+  void update_images() {
+    vkGetSwapchainImagesKHR(device, swap_chain, &image_count, NULL);
+    assert(image_count > 0);
+    vik_log_d("Creating swap chain with %d images.", image_count);
+    VkImage images[image_count];
+    vkGetSwapchainImagesKHR(device, swap_chain, &image_count, images);
+
+    buffers.resize(image_count);
+
+    for (uint32_t i = 0; i < image_count; i++) {
+      buffers[i].image = images[i];
+      create_image_view(device, buffers[i].image,
+                        surface_format.format, &buffers[i].view);
+    }
+  }
+
+  VkPresentModeKHR select_present_mode() {
+    // Select a present mode for the swapchain
+
+    // The VK_PRESENT_MODE_FIFO_KHR mode must always be present as per spec
+    // This mode waits for the vertical blank ("v-sync")
+
+
+    // If v-sync is not requested, try to find a mailbox mode
+    // It's the lowest latency non-tearing present mode available
+
+    // Get available present modes
+    uint32_t count;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface,
+                                              &count, NULL);
+    assert(count > 0);
+
+    VkPresentModeKHR present_modes[count];
+    vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface,
+                                              &count, present_modes);
+
+    VkPresentModeKHR mode = VK_PRESENT_MODE_FIFO_KHR;
+
+    for (size_t i = 0; i < count; i++) {
+      if (present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
+        return VK_PRESENT_MODE_MAILBOX_KHR;
+      else if (present_modes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR)
+        return VK_PRESENT_MODE_IMMEDIATE_KHR;
+    }
+    return mode;
   }
 
 };

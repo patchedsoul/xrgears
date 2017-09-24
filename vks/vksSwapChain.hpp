@@ -30,8 +30,6 @@ namespace vks {
 
 class SwapChain : public vik::SwapChainVK {
  public:
-  VkSurfaceFormatKHR surface_format;
-
   // Index of the deteced graphics and presenting device queue
   /** @brief Queue family index of the detected graphics and presenting device queue */
   uint32_t queueNodeIndex = UINT32_MAX;
@@ -152,37 +150,6 @@ class SwapChain : public vik::SwapChainVK {
     return swapchainExtent;
   }
 
-  VkPresentModeKHR select_present_mode(bool vsync) {
-    // Select a present mode for the swapchain
-
-    // The VK_PRESENT_MODE_FIFO_KHR mode must always be present as per spec
-    // This mode waits for the vertical blank ("v-sync")
-    VkPresentModeKHR swapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
-
-    // If v-sync is not requested, try to find a mailbox mode
-    // It's the lowest latency non-tearing present mode available
-    if (vsync)
-      return swapchainPresentMode;
-
-    // Get available present modes
-    uint32_t presentModeCount;
-    vik_log_check(vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &presentModeCount, NULL));
-    assert(presentModeCount > 0);
-
-    std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-    vik_log_check(vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &presentModeCount, presentModes.data()));
-
-    for (size_t i = 0; i < presentModes.size(); i++) {
-      if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
-        swapchainPresentMode = VK_PRESENT_MODE_MAILBOX_KHR;
-        break;
-      }
-      if ((swapchainPresentMode != VK_PRESENT_MODE_MAILBOX_KHR) && (presentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR))
-        swapchainPresentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-    }
-    return swapchainPresentMode;
-  }
-
   // Determine the number of swapchain images
   uint32_t select_image_count(const VkSurfaceCapabilitiesKHR &surfCaps) {
     uint32_t count = surfCaps.minImageCount + 1;
@@ -229,21 +196,6 @@ class SwapChain : public vik::SwapChainVK {
     vkDestroySwapchainKHR(device, sc, nullptr);
   }
 
-  void update_swap_chain_images() {
-    vik_log_check(vkGetSwapchainImagesKHR(device, swap_chain, &image_count, NULL));
-
-    // Get the swap chain images
-    VkImage images[image_count];
-    vik_log_check(vkGetSwapchainImagesKHR(device, swap_chain, &image_count, images));
-
-    // Get the swap chain buffers containing the image and imageview
-    buffers.resize(image_count);
-    for (uint32_t i = 0; i < image_count; i++) {
-      buffers[i].image = images[i];
-      create_image_view(device, images[i], surface_format.format, &buffers[i].view);
-    }
-  }
-
   /**
   * Create the swapchain and get it's images with given width and height
   *
@@ -278,7 +230,7 @@ class SwapChain : public vik::SwapChainVK {
 
     swap_chain_info.minImageCount = select_image_count(surfCaps);
     swap_chain_info.preTransform = select_transform_flags(surfCaps);
-    swap_chain_info.presentMode = select_present_mode(vsync);
+    swap_chain_info.presentMode = vsync ? VK_PRESENT_MODE_FIFO_KHR : select_present_mode();
     swap_chain_info.compositeAlpha = select_composite_alpha(surfCaps);
 
     // Set additional usage flag for blitting from the swapchain images if supported
@@ -292,7 +244,7 @@ class SwapChain : public vik::SwapChainVK {
     if (oldSwapchain != VK_NULL_HANDLE)
       destroy_swap_chain(oldSwapchain);
 
-    update_swap_chain_images();
+    update_images();
   }
 
   /**

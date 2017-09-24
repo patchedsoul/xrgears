@@ -16,24 +16,6 @@ public:
   ~SwapChainVK() {
   }
 
-  VkPresentModeKHR select_present_mode() {
-    uint32_t count;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface,
-                                              &count, NULL);
-    VkPresentModeKHR present_modes[count];
-    vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface,
-                                              &count, present_modes);
-    int i;
-    VkPresentModeKHR present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
-    for (i = 0; i < count; i++) {
-      if (present_modes[i] == VK_PRESENT_MODE_FIFO_KHR) {
-        present_mode = VK_PRESENT_MODE_FIFO_KHR;
-        break;
-      }
-    }
-    return present_mode;
-  }
-
   void create(uint32_t width, uint32_t height) {
     VkSurfaceCapabilitiesKHR surface_caps;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface,
@@ -49,7 +31,7 @@ public:
     swapchainfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     swapchainfo.surface = surface;
     swapchainfo.minImageCount = 2;
-    swapchainfo.imageFormat = image_format;
+    swapchainfo.imageFormat = surface_format.format;
     swapchainfo.imageColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
     swapchainfo.imageExtent = { width, height };
     swapchainfo.imageArrayLayers = 1;
@@ -70,21 +52,7 @@ public:
     }
   }
 
-  void update_images() {
-    vkGetSwapchainImagesKHR(device, swap_chain, &image_count, NULL);
-    assert(image_count > 0);
-    vik_log_d("Creating swap chain with %d images.", image_count);
-    VkImage swap_chain_images[image_count];
-    vkGetSwapchainImagesKHR(device, swap_chain, &image_count, swap_chain_images);
 
-    buffers.resize(image_count);
-
-    for (uint32_t i = 0; i < image_count; i++) {
-      buffers[i].image = swap_chain_images[i];
-      create_image_view(device, buffers[i].image,
-                        image_format, &buffers[i].view);
-    }
-  }
 
 };
 }

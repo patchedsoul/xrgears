@@ -448,7 +448,7 @@ public:
   }
 
   void init() {
-    renderer->init_render_pass(window->swap_chain->image_format);
+    renderer->init_render_pass(window->swap_chain->surface_format.format);
 
     VkDescriptorSetLayout set_layout = init_descriptor_set_layout();
     init_pipeline_layout(set_layout);
