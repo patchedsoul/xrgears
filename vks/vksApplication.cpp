@@ -63,7 +63,6 @@ void Application::prepare() {
   renderer->initVulkan(name, window->required_extensions());
   window->init(this);
   window->init_swap_chain(renderer);
-
   renderer->prepare();
 
   if (renderer->enableTextOverlay)

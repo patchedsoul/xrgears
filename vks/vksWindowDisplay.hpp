@@ -26,6 +26,10 @@ class WindowKhrDisplay  : public Window {
   }
 
   void init_swap_chain(Renderer *r) {
+
+    r->swap_chain = new SwapChain();
+    r->swap_chain->set_context(r->instance, r->physical_device, r->device);
+
     uint32_t displayPropertyCount;
 
     // Get display property
@@ -116,7 +120,7 @@ class WindowKhrDisplay  : public Window {
     surfaceInfo.imageExtent.width = r->width;
     surfaceInfo.imageExtent.height = r->height;
 
-    VkResult result = vkCreateDisplayPlaneSurfaceKHR(r->instance, &surfaceInfo, NULL, &r->swap_chain.surface);
+    VkResult result = vkCreateDisplayPlaneSurfaceKHR(r->instance, &surfaceInfo, NULL, &r->swap_chain->surface);
     vik_log_f_if(result !=VK_SUCCESS, "Failed to create surface!");
 
     delete[] pDisplays;
@@ -124,7 +128,7 @@ class WindowKhrDisplay  : public Window {
     delete[] pDisplayProperties;
     delete[] pPlaneProperties;
 
-    r->swap_chain.select_queue_and_format();
+    r->swap_chain->select_queue_and_format();
   }
 
   void update_window_title(const std::string& title) {}
