@@ -30,14 +30,6 @@ namespace vks {
 
 class SwapChain : public vik::SwapChainVK {
  public:
-  VkSurfaceKHR surface;
-
- private:
-  VkInstance instance;
-  VkDevice device;
-  VkPhysicalDevice physical_device;
-
- public:
   VkSurfaceFormatKHR surface_format;
 
   // Index of the deteced graphics and presenting device queue
@@ -141,20 +133,6 @@ class SwapChain : public vik::SwapChainVK {
   void select_queue_and_format() {
     queueNodeIndex = select_queue();
     select_format();
-  }
-
-  /**
-  * Set instance, physical and logical device to use for the swapchain and get all required function pointers
-  *
-  * @param instance Vulkan instance to use
-  * @param physicalDevice Physical device used to query properties and formats relevant to the swapchain
-  * @param device Logical representation of the device to create the swapchain for
-  *
-  */
-  void set_context(VkInstance i, VkPhysicalDevice p, VkDevice d) {
-    instance = i;
-    physical_device = p;
-    device = d;
   }
 
   VkExtent2D select_extent(const VkSurfaceCapabilitiesKHR &surfCaps, uint32_t *width, uint32_t *height) {

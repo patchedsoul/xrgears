@@ -123,10 +123,11 @@ public:
       swap_chain = new SwapChainVK();
 
     SwapChainVK *sc = (SwapChainVK*) swap_chain;
+    sc->set_context(r->instance, r->physical_device, r->device);
 
     vkCreateXcbSurfaceKHR(r->instance, &surfaceInfo, NULL, &sc->surface);
 
-    sc->choose_surface_format(r->physical_device);
+    sc->choose_surface_format();
   }
 
   void schedule_repaint() {
@@ -172,7 +173,7 @@ public:
             SwapChainVK *sc = (SwapChainVK*) swap_chain;
 
             if (sc != nullptr)
-              sc->destroy(r->device);
+              sc->destroy();
 
             r->width = configure->width;
             r->height = configure->height;
@@ -182,11 +183,13 @@ public:
           vik_log_d("XCB_EXPOSE");
           //if (r->swap_chain == nullptr) {
         {
-          if (swap_chain == nullptr)
+          if (swap_chain == nullptr) {
             swap_chain = new SwapChainVK();
+          }
           SwapChainVK *sc = (SwapChainVK*) swap_chain;
-          sc->create(r->device, r->physical_device, r->width, r->height);
-          sc->update_images(r->device);
+          sc->set_context(r->instance, r->physical_device, r->device);
+          sc->create(r->width, r->height);
+          sc->update_images();
           r->create_frame_buffers(swap_chain);
         }
           schedule_repaint();

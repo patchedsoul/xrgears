@@ -199,7 +199,7 @@ void Renderer::check_tick_finnished(Window *window, const std::string& title) {
 
 void Renderer::prepareFrame() {
   // Acquire the next image from the swap chain
-  VkResult err = swap_chain.acquire_next_image(device, semaphores.presentComplete, &currentBuffer);
+  VkResult err = swap_chain.acquire_next_image(semaphores.presentComplete, &currentBuffer);
   // Recreate the swapchain if it's no longer compatible with the surface (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
   if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR))
     window_resize_cb();

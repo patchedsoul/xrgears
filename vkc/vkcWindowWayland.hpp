@@ -285,15 +285,16 @@ public:
 
     swap_chain = new SwapChainVK();
     SwapChainVK *sc = (SwapChainVK*) swap_chain;
+    sc->set_context(r->instance, r->physical_device, r->device);
     vik_log_f_if(sc == NULL, "no swapchain!");
     vkCreateWaylandSurfaceKHR(r->instance, &waylandSurfaceInfo, NULL, &sc->surface);
 
-    sc->choose_surface_format(r->physical_device);
+    sc->choose_surface_format();
     init_cb();
 
 
-    sc->create(r->device, r->physical_device, r->width, r->height);
-    sc->update_images(r->device);
+    sc->create(r->width, r->height);
+    sc->update_images();
     r->create_frame_buffers(swap_chain);
 
 

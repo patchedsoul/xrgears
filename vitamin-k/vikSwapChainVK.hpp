@@ -6,6 +6,12 @@
 
 namespace vik {
 class SwapChainVK : public SwapChain {
+
+protected:
+ VkInstance instance;
+ VkDevice device;
+ VkPhysicalDevice physical_device;
+
 public:
 
   /** @brief Handle to the current swap chain, required for recreation */
@@ -26,7 +32,7 @@ public:
   *
   * @return VkResult of the image acquisition
   */
-  VkResult acquire_next_image(VkDevice device, VkSemaphore semaphore, uint32_t *index) {
+  VkResult acquire_next_image(VkSemaphore semaphore, uint32_t *index) {
     // By setting timeout to UINT64_MAX we will always
     // wait until the next image has been acquired or an actual error is thrown
     // With that we don't have to handle VK_NOT_READY
@@ -57,7 +63,7 @@ public:
     return vkQueuePresentKHR(queue, &presentInfo);
   }
 
-  void choose_surface_format(VkPhysicalDevice physical_device) {
+  void choose_surface_format() {
     uint32_t num_formats = 0;
 
     vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface,
@@ -88,6 +94,20 @@ public:
     }
 
     assert(image_format != VK_FORMAT_UNDEFINED);
+  }
+
+  /**
+  * Set instance, physical and logical device to use for the swapchain and get all required function pointers
+  *
+  * @param instance Vulkan instance to use
+  * @param physicalDevice Physical device used to query properties and formats relevant to the swapchain
+  * @param device Logical representation of the device to create the swapchain for
+  *
+  */
+  void set_context(VkInstance i, VkPhysicalDevice p, VkDevice d) {
+    instance = i;
+    physical_device = p;
+    device = d;
   }
 
 };

@@ -326,7 +326,7 @@ public:
 
   void draw() {
     // Get next image in the swap chain (back/front buffer)
-    vik_log_check(renderer->swap_chain.acquire_next_image(renderer->device, presentCompleteSemaphore, &renderer->currentBuffer));
+    vik_log_check(renderer->swap_chain.acquire_next_image(presentCompleteSemaphore, &renderer->currentBuffer));
 
     // Use a fence to wait until the command buffer has finished execution before using it again
     vik_log_check(vkWaitForFences(renderer->device, 1, &waitFences[renderer->currentBuffer], VK_TRUE, UINT64_MAX));
