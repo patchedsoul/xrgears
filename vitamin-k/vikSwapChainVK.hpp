@@ -12,7 +12,6 @@ public:
   VkSwapchainKHR swap_chain = VK_NULL_HANDLE;
 
   VkSurfaceKHR surface;
-  VkFormat image_format;
 
   SwapChainVK() {}
   ~SwapChainVK() {}

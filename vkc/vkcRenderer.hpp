@@ -8,8 +8,6 @@ namespace vkc {
 
 class Renderer : public vik::Renderer {
 public:
-  vik::SwapChain *swap_chain;
-
   VkPipelineLayout pipeline_layout;
   VkPipeline pipeline;
   VkDeviceMemory mem;
@@ -29,7 +27,7 @@ public:
   ~Renderer() ;
 
   void init_vk(const char *extension);
-  void init_render_pass();
+  void init_render_pass(VkFormat format);
   void init_vk_objects();
   void submit_queue();
 
@@ -41,7 +39,7 @@ public:
 
   void render(uint32_t index);
 
-  void render_swapchain_vk();
+  void render_swapchain_vk(SwapChainVK *swap_chain);
 
   void create_frame_buffer(VkImageView *view, VkFramebuffer *frame_buffer) {
     VkFramebufferCreateInfo framebufferinfo = {};
@@ -58,7 +56,7 @@ public:
                         frame_buffer);
   }
 
-  void create_frame_buffers() {
+  void create_frame_buffers(vik::SwapChain *swap_chain) {
     frame_buffers.resize(swap_chain->image_count);
     for (uint32_t i = 0; i < swap_chain->image_count; i++) {
       create_frame_buffer(&swap_chain->buffers[i].view, &frame_buffers[i]);

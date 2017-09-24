@@ -119,10 +119,10 @@ public:
     surfaceInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
     surfaceInfo.connection = conn;
     surfaceInfo.window = window;
-    if (r->swap_chain == nullptr)
-      r->swap_chain = new SwapChainVK();
+    if (swap_chain == nullptr)
+      swap_chain = new SwapChainVK();
 
-    SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
+    SwapChainVK *sc = (SwapChainVK*) swap_chain;
 
     vkCreateXcbSurfaceKHR(r->instance, &surfaceInfo, NULL, &sc->surface);
 
@@ -169,7 +169,7 @@ public:
 
             vik_log_d("XCB_CONFIGURE_NOTIFY %dx%d", r->width, r->height);
 
-            SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
+            SwapChainVK *sc = (SwapChainVK*) swap_chain;
 
             if (sc != nullptr)
               sc->destroy(r->device);
@@ -182,12 +182,12 @@ public:
           vik_log_d("XCB_EXPOSE");
           //if (r->swap_chain == nullptr) {
         {
-          if (r->swap_chain == nullptr)
-            r->swap_chain = new SwapChainVK();
-          SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
+          if (swap_chain == nullptr)
+            swap_chain = new SwapChainVK();
+          SwapChainVK *sc = (SwapChainVK*) swap_chain;
           sc->create(r->device, r->physical_device, r->width, r->height);
           sc->update_images(r->device);
-          r->create_frame_buffers();
+          r->create_frame_buffers(swap_chain);
         }
           schedule_repaint();
           break;
@@ -209,7 +209,7 @@ public:
     if (repaint) {
 
       update_cb();
-      r->render_swapchain_vk();
+      r->render_swapchain_vk((SwapChainVK*) swap_chain);
       schedule_repaint();
     }
     xcb_flush(conn);

@@ -82,11 +82,10 @@ void Renderer::init_vk(const char *extension) {
   vkGetDeviceQueue(device, 0, 0, &queue);
 }
 
-void Renderer::init_render_pass() {
+void Renderer::init_render_pass(VkFormat format) {
 
   std::array<VkAttachmentDescription, 1> attachments = {};
-  SwapChainVK *sc = (SwapChainVK*) swap_chain;
-  attachments[0].format = sc->image_format;
+  attachments[0].format = format;
   attachments[0].samples = (VkSampleCountFlagBits) 1;
   attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
   attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -291,14 +290,13 @@ void Renderer::render(uint32_t index) {
   wait_and_reset_fences();
 }
 
-void Renderer::render_swapchain_vk() {
-  SwapChainVK *sc = (SwapChainVK *) swap_chain;
+void Renderer::render_swapchain_vk(SwapChainVK *swap_chain) {
   uint32_t present_index = 0;
-  VkResult result = sc->acquire_next_image(device, semaphore, &present_index);
+  VkResult result = swap_chain->acquire_next_image(device, semaphore, &present_index);
   switch (result) {
     case VK_SUCCESS:
       render(present_index);
-      vik_log_check(sc->present(queue, present_index));
+      vik_log_check(swap_chain->present(queue, present_index));
       break;
     case VK_TIMEOUT:
       // TODO: XCB times out

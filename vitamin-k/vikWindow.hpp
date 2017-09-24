@@ -3,9 +3,13 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "vikSwapChain.hpp"
+
 namespace vik {
 class Window {
 public:
+
+  SwapChain *swap_chain;
 
   enum window_type {
     AUTO = 0,

@@ -166,14 +166,17 @@ public:
 
     r->init_vk(NULL);
 
-    r->swap_chain = new SwapChainDRM();
+    swap_chain = new SwapChainDRM();
 
     init_cb();
 
-    SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain;
-    sc->init(r->device, VK_FORMAT_R8G8B8A8_SRGB, gbm_dev, fd,
+    SwapChainDRM *sc = (SwapChainDRM*) swap_chain;
+
+    sc->image_format = VK_FORMAT_R8G8B8A8_SRGB;
+
+    sc->init(r->device, sc->image_format, gbm_dev, fd,
              r->width, r->height, r->render_pass);
-    r->create_frame_buffers();
+    r->create_frame_buffers(swap_chain);
     sc->set_mode_and_page_flip(fd, crtc, connector);
 
     return 0;
@@ -197,7 +200,7 @@ public:
 
     update_cb();
 
-    SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain;
+    SwapChainDRM *sc = (SwapChainDRM*) swap_chain;
 
     int index = sc->current & 1;
 
