@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vikSwapChainVK.hpp"
-#include "vkcSwapChainDRM.hpp"
+#include "vikSwapChainDRM.hpp"
 #include "vikRenderer.hpp"
 
 namespace vkc {

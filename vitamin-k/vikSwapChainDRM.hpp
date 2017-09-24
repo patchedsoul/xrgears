@@ -26,7 +26,7 @@
 
 #include "vikSwapChain.hpp"
 
-namespace vkc {
+namespace vik {
 
 struct kms_buffer {
   gbm_bo *gbm_buffer;
@@ -35,7 +35,7 @@ struct kms_buffer {
   uint32_t stride;
 };
 
-class SwapChainDRM : public vik::SwapChain {
+class SwapChainDRM : public SwapChain {
 
 public:
 

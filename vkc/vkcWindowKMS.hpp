@@ -166,11 +166,11 @@ public:
 
     r->init_vk(NULL);
 
-    swap_chain = new SwapChainDRM();
+    swap_chain = new vik::SwapChainDRM();
 
     init_cb();
 
-    SwapChainDRM *sc = (SwapChainDRM*) swap_chain;
+    vik::SwapChainDRM *sc = (vik::SwapChainDRM*) swap_chain;
 
     sc->surface_format.format = VK_FORMAT_R8G8B8A8_SRGB;
 
@@ -200,12 +200,12 @@ public:
 
     update_cb();
 
-    SwapChainDRM *sc = (SwapChainDRM*) swap_chain;
+    vik::SwapChainDRM *sc = (vik::SwapChainDRM*) swap_chain;
 
     int index = sc->current & 1;
 
     r->render(index);
-    kms_buffer *kms_b = &sc->kms_buffers[index];
+    vik::kms_buffer *kms_b = &sc->kms_buffers[index];
     int ret = drmModePageFlip(fd, crtc->crtc_id, kms_b->fb,
                               DRM_MODE_PAGE_FLIP_EVENT, NULL);
     vik_log_f_if(ret < 0, "pageflip failed: %m");
