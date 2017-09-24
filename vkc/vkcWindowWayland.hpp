@@ -293,7 +293,7 @@ public:
     init_cb();
 
 
-    sc->create(r->width, r->height);
+    sc->create_simple(r->width, r->height);
     sc->update_images();
     r->create_frame_buffers(swap_chain);
 

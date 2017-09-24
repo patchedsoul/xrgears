@@ -190,11 +190,7 @@ class SwapChain : public vik::SwapChainVK {
     return formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT;
   }
 
-  void destroy_swap_chain(const VkSwapchainKHR &sc) {
-    for (uint32_t i = 0; i < image_count; i++)
-      vkDestroyImageView(device, buffers[i].view, nullptr);
-    vkDestroySwapchainKHR(device, sc, nullptr);
-  }
+
 
   /**
   * Create the swapchain and get it's images with given width and height
@@ -242,7 +238,7 @@ class SwapChain : public vik::SwapChainVK {
     // If an existing swap chain is re-created, destroy the old swap chain
     // This also cleans up all the presentable images
     if (oldSwapchain != VK_NULL_HANDLE)
-      destroy_swap_chain(oldSwapchain);
+      destroy_old(oldSwapchain);
 
     update_images();
   }

@@ -188,7 +188,7 @@ public:
           }
           SwapChainVK *sc = (SwapChainVK*) swap_chain;
           sc->set_context(r->instance, r->physical_device, r->device);
-          sc->create(r->width, r->height);
+          sc->create_simple(r->width, r->height);
           sc->update_images();
           r->create_frame_buffers(swap_chain);
         }
