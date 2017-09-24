@@ -58,8 +58,6 @@ public:
 
   uint32_t destWidth;
   uint32_t destHeight;
-  uint32_t width = 2560;
-  uint32_t height = 1440;
   uint32_t currentBuffer = 0;
 
   bool enableTextOverlay = true;

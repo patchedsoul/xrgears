@@ -16,6 +16,9 @@ public:
   std::vector<VkFramebuffer> frame_buffers;
   VkRenderPass render_pass;
 
+  uint32_t width;
+  uint32_t height;
+
   Renderer() {}
   ~Renderer() {}
 };

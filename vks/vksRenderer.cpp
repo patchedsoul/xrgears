@@ -4,7 +4,10 @@
 
 namespace vks {
 
-Renderer::Renderer() {}
+Renderer::Renderer() {
+  width = 2560;
+  height = 1440;
+}
 
 Renderer::~Renderer() {
   if (enableTextOverlay)

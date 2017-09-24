@@ -19,8 +19,6 @@ public:
   VkFence fence;
   VkCommandPool cmd_pool;
 
-  uint32_t width, height;
-
   timeval start_tv;
   VkSurfaceKHR surface;
   VkFormat image_format;

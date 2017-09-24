@@ -7,7 +7,9 @@
 
 namespace vkc {
 
-Renderer::Renderer(uint32_t w, uint32_t h) : width(w), height(h) {
+Renderer::Renderer(uint32_t w, uint32_t h) {
+  width = w;
+  height = h;
   gettimeofday(&start_tv, NULL);
 }
 
