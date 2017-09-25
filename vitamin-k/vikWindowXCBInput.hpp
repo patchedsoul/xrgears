@@ -27,19 +27,14 @@ class WindowXCBInput : public WindowXCB {
   explicit WindowXCBInput() {
     name = "xcb-input";
 
-    const xcb_setup_t *setup;
     xcb_screen_iterator_t iter;
     int scr;
 
     connection = xcb_connect(NULL, &scr);
-    if (connection == NULL) {
-      printf("Failed to create XCB connection\n");
-      fflush(stdout);
-      exit(1);
-    }
 
-    setup = xcb_get_setup(connection);
-    iter = xcb_setup_roots_iterator(setup);
+    vik_log_f_if(connection == NULL, "Failed to create XCB connection");
+
+    iter = xcb_setup_roots_iterator(xcb_get_setup(connection));
     while (scr-- > 0)
       xcb_screen_next(&iter);
     screen = iter.data;
@@ -54,9 +49,6 @@ class WindowXCBInput : public WindowXCB {
   // Set up a window using XCB and request event types
   int init(vik::Renderer *r) {
     uint32_t value_mask, value_list[32];
-
-    if (connection == nullptr)
-      printf("the connection is null!\n");
 
     window = xcb_generate_id(connection);
 
@@ -111,7 +103,6 @@ class WindowXCBInput : public WindowXCB {
 
   void iterate(vik::Renderer *r) {
     xcb_generic_event_t *event;
-    //xcb_flush(connection);
     while ((event = xcb_poll_for_event(connection))) {
       handle_event(event);
       free(event);
@@ -120,9 +111,7 @@ class WindowXCBInput : public WindowXCB {
 
   void init_swap_chain(vik::Renderer *r) {
     r->swap_chain = new vks::SwapChain();
-
     vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
-
     sc->set_context(r->instance, r->physical_device, r->device);
 
     VkResult err = create_surface(r->instance, &sc->surface);

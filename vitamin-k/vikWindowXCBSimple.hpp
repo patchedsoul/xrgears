@@ -102,7 +102,6 @@ public:
     poll_events(r);
 
     if (repaint) {
-
       update_cb();
 
       vik::SwapChainVK* sc = (vik::SwapChainVK*) r->swap_chain;
