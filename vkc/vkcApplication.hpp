@@ -70,6 +70,10 @@ public:
 
      window->init_swap_chain(renderer);
 
+     std::function<void(uint32_t index)> render_cb =
+         [this](uint32_t index) { renderer->render(index); };
+     renderer->swap_chain->set_render_cb(render_cb);
+
      init();
 
      renderer->create_frame_buffers(renderer->swap_chain);

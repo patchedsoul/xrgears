@@ -127,11 +127,6 @@ public:
     vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
     sc->set_context(r->instance, r->physical_device, r->device);
 
-    vkc::Renderer *vkc_renderer = (vkc::Renderer*) r;
-    std::function<void(uint32_t index)> render_cb =
-        [vkc_renderer](uint32_t index) { vkc_renderer->render(index); };
-    sc->set_render_cb(render_cb);
-
     create_surface(r->instance, &sc->surface);
 
     sc->choose_surface_format();

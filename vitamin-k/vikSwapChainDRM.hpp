@@ -112,5 +112,16 @@ public:
     vik_log_f_if(ret < 0, "pageflip failed: %m");
   }
 
+  void render(int fd, uint32_t crtc_id) {
+    int index = current & 1;
+
+    render_cb(index);
+    vik::kms_buffer *kms_b = &kms_buffers[index];
+    int ret = drmModePageFlip(fd, crtc_id, kms_b->fb,
+                              DRM_MODE_PAGE_FLIP_EVENT, NULL);
+    vik_log_f_if(ret < 0, "pageflip failed: %m");
+    current++;
+  }
+
 };
 }
