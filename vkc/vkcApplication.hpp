@@ -8,9 +8,9 @@
 
 #include "../vitamin-k/vikApplication.hpp"
 
-#include "vkcWindowXCB.hpp"
-#include "vkcWindowKMS.hpp"
-#include "vkcWindowWayland.hpp"
+#include "../vitamin-k/vikWindowXCBSimple.hpp"
+#include "../vitamin-k/vikWindowKMS.hpp"
+#include "../vitamin-k/vikWindowWaylandXDG.hpp"
 #include "vkcRenderer.hpp"
 
 namespace vkc {
