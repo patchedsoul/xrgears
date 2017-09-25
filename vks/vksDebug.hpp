@@ -96,12 +96,29 @@ static VkBool32 messageCallback(
 
 // Load debug function pointers and set debug callback
 // if callBack is NULL, default message callback will be used
-void setupDebugging(
-    VkInstance instance,
-    VkDebugReportFlagsEXT flags,
-    VkDebugReportCallbackEXT callBack);
+static void setupDebugging(VkInstance instance, VkDebugReportFlagsEXT flags, VkDebugReportCallbackEXT callBack) {
+  CreateDebugReportCallback = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT"));
+  DestroyDebugReportCallback = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"));
+  dbgBreakCallback = reinterpret_cast<PFN_vkDebugReportMessageEXT>(vkGetInstanceProcAddr(instance, "vkDebugReportMessageEXT"));
+
+  VkDebugReportCallbackCreateInfoEXT dbgCreateInfo = {};
+  dbgCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+  dbgCreateInfo.pfnCallback = (PFN_vkDebugReportCallbackEXT)messageCallback;
+  dbgCreateInfo.flags = flags;
+
+  VkResult err = CreateDebugReportCallback(
+        instance,
+        &dbgCreateInfo,
+        nullptr,
+        (callBack != VK_NULL_HANDLE) ? &callBack : &msgCallback);
+  assert(!err);
+}
+
 // Clear debug callback
-void freeDebugCallback(VkInstance instance);
+static void freeDebugCallback(VkInstance instance) {
+  if (msgCallback != VK_NULL_HANDLE)
+    DestroyDebugReportCallback(instance, msgCallback, nullptr);
+}
 }  // namespace debug
 
 // Setup and functions for the VK_EXT_debug_marker_extension
@@ -111,27 +128,83 @@ void freeDebugCallback(VkInstance instance);
 // See VulkanExampleBase::createInstance and VulkanExampleBase::createDevice (base/vulkanexamplebase.cpp)
 namespace debugmarker {
 // Set to true if function pointer for the debug marker are available
-extern bool active;
+static bool active = false;
+
+static PFN_vkDebugMarkerSetObjectTagEXT pfnDebugMarkerSetObjectTag = VK_NULL_HANDLE;
+static PFN_vkDebugMarkerSetObjectNameEXT pfnDebugMarkerSetObjectName = VK_NULL_HANDLE;
+static PFN_vkCmdDebugMarkerBeginEXT pfnCmdDebugMarkerBegin = VK_NULL_HANDLE;
+static PFN_vkCmdDebugMarkerEndEXT pfnCmdDebugMarkerEnd = VK_NULL_HANDLE;
+static PFN_vkCmdDebugMarkerInsertEXT pfnCmdDebugMarkerInsert = VK_NULL_HANDLE;
 
 // Get function pointers for the debug report extensions from the device
-void setup(VkDevice device);
+static void setup(VkDevice device) {
+  pfnDebugMarkerSetObjectTag = reinterpret_cast<PFN_vkDebugMarkerSetObjectTagEXT>(vkGetDeviceProcAddr(device, "vkDebugMarkerSetObjectTagEXT"));
+  pfnDebugMarkerSetObjectName = reinterpret_cast<PFN_vkDebugMarkerSetObjectNameEXT>(vkGetDeviceProcAddr(device, "vkDebugMarkerSetObjectNameEXT"));
+  pfnCmdDebugMarkerBegin = reinterpret_cast<PFN_vkCmdDebugMarkerBeginEXT>(vkGetDeviceProcAddr(device, "vkCmdDebugMarkerBeginEXT"));
+  pfnCmdDebugMarkerEnd = reinterpret_cast<PFN_vkCmdDebugMarkerEndEXT>(vkGetDeviceProcAddr(device, "vkCmdDebugMarkerEndEXT"));
+  pfnCmdDebugMarkerInsert = reinterpret_cast<PFN_vkCmdDebugMarkerInsertEXT>(vkGetDeviceProcAddr(device, "vkCmdDebugMarkerInsertEXT"));
+
+  // Set flag if at least one function pointer is present
+  active = (pfnDebugMarkerSetObjectName != VK_NULL_HANDLE);
+}
 
 // Sets the debug name of an object
 // All Objects in Vulkan are represented by their 64-bit handles which are passed into this function
 // along with the object type
-void setObjectName(VkDevice device, uint64_t object, VkDebugReportObjectTypeEXT objectType, const char *name);
-
+static void setObjectName(VkDevice device, uint64_t object, VkDebugReportObjectTypeEXT objectType, const char *name) {
+  // Check for valid function pointer (may not be present if not running in a debugging application)
+  if (pfnDebugMarkerSetObjectName) {
+    VkDebugMarkerObjectNameInfoEXT nameInfo = {};
+    nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
+    nameInfo.objectType = objectType;
+    nameInfo.object = object;
+    nameInfo.pObjectName = name;
+    pfnDebugMarkerSetObjectName(device, &nameInfo);
+  }
+}
 // Set the tag for an object
-void setObjectTag(VkDevice device, uint64_t object, VkDebugReportObjectTypeEXT objectType, uint64_t name, size_t tagSize, const void* tag);
+static void setObjectTag(VkDevice device, uint64_t object, VkDebugReportObjectTypeEXT objectType, uint64_t name, size_t tagSize, const void* tag) {
+  // Check for valid function pointer (may not be present if not running in a debugging application)
+  if (pfnDebugMarkerSetObjectTag) {
+    VkDebugMarkerObjectTagInfoEXT tagInfo = {};
+    tagInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT;
+    tagInfo.objectType = objectType;
+    tagInfo.object = object;
+    tagInfo.tagName = name;
+    tagInfo.tagSize = tagSize;
+    tagInfo.pTag = tag;
+    pfnDebugMarkerSetObjectTag(device, &tagInfo);
+  }
+}
 
 // Start a new debug marker region
-void beginRegion(VkCommandBuffer cmdbuffer, const char* pMarkerName, glm::vec4 color);
-
+static void beginRegion(VkCommandBuffer cmdbuffer, const char* pMarkerName, glm::vec4 color) {
+  // Check for valid function pointer (may not be present if not running in a debugging application)
+  if (pfnCmdDebugMarkerBegin) {
+    VkDebugMarkerMarkerInfoEXT markerInfo = {};
+    markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
+    memcpy(markerInfo.color, &color[0], sizeof(float) * 4);
+    markerInfo.pMarkerName = pMarkerName;
+    pfnCmdDebugMarkerBegin(cmdbuffer, &markerInfo);
+  }
+}
 // Insert a new debug marker into the command buffer
-void insert(VkCommandBuffer cmdbuffer, std::string markerName, glm::vec4 color);
-
+static void insert(VkCommandBuffer cmdbuffer, std::string markerName, glm::vec4 color) {
+  // Check for valid function pointer (may not be present if not running in a debugging application)
+  if (pfnCmdDebugMarkerInsert) {
+    VkDebugMarkerMarkerInfoEXT markerInfo = {};
+    markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
+    memcpy(markerInfo.color, &color[0], sizeof(float) * 4);
+    markerInfo.pMarkerName = markerName.c_str();
+    pfnCmdDebugMarkerInsert(cmdbuffer, &markerInfo);
+  }
+}
 // End the current debug marker region
-void endRegion(VkCommandBuffer cmdBuffer);
+static void endRegion(VkCommandBuffer cmdBuffer) {
+  // Check for valid function (may not be present if not runnin in a debugging application)
+  if (pfnCmdDebugMarkerEnd)
+    pfnCmdDebugMarkerEnd(cmdBuffer);
+}
 
 // Object specific naming functions
 static void setCommandBufferName(VkDevice device, VkCommandBuffer cmdBuffer, const char * name) {
