@@ -302,8 +302,6 @@ public:
     create_surface(r->instance, &sc->surface);
 
     sc->choose_surface_format();
-    init_cb();
-
     sc->create_simple(r->width, r->height);
     sc->update_images();
   }

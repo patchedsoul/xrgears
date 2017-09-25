@@ -179,7 +179,7 @@ public:
     sc->surface_format.format = VK_FORMAT_R8G8B8A8_SRGB;
 
     sc->init(r->device, sc->surface_format.format, gbm_dev, fd,
-             r->width, r->height, r->render_pass);
+             r->width, r->height);
     sc->set_mode_and_page_flip(fd, crtc, connector);
   }
 
