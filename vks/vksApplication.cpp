@@ -92,19 +92,17 @@ void Application::prepare() {
     mousePos = glm::vec2(x, y);
   };
 
-  std::function<void(vik::Input::MouseButton button, uint32_t state)> pointer_button_cb =
-      [this](vik::Input::MouseButton button, uint32_t state) {
+  std::function<void(vik::Input::MouseButton button, bool state)> pointer_button_cb =
+      [this](vik::Input::MouseButton button, bool state) {
     switch (button) {
       case vik::Input::MouseButton::Left:
-        mouseButtons.left = !!state;
+        mouseButtons.left = state;
         break;
       case vik::Input::MouseButton::Middle:
-        mouseButtons.middle = !!state;
+        mouseButtons.middle = state;
         break;
       case vik::Input::MouseButton::Right:
-        mouseButtons.right = !!state;
-        break;
-      default:
+        mouseButtons.right = state;
         break;
     }
   };
@@ -122,20 +120,20 @@ void Application::prepare() {
     }
   };
 
-    std::function<void(vik::Input::Key key, uint32_t state)> keyboard_key_cb =
-        [this](vik::Input::Key key, uint32_t state) {
+    std::function<void(vik::Input::Key key, bool state)> keyboard_key_cb =
+        [this](vik::Input::Key key, bool state) {
       switch (key) {
         case vik::Input::Key::W:
-          camera.keys.up = !!state;
+          camera.keys.up = state;
           break;
         case vik::Input::Key::S:
-          camera.keys.down = !!state;
+          camera.keys.down = state;
           break;
         case vik::Input::Key::A:
-          camera.keys.left = !!state;
+          camera.keys.left = state;
           break;
         case vik::Input::Key::D:
-          camera.keys.right = !!state;
+          camera.keys.right = state;
           break;
         case vik::Input::Key::P:
           if (state)

@@ -185,29 +185,29 @@ class WindowXCB : public Window {
   }
 
   void mouse_motion(vks::Application *app, float x, float y) {
+
+    double dx = app->mousePos.x - x;
+    double dy = app->mousePos.y - y;
+
     if (app->mouseButtons.left) {
-      app->rotation.x += (app->mousePos.y - y) * 1.25f;
-      app->rotation.y -= (app->mousePos.x - x) * 1.25f;
-      app->camera.rotate(
-            glm::vec3((
-                        app->mousePos.y - y) * app->camera.rotationSpeed,
-                      -(app->mousePos.x - x) * app->camera.rotationSpeed,
+      app->rotation.x += dy * 1.25f;
+      app->rotation.y -= dx * 1.25f;
+      app->camera.rotate(glm::vec3(dy * app->camera.rotationSpeed,
+                      -dx * app->camera.rotationSpeed,
                       0.0f));
       app->viewUpdated = true;
     }
+
     if (app->mouseButtons.right) {
-      app->zoom += (app->mousePos.y - y) * .005f;
-      app->camera.translate(glm::vec3(-0.0f, 0.0f, (app->mousePos.y - y) * .005f * app->zoomSpeed));
+      app->zoom += dy * .005f;
+      app->camera.translate(glm::vec3(-0.0f, 0.0f, dy * .005f * app->zoomSpeed));
       app->viewUpdated = true;
     }
+
     if (app->mouseButtons.middle) {
-      app->cameraPos.x -= (app->mousePos.x - x) * 0.01f;
-      app->cameraPos.y -= (app->mousePos.y - y) * 0.01f;
-      app->camera.translate(
-            glm::vec3(
-              -(app->mousePos.x - x) * 0.01f,
-              -(app->mousePos.y - y) * 0.01f,
-              0.0f));
+      app->cameraPos.x -= dx * 0.01f;
+      app->cameraPos.y -= dy * 0.01f;
+      app->camera.translate(glm::vec3(-dx * 0.01f, -dy * 0.01f, 0.0f));
       app->viewUpdated = true;
       app->mousePos.x = x;
       app->mousePos.y = y;
@@ -224,16 +224,6 @@ class WindowXCB : public Window {
       case XCB_BUTTON_INDEX_3:
         return vik::Input::MouseButton::Right;
     }
-  }
-
-  void mouse_button(vks::Application *app, xcb_button_t button, bool state) {
-    vik::Input::MouseButton vik_button = xcb_to_vik_button(button);
-    if (vik_button == vik::Input::MouseButton::Left)
-      app->mouseButtons.left = state;
-    if (vik_button == vik::Input::MouseButton::Middle)
-      app->mouseButtons.middle = state;
-    if (vik_button == vik::Input::MouseButton::Right)
-      app->mouseButtons.right = state;
   }
 
   static vik::Input::Key xcb_to_vik_key(xcb_keycode_t key) {
@@ -255,41 +245,6 @@ class WindowXCB : public Window {
     }
   }
 
-  void keyboard_key(vks::Application *app, xcb_keycode_t key, bool state) {
-
-    vik::Input::Key vik_key = xcb_to_vik_key(key);
-
-    switch (vik_key) {
-      case vik::Input::Key::W:
-        app->camera.keys.up = state;
-        break;
-      case vik::Input::Key::S:
-        app->camera.keys.down = state;
-        break;
-      case vik::Input::Key::A:
-        app->camera.keys.left = state;
-        break;
-      case vik::Input::Key::D:
-        app->camera.keys.right = state;
-        break;
-      case vik::Input::Key::P:
-        if (state)
-          app->renderer->timer.toggle_animation_pause();
-        break;
-      case vik::Input::Key::F1:
-        if (state && app->renderer->enableTextOverlay)
-            app->renderer->textOverlay->visible = !app->renderer->textOverlay->visible;
-        break;
-      case vik::Input::Key::ESCAPE:
-        if (!state)
-          app->quit = true;
-        break;
-    }
-
-    if (!state)
-      app->keyPressed(key);
-  }
-
   void handleEvent(vks::Application *app, const xcb_generic_event_t *event) {
     switch (event->response_type & 0x7f) {
       case XCB_CLIENT_MESSAGE:
@@ -305,22 +260,22 @@ class WindowXCB : public Window {
         break;
       case XCB_BUTTON_PRESS: {
         xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
-        mouse_button(app, press->detail, true);
+        pointer_button_cb(xcb_to_vik_button(press->detail), true);
       }
         break;
       case XCB_BUTTON_RELEASE: {
         xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
-        mouse_button(app, press->detail, false);
+        pointer_button_cb(xcb_to_vik_button(press->detail), false);
       }
         break;
       case XCB_KEY_PRESS: {
         const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
-        keyboard_key(app, keyEvent->detail, true);
+        keyboard_key_cb(xcb_to_vik_key(keyEvent->detail), true);
       }
         break;
       case XCB_KEY_RELEASE: {
         const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
-        keyboard_key(app, keyEvent->detail, false);
+        keyboard_key_cb(xcb_to_vik_key(keyEvent->detail), false);
       }
         break;
       case XCB_DESTROY_NOTIFY:

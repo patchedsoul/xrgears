@@ -31,9 +31,9 @@ public:
   std::function<void()> quit_cb;
 
   std::function<void(double x, double y)> pointer_motion_cb;
-  std::function<void(vik::Input::MouseButton button, uint32_t state)> pointer_button_cb;
+  std::function<void(vik::Input::MouseButton button, bool state)> pointer_button_cb;
   std::function<void(vik::Input::MouseScrollAxis axis, double value)> pointer_axis_cb;
-  std::function<void(vik::Input::Key key, uint32_t state)> keyboard_key_cb;
+  std::function<void(vik::Input::Key key, bool state)> keyboard_key_cb;
 
   Window() {}
   ~Window() {}
@@ -55,7 +55,7 @@ public:
   }
 
   void set_pointer_button_cb(std::function<void(vik::Input::MouseButton button,
-                                                uint32_t state)> cb) {
+                                                bool state)> cb) {
     pointer_button_cb = cb;
   }
 
@@ -66,7 +66,7 @@ public:
   }
 
   void set_keyboard_key_cb(std::function<void(
-                             vik::Input::Key key, uint32_t state)> cb) {
+                             vik::Input::Key key, bool state)> cb) {
     keyboard_key_cb = cb;
   }
 
