@@ -24,10 +24,8 @@
 #include <vector>
 
 #include "vksTools.hpp"
-#include "vksDebug.hpp"
 #include "vksInitializers.hpp"
 
-#include "vksTextOverlay.hpp"
 #include "vksCamera.hpp"
 #include "vksRenderer.hpp"
 #include "vksTimer.hpp"
