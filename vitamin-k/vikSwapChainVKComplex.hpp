@@ -21,9 +21,9 @@
 #include <fstream>
 #include <vector>
 
-#include "vksTools.hpp"
+#include "vikTools.hpp"
 
-#include "vksLog.hpp"
+#include "vikLog.hpp"
 #include "vikSwapChainVK.hpp"
 
 namespace vks {

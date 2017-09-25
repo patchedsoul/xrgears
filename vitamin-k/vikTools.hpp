@@ -22,8 +22,8 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "vksInitializers.hpp"
-#include "vksLog.hpp"
+#include "vikInitializers.hpp"
+#include "vikLog.hpp"
 
 // Custom define for better code readability
 #define VK_FLAGS_NONE 0

@@ -13,7 +13,7 @@
 
 #include <vector>
 
-#include "../vks/vksModel.hpp"
+#include "vikModel.hpp"
 
 #include "vikMaterial.hpp"
 #include "vikAssets.hpp"

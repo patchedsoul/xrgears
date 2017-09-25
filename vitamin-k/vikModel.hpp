@@ -26,8 +26,8 @@
 #include <vector>
 #include <utility>
 
-#include "vksDevice.hpp"
-#include "vksBuffer.hpp"
+#include "vikDevice.hpp"
+#include "vikBuffer.hpp"
 
 namespace vks {
 /** @brief Vertex layout components */

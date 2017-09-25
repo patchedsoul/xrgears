@@ -23,12 +23,12 @@
 #include <array>
 #include <vector>
 
-#include "vksTools.hpp"
-#include "vksInitializers.hpp"
+#include "vikTools.hpp"
+#include "vikInitializers.hpp"
 
-#include "vksCamera.hpp"
-#include "vksRenderer.hpp"
-#include "vksTimer.hpp"
+#include "vikCameraBase.hpp"
+#include "vikRendererVks.hpp"
+#include "vikTimer.hpp"
 
 #include "vikWindowWaylandShell.hpp"
 #include "vikWindowXCBInput.hpp"

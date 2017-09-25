@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "../vks/vksLog.hpp"
+#include "vikLog.hpp"
 
 #include "vikWindow.hpp"
 

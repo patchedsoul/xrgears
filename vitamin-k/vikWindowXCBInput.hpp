@@ -14,8 +14,8 @@
 #include <vulkan/vulkan.h>
 #include <string>
 
-#include "../vks/vksLog.hpp"
-#include "../vks/vksSwapChain.hpp"
+#include "vikLog.hpp"
+#include "vikSwapChainVKComplex.hpp"
 #include "vikWindowXCB.hpp"
 
 namespace vik {

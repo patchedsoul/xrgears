@@ -26,7 +26,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "vksApplication.hpp"
+#include "vikApplicationVks.hpp"
 #include "vikShader.hpp"
 
 // Set to "true" to use staging buffers for uploading vertex and index data to device local memory

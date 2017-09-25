@@ -6,9 +6,9 @@
 #include <poll.h>
 
 #include <vulkan/vulkan.h>
-#include "../vkc/vkcRenderer.hpp"
+#include "vikRendererVkc.hpp"
 #include "../xdg-shell/xdg-shell-unstable-v6-client-protocol.h"
-#include "../vks/vksLog.hpp"
+#include "vikLog.hpp"
 #include "vikWindowWayland.hpp"
 
 namespace vik {

@@ -6,12 +6,12 @@
 
 #include <functional>
 
-#include "../vitamin-k/vikApplication.hpp"
+#include "vikApplication.hpp"
 
-#include "../vitamin-k/vikWindowXCBSimple.hpp"
-#include "../vitamin-k/vikWindowKMS.hpp"
-#include "../vitamin-k/vikWindowWaylandXDG.hpp"
-#include "vkcRenderer.hpp"
+#include "vikWindowXCBSimple.hpp"
+#include "vikWindowKMS.hpp"
+#include "vikWindowWaylandXDG.hpp"
+#include "vikRendererVkc.hpp"
 
 namespace vkc {
 

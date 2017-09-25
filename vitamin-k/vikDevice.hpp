@@ -18,8 +18,8 @@
 #include <vector>
 #include <string>
 
-#include "vksTools.hpp"
-#include "vksBuffer.hpp"
+#include "vikTools.hpp"
+#include "vikBuffer.hpp"
 
 namespace vks {
 class Device {

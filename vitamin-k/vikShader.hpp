@@ -15,7 +15,7 @@
 
 #include <string>
 
-#include "../vks/vksTools.hpp"
+#include "vikTools.hpp"
 
 #include "vikAssets.hpp"
 

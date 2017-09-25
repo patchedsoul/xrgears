@@ -35,18 +35,18 @@
  * to configure when configuring vkcube
  */
 
-#include "../vkc/vkcApplication.hpp"
+#include "vikApplicationVkc.hpp"
 
 #include <sys/time.h>
 #include <string.h>
 
-#include "../vks/vksLog.hpp"
+#include "vikLog.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-#include "../vkc/vkcRenderer.hpp"
+#include "vikRendererVkc.hpp"
 #include "vikShader.hpp"
 
 #define VK_PROTOTYPES

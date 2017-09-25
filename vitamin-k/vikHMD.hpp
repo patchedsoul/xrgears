@@ -20,9 +20,9 @@
 
 #include <openhmd/openhmd.h>
 
-#include "../vks/vksCamera.hpp"
-#include "../vks/vksBuffer.hpp"
-#include "../vks/vksLog.hpp"
+#include "vikCameraBase.hpp"
+#include "vikBuffer.hpp"
+#include "vikLog.hpp"
 
 
 #include "vikCamera.hpp"

@@ -22,9 +22,9 @@
 
 #include <vector>
 
-#include "../vks/vksTools.hpp"
-#include "../vks/vksBuffer.hpp"
-#include "../vks/vksCamera.hpp"
+#include "vikTools.hpp"
+#include "vikBuffer.hpp"
+#include "vikCameraBase.hpp"
 
 #include "vikMaterial.hpp"
 #include "vikGear.hpp"

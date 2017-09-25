@@ -5,7 +5,7 @@
 #include <vector>
 #include <functional>
 
-#include "../vks/vksLog.hpp"
+#include "vikLog.hpp"
 
 namespace vik {
 

@@ -8,10 +8,10 @@
 
 #include "vikRenderer.hpp"
 
-#include "vksDevice.hpp"
-#include "vksSwapChain.hpp"
-#include "vksTimer.hpp"
-#include "vksTextOverlay.hpp"
+#include "vikDevice.hpp"
+#include "vikSwapChainVKComplex.hpp"
+#include "vikTimer.hpp"
+#include "vikTextOverlay.hpp"
 #include "vikSettings.hpp"
 #include "vikShader.hpp"
 

@@ -20,10 +20,10 @@
 #include <iomanip>
 #include <string>
 
-#include "vksTools.hpp"
-#include "vksDebug.hpp"
-#include "vksBuffer.hpp"
-#include "vksDevice.hpp"
+#include "vikTools.hpp"
+#include "vikDebug.hpp"
+#include "vikBuffer.hpp"
+#include "vikDevice.hpp"
 
 #include "../data/stb_font_consolas_24_latin1.inl"
 

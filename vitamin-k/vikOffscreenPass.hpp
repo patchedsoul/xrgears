@@ -15,7 +15,7 @@
 
 #include <vector>
 
-#include "../vks/vksDevice.hpp"
+#include "vikDevice.hpp"
 
 // Offscreen frame buffer properties
 #define FB_DIM 2048

@@ -21,10 +21,10 @@
 #include <linux/vt.h>
 #include <linux/major.h>
 
-#include "../vkc/vkcRenderer.hpp"
+#include "vikRenderer.hpp"
 #include "vikWindow.hpp"
-#include "../vks/vksLog.hpp"
-
+#include "vikLog.hpp"
+#include "vikSwapChainDRM.hpp"
 static void
 page_flip_handler(int fd, unsigned int frame,
                   unsigned int sec, unsigned int usec, void *data)

@@ -13,8 +13,8 @@
 
 #include <vector>
 
-#include "../vks/vksTexture.hpp"
-#include "../vks/vksModel.hpp"
+#include "vikTexture.hpp"
+#include "vikModel.hpp"
 
 #include "vikAssets.hpp"
 #include "vikShader.hpp"

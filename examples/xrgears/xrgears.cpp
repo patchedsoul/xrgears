@@ -24,8 +24,8 @@
 
 #include <vulkan/vulkan.h>
 
-#include "vksApplication.hpp"
-#include "vksModel.hpp"
+#include "vikApplicationVks.hpp"
+#include "vikModel.hpp"
 
 #include "vikNodeGear.hpp"
 #include "vikSkyBox.hpp"
@@ -36,7 +36,7 @@
 #include "vikHMD.hpp"
 #include "vikCameraStereo.hpp"
 #include "vikCameraHMD.hpp"
-#include "vksLog.hpp"
+#include "vikLog.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 

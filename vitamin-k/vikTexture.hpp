@@ -17,10 +17,10 @@
 #include <fstream>
 #include <vector>
 
-#include "vksTools.hpp"
-#include "vksDevice.hpp"
-#include "vksBuffer.hpp"
-#include "vksLog.hpp"
+#include "vikTools.hpp"
+#include "vikDevice.hpp"
+#include "vikBuffer.hpp"
+#include "vikLog.hpp"
 
 namespace vks {
 /** @brief Vulkan texture base class */

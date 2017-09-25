@@ -19,7 +19,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <gli/gli.hpp>
 
-#include "../vks/vksCamera.hpp"
+#include "vikCameraBase.hpp"
 
 namespace vik {
 class Camera {

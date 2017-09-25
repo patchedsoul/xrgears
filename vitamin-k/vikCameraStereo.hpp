@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include "../vks/vksBuffer.hpp"
-#include "../vks/vksCamera.hpp"
+#include "vikBuffer.hpp"
+#include "vikCameraBase.hpp"
 
 #include "vikCamera.hpp"
 

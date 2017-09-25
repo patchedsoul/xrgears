@@ -3,9 +3,10 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "../vkc/vkcRenderer.hpp"
+#include "vikRendererVkc.hpp"
 #include "vikWindowXCB.hpp"
-#include "../vks/vksLog.hpp"
+#include "vikLog.hpp"
+#include "vikSwapChainVK.hpp"
 
 static xcb_atom_t
 get_atom(struct xcb_connection_t *conn, const char *name)
