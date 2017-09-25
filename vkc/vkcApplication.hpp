@@ -6,7 +6,7 @@
 
 #include <functional>
 
-#include "vikApplication.hpp"
+#include "../vitamin-k/vikApplication.hpp"
 
 #include "vkcWindow.hpp"
 #include "vkcWindowXCB.hpp"
@@ -33,6 +33,7 @@ public:
    void parse_args(int argc, char *argv[]) {
      if (!settings.parse_args(argc, argv))
        vik_log_f("Invalid arguments.");
+     renderer->set_settings(&settings);
    }
 
    int init_window(vik::Window::window_type m) {

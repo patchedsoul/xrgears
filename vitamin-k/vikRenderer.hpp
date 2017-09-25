@@ -8,6 +8,9 @@
 #include "vikSwapChain.hpp"
 
 namespace vik {
+
+class Settings;
+
 class Renderer {
 public:
   VkInstance instance;
@@ -23,7 +26,13 @@ public:
 
   SwapChain *swap_chain;
 
+  Settings *settings;
+
   Renderer() {}
   ~Renderer() {}
+
+  void set_settings(Settings *s) {
+    settings = s;
+  }
 };
 }

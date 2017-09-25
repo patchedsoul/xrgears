@@ -60,8 +60,6 @@ public:
 
   bool enableTextOverlay = true;
 
-  vik::Settings *settings;
-
   std::function<void()> window_resize_cb;
   std::function<void()> enabled_features_cb;
 
@@ -128,10 +126,6 @@ public:
     create_frame_buffers();
     if (enableTextOverlay)
       init_text_overlay();
-  }
-
-  void set_settings(vik::Settings *s) {
-    settings = s;
   }
 
   void init_text_overlay() {
