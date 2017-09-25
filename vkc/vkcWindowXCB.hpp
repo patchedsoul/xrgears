@@ -48,7 +48,7 @@ public:
   ~WindowXCB() {}
 
   // Return -1 on failure.
-  int init(Renderer* r) {
+  int init(vik::Renderer* r) {
     xcb_screen_iterator_t iter;
     static const char title[] = "Vulkan Cube";
 
@@ -146,7 +146,7 @@ public:
   }
 
 
-  void poll_events(Renderer *r) {
+  void poll_events(vik::Renderer *r) {
     xcb_generic_event_t *event;
     xcb_key_press_event_t *key_press;
     xcb_client_message_event_t *client_message;
@@ -191,7 +191,8 @@ public:
             vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
             sc->create_simple(r->width, r->height);
             sc->update_images();
-            r->create_frame_buffers(r->swap_chain);
+            vkc::Renderer* vkc_renderer = (vkc::Renderer*) r;
+            vkc_renderer->create_frame_buffers(r->swap_chain);
             schedule_repaint();
           }
           break;
@@ -207,7 +208,7 @@ public:
     }
   }
 
-  void iterate(Renderer *r) {
+  void iterate(vik::Renderer *r) {
     poll_events(r);
 
     if (repaint) {
@@ -215,7 +216,8 @@ public:
       update_cb();
 
       vik::SwapChainVK* sc = (vik::SwapChainVK*) r->swap_chain;
-      sc->render(r->queue, r->semaphore);
+      vkc::Renderer* vkc_renderer = (vkc::Renderer*) r;
+      sc->render(r->queue, vkc_renderer->semaphore);
       schedule_repaint();
     }
     xcb_flush(conn);

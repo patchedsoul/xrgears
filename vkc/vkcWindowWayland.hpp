@@ -232,7 +232,7 @@ public:
   }
 
   // Return -1 on failure.
-  int init(Renderer* r) {
+  int init(vik::Renderer* r) {
     display = wl_display_connect(NULL);
     if (!display)
       return -1;
@@ -327,14 +327,12 @@ public:
     }
   }
 
-  void iterate(Renderer *r) {
+  void iterate(vik::Renderer *r) {
     flush();
     update_cb();
     vik::SwapChainVK* sc = (vik::SwapChainVK*) r->swap_chain;
-    sc->render(r->queue, r->semaphore);
+    vkc::Renderer* vkc_renderer = (vkc::Renderer*) r;
+    sc->render(r->queue, vkc_renderer->semaphore);
   }
-
-
-
 };
 }

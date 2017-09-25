@@ -125,7 +125,7 @@ public:
   }
 
   // Return -1 on failure.
-  int init(Renderer* r) {
+  int init(vik::Renderer* r) {
     drmModeRes *resources;
     drmModeEncoder *encoder;
     int i;
@@ -198,7 +198,7 @@ public:
     }
   }
 
-  void render(Renderer *r) {
+  void render(vik::Renderer *r) {
     drmHandleEvent(fd, &evctx);
 
     update_cb();
@@ -207,7 +207,7 @@ public:
     sc->render(fd, crtc->crtc_id);
   }
 
-  void iterate(Renderer *r) {
+  void iterate(vik::Renderer *r) {
     int ret = poll(pfd, 2, -1);
     vik_log_f_if(ret == -1, "poll failed");
     if (pfd[0].revents & POLLIN)
