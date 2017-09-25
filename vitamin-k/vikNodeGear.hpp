@@ -31,7 +31,8 @@
 #include "vikSkyBox.hpp"
 #include "vikNode.hpp"
 
-class VikNodeGear : public VikNode {
+namespace vik {
+class NodeGear : public Node {
  private:
   VikGear gear;
 
@@ -55,4 +56,4 @@ class VikNodeGear : public VikNode {
     vkCmdDrawIndexed(cmdbuffer, gear.indexCount, 1, 0, 0, 1);
   }
 };
-
+}

@@ -14,7 +14,8 @@
 #include "../vks/vksBuffer.hpp"
 #include "../vks/vksDevice.hpp"
 
-class VikBuffer {
+namespace vik {
+class Buffer {
  public:
   static void create(vks::Device *vulkanDevice, vks::Buffer *buffer,
                      VkDeviceSize size) {
@@ -30,3 +31,4 @@ class VikBuffer {
     vik_log_check(buffer->map());
   }
 };
+}

@@ -17,7 +17,8 @@
 #include "vikCamera.hpp"
 #include "vikBuffer.hpp"
 
-class VikCameraStereo : public VikCamera {
+namespace vik {
+class CameraStereo : public VikCamera {
  public:
   // Camera and view properties
   float eyeSeparation = 0.08f;
@@ -28,7 +29,7 @@ class VikCameraStereo : public VikCamera {
 
   int width, height;
 
-  VikCameraStereo(int w, int h) : width(w), height(h) {}
+  CameraStereo(int w, int h) : width(w), height(h) {}
 
   void changeEyeSeparation(float delta) {
     eyeSeparation += delta;
@@ -86,3 +87,4 @@ class VikCameraStereo : public VikCamera {
     memcpy(uniformBuffer.mapped, &uboCamera, sizeof(uboCamera));
   }
 };
+}

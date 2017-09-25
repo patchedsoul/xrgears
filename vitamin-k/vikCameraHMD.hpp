@@ -17,11 +17,12 @@
 #include "vikBuffer.hpp"
 #include "vikHMD.hpp"
 
-class VikCameraHMD : public VikCamera {
+namespace vik {
+class CameraHMD : public VikCamera {
  public:
   VikHMD* hmd;
 
-  explicit VikCameraHMD(VikHMD* h) : hmd(h) {}
+  explicit CameraHMD(VikHMD* h) : hmd(h) {}
 
   static inline void
   fix_handedness(glm::mat4& m) {
@@ -56,3 +57,4 @@ class VikCameraHMD : public VikCamera {
     memcpy(uniformBuffer.mapped, &uboCamera, sizeof(uboCamera));
   }
 };
+}

@@ -50,7 +50,7 @@ public:
   });
 
   VikHMD* hmd;
-  VikCamera* vikCamera;
+  vik::VikCamera* vikCamera;
 
   bool enableSky = true;
   bool enableHMDCam = false;
@@ -71,7 +71,7 @@ public:
     std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
   } vertices;
 
-  std::vector<VikNode*> nodes;
+  std::vector<vik::Node*> nodes;
 
   struct UBOLights {
     glm::vec4 lights[4];
@@ -319,7 +319,7 @@ public:
     nodes.resize(positions.size());
     for (int32_t i = 0; i < nodes.size(); ++i)
     {
-      VikNode::NodeInfo gearNodeInfo = {};
+      vik::Node::NodeInfo gearNodeInfo = {};
       GearInfo gearInfo = {};
       gearInfo.innerRadius = innerRadiuses[i];
       gearInfo.outerRadius = outerRadiuses[i];
@@ -332,12 +332,12 @@ public:
       gearNodeInfo.rotOffset = rotationOffsets[i];
       gearNodeInfo.material = materials[i];
 
-      nodes[i] = new VikNodeGear();
+      nodes[i] = new vik::NodeGear();
       nodes[i]->setInfo(&gearNodeInfo);
-      ((VikNodeGear*)nodes[i])->generate(renderer->vksDevice, &gearInfo, renderer->queue);
+      ((vik::NodeGear*)nodes[i])->generate(renderer->vksDevice, &gearInfo, renderer->queue);
     }
 
-    VikNodeModel* teapotNode = new VikNodeModel();
+    vik::NodeModel* teapotNode = new vik::NodeModel();
     teapotNode->loadModel("teapot.dae",
                           vertexLayout,
                           0.25f,
@@ -576,7 +576,7 @@ public:
   // Prepare and initialize uniform buffer containing shader uniforms
   void prepareUniformBuffers()
   {
-    VikBuffer::create(renderer->vksDevice, &uniformBuffers.lights, sizeof(uboLights));
+    vik::Buffer::create(renderer->vksDevice, &uniformBuffers.lights, sizeof(uboLights));
 
     vikCamera->prepareUniformBuffers(renderer->vksDevice);
 
@@ -669,11 +669,11 @@ public:
 
     if (enableStereo) {
       if (enableHMDCam)
-        vikCamera = new VikCameraHMD(hmd);
+        vikCamera = new vik::CameraHMD(hmd);
       else
-        vikCamera = new VikCameraStereo(renderer->width, renderer->height);
+        vikCamera = new vik::CameraStereo(renderer->width, renderer->height);
     } else {
-      vikCamera = new VikCamera();
+      vikCamera = new vik::VikCamera();
     }
 
     if (enableSky)
@@ -728,7 +728,7 @@ public:
 
   void changeEyeSeparation(float delta) {
     if (!enableHMDCam)
-      ((VikCameraStereo*)vikCamera)->changeEyeSeparation(delta);
+      ((vik::CameraStereo*)vikCamera)->changeEyeSeparation(delta);
     updateUniformBuffers();
   }
 

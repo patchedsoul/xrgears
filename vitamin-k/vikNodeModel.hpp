@@ -14,11 +14,12 @@
 
 #include "vikNode.hpp"
 
-class VikNodeModel : public VikNode {
+namespace vik {
+class NodeModel : public Node {
   vks::Model model;
 
  public:
-  ~VikNodeModel() {
+  ~NodeModel() {
     model.destroy();
   }
 
@@ -44,3 +45,4 @@ class VikNodeModel : public VikNode {
     vkCmdDrawIndexed(cmdbuffer, model.indexCount, 1, 0, 0, 0);
   }
 };
+}

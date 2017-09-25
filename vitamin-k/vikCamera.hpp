@@ -23,6 +23,7 @@
 
 #include "vikBuffer.hpp"
 
+namespace vik {
 class VikCamera {
  public:
   vks::Buffer uniformBuffer;
@@ -47,6 +48,7 @@ class VikCamera {
   }
 
   void prepareUniformBuffers(vks::Device *vulkanDevice) {
-    VikBuffer::create(vulkanDevice, &uniformBuffer, sizeof(uboCamera));
+    Buffer::create(vulkanDevice, &uniformBuffer, sizeof(uboCamera));
   }
 };
+}

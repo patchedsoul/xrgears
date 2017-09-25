@@ -19,8 +19,8 @@
 #include "vikAssets.hpp"
 #include "vikBuffer.hpp"
 
-
-class VikNode {
+namespace vik {
+class Node {
  public:
   struct UBO {
     glm::mat4 normal[2];
@@ -38,10 +38,10 @@ class VikNode {
 
   vks::Buffer uniformBuffer;
 
-  VikNode() {
+  Node() {
   }
 
-  virtual ~VikNode() {
+  virtual ~Node() {
     uniformBuffer.destroy();
   }
 
@@ -116,8 +116,9 @@ class VikNode {
   }
 
   void prepareUniformBuffer(vks::Device *vulkanDevice) {
-    VikBuffer::create(vulkanDevice, &uniformBuffer, sizeof(ubo));
+    Buffer::create(vulkanDevice, &uniformBuffer, sizeof(ubo));
   }
 
   virtual void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout) {}
 };
+}
