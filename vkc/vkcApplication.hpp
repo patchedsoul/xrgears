@@ -41,10 +41,10 @@ public:
          window = new vik::WindowKMS();
          break;
        case vik::Window::XCB_SIMPLE:
-         window = new vik::WindowXCB();
+         window = new vik::WindowXCBSimple();
          break;
        case vik::Window::WAYLAND_XDG:
-         window = new vik::WindowWayland();
+         window = new vik::WindowWaylandXDG();
          break;
        case vik::Window::WAYLAND_LEGACY:
          break;

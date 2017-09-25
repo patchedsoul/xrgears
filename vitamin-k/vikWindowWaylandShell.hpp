@@ -17,11 +17,11 @@
 
 #include <string>
 
-#include "vikWindow.hpp"
+#include "vikWindowWayland.hpp"
 #include "../vks/vksSwapChain.hpp"
 
 namespace vik {
-class WindowWaylandShell : public Window {
+class WindowWaylandShell : public WindowWayland {
   wl_display *display = nullptr;
   wl_registry *registry = nullptr;
   wl_compositor *compositor = nullptr;

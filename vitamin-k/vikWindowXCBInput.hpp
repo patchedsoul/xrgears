@@ -18,7 +18,7 @@
 
 #include "../vks/vksLog.hpp"
 #include "../vks/vksSwapChain.hpp"
-#include "vikWindow.hpp"
+#include "vikWindowXCB.hpp"
 
 #define XCB_KEY_ESCAPE 0x9
 #define XCB_KEY_F1 0x43
@@ -29,7 +29,7 @@
 #define XCB_KEY_P 0x21
 
 namespace vik {
-class WindowXCBInput : public Window {
+class WindowXCBInput : public WindowXCB {
   xcb_connection_t *connection;
   xcb_screen_t *screen;
   xcb_window_t window;

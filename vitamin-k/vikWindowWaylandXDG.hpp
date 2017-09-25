@@ -14,11 +14,11 @@
 #include "../vkc/vkcRenderer.hpp"
 
 #include "../xdg-shell/xdg-shell-unstable-v6-client-protocol.h"
-#include "../vitamin-k/vikWindow.hpp"
+#include "vikWindowWayland.hpp"
 #include "../vks/vksLog.hpp"
 
 namespace vik {
-class WindowWayland : public Window {
+class WindowWaylandXDG : public WindowWayland {
 
   struct wl_display *display;
   struct wl_compositor *compositor;
@@ -34,20 +34,20 @@ class WindowWayland : public Window {
   wl_output *hmd_output = nullptr;
 
 public:
-  WindowWayland() {
+  WindowWaylandXDG() {
     name = "wayland-xdg";
     seat = NULL;
     keyboard = NULL;
     shell = NULL;
   }
 
-  ~WindowWayland() {}
+  ~WindowWaylandXDG() {}
 
   static void
   handle_xdg_surface_configure(void *data, struct zxdg_surface_v6 *surface,
                                uint32_t serial)
   {
-    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+    WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
 
     zxdg_surface_v6_ack_configure(surface, serial);
 
@@ -143,7 +143,7 @@ public:
   handle_wl_seat_capabilities(void *data, struct wl_seat *wl_seat,
                               uint32_t capabilities)
   {
-    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+    WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
 
     if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && (!self->keyboard)) {
       self->keyboard = wl_seat_get_keyboard(wl_seat);
@@ -162,7 +162,7 @@ public:
   registry_handle_global(void *data, struct wl_registry *registry,
                          uint32_t name, const char *interface, uint32_t version)
   {
-    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+    WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
 
     if (strcmp(interface, "wl_compositor") == 0) {
       self->compositor = ( wl_compositor *) wl_registry_bind(registry, name,
@@ -209,7 +209,7 @@ public:
 
     if (w == 2560 && h == 1440) {
     //if (w == 1920 && h == 1200) {
-      WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+      WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
       vik_log_d("setting wl_output to %p", wl_output);
       self->hmd_output = wl_output;
       self->hmd_refresh = refresh;

@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #include "../vkc/vkcRenderer.hpp"
-#include "../vitamin-k/vikWindow.hpp"
+#include "vikWindowXCB.hpp"
 #include "../vks/vksLog.hpp"
 
 static xcb_atom_t
@@ -27,7 +27,7 @@ get_atom(struct xcb_connection_t *conn, const char *name)
 }
 
 namespace vik {
-class WindowXCB : public Window {
+class WindowXCBSimple : public WindowXCB {
 
   xcb_connection_t *conn;
   xcb_window_t window;
@@ -38,12 +38,12 @@ class WindowXCB : public Window {
   bool repaint = false;
 
 public:
-  WindowXCB() {
+  WindowXCBSimple() {
     window = XCB_NONE;
     name = "xcb";
   }
 
-  ~WindowXCB() {}
+  ~WindowXCBSimple() {}
 
   // Return -1 on failure.
   int init(vik::Renderer* r) {
