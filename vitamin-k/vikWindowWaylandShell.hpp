@@ -11,31 +11,25 @@
 
 #pragma once
 
-#include <linux/input.h>
-#include <wayland-client.h>
+
 #include <vulkan/vulkan.h>
 
 #include <string>
-
 #include "vikWindowWayland.hpp"
 #include "../vks/vksSwapChain.hpp"
 
 namespace vik {
 class WindowWaylandShell : public WindowWayland {
-  wl_display *display = nullptr;
+
   wl_registry *registry = nullptr;
-  wl_compositor *compositor = nullptr;
   wl_shell *shell = nullptr;
-  wl_seat *seat = nullptr;
   wl_pointer *pointer = nullptr;
-  wl_keyboard *keyboard = nullptr;
-  wl_surface *surface = nullptr;
   wl_shell_surface *shell_surface = nullptr;
-  wl_output *hmd_output = nullptr;
-  int hmd_refresh = 0;
+
 
  public:
   explicit WindowWaylandShell() {
+    name = "wayland-shell";
     display = wl_display_connect(NULL);
     vik_log_f_if(!display, "Could not connect to Wayland display!");
 
@@ -153,45 +147,6 @@ class WindowWaylandShell : public WindowWayland {
     WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
     self->pointer_motion_cb(wl_fixed_to_double(x),
                             wl_fixed_to_double(y));
-  }
-
-  static vik::Input::Key wayland_to_vik_key(uint32_t key) {
-    switch (key) {
-      case KEY_W:
-        return vik::Input::Key::W;
-      case KEY_S:
-        return vik::Input::Key::S;
-      case KEY_A:
-        return vik::Input::Key::A;
-      case KEY_D:
-        return vik::Input::Key::D;
-      case KEY_P:
-        return vik::Input::Key::P;
-      case KEY_F1:
-        return vik::Input::Key::F1;
-      case KEY_ESC:
-        return vik::Input::Key::ESCAPE;
-    }
-  }
-
-  static vik::Input::MouseScrollAxis wayland_to_vik_axis(uint32_t axis) {
-    switch (axis) {
-      case REL_X:
-        return vik::Input::MouseScrollAxis::X;
-      case REL_Y:
-        return vik::Input::MouseScrollAxis::Y;
-    }
-  }
-
-  static vik::Input::MouseButton wayland_to_vik_button(uint32_t button) {
-    switch (button) {
-      case BTN_LEFT:
-        return vik::Input::MouseButton::Left;
-      case BTN_MIDDLE:
-        return vik::Input::MouseButton::Middle;
-      case BTN_RIGHT:
-        return vik::Input::MouseButton::Right;
-    }
   }
 
   static void pointerButtonCb(void *data,
@@ -319,10 +274,6 @@ class WindowWaylandShell : public WindowWayland {
                                       hmd_refresh,
                                       hmd_output);
     return 0;
-  }
-
-  const std::vector<const char*> required_extensions() {
-    return {VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME };
   }
 
   VkBool32 check_support(VkPhysicalDevice physical_device) {

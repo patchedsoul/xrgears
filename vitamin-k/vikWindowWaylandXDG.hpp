@@ -3,35 +3,21 @@
 #include <string.h>
 #include <stdio.h>
 
-
 #include <poll.h>
 
 #include <vulkan/vulkan.h>
-
-#include <wayland-client.h>
-#include <linux/input.h>
-
 #include "../vkc/vkcRenderer.hpp"
-
 #include "../xdg-shell/xdg-shell-unstable-v6-client-protocol.h"
-#include "vikWindowWayland.hpp"
 #include "../vks/vksLog.hpp"
+#include "vikWindowWayland.hpp"
 
 namespace vik {
 class WindowWaylandXDG : public WindowWayland {
 
-  struct wl_display *display;
-  struct wl_compositor *compositor;
   struct zxdg_shell_v6 *shell;
-  struct wl_keyboard *keyboard;
-  struct wl_seat *seat;
-  struct wl_surface *surface;
   struct zxdg_surface_v6 *xdg_surface;
   struct zxdg_toplevel_v6 *xdg_toplevel;
   bool wait_for_configure;
-
-  int hmd_refresh = 0;
-  wl_output *hmd_output = nullptr;
 
 public:
   WindowWaylandXDG() {
@@ -273,10 +259,6 @@ public:
     wl_surface_commit(surface);
 
     return 0;
-  }
-
-  const std::vector<const char*> required_extensions() {
-    return { VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME };
   }
 
   void create_surface(VkInstance instance, VkSurfaceKHR *vk_surface) {
