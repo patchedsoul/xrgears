@@ -35,6 +35,8 @@ public:
   std::function<void(vik::Input::MouseScrollAxis axis, double value)> pointer_axis_cb;
   std::function<void(vik::Input::Key key, bool state)> keyboard_key_cb;
 
+  std::function<void(uint32_t width, uint32_t height)> configure_cb;
+
   Window() {}
   ~Window() {}
 
@@ -68,6 +70,10 @@ public:
   void set_keyboard_key_cb(std::function<void(
                              vik::Input::Key key, bool state)> cb) {
     keyboard_key_cb = cb;
+  }
+
+  void set_configure_cb(std::function<void(uint32_t width, uint32_t height)> cb) {
+    configure_cb = cb;
   }
 
   static inline bool streq(const char *a, const char *b) {

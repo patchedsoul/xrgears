@@ -184,37 +184,6 @@ class WindowXCB : public Window {
     return 0;
   }
 
-  void mouse_motion(vks::Application *app, float x, float y) {
-
-    double dx = app->mousePos.x - x;
-    double dy = app->mousePos.y - y;
-
-    if (app->mouseButtons.left) {
-      app->rotation.x += dy * 1.25f;
-      app->rotation.y -= dx * 1.25f;
-      app->camera.rotate(glm::vec3(dy * app->camera.rotationSpeed,
-                      -dx * app->camera.rotationSpeed,
-                      0.0f));
-      app->viewUpdated = true;
-    }
-
-    if (app->mouseButtons.right) {
-      app->zoom += dy * .005f;
-      app->camera.translate(glm::vec3(-0.0f, 0.0f, dy * .005f * app->zoomSpeed));
-      app->viewUpdated = true;
-    }
-
-    if (app->mouseButtons.middle) {
-      app->cameraPos.x -= dx * 0.01f;
-      app->cameraPos.y -= dy * 0.01f;
-      app->camera.translate(glm::vec3(-dx * 0.01f, -dy * 0.01f, 0.0f));
-      app->viewUpdated = true;
-      app->mousePos.x = x;
-      app->mousePos.y = y;
-    }
-    app->mousePos = glm::vec2(x, y);
-  }
-
   static vik::Input::MouseButton xcb_to_vik_button(xcb_button_t button) {
     switch (button) {
       case XCB_BUTTON_INDEX_1:
@@ -245,17 +214,24 @@ class WindowXCB : public Window {
     }
   }
 
+  void app_configure(vks::Application *app, uint16_t width, uint16_t height) {
+    if ((app->prepared) && ((width != app->renderer->width) || (height != app->renderer->height))) {
+      app->renderer->destWidth = width;
+      app->renderer->destHeight = height;
+      if ((app->renderer->destWidth > 0) && (app->renderer->destHeight > 0))
+        app->windowResize();
+    }
+  }
+
   void handleEvent(vks::Application *app, const xcb_generic_event_t *event) {
     switch (event->response_type & 0x7f) {
       case XCB_CLIENT_MESSAGE:
-        if ((*(xcb_client_message_event_t*)event).data.data32[0] ==
-            (*atom_wm_delete_window).atom) {
-          app->quit = true;
-        }
+        if ((*(xcb_client_message_event_t*)event).data.data32[0] == (*atom_wm_delete_window).atom)
+          quit_cb();
         break;
       case XCB_MOTION_NOTIFY: {
         xcb_motion_notify_event_t *motion = (xcb_motion_notify_event_t *)event;
-        mouse_motion(app, (float)motion->event_x, (float)motion->event_y);
+        pointer_motion_cb((float)motion->event_x, (float)motion->event_y);
       }
         break;
       case XCB_BUTTON_PRESS: {
@@ -279,16 +255,11 @@ class WindowXCB : public Window {
       }
         break;
       case XCB_DESTROY_NOTIFY:
-        app->quit = true;
+        quit_cb();
         break;
       case XCB_CONFIGURE_NOTIFY: {
         const xcb_configure_notify_event_t *cfgEvent = (const xcb_configure_notify_event_t *)event;
-        if ((app->prepared) && ((cfgEvent->width != app->renderer->width) || (cfgEvent->height != app->renderer->height))) {
-          app->renderer->destWidth = cfgEvent->width;
-          app->renderer->destHeight = cfgEvent->height;
-          if ((app->renderer->destWidth > 0) && (app->renderer->destHeight > 0))
-            app->windowResize();
-        }
+        app_configure(app, cfgEvent->width, cfgEvent->height);
       }
         break;
       default:
