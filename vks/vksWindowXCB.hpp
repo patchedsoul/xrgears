@@ -28,22 +28,6 @@
 #define XCB_KEY_S 0x27
 #define XCB_KEY_D 0x28
 #define XCB_KEY_P 0x21
-/*
-#define KEY_F2 0x44
-#define KEY_F3 0x45
-#define KEY_F4 0x46
-#define KEY_SPACE 0x41
-
-#define KEY_KPADD 0x56
-#define KEY_KPSUB 0x52
-
-#define KEY_B 0x38
-#define KEY_F 0x29
-#define KEY_L 0x2E
-#define KEY_N 0x39
-#define KEY_O 0x20
-#define KEY_T 0x1C
-*/
 
 namespace vks {
 class WindowXCB : public Window {
@@ -120,7 +104,7 @@ class WindowXCB : public Window {
   }
 
   // Set up a window using XCB and request event types
-  int init(vks::Application *app) {
+  int init(bool fullscreen) {
     uint32_t value_mask, value_list[32];
 
     if (connection == nullptr)
@@ -139,15 +123,13 @@ class WindowXCB : public Window {
         XCB_EVENT_MASK_BUTTON_PRESS |
         XCB_EVENT_MASK_BUTTON_RELEASE;
 
-    if (app->settings.fullscreen) {
-      app->renderer->width = app->renderer->destWidth = screen->width_in_pixels;
-      app->renderer->height = app->renderer->destHeight = screen->height_in_pixels;
-    }
+    if (fullscreen)
+      dimension_cb(screen->width_in_pixels, screen->height_in_pixels);
 
     xcb_create_window(connection,
                       XCB_COPY_FROM_PARENT,
                       window, screen->root,
-                      0, 0, app->renderer->width, app->renderer->height, 0,
+                      0, 0, screen->width_in_pixels, screen->height_in_pixels, 0,
                       XCB_WINDOW_CLASS_INPUT_OUTPUT,
                       screen->root_visual,
                       value_mask, value_list);
@@ -162,7 +144,7 @@ class WindowXCB : public Window {
 
     free(reply);
 
-    if (app->settings.fullscreen) {
+    if (fullscreen) {
       xcb_intern_atom_reply_t *atom_wm_state = intern_atom_helper(connection, false, "_NET_WM_STATE");
       xcb_intern_atom_reply_t *atom_wm_fullscreen = intern_atom_helper(connection, false, "_NET_WM_STATE_FULLSCREEN");
       xcb_change_property(connection,

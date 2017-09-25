@@ -24,7 +24,7 @@ class Window : public vik::Window {
   Window() {}
   ~Window() {}
 
-  virtual int init(Application *app) = 0;
+  virtual int init(bool fullscreen) = 0;
   virtual void iterate() = 0;
 };
 }

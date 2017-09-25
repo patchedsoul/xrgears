@@ -162,11 +162,18 @@ void Application::prepare() {
     }
   };
 
+  std::function<void(uint32_t width, uint32_t height)> dimension_cb =
+      [this](uint32_t width, uint32_t height) {
+    renderer->width = renderer->destWidth = width;
+    renderer->height = renderer->destHeight = height;
+  };
+
   window->set_pointer_motion_cb(pointer_motion_cb);
   window->set_pointer_button_cb(pointer_button_cb);
   window->set_pointer_axis_cb(pointer_axis_cb);
   window->set_keyboard_key_cb(keyboard_key_cb);
   window->set_configure_cb(configure_cb);
+  window->set_dimension_cb(dimension_cb);
 
   std::function<void()> quit_cb = [this]() { quit = true; };
   window->set_quit_cb(quit_cb);

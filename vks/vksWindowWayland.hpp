@@ -300,7 +300,7 @@ class WindowWayland : public Window {
 
   static void PopupDoneCb(void *data, struct wl_shell_surface *shell_surface) {}
 
-  int init(vks::Application * app) {
+  int init(bool fullscreen) {
     surface = wl_compositor_create_surface(compositor);
     shell_surface = wl_shell_get_shell_surface(shell, surface);
 
@@ -313,10 +313,11 @@ class WindowWayland : public Window {
     vik_log_d("setting hmd refresh to %d", hmd_refresh);
     vik_log_d("setting hmd output to %p", hmd_output);
 
-    wl_shell_surface_set_fullscreen(shell_surface,
-                                    WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-                                    hmd_refresh,
-                                    hmd_output);
+    if (fullscreen)
+      wl_shell_surface_set_fullscreen(shell_surface,
+                                      WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
+                                      hmd_refresh,
+                                      hmd_output);
     return 0;
   }
 

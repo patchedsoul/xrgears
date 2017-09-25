@@ -36,6 +36,7 @@ public:
   std::function<void(vik::Input::Key key, bool state)> keyboard_key_cb;
 
   std::function<void(uint32_t width, uint32_t height)> configure_cb;
+  std::function<void(uint32_t width, uint32_t height)> dimension_cb;
 
   Window() {}
   ~Window() {}
@@ -74,6 +75,10 @@ public:
 
   void set_configure_cb(std::function<void(uint32_t width, uint32_t height)> cb) {
     configure_cb = cb;
+  }
+
+  void set_dimension_cb(std::function<void(uint32_t width, uint32_t height)> cb) {
+    dimension_cb = cb;
   }
 
   static inline bool streq(const char *a, const char *b) {
