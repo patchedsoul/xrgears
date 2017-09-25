@@ -16,6 +16,7 @@
 #include "../vks/vksBuffer.hpp"
 #include "../vks/vksDevice.hpp"
 
+namespace vik {
 struct Vertex {
   float pos[3];
   float normal[3];
@@ -38,13 +39,13 @@ struct GearInfo {
   float toothDepth;
 };
 
-class VikGear {
+class Gear {
  public:
   vks::Buffer vertexBuffer;
   vks::Buffer indexBuffer;
   uint32_t indexCount;
 
-  ~VikGear() {
+  ~Gear() {
     // Clean up vulkan resources
     vertexBuffer.destroy();
     indexBuffer.destroy();
@@ -274,3 +275,4 @@ class VikGear {
     indexCount = iBuffer.size();
   }
 };
+}

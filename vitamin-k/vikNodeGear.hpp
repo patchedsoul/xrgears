@@ -34,7 +34,7 @@
 namespace vik {
 class NodeGear : public Node {
  private:
-  VikGear gear;
+  Gear gear;
 
  public:
   void generate(vks::Device *vulkanDevice, GearInfo *gearinfo, VkQueue queue) {

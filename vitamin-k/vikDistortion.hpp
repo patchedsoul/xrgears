@@ -24,7 +24,8 @@
 
 #define VERTEX_BUFFER_BIND_ID 0
 
-class VikDistortion {
+namespace vik {
+class Distortion {
  private:
   VkDevice device;
   vks::Model quad;
@@ -45,11 +46,11 @@ class VikDistortion {
   VkDescriptorSet descriptorSet;
 
  public:
-  explicit VikDistortion(const VkDevice& d) {
+  explicit Distortion(const VkDevice& d) {
     device = d;
   }
 
-  ~VikDistortion() {
+  ~Distortion() {
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
     quad.destroy();
@@ -315,3 +316,4 @@ class VikDistortion {
     vik_log_check(uboHandle.map());
   }
 };
+}

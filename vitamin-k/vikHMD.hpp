@@ -28,14 +28,15 @@
 #include "vikCamera.hpp"
 #include "vikBuffer.hpp"
 
-class VikHMD {
+namespace vik {
+class HMD {
  private:
   ohmd_context* openHmdContext;
 
  public:
   ohmd_device* openHmdDevice;
 
-  VikHMD() {
+  HMD() {
     int hmd_w, hmd_h;
 
     openHmdContext = ohmd_ctx_create();
@@ -99,7 +100,7 @@ class VikHMD {
     vik_log_i("viewportScale    %.4f %.4f", viewport_scale[0], viewport_scale[1]);
   }
 
-  ~VikHMD() {
+  ~HMD() {
     ohmd_ctx_destroy(openHmdContext);
   }
 
@@ -121,3 +122,4 @@ class VikHMD {
     *hmdViewRight = glm::make_mat4(mat);
   }
 };
+}

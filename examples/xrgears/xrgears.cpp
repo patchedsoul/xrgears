@@ -49,7 +49,7 @@ public:
     vks::VERTEX_COMPONENT_NORMAL
   });
 
-  VikHMD* hmd;
+  vik::HMD* hmd;
   vik::Camera* vikCamera;
 
   bool enableSky = true;
@@ -58,7 +58,7 @@ public:
   bool enableStereo = true;
 
   VikSkyBox *skyBox;
-  VikDistortion *hmdDistortion;
+  vik::Distortion *hmdDistortion;
   VikOffscreenPass *offscreenPass;
 
   struct {
@@ -320,7 +320,7 @@ public:
     for (int32_t i = 0; i < nodes.size(); ++i)
     {
       vik::Node::NodeInfo gearNodeInfo = {};
-      GearInfo gearInfo = {};
+      vik::GearInfo gearInfo = {};
       gearInfo.innerRadius = innerRadiuses[i];
       gearInfo.outerRadius = outerRadiuses[i];
       gearInfo.width = widths[i];
@@ -360,7 +360,7 @@ public:
     vertices.bindingDescriptions[0] =
         vks::initializers::vertexInputBindingDescription(
           VERTEX_BUFFER_BIND_ID,
-          sizeof(Vertex),
+          sizeof(vik::Vertex),
           VK_VERTEX_INPUT_RATE_VERTEX);
 
     // Attribute descriptions
@@ -665,7 +665,7 @@ public:
   void prepare() {
     Application::prepare();
 
-    hmd = new VikHMD();
+    hmd = new vik::HMD();
 
     if (enableStereo) {
       if (enableHMDCam)
@@ -690,7 +690,7 @@ public:
     if (enableDistortion) {
       offscreenPass = new VikOffscreenPass(renderer->device);
       offscreenPass->prepareOffscreenFramebuffer(renderer->vksDevice, renderer->physical_device);
-      hmdDistortion = new VikDistortion(renderer->device);
+      hmdDistortion = new vik::Distortion(renderer->device);
       hmdDistortion->generateQuads(renderer->vksDevice);
       hmdDistortion->prepareUniformBuffer(renderer->vksDevice);
       hmdDistortion->updateUniformBufferWarp(hmd->openHmdDevice);

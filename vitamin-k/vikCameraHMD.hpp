@@ -20,9 +20,9 @@
 namespace vik {
 class CameraHMD : public Camera {
  public:
-  VikHMD* hmd;
+  HMD* hmd;
 
-  explicit CameraHMD(VikHMD* h) : hmd(h) {}
+  explicit CameraHMD(HMD* h) : hmd(h) {}
 
   static inline void
   fix_handedness(glm::mat4& m) {
