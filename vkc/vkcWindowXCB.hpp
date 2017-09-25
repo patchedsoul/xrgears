@@ -117,11 +117,12 @@ public:
     vkCreateXcbSurfaceKHR(instance, &surface_info, NULL, surface);
   }
 
-  void init_swap_chain(vik::Renderer *r) {
-    VkBool32 ret = vkGetPhysicalDeviceXcbPresentationSupportKHR(
-          r->physical_device, 0, conn, root_visual);
-    vik_log_f_if(!ret, "Vulkan not supported on given X window");
+  VkBool32 check_support(VkPhysicalDevice physical_device) {
+    return vkGetPhysicalDeviceXcbPresentationSupportKHR(
+          physical_device, 0, conn, root_visual);
+  }
 
+  void init_swap_chain(vik::Renderer *r) {
     r->swap_chain = new vik::SwapChainVK();
     vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
     sc->set_context(r->instance, r->physical_device, r->device);

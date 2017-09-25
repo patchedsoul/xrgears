@@ -67,6 +67,9 @@ public:
 
      renderer->init_vulkan("vkcube", window->required_extensions());
 
+     if (!window->check_support(renderer->physical_device))
+      vik_log_f("Vulkan not supported on given surface");
+
      window->init_swap_chain(renderer);
 
      renderer->create_frame_buffers(renderer->swap_chain);

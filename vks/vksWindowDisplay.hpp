@@ -136,5 +136,9 @@ class WindowKhrDisplay  : public Window {
 
   int init(Application *app) {}
   void iterate(Application *app) {}
+
+  VkBool32 check_support(VkPhysicalDevice physical_device) {
+    return true;
+  }
 };
 }

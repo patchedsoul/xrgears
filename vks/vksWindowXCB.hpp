@@ -51,6 +51,7 @@ class WindowXCB : public Window {
   xcb_screen_t *screen;
   xcb_window_t window;
   xcb_intern_atom_reply_t *atom_wm_delete_window;
+  xcb_visualid_t root_visual;
 
  public:
   explicit WindowXCB() {
@@ -70,6 +71,7 @@ class WindowXCB : public Window {
     while (scr-- > 0)
       xcb_screen_next(&iter);
     screen = iter.data;
+    root_visual = iter.data->root_visual;
   }
 
   ~WindowXCB() {
@@ -305,6 +307,11 @@ class WindowXCB : public Window {
       default:
         break;
     }
+  }
+
+  VkBool32 check_support(VkPhysicalDevice physical_device) {
+    return vkGetPhysicalDeviceXcbPresentationSupportKHR(
+          physical_device, 0, connection, root_visual);
   }
 
   const std::vector<const char*> required_extensions() {

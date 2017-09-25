@@ -226,5 +226,9 @@ public:
       render(r);
   }
 
+  VkBool32 check_support(VkPhysicalDevice physical_device) {
+    return true;
+  }
+
 };
 }

@@ -386,5 +386,10 @@ class WindowWayland : public Window {
     return {VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME };
   }
 
+  VkBool32 check_support(VkPhysicalDevice physical_device) {
+    return (!vkGetPhysicalDeviceWaylandPresentationSupportKHR(
+          physical_device, 0, display));
+  }
+
 };
 }
