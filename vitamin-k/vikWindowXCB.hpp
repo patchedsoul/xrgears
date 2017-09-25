@@ -15,42 +15,40 @@ protected:
   xcb_key_symbols_t *syms;
 
   WindowXCB() {
-    syms = xcb_key_symbols_alloc(connection);
   }
 
   ~WindowXCB() {
-      xcb_key_symbols_free(syms);
   }
 
-  static vik::Input::MouseButton xcb_to_vik_button(xcb_button_t button) {
+  static Input::MouseButton xcb_to_vik_button(xcb_button_t button) {
     switch (button) {
       case XCB_BUTTON_INDEX_1:
-        return vik::Input::MouseButton::Left;
+        return Input::MouseButton::Left;
       case XCB_BUTTON_INDEX_2:
-        return vik::Input::MouseButton::Middle;
+        return Input::MouseButton::Middle;
       case XCB_BUTTON_INDEX_3:
-        return vik::Input::MouseButton::Right;
+        return Input::MouseButton::Right;
     }
   }
 
-  vik::Input::Key xcb_to_vik_key(xcb_keycode_t key) {
+  Input::Key xcb_to_vik_key(xcb_keycode_t key) {
 
     xcb_keysym_t xcb_keyp = xcb_key_symbols_get_keysym(syms, key, 0);
     switch (xcb_keyp) {
       case XK_w:
-        return vik::Input::Key::W;
+        return Input::Key::W;
       case XK_s:
-        return vik::Input::Key::S;
+        return Input::Key::S;
       case XK_a:
-        return vik::Input::Key::A;
+        return Input::Key::A;
       case XK_d:
-        return vik::Input::Key::D;
+        return Input::Key::D;
       case XK_p:
-        return vik::Input::Key::P;
+        return Input::Key::P;
       case XK_F1:
-        return vik::Input::Key::F1;
+        return Input::Key::F1;
       case XK_Escape:
-        return vik::Input::Key::ESCAPE;
+        return Input::Key::ESCAPE;
     }
   }
 

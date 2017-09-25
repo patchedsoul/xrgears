@@ -124,7 +124,7 @@ public:
   }
 
   // Return -1 on failure.
-  int init(vik::Renderer* r) {
+  int init(Renderer* r) {
     drmModeRes *resources;
     drmModeEncoder *encoder;
     int i;
@@ -170,10 +170,10 @@ public:
     return {};
   }
 
-  void init_swap_chain(vik::Renderer *r) {
-    r->swap_chain = new vik::SwapChainDRM();
+  void init_swap_chain(Renderer *r) {
+    r->swap_chain = new SwapChainDRM();
 
-    vik::SwapChainDRM *sc = (vik::SwapChainDRM*) r->swap_chain;
+    SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain;
 
     sc->surface_format.format = VK_FORMAT_R8G8B8A8_SRGB;
 
@@ -197,16 +197,16 @@ public:
     }
   }
 
-  void render(vik::Renderer *r) {
+  void render(Renderer *r) {
     drmHandleEvent(fd, &evctx);
 
     update_cb();
 
-    vik::SwapChainDRM *sc = (vik::SwapChainDRM*) r->swap_chain;
+    SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain;
     sc->render(fd, crtc->crtc_id);
   }
 
-  void iterate(vik::Renderer *r) {
+  void iterate(Renderer *r) {
     int ret = poll(pfd, 2, -1);
     vik_log_f_if(ret == -1, "poll failed");
     if (pfd[0].revents & POLLIN)

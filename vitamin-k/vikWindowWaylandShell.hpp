@@ -55,7 +55,7 @@ public:
     wl_display_disconnect(display);
   }
 
-  int init(vik::Renderer *r) {
+  int init(Renderer *r) {
     surface = wl_compositor_create_surface(compositor);
     shell_surface = wl_shell_get_shell_surface(shell, surface);
 
@@ -76,7 +76,7 @@ public:
     return 0;
   }
 
-  void iterate(vik::Renderer *r) {
+  void iterate(Renderer *r) {
     while (wl_display_prepare_read(display) != 0)
       wl_display_dispatch_pending(display);
     wl_display_flush(display);
@@ -84,7 +84,7 @@ public:
     wl_display_dispatch_pending(display);
   }
 
-  void init_swap_chain(vik::Renderer *r) {
+  void init_swap_chain(Renderer *r) {
     r->swap_chain = new vks::SwapChain();
     vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
     sc->set_context(r->instance, r->physical_device, r->device);

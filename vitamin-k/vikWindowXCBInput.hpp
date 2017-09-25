@@ -48,7 +48,7 @@ class WindowXCBInput : public WindowXCB {
   }
 
   // Set up a window using XCB and request event types
-  int init(vik::Renderer *r) {
+  int init(Renderer *r) {
     uint32_t value_mask, value_list[32];
 
     window = xcb_generate_id(connection);
@@ -103,7 +103,7 @@ class WindowXCBInput : public WindowXCB {
     return 0;
   }
 
-  void iterate(vik::Renderer *r) {
+  void iterate(Renderer *r) {
     xcb_generic_event_t *event;
     while ((event = xcb_poll_for_event(connection))) {
       handle_event(event);
@@ -111,7 +111,7 @@ class WindowXCBInput : public WindowXCB {
     }
   }
 
-  void init_swap_chain(vik::Renderer *r) {
+  void init_swap_chain(Renderer *r) {
     r->swap_chain = new vks::SwapChain();
     vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
     sc->set_context(r->instance, r->physical_device, r->device);

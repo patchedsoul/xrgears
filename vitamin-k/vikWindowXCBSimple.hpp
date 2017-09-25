@@ -41,7 +41,7 @@ public:
   ~WindowXCBSimple() {}
 
   // Return -1 on failure.
-  int init(vik::Renderer* r) {
+  int init(Renderer* r) {
     xcb_screen_iterator_t iter;
     static const char title[] = "Vulkan Cube";
 
@@ -98,13 +98,13 @@ public:
     return 0;
   }
 
-  void iterate(vik::Renderer *r) {
+  void iterate(Renderer *r) {
     poll_events(r);
 
     if (repaint) {
       update_cb();
 
-      vik::SwapChainVK* sc = (vik::SwapChainVK*) r->swap_chain;
+      SwapChainVK* sc = (SwapChainVK*) r->swap_chain;
       vkc::Renderer* vkc_renderer = (vkc::Renderer*) r;
       sc->render(r->queue, vkc_renderer->semaphore);
       schedule_repaint();
@@ -112,9 +112,9 @@ public:
     xcb_flush(connection);
   }
 
-  void init_swap_chain(vik::Renderer *r) {
-    r->swap_chain = new vik::SwapChainVK();
-    vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
+  void init_swap_chain(Renderer *r) {
+    r->swap_chain = new SwapChainVK();
+    SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
     sc->set_context(r->instance, r->physical_device, r->device);
 
     create_surface(r->instance, &sc->surface);
@@ -133,7 +133,7 @@ public:
     xcb_send_event(connection, 0, window, 0, (char *) &client_message);
   }
 
-  void poll_events(vik::Renderer *r) {
+  void poll_events(Renderer *r) {
     xcb_generic_event_t *event;
     event = xcb_wait_for_event(connection);
     while (event) {
@@ -143,7 +143,7 @@ public:
     }
   }
 
-  void handle_event(const xcb_generic_event_t *event, vik::Renderer *r) {
+  void handle_event(const xcb_generic_event_t *event, Renderer *r) {
     xcb_key_press_event_t *key_press;
     xcb_client_message_event_t *client_message;
     xcb_configure_notify_event_t *configure;
@@ -170,7 +170,7 @@ public:
 
           vik_log_d("XCB_CONFIGURE_NOTIFY %dx%d", r->width, r->height);
 
-          vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
+          SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
 
           if (sc != nullptr)
             sc->destroy();
@@ -182,7 +182,7 @@ public:
       case XCB_EXPOSE:
         {
           vik_log_d("XCB_EXPOSE");
-          vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
+          SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
           sc->create_simple(r->width, r->height);
           sc->update_images();
           vkc::Renderer* vkc_renderer = (vkc::Renderer*) r;

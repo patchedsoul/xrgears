@@ -26,7 +26,7 @@ class WindowKhrDisplay  : public Window {
     return { VK_KHR_DISPLAY_EXTENSION_NAME };
   }
 
-  void init_swap_chain(vik::Renderer *r) {
+  void init_swap_chain(Renderer *r) {
 
     r->swap_chain = new SwapChain();
     vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
@@ -135,8 +135,8 @@ class WindowKhrDisplay  : public Window {
 
   void update_window_title(const std::string& title) {}
 
-  int init(vik::Renderer *r) {}
-  void iterate(vik::Renderer *r) {}
+  int init(Renderer *r) {}
+  void iterate(Renderer *r) {}
 
   VkBool32 check_support(VkPhysicalDevice physical_device) {
     return true;

@@ -30,7 +30,7 @@ public:
   ~WindowWaylandXDG() {}
 
   // Return -1 on failure.
-  int init(vik::Renderer* r) {
+  int init(Renderer* r) {
     display = wl_display_connect(NULL);
     if (!display)
       return -1;
@@ -91,17 +91,17 @@ public:
     }
   }
 
-  void iterate(vik::Renderer *r) {
+  void iterate(Renderer *r) {
     flush();
     update_cb();
-    vik::SwapChainVK* sc = (vik::SwapChainVK*) r->swap_chain;
+    SwapChainVK* sc = (SwapChainVK*) r->swap_chain;
     vkc::Renderer* vkc_renderer = (vkc::Renderer*) r;
     sc->render(r->queue, vkc_renderer->semaphore);
   }
 
-  void init_swap_chain(vik::Renderer *r) {
-    r->swap_chain = new vik::SwapChainVK();
-    vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
+  void init_swap_chain(Renderer *r) {
+    r->swap_chain = new SwapChainVK();
+    SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
     sc->set_context(r->instance, r->physical_device, r->device);
 
     create_surface(r->instance, &sc->surface);

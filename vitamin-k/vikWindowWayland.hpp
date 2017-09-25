@@ -18,42 +18,42 @@ class WindowWayland : public Window {
 
   wl_output *hmd_output = nullptr;
 
-  static vik::Input::Key wayland_to_vik_key(uint32_t key) {
+  static Input::Key wayland_to_vik_key(uint32_t key) {
     switch (key) {
       case KEY_W:
-        return vik::Input::Key::W;
+        return Input::Key::W;
       case KEY_S:
-        return vik::Input::Key::S;
+        return Input::Key::S;
       case KEY_A:
-        return vik::Input::Key::A;
+        return Input::Key::A;
       case KEY_D:
-        return vik::Input::Key::D;
+        return Input::Key::D;
       case KEY_P:
-        return vik::Input::Key::P;
+        return Input::Key::P;
       case KEY_F1:
-        return vik::Input::Key::F1;
+        return Input::Key::F1;
       case KEY_ESC:
-        return vik::Input::Key::ESCAPE;
+        return Input::Key::ESCAPE;
     }
   }
 
-  static vik::Input::MouseScrollAxis wayland_to_vik_axis(uint32_t axis) {
+  static Input::MouseScrollAxis wayland_to_vik_axis(uint32_t axis) {
     switch (axis) {
       case REL_X:
-        return vik::Input::MouseScrollAxis::X;
+        return Input::MouseScrollAxis::X;
       case REL_Y:
-        return vik::Input::MouseScrollAxis::Y;
+        return Input::MouseScrollAxis::Y;
     }
   }
 
-  static vik::Input::MouseButton wayland_to_vik_button(uint32_t button) {
+  static Input::MouseButton wayland_to_vik_button(uint32_t button) {
     switch (button) {
       case BTN_LEFT:
-        return vik::Input::MouseButton::Left;
+        return Input::MouseButton::Left;
       case BTN_MIDDLE:
-        return vik::Input::MouseButton::Middle;
+        return Input::MouseButton::Middle;
       case BTN_RIGHT:
-        return vik::Input::MouseButton::Right;
+        return Input::MouseButton::Right;
     }
   }
 

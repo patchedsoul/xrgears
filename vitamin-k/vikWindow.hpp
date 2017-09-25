@@ -31,9 +31,9 @@ public:
   std::function<void()> quit_cb;
 
   std::function<void(double x, double y)> pointer_motion_cb;
-  std::function<void(vik::Input::MouseButton button, bool state)> pointer_button_cb;
-  std::function<void(vik::Input::MouseScrollAxis axis, double value)> pointer_axis_cb;
-  std::function<void(vik::Input::Key key, bool state)> keyboard_key_cb;
+  std::function<void(Input::MouseButton button, bool state)> pointer_button_cb;
+  std::function<void(Input::MouseScrollAxis axis, double value)> pointer_axis_cb;
+  std::function<void(Input::Key key, bool state)> keyboard_key_cb;
 
   std::function<void(uint32_t width, uint32_t height)> configure_cb;
   std::function<void(uint32_t width, uint32_t height)> dimension_cb;
@@ -57,19 +57,19 @@ public:
     pointer_motion_cb = cb;
   }
 
-  void set_pointer_button_cb(std::function<void(vik::Input::MouseButton button,
+  void set_pointer_button_cb(std::function<void(Input::MouseButton button,
                                                 bool state)> cb) {
     pointer_button_cb = cb;
   }
 
   void set_pointer_axis_cb(std::function<void(
-                             vik::Input::MouseScrollAxis axis,
+                             Input::MouseScrollAxis axis,
                              double value)> cb) {
     pointer_axis_cb = cb;
   }
 
   void set_keyboard_key_cb(std::function<void(
-                             vik::Input::Key key, bool state)> cb) {
+                             Input::Key key, bool state)> cb) {
     keyboard_key_cb = cb;
   }
 
@@ -104,8 +104,8 @@ public:
       return INVALID;
   }
 
-  virtual int init(vik::Renderer *r) = 0;
-  virtual void iterate(vik::Renderer *r) = 0;
+  virtual int init(Renderer *r) = 0;
+  virtual void iterate(Renderer *r) = 0;
   virtual const std::vector<const char*> required_extensions() = 0;
   virtual void init_swap_chain(Renderer *r) = 0;
   virtual void update_window_title(const std::string& title) = 0;
