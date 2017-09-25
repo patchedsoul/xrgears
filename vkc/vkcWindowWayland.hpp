@@ -8,7 +8,6 @@
 
 #include <vulkan/vulkan.h>
 
-#include <xdg-shell-unstable-v6-client-protocol.h>
 #include <wayland-client.h>
 #include <linux/input.h>
 
@@ -16,6 +15,7 @@
 #include "vkcApplication.hpp"
 #include "vkcRenderer.hpp"
 
+#include "../xdg-shell/xdg-shell-unstable-v6-client-protocol.h"
 #include "../vks/vksLog.hpp"
 
 namespace vkc {
@@ -273,7 +273,7 @@ public:
     wait_for_configure = true;
     wl_surface_commit(surface);
 
-    r->init_vk(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
+    r->init_vulkan(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
 
     if (!vkGetPhysicalDeviceWaylandPresentationSupportKHR(r->physical_device, 0, display))
       vik_log_f("Vulkan not supported on given Wayland surface");

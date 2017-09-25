@@ -60,7 +60,7 @@ void Application::prepare() {
       vik_log_f("Unsupported window backend.");
   }
 
-  renderer->initVulkan(name, window->required_extensions());
+  renderer->init_vulkan(name, window->required_extensions());
   window->init(this);
   window->init_swap_chain(renderer);
   renderer->prepare();

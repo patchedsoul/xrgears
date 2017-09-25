@@ -99,7 +99,7 @@ public:
 
     xcb_flush(conn);
 
-    r->init_vk(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+    r->init_vulkan(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 
     VkBool32 ret = vkGetPhysicalDeviceXcbPresentationSupportKHR(
           r->physical_device, 0, conn, iter.data->root_visual);

@@ -151,36 +151,39 @@ public:
           shaderStages);
   }
 
-  VkResult create_instance(const std::string& name, const std::vector<const char*> &extensions) {
+  VkResult create_instance(const std::string& name, const std::vector<const char*> &window_extensions) {
 
-    VkApplicationInfo appInfo = {};
-    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = name.c_str();
-    appInfo.pEngineName = name.c_str();
-    appInfo.apiVersion = VK_API_VERSION_1_0;
+    VkApplicationInfo app_info = {};
+    app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    app_info.pApplicationName = name.c_str();
+    app_info.pEngineName = "vitamin-k";
+    app_info.apiVersion = VK_MAKE_VERSION(1, 0, 2);
 
-    std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
+    std::vector<const char*> extensions = {
+      VK_KHR_SURFACE_EXTENSION_NAME,
+      VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
+    };
 
-    // Enable surface extensions depending on os
-    for (const char* windowExtension : extensions)
-      instanceExtensions.push_back(windowExtension);
+    // Enable surface extensions depending on window system
+    extensions.insert(extensions.end(), window_extensions.begin(), window_extensions.end());
 
-    instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    for (const char* windowExtension : window_extensions)
+      extensions.push_back(windowExtension);
+
+    if (settings->validation)
+      extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
     VkInstanceCreateInfo instanceCreateInfo = {};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instanceCreateInfo.pNext = NULL;
-    instanceCreateInfo.pApplicationInfo = &appInfo;
-    if (instanceExtensions.size() > 0) {
-      if (settings->validation)
-        instanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-      instanceCreateInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
-      instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
-    }
+    instanceCreateInfo.pApplicationInfo = &app_info;
+    instanceCreateInfo.enabledExtensionCount = extensions.size();
+    instanceCreateInfo.ppEnabledExtensionNames = extensions.data();
+
     if (settings->validation) {
       instanceCreateInfo.enabledLayerCount = vks::debug::validationLayerCount;
       instanceCreateInfo.ppEnabledLayerNames = vks::debug::validationLayerNames;
     }
+
     return vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
   }
 
@@ -364,7 +367,7 @@ public:
     vks::debug::setupDebugging(instance, debugReportFlags, VK_NULL_HANDLE);
   }
 
-  void initVulkan(const std::string &name, const std::vector<const char*> &extensions) {
+  void init_vulkan(const std::string &name, const std::vector<const char*> &extensions) {
     VkResult err;
 
     // Vulkan instance

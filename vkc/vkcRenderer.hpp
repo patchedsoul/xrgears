@@ -39,11 +39,12 @@ public:
   ~Renderer() {
   }
 
-  void init_vk(const char *extension) {
-    VkApplicationInfo appinfo = {};
-    appinfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appinfo.pApplicationName = "vkcube";
-    appinfo.apiVersion = VK_MAKE_VERSION(1, 0, 2);
+  VkResult create_instance(const std::string &name, const char *extension) {
+    VkApplicationInfo app_info = {};
+    app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    app_info.pApplicationName = name.c_str();
+    app_info.pEngineName = "vitamin-k";
+    app_info.apiVersion = VK_MAKE_VERSION(1, 0, 2);
 
     const char * names[2] = {
       VK_KHR_SURFACE_EXTENSION_NAME,
@@ -52,14 +53,18 @@ public:
 
     VkInstanceCreateInfo instanceinfo = {};
     instanceinfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instanceinfo.pApplicationInfo = &appinfo;
+    instanceinfo.pApplicationInfo = &app_info;
     instanceinfo.enabledExtensionCount = extension ? (uint32_t) 2 : 0;
     instanceinfo.ppEnabledExtensionNames = names;
 
     vkCreateInstance(&instanceinfo,
                      NULL,
                      &instance);
+  }
 
+  void init_vulkan(const char *extension) {
+
+    create_instance("vkcube", extension);
     uint32_t count;
     vkEnumeratePhysicalDevices(instance, &count, NULL);
     VkPhysicalDevice pd[count];

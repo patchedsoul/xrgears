@@ -164,7 +164,7 @@ public:
 
     gbm_dev = gbm_create_device(fd);
 
-    r->init_vk(NULL);
+    r->init_vulkan(NULL);
 
     r->swap_chain = new vik::SwapChainDRM();
 
