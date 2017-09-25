@@ -24,7 +24,7 @@
 #include "vikBuffer.hpp"
 
 namespace vik {
-class VikCamera {
+class Camera {
  public:
   vks::Buffer uniformBuffer;
 
@@ -35,7 +35,7 @@ class VikCamera {
     glm::vec3 position;
   } uboCamera;
 
-  ~VikCamera() {
+  ~Camera() {
     uniformBuffer.destroy();
   }
 

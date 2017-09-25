@@ -18,7 +18,7 @@
 #include "vikHMD.hpp"
 
 namespace vik {
-class CameraHMD : public VikCamera {
+class CameraHMD : public Camera {
  public:
   VikHMD* hmd;
 

@@ -18,7 +18,7 @@
 #include "vikBuffer.hpp"
 
 namespace vik {
-class CameraStereo : public VikCamera {
+class CameraStereo : public Camera {
  public:
   // Camera and view properties
   float eyeSeparation = 0.08f;

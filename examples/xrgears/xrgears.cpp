@@ -50,7 +50,7 @@ public:
   });
 
   VikHMD* hmd;
-  vik::VikCamera* vikCamera;
+  vik::Camera* vikCamera;
 
   bool enableSky = true;
   bool enableHMDCam = false;
@@ -673,7 +673,7 @@ public:
       else
         vikCamera = new vik::CameraStereo(renderer->width, renderer->height);
     } else {
-      vikCamera = new vik::VikCamera();
+      vikCamera = new vik::Camera();
     }
 
     if (enableSky)
