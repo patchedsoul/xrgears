@@ -40,34 +40,16 @@ inline VkCommandBufferAllocateInfo commandBufferAllocateInfo(
   return commandBufferAllocateInfo;
 }
 
-inline VkCommandPoolCreateInfo commandPoolCreateInfo() {
-  VkCommandPoolCreateInfo cmdPoolCreateInfo {};
-  cmdPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-  return cmdPoolCreateInfo;
-}
-
 inline VkCommandBufferBeginInfo commandBufferBeginInfo() {
   VkCommandBufferBeginInfo cmdBufferBeginInfo {};
   cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   return cmdBufferBeginInfo;
 }
 
-inline VkCommandBufferInheritanceInfo commandBufferInheritanceInfo() {
-  VkCommandBufferInheritanceInfo cmdBufferInheritanceInfo {};
-  cmdBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-  return cmdBufferInheritanceInfo;
-}
-
 inline VkRenderPassBeginInfo renderPassBeginInfo() {
   VkRenderPassBeginInfo renderPassBeginInfo {};
   renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   return renderPassBeginInfo;
-}
-
-inline VkRenderPassCreateInfo renderPassCreateInfo() {
-  VkRenderPassCreateInfo renderPassCreateInfo {};
-  renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-  return renderPassCreateInfo;
 }
 
 /** @brief Initialize an image memory barrier with no image transfer ownership */
@@ -77,21 +59,6 @@ inline VkImageMemoryBarrier imageMemoryBarrier() {
   imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
   imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
   return imageMemoryBarrier;
-}
-
-/** @brief Initialize a buffer memory barrier with no image transfer ownership */
-inline VkBufferMemoryBarrier bufferMemoryBarrier() {
-  VkBufferMemoryBarrier bufferMemoryBarrier {};
-  bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-  bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-  bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-  return bufferMemoryBarrier;
-}
-
-inline VkMemoryBarrier memoryBarrier() {
-  VkMemoryBarrier memoryBarrier {};
-  memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-  return memoryBarrier;
 }
 
 inline VkImageCreateInfo imageCreateInfo() {
@@ -113,12 +80,6 @@ inline VkImageViewCreateInfo imageViewCreateInfo() {
   return imageViewCreateInfo;
 }
 
-inline VkFramebufferCreateInfo framebufferCreateInfo() {
-  VkFramebufferCreateInfo framebufferCreateInfo {};
-  framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-  return framebufferCreateInfo;
-}
-
 inline VkSemaphoreCreateInfo semaphoreCreateInfo() {
   VkSemaphoreCreateInfo semaphoreCreateInfo {};
   semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -130,12 +91,6 @@ inline VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlags flags = 0) {
   fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
   fenceCreateInfo.flags = flags;
   return fenceCreateInfo;
-}
-
-inline VkEventCreateInfo eventCreateInfo() {
-  VkEventCreateInfo eventCreateInfo {};
-  eventCreateInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
-  return eventCreateInfo;
 }
 
 inline VkSubmitInfo submitInfo() {
@@ -456,13 +411,6 @@ inline VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo(
   return pipelineDynamicStateCreateInfo;
 }
 
-inline VkPipelineTessellationStateCreateInfo pipelineTessellationStateCreateInfo(uint32_t patchControlPoints) {
-  VkPipelineTessellationStateCreateInfo pipelineTessellationStateCreateInfo {};
-  pipelineTessellationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
-  pipelineTessellationStateCreateInfo.patchControlPoints = patchControlPoints;
-  return pipelineTessellationStateCreateInfo;
-}
-
 inline VkGraphicsPipelineCreateInfo pipelineCreateInfo(
     VkPipelineLayout layout,
     VkRenderPass renderPass,
@@ -477,16 +425,6 @@ inline VkGraphicsPipelineCreateInfo pipelineCreateInfo(
   return pipelineCreateInfo;
 }
 
-inline VkComputePipelineCreateInfo computePipelineCreateInfo(
-    VkPipelineLayout layout,
-    VkPipelineCreateFlags flags = 0) {
-  VkComputePipelineCreateInfo computePipelineCreateInfo {};
-  computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-  computePipelineCreateInfo.layout = layout;
-  computePipelineCreateInfo.flags = flags;
-  return computePipelineCreateInfo;
-}
-
 inline VkPushConstantRange pushConstantRange(
     VkShaderStageFlags stageFlags,
     uint32_t size,
@@ -496,31 +434,6 @@ inline VkPushConstantRange pushConstantRange(
   pushConstantRange.offset = offset;
   pushConstantRange.size = size;
   return pushConstantRange;
-}
-
-inline VkBindSparseInfo bindSparseInfo() {
-  VkBindSparseInfo bindSparseInfo{};
-  bindSparseInfo.sType = VK_STRUCTURE_TYPE_BIND_SPARSE_INFO;
-  return bindSparseInfo;
-}
-
-/** @brief Initialize a map entry for a shader specialization constant */
-inline VkSpecializationMapEntry specializationMapEntry(uint32_t constantID, uint32_t offset, size_t size) {
-  VkSpecializationMapEntry specializationMapEntry{};
-  specializationMapEntry.constantID = constantID;
-  specializationMapEntry.offset = offset;
-  specializationMapEntry.size = size;
-  return specializationMapEntry;
-}
-
-/** @brief Initialize a specialization constant info structure to pass to a shader stage */
-inline VkSpecializationInfo specializationInfo(uint32_t mapEntryCount, const VkSpecializationMapEntry* mapEntries, size_t dataSize, const void* data) {
-  VkSpecializationInfo specializationInfo{};
-  specializationInfo.mapEntryCount = mapEntryCount;
-  specializationInfo.pMapEntries = mapEntries;
-  specializationInfo.dataSize = dataSize;
-  specializationInfo.pData = data;
-  return specializationInfo;
 }
 }  // namespace initializers
 }  // namespace vks
