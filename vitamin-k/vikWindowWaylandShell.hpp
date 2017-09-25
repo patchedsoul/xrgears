@@ -71,20 +71,11 @@ class WindowWaylandShell : public WindowWayland {
   }
 
   void init_swap_chain(vik::Renderer *r) {
-    VkResult err = VK_SUCCESS;
-
     r->swap_chain = new vks::SwapChain();
-
     vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
-
     sc->set_context(r->instance, r->physical_device, r->device);
 
-    VkWaylandSurfaceCreateInfoKHR surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
-    surfaceCreateInfo.display = display;
-    surfaceCreateInfo.surface = surface;
-    err = vkCreateWaylandSurfaceKHR(r->instance, &surfaceCreateInfo, nullptr, &sc->surface);
-
+    VkResult err = create_surface(r->instance, &sc->surface);
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
 
     sc->select_queue_and_format();
