@@ -119,20 +119,13 @@ class WindowXCBInput : public WindowXCB {
   }
 
   void init_swap_chain(vik::Renderer *r) {
-    VkResult err = VK_SUCCESS;
-
     r->swap_chain = new vks::SwapChain();
 
     vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
 
     sc->set_context(r->instance, r->physical_device, r->device);
 
-    VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-    surfaceCreateInfo.connection = connection;
-    surfaceCreateInfo.window = window;
-    err = vkCreateXcbSurfaceKHR(r->instance, &surfaceCreateInfo, nullptr, &sc->surface);
-
+    VkResult err = create_surface(r->instance, &sc->surface);
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
 
     sc->select_queue_and_format();
