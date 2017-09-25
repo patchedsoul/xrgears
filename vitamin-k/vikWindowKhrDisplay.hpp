@@ -14,9 +14,10 @@
 #include <vulkan/vulkan.h>
 
 #include "vikWindow.hpp"
+#include "../vks/vksSwapChain.hpp"
 
-namespace vks {
-class WindowKhrDisplay  : public vik::Window {
+namespace vik {
+class WindowKhrDisplay  : public Window {
  public:
   explicit WindowKhrDisplay() {}
   ~WindowKhrDisplay() {}
@@ -28,7 +29,7 @@ class WindowKhrDisplay  : public vik::Window {
   void init_swap_chain(vik::Renderer *r) {
 
     r->swap_chain = new SwapChain();
-    SwapChain *sc = (SwapChain*) r->swap_chain;
+    vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
     sc->set_context(r->instance, r->physical_device, r->device);
 
     uint32_t displayPropertyCount;

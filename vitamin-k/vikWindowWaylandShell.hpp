@@ -17,11 +17,11 @@
 
 #include <string>
 
-#include "vksApplication.hpp"
 #include "vikWindow.hpp"
+#include "../vks/vksSwapChain.hpp"
 
-namespace vks {
-class WindowWayland : public vik::Window {
+namespace vik {
+class WindowWayland : public Window {
   wl_display *display = nullptr;
   wl_registry *registry = nullptr;
   wl_compositor *compositor = nullptr;
@@ -81,7 +81,7 @@ class WindowWayland : public vik::Window {
 
     r->swap_chain = new SwapChain();
 
-    SwapChain *sc = (SwapChain*) r->swap_chain;
+    vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
 
     sc->set_context(r->instance, r->physical_device, r->device);
 

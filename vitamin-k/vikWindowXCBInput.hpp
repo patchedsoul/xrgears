@@ -16,9 +16,9 @@
 
 #include <string>
 
-#include "vksApplication.hpp"
-
-#include "vksLog.hpp"
+#include "../vks/vksLog.hpp"
+#include "../vks/vksSwapChain.hpp"
+#include "vikWindow.hpp"
 
 #define XCB_KEY_ESCAPE 0x9
 #define XCB_KEY_F1 0x43
@@ -28,8 +28,8 @@
 #define XCB_KEY_D 0x28
 #define XCB_KEY_P 0x21
 
-namespace vks {
-class WindowXCB : public vik::Window {
+namespace vik {
+class WindowXCB : public Window {
   xcb_connection_t *connection;
   xcb_screen_t *screen;
   xcb_window_t window;
@@ -67,7 +67,7 @@ class WindowXCB : public vik::Window {
 
     r->swap_chain = new SwapChain();
 
-    SwapChain *sc = (SwapChain*) r->swap_chain;
+    vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
 
     sc->set_context(r->instance, r->physical_device, r->device);
 

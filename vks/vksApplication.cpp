@@ -49,13 +49,13 @@ void Application::prepare() {
 
   switch (settings.type) {
     case vik::Window::WAYLAND_LEGACY:
-      window = new vks::WindowWayland();
+      window = new vik::WindowWayland();
       break;
     case vik::Window::XCB_MOUSE:
-      window = new vks::WindowXCB();
+      window = new vik::WindowXCB();
       break;
     case vik::Window::KHR_DISPLAY:
-      window = new vks::WindowKhrDisplay();
+      window = new vik::WindowKhrDisplay();
       break;
     default:
       vik_log_f("Unsupported window backend.");
