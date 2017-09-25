@@ -160,11 +160,6 @@ class WindowXCB : public Window {
                         window, (*reply).atom, 4, 32, 1,
                         &(*atom_wm_delete_window).atom);
 
-    std::string windowTitle = app->renderer->make_title_string(app->title);
-    xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-                        window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-                        app->title.size(), windowTitle.c_str());
-
     free(reply);
 
     if (app->settings.fullscreen) {

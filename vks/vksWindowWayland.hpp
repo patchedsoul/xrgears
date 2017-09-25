@@ -317,10 +317,6 @@ class WindowWayland : public Window {
                                     WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
                                     hmd_refresh,
                                     hmd_output);
-
-    std::string windowTitle = app->renderer->make_title_string(app->title);
-    update_window_title(windowTitle);
-
     return 0;
   }
 
