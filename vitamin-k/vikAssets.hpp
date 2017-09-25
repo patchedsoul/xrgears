@@ -13,7 +13,8 @@
 
 #include <string>
 
-class VikAssets {
+namespace vik {
+class Assets {
  public:
   static const std::string getAssetPath() {
     return "./data/";
@@ -27,3 +28,4 @@ class VikAssets {
     return getAssetPath() + "textures/";
   }
 };
+}

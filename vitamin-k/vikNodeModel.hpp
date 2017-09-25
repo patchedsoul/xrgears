@@ -24,7 +24,7 @@ class VikNodeModel : public VikNode {
 
   void loadModel(const std::string& name, vks::VertexLayout layout,
                  float scale,  vks::Device *device, VkQueue queue) {
-    model.loadFromFile(VikAssets::getAssetPath() + "models/" + name,
+    model.loadFromFile(vik::Assets::getAssetPath() + "models/" + name,
                        layout,
                        scale,
                        device,

@@ -131,8 +131,8 @@ public:
   void init_text_overlay() {
     // Load the text rendering shaders
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-    shaderStages.push_back(VikShader::load(device, "base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
-    shaderStages.push_back(VikShader::load(device, "base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
+    shaderStages.push_back(vik::Shader::load(device, "base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
+    shaderStages.push_back(vik::Shader::load(device, "base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
 
     textOverlay = new TextOverlay(
           vksDevice,

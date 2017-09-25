@@ -126,9 +126,9 @@ class VikDistortion {
 
 
     // Final fullscreen composition pass pipeline
-    shaderStages[0] = VikShader::load(device, "hmddistortion/distortion.vert.spv",
+    shaderStages[0] = vik::Shader::load(device, "hmddistortion/distortion.vert.spv",
                                       VK_SHADER_STAGE_VERTEX_BIT);
-    shaderStages[1] = VikShader::load(device,
+    shaderStages[1] = vik::Shader::load(device,
                                       "hmddistortion/openhmd-distortion-sps.frag.spv",
                                       // "hmddistortion/ph5-distortion.frag.spv",
                                       VK_SHADER_STAGE_FRAGMENT_BIT);

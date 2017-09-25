@@ -113,8 +113,8 @@ public:
     vi_create_info.pVertexAttributeDescriptions = vertexAttribute;
 
     VkPipelineShaderStageCreateInfo stagesInfo[] =  {
-      VikShader::load(renderer->device, "vkcube/vkcube.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-      VikShader::load(renderer->device, "vkcube/vkcube.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT),
+      vik::Shader::load(renderer->device, "vkcube/vkcube.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+      vik::Shader::load(renderer->device, "vkcube/vkcube.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT),
     };
 
     VkPipelineInputAssemblyStateCreateInfo assmblyInfo = {};

@@ -522,9 +522,9 @@ public:
 
     // Load shaders
     std::array<VkPipelineShaderStageCreateInfo, 3> shaderStages;
-    shaderStages[0] = VikShader::load(renderer->device, "xrgears/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    shaderStages[1] = VikShader::load(renderer->device, "xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-    shaderStages[2] = VikShader::load(renderer->device, "xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
+    shaderStages[0] = vik::Shader::load(renderer->device, "xrgears/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+    shaderStages[1] = vik::Shader::load(renderer->device, "xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+    shaderStages[2] = vik::Shader::load(renderer->device, "xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 
     VkGraphicsPipelineCreateInfo pipelineCreateInfo;
 

@@ -57,9 +57,9 @@ class VikSkyBox {
 
   void loadAssets(vks::VertexLayout vertexLayout, vks::Device *vulkanDevice, VkQueue queue) {
     // Skybox
-    model.loadFromFile(VikAssets::getAssetPath() + "models/cube.obj", vertexLayout, 10.0f, vulkanDevice, queue);
+    model.loadFromFile(vik::Assets::getAssetPath() + "models/cube.obj", vertexLayout, 10.0f, vulkanDevice, queue);
     cubeMap.loadFromFile(
-          VikAssets::getTexturePath() + "cubemap_yokohama_bc3_unorm.ktx", VK_FORMAT_BC2_UNORM_BLOCK,
+          vik::Assets::getTexturePath() + "cubemap_yokohama_bc3_unorm.ktx", VK_FORMAT_BC2_UNORM_BLOCK,
           // VikAssets::getTexturePath() + "equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT,
           // VikAssets::getTexturePath() + "hdr/pisa_cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT,
           // VikAssets::getAssetPath() + "textures/cubemap_space.ktx", VK_FORMAT_R8G8B8A8_UNORM,
@@ -113,9 +113,9 @@ class VikSkyBox {
     // Skybox pipeline (background cube)
     std::array<VkPipelineShaderStageCreateInfo, 3> shaderStagesSky;
 
-    shaderStagesSky[0] = VikShader::load(device, "xrgears/sky.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    shaderStagesSky[1] = VikShader::load(device, "xrgears/sky.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-    shaderStagesSky[2] = VikShader::load(device, "xrgears/sky.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
+    shaderStagesSky[0] = vik::Shader::load(device, "xrgears/sky.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+    shaderStagesSky[1] = vik::Shader::load(device, "xrgears/sky.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+    shaderStagesSky[2] = vik::Shader::load(device, "xrgears/sky.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 
     pipelineCreateInfo->stageCount = shaderStagesSky.size();
     pipelineCreateInfo->pStages = shaderStagesSky.data();

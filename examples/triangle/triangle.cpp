@@ -726,8 +726,8 @@ public:
 
     // Shaders
     std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages{};
-    shaderStages[0] = VikShader::load(renderer->device, "triangle/triangle.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    shaderStages[1] = VikShader::load(renderer->device, "triangle/triangle.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+    shaderStages[0] = vik::Shader::load(renderer->device, "triangle/triangle.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+    shaderStages[1] = vik::Shader::load(renderer->device, "triangle/triangle.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
     // Set pipeline shader stage info
     pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
