@@ -275,11 +275,5 @@ class WindowWaylandShell : public WindowWayland {
                                       hmd_output);
     return 0;
   }
-
-  VkBool32 check_support(VkPhysicalDevice physical_device) {
-    return (!vkGetPhysicalDeviceWaylandPresentationSupportKHR(
-          physical_device, 0, display));
-  }
-
 };
 }

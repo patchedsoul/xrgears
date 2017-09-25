@@ -269,12 +269,6 @@ public:
     vkCreateWaylandSurfaceKHR(instance, &surface_info, NULL, vk_surface);
   }
 
-  // needs initialized vulkan
-  VkBool32 check_support(VkPhysicalDevice physical_device) {
-    return vkGetPhysicalDeviceWaylandPresentationSupportKHR(
-          physical_device, 0, display);
-  }
-
   void init_swap_chain(vik::Renderer *r) {
     r->swap_chain = new vik::SwapChainVK();
     vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
