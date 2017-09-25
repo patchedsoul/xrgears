@@ -109,8 +109,55 @@ void Application::prepare() {
     }
   };
 
+  std::function<void(vik::Input::MouseScrollAxis axis, double value)> pointer_axis_cb =
+      [this](vik::Input::MouseScrollAxis axis, double value) {
+    switch (axis) {
+      case vik::Input::MouseScrollAxis::X:
+        zoom += value * 0.005f * zoomSpeed;
+        camera.translate(glm::vec3(0.0f, 0.0f, value * 0.005f * zoomSpeed));
+        viewUpdated = true;
+        break;
+      default:
+        break;
+    }
+  };
+
+    std::function<void(vik::Input::Key key, uint32_t state)> keyboard_key_cb =
+        [this](vik::Input::Key key, uint32_t state) {
+      switch (key) {
+        case vik::Input::Key::W:
+          camera.keys.up = !!state;
+          break;
+        case vik::Input::Key::S:
+          camera.keys.down = !!state;
+          break;
+        case vik::Input::Key::A:
+          camera.keys.left = !!state;
+          break;
+        case vik::Input::Key::D:
+          camera.keys.right = !!state;
+          break;
+        case vik::Input::Key::P:
+          if (state)
+            renderer->timer.toggle_animation_pause();
+          break;
+        case vik::Input::Key::F1:
+          if (state && renderer->enableTextOverlay)
+            renderer->textOverlay->visible = !renderer->textOverlay->visible;
+          break;
+        case vik::Input::Key::ESCAPE:
+          quit = true;
+          break;
+      }
+
+      if (state)
+        keyPressed(key);
+    };
+
   window->set_pointer_motion_cb(pointer_motion_cb);
   window->set_pointer_button_cb(pointer_button_cb);
+  window->set_pointer_axis_cb(pointer_axis_cb);
+  window->set_keyboard_key_cb(keyboard_key_cb);
 
   renderer->init_vulkan(name, window->required_extensions());
   window->init(this);

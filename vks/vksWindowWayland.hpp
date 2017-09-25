@@ -180,17 +180,13 @@ class WindowWayland : public Window {
                             wl_pointer *pointer, uint32_t time, uint32_t axis,
                             wl_fixed_t value) {
     WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
-    self->pointerAxis(pointer, time, axis, value);
-  }
-
-  void pointerAxis(wl_pointer *pointer, uint32_t time,
-                   uint32_t axis, wl_fixed_t value) {
     double d = wl_fixed_to_double(value);
     switch (axis) {
       case REL_X:
-        app->zoom += d * 0.005f * app->zoomSpeed;
-        app->camera.translate(glm::vec3(0.0f, 0.0f, d * 0.005f * app->zoomSpeed));
-        app->viewUpdated = true;
+        self->pointer_axis_cb(vik::Input::MouseScrollAxis::X, d);
+        break;
+      case REL_Y:
+        self->pointer_axis_cb(vik::Input::MouseScrollAxis::Y, d);
         break;
       default:
         break;
@@ -220,34 +216,32 @@ class WindowWayland : public Window {
 
   void keyboardKey(struct wl_keyboard *keyboard,
                    uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
+
+    vik::Input::Key vik_key;
     switch (key) {
       case KEY_W:
-        app->camera.keys.up = !!state;
+        vik_key = vik::Input::Key::W;
         break;
       case KEY_S:
-        app->camera.keys.down = !!state;
+        vik_key = vik::Input::Key::S;
         break;
       case KEY_A:
-        app->camera.keys.left = !!state;
+        vik_key = vik::Input::Key::A;
         break;
       case KEY_D:
-        app->camera.keys.right = !!state;
+        vik_key = vik::Input::Key::D;
         break;
       case KEY_P:
-        if (state)
-          app->renderer->timer.toggle_animation_pause();
+        vik_key = vik::Input::Key::P;
         break;
       case KEY_F1:
-        if (state && app->renderer->enableTextOverlay)
-          app->renderer->textOverlay->visible = !app->renderer->textOverlay->visible;
+        vik_key = vik::Input::Key::F1;
         break;
       case KEY_ESC:
-        app->quit = true;
+        vik_key = vik::Input::Key::ESCAPE;
         break;
     }
-
-    if (state)
-      app->keyPressed(key);
+    keyboard_key_cb(vik_key, state);
   }
 
   static void keyboardModifiersCb(void *data, struct wl_keyboard *keyboard,
