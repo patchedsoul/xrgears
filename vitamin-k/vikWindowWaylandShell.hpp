@@ -21,7 +21,7 @@
 #include "../vks/vksSwapChain.hpp"
 
 namespace vik {
-class WindowWayland : public Window {
+class WindowWaylandShell : public Window {
   wl_display *display = nullptr;
   wl_registry *registry = nullptr;
   wl_compositor *compositor = nullptr;
@@ -35,7 +35,7 @@ class WindowWayland : public Window {
   int hmd_refresh = 0;
 
  public:
-  explicit WindowWayland() {
+  explicit WindowWaylandShell() {
     display = wl_display_connect(NULL);
     vik_log_f_if(!display, "Could not connect to Wayland display!");
 
@@ -50,7 +50,7 @@ class WindowWayland : public Window {
     vik_log_f_if(!compositor || !shell || !seat, "Could not bind Wayland protocols!");
   }
 
-  ~WindowWayland() {
+  ~WindowWaylandShell() {
     wl_shell_surface_destroy(shell_surface);
     wl_surface_destroy(surface);
     if (keyboard)
@@ -79,7 +79,7 @@ class WindowWayland : public Window {
   void init_swap_chain(vik::Renderer *r) {
     VkResult err = VK_SUCCESS;
 
-    r->swap_chain = new SwapChain();
+    r->swap_chain = new vks::SwapChain();
 
     vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
 
@@ -98,7 +98,7 @@ class WindowWayland : public Window {
 
   static void registryGlobalCb(void *data, wl_registry *registry, uint32_t name,
                                const char *interface, uint32_t version) {
-    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+    WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
     self->registryGlobal(registry, name, interface, version);
   }
 
@@ -116,7 +116,7 @@ class WindowWayland : public Window {
         
     //    if (w == 2560 && h == 1440) {
         if (w == 1920 && h == 1200) {
-          WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+          WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
           vik_log_d("setting wl_output to %p", wl_output);
           self->hmd_output = wl_output;
           self->hmd_refresh = refresh;
@@ -136,7 +136,7 @@ class WindowWayland : public Window {
     }
 
   static void seatCapabilitiesCb(void *data, wl_seat *seat, uint32_t caps) {
-    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+    WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
     self->seatCapabilities(seat, caps);
   }
 
@@ -150,7 +150,7 @@ class WindowWayland : public Window {
 
   static void pointerMotionCb(void *data, wl_pointer *pointer, uint32_t time,
                               wl_fixed_t x, wl_fixed_t y) {
-    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+    WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
     self->pointer_motion_cb(wl_fixed_to_double(x),
                             wl_fixed_to_double(y));
   }
@@ -197,14 +197,14 @@ class WindowWayland : public Window {
   static void pointerButtonCb(void *data,
                               wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button,
                               uint32_t state) {
-    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+    WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
     self->pointer_button_cb(wayland_to_vik_button(button), state);
   }
 
   static void pointerAxisCb(void *data,
                             wl_pointer *pointer, uint32_t time, uint32_t axis,
                             wl_fixed_t value) {
-    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+    WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
     double d = wl_fixed_to_double(value);
     self->pointer_axis_cb(wayland_to_vik_axis(axis), d);
   }
@@ -226,7 +226,7 @@ class WindowWayland : public Window {
   static void keyboardKeyCb(void *data,
                             struct wl_keyboard *keyboard, uint32_t serial, uint32_t time,
                             uint32_t key, uint32_t state) {
-    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+    WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
     self->keyboard_key_cb(wayland_to_vik_key(key), state);
   }
 

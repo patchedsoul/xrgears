@@ -29,7 +29,7 @@
 #define XCB_KEY_P 0x21
 
 namespace vik {
-class WindowXCB : public Window {
+class WindowXCBInput : public Window {
   xcb_connection_t *connection;
   xcb_screen_t *screen;
   xcb_window_t window;
@@ -37,7 +37,7 @@ class WindowXCB : public Window {
   xcb_visualid_t root_visual;
 
  public:
-  explicit WindowXCB() {
+  explicit WindowXCBInput() {
     const xcb_setup_t *setup;
     xcb_screen_iterator_t iter;
     int scr;
@@ -57,7 +57,7 @@ class WindowXCB : public Window {
     root_visual = iter.data->root_visual;
   }
 
-  ~WindowXCB() {
+  ~WindowXCBInput() {
     xcb_destroy_window(connection, window);
     xcb_disconnect(connection);
   }
@@ -65,7 +65,7 @@ class WindowXCB : public Window {
   void init_swap_chain(vik::Renderer *r) {
     VkResult err = VK_SUCCESS;
 
-    r->swap_chain = new SwapChain();
+    r->swap_chain = new vks::SwapChain();
 
     vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
 

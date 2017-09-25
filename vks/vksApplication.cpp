@@ -49,10 +49,10 @@ void Application::prepare() {
 
   switch (settings.type) {
     case vik::Window::WAYLAND_LEGACY:
-      window = new vik::WindowWayland();
+      window = new vik::WindowWaylandShell();
       break;
     case vik::Window::XCB_MOUSE:
-      window = new vik::WindowXCB();
+      window = new vik::WindowXCBInput();
       break;
     case vik::Window::KHR_DISPLAY:
       window = new vik::WindowKhrDisplay();
