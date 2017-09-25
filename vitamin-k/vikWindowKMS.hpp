@@ -21,9 +21,7 @@
 #include <linux/vt.h>
 #include <linux/major.h>
 
-#include "vkcApplication.hpp"
-#include "vkcRenderer.hpp"
-
+#include "../vkc/vkcRenderer.hpp"
 #include "../vitamin-k/vikWindow.hpp"
 #include "../vks/vksLog.hpp"
 
@@ -34,8 +32,8 @@ page_flip_handler(int fd, unsigned int frame,
 
 static struct termios save_tio;
 
-namespace vkc {
-class WindowKMS : public vik::Window {
+namespace vik {
+class WindowKMS : public Window {
 
   drmModeCrtc *crtc;
   drmModeConnector *connector;

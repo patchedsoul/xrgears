@@ -38,13 +38,13 @@ public:
    int init_window(vik::Window::window_type m) {
      switch (settings.type) {
        case vik::Window::KMS:
-         window = new WindowKMS();
+         window = new vik::WindowKMS();
          break;
        case vik::Window::XCB_SIMPLE:
-         window = new WindowXCB();
+         window = new vik::WindowXCB();
          break;
        case vik::Window::WAYLAND_XDG:
-         window = new WindowWayland();
+         window = new vik::WindowWayland();
          break;
        case vik::Window::WAYLAND_LEGACY:
          break;

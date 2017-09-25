@@ -4,9 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "vkcApplication.hpp"
-#include "vkcRenderer.hpp"
-
+#include "../vkc/vkcRenderer.hpp"
 #include "../vitamin-k/vikWindow.hpp"
 #include "../vks/vksLog.hpp"
 
@@ -28,8 +26,8 @@ get_atom(struct xcb_connection_t *conn, const char *name)
   return atom;
 }
 
-namespace vkc {
-class WindowXCB : public vik::Window {
+namespace vik {
+class WindowXCB : public Window {
 
   xcb_connection_t *conn;
   xcb_window_t window;
