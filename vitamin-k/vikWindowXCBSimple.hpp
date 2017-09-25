@@ -1,6 +1,5 @@
 #pragma once
 
-#include <xcb/xcb.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -29,18 +28,14 @@ get_atom(struct xcb_connection_t *conn, const char *name)
 namespace vik {
 class WindowXCBSimple : public WindowXCB {
 
-  xcb_connection_t *conn;
-  xcb_window_t window;
   xcb_atom_t atom_wm_protocols;
   xcb_atom_t atom_wm_delete_window;
-  xcb_visualid_t root_visual;
 
   bool repaint = false;
 
 public:
   WindowXCBSimple() {
-    window = XCB_NONE;
-    name = "xcb";
+    name = "xcb-simple";
   }
 
   ~WindowXCBSimple() {}
@@ -50,11 +45,11 @@ public:
     xcb_screen_iterator_t iter;
     static const char title[] = "Vulkan Cube";
 
-    conn = xcb_connect(0, 0);
-    if (xcb_connection_has_error(conn))
+    connection = xcb_connect(0, 0);
+    if (xcb_connection_has_error(connection))
       return -1;
 
-    window = xcb_generate_id(conn);
+    window = xcb_generate_id(connection);
 
     uint32_t window_values[] = {
       XCB_EVENT_MASK_EXPOSURE |
@@ -62,9 +57,9 @@ public:
       XCB_EVENT_MASK_KEY_PRESS
     };
 
-    iter = xcb_setup_roots_iterator(xcb_get_setup(conn));
+    iter = xcb_setup_roots_iterator(xcb_get_setup(connection));
 
-    xcb_create_window(conn,
+    xcb_create_window(connection,
                       XCB_COPY_FROM_PARENT,
                       window,
                       iter.data->root,
@@ -76,9 +71,9 @@ public:
                       iter.data->root_visual,
                       XCB_CW_EVENT_MASK, window_values);
 
-    atom_wm_protocols = get_atom(conn, "WM_PROTOCOLS");
-    atom_wm_delete_window = get_atom(conn, "WM_DELETE_WINDOW");
-    xcb_change_property(conn,
+    atom_wm_protocols = get_atom(connection, "WM_PROTOCOLS");
+    atom_wm_delete_window = get_atom(connection, "WM_DELETE_WINDOW");
+    xcb_change_property(connection,
                         XCB_PROP_MODE_REPLACE,
                         window,
                         atom_wm_protocols,
@@ -86,38 +81,29 @@ public:
                         32,
                         1, &atom_wm_delete_window);
 
-    xcb_change_property(conn,
+    xcb_change_property(connection,
                         XCB_PROP_MODE_REPLACE,
                         window,
-                        get_atom(conn, "_NET_WM_NAME"),
-                        get_atom(conn, "UTF8_STRING"),
+                        get_atom(connection, "_NET_WM_NAME"),
+                        get_atom(connection, "UTF8_STRING"),
                         8, // sizeof(char),
                         strlen(title), title);
 
-    xcb_map_window(conn, window);
+    xcb_map_window(connection, window);
 
-    xcb_flush(conn);
+    xcb_flush(connection);
 
     root_visual = iter.data->root_visual;
 
     return 0;
   }
 
-  const std::vector<const char*> required_extensions() {
-    return { VK_KHR_XCB_SURFACE_EXTENSION_NAME };
-  }
-
   void create_surface(VkInstance instance, VkSurfaceKHR *surface) {
     VkXcbSurfaceCreateInfoKHR surface_info = {};
     surface_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-    surface_info.connection = conn;
+    surface_info.connection = connection;
     surface_info.window = window;
     vkCreateXcbSurfaceKHR(instance, &surface_info, NULL, surface);
-  }
-
-  VkBool32 check_support(VkPhysicalDevice physical_device) {
-    return vkGetPhysicalDeviceXcbPresentationSupportKHR(
-          physical_device, 0, conn, root_visual);
   }
 
   void init_swap_chain(vik::Renderer *r) {
@@ -140,7 +126,7 @@ public:
     client_message.format = 32;
     client_message.window = window;
     client_message.type = XCB_ATOM_NOTICE;
-    xcb_send_event(conn, 0, window, 0, (char *) &client_message);
+    xcb_send_event(connection, 0, window, 0, (char *) &client_message);
   }
 
 
@@ -150,7 +136,7 @@ public:
     xcb_client_message_event_t *client_message;
     xcb_configure_notify_event_t *configure;
 
-    event = xcb_wait_for_event(conn);
+    event = xcb_wait_for_event(connection);
     while (event) {
       switch (event->response_type & 0x7f) {
         case XCB_CLIENT_MESSAGE:
@@ -202,7 +188,7 @@ public:
       }
       free(event);
 
-      event = xcb_poll_for_event(conn);
+      event = xcb_poll_for_event(connection);
     }
   }
 
@@ -218,7 +204,7 @@ public:
       sc->render(r->queue, vkc_renderer->semaphore);
       schedule_repaint();
     }
-    xcb_flush(conn);
+    xcb_flush(connection);
   }
 };
 }
