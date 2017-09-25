@@ -33,8 +33,6 @@ class WindowWayland : public Window {
   wl_shell_surface *shell_surface = nullptr;
   wl_output *hmd_output = nullptr;
   int hmd_refresh = 0;
-  
-  vks::Application* app;
 
  public:
   explicit WindowWayland() {
@@ -157,23 +155,50 @@ class WindowWayland : public Window {
                             wl_fixed_to_double(y));
   }
 
+  static vik::Input::Key wayland_to_vik_key(uint32_t key) {
+    switch (key) {
+      case KEY_W:
+        return vik::Input::Key::W;
+      case KEY_S:
+        return vik::Input::Key::S;
+      case KEY_A:
+        return vik::Input::Key::A;
+      case KEY_D:
+        return vik::Input::Key::D;
+      case KEY_P:
+        return vik::Input::Key::P;
+      case KEY_F1:
+        return vik::Input::Key::F1;
+      case KEY_ESC:
+        return vik::Input::Key::ESCAPE;
+    }
+  }
+
+  static vik::Input::MouseScrollAxis wayland_to_vik_axis(uint32_t axis) {
+    switch (axis) {
+      case REL_X:
+        return vik::Input::MouseScrollAxis::X;
+      case REL_Y:
+        return vik::Input::MouseScrollAxis::Y;
+    }
+  }
+
+  static vik::Input::MouseButton wayland_to_vik_button(uint32_t button) {
+    switch (button) {
+      case BTN_LEFT:
+        return vik::Input::MouseButton::Left;
+      case BTN_MIDDLE:
+        return vik::Input::MouseButton::Middle;
+      case BTN_RIGHT:
+        return vik::Input::MouseButton::Right;
+    }
+  }
+
   static void pointerButtonCb(void *data,
                               wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button,
                               uint32_t state) {
     WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
-    switch (button) {
-      case BTN_LEFT:
-        self->pointer_button_cb(vik::Input::MouseButton::Left, state);
-        break;
-      case BTN_MIDDLE:
-        self->pointer_button_cb(vik::Input::MouseButton::Middle, state);
-        break;
-      case BTN_RIGHT:
-        self->pointer_button_cb(vik::Input::MouseButton::Right, state);
-        break;
-      default:
-        break;
-    }
+    self->pointer_button_cb(wayland_to_vik_button(button), state);
   }
 
   static void pointerAxisCb(void *data,
@@ -181,16 +206,7 @@ class WindowWayland : public Window {
                             wl_fixed_t value) {
     WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
     double d = wl_fixed_to_double(value);
-    switch (axis) {
-      case REL_X:
-        self->pointer_axis_cb(vik::Input::MouseScrollAxis::X, d);
-        break;
-      case REL_Y:
-        self->pointer_axis_cb(vik::Input::MouseScrollAxis::Y, d);
-        break;
-      default:
-        break;
-    }
+    self->pointer_axis_cb(wayland_to_vik_axis(axis), d);
   }
 
   static void keyboardKeymapCb(void *data,
@@ -211,37 +227,7 @@ class WindowWayland : public Window {
                             struct wl_keyboard *keyboard, uint32_t serial, uint32_t time,
                             uint32_t key, uint32_t state) {
     WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
-    self->keyboardKey(keyboard, serial, time, key, state);
-  }
-
-  void keyboardKey(struct wl_keyboard *keyboard,
-                   uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
-
-    vik::Input::Key vik_key;
-    switch (key) {
-      case KEY_W:
-        vik_key = vik::Input::Key::W;
-        break;
-      case KEY_S:
-        vik_key = vik::Input::Key::S;
-        break;
-      case KEY_A:
-        vik_key = vik::Input::Key::A;
-        break;
-      case KEY_D:
-        vik_key = vik::Input::Key::D;
-        break;
-      case KEY_P:
-        vik_key = vik::Input::Key::P;
-        break;
-      case KEY_F1:
-        vik_key = vik::Input::Key::F1;
-        break;
-      case KEY_ESC:
-        vik_key = vik::Input::Key::ESCAPE;
-        break;
-    }
-    keyboard_key_cb(vik_key, state);
+    self->keyboard_key_cb(wayland_to_vik_key(key), state);
   }
 
   static void keyboardModifiersCb(void *data, struct wl_keyboard *keyboard,
@@ -315,7 +301,6 @@ class WindowWayland : public Window {
   static void PopupDoneCb(void *data, struct wl_shell_surface *shell_surface) {}
 
   int init(vks::Application * app) {
-    this->app = app;
     surface = wl_compositor_create_surface(compositor);
     shell_surface = wl_shell_get_shell_surface(shell, surface);
 
