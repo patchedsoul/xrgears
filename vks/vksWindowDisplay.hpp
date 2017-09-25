@@ -135,7 +135,7 @@ class WindowKhrDisplay  : public Window {
   void update_window_title(const std::string& title) {}
 
   int init(Application *app) {}
-  void iterate(Application *app) {}
+  void iterate() {}
 
   VkBool32 check_support(VkPhysicalDevice physical_device) {
     return true;

@@ -99,11 +99,11 @@ class WindowXCB : public Window {
     sc->select_queue_and_format();
   }
 
-  void iterate(vks::Application *app) {
+  void iterate() {
     xcb_generic_event_t *event;
     //xcb_flush(connection);
     while ((event = xcb_poll_for_event(connection))) {
-      handleEvent(app, event);
+      handle_event(event);
       free(event);
     }
   }
@@ -214,16 +214,7 @@ class WindowXCB : public Window {
     }
   }
 
-  void app_configure(vks::Application *app, uint16_t width, uint16_t height) {
-    if ((app->prepared) && ((width != app->renderer->width) || (height != app->renderer->height))) {
-      app->renderer->destWidth = width;
-      app->renderer->destHeight = height;
-      if ((app->renderer->destWidth > 0) && (app->renderer->destHeight > 0))
-        app->windowResize();
-    }
-  }
-
-  void handleEvent(vks::Application *app, const xcb_generic_event_t *event) {
+  void handle_event(const xcb_generic_event_t *event) {
     switch (event->response_type & 0x7f) {
       case XCB_CLIENT_MESSAGE:
         if ((*(xcb_client_message_event_t*)event).data.data32[0] == (*atom_wm_delete_window).atom)
@@ -259,7 +250,7 @@ class WindowXCB : public Window {
         break;
       case XCB_CONFIGURE_NOTIFY: {
         const xcb_configure_notify_event_t *cfgEvent = (const xcb_configure_notify_event_t *)event;
-        app_configure(app, cfgEvent->width, cfgEvent->height);
+        configure_cb(cfgEvent->width, cfgEvent->height);
       }
         break;
       default:

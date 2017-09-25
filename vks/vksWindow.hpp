@@ -25,6 +25,6 @@ class Window : public vik::Window {
   ~Window() {}
 
   virtual int init(Application *app) = 0;
-  virtual void iterate(Application *app) = 0;
+  virtual void iterate() = 0;
 };
 }
