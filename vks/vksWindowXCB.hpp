@@ -184,6 +184,91 @@ class WindowXCB : public Window {
     return 0;
   }
 
+  void mouse_motion(vks::Application *app, float x, float y) {
+    if (app->mouseButtons.left) {
+      app->rotation.x += (app->mousePos.y - x) * 1.25f;
+      app->rotation.y -= (app->mousePos.x - y) * 1.25f;
+      app->camera.rotate(
+            glm::vec3((
+                        app->mousePos.y - y) * app->camera.rotationSpeed,
+                      -(app->mousePos.x - x) * app->camera.rotationSpeed,
+                      0.0f));
+      app->viewUpdated = true;
+    }
+    if (app->mouseButtons.right) {
+      app->zoom += (app->mousePos.y - y) * .005f;
+      app->camera.translate(glm::vec3(-0.0f, 0.0f, (app->mousePos.y - y) * .005f * app->zoomSpeed));
+      app->viewUpdated = true;
+    }
+    if (app->mouseButtons.middle) {
+      app->cameraPos.x -= (app->mousePos.x - x) * 0.01f;
+      app->cameraPos.y -= (app->mousePos.y - y) * 0.01f;
+      app->camera.translate(
+            glm::vec3(
+              -(app->mousePos.x - x) * 0.01f,
+              -(app->mousePos.y - y) * 0.01f,
+              0.0f));
+      app->viewUpdated = true;
+      app->mousePos.x = x;
+      app->mousePos.y = y;
+    }
+    app->mousePos = glm::vec2(x, y);
+  }
+
+  void mouse_button(vks::Application *app, xcb_button_t button, bool state) {
+    if (button == XCB_BUTTON_INDEX_1)
+      app->mouseButtons.left = state;
+    if (button == XCB_BUTTON_INDEX_2)
+      app->mouseButtons.middle = state;
+    if (button == XCB_BUTTON_INDEX_3)
+      app->mouseButtons.right = state;
+  }
+
+  void key_press(vks::Application *app, xcb_keycode_t key) {
+    switch (key) {
+      case XCB_KEY_W:
+        app->camera.keys.up = true;
+        break;
+      case XCB_KEY_S:
+        app->camera.keys.down = true;
+        break;
+      case XCB_KEY_A:
+        app->camera.keys.left = true;
+        break;
+      case XCB_KEY_D:
+        app->camera.keys.right = true;
+        break;
+      case XCB_KEY_P:
+        app->renderer->timer.toggle_animation_pause();
+        break;
+      case XCB_KEY_F1:
+        if (app->renderer->enableTextOverlay)
+          app->renderer->textOverlay->visible = !app->renderer->textOverlay->visible;
+        break;
+    }
+  }
+
+  void key_release(vks::Application *app, xcb_keycode_t key) {
+    switch (key) {
+      case XCB_KEY_W:
+        app->camera.keys.up = false;
+        break;
+      case XCB_KEY_S:
+        app->camera.keys.down = false;
+        break;
+      case XCB_KEY_A:
+        app->camera.keys.left = false;
+        break;
+      case XCB_KEY_D:
+        app->camera.keys.right = false;
+        break;
+      case XCB_KEY_ESCAPE:
+        app->quit = true;
+        break;
+    }
+    app->keyPressed(key);
+  }
+
   void handleEvent(vks::Application *app, const xcb_generic_event_t *event) {
     switch (event->response_type & 0x7f) {
       case XCB_CLIENT_MESSAGE:
@@ -194,101 +279,27 @@ class WindowXCB : public Window {
         break;
       case XCB_MOTION_NOTIFY: {
         xcb_motion_notify_event_t *motion = (xcb_motion_notify_event_t *)event;
-        if (app->mouseButtons.left) {
-          app->rotation.x += (app->mousePos.y - (float)motion->event_y) * 1.25f;
-          app->rotation.y -= (app->mousePos.x - (float)motion->event_x) * 1.25f;
-          app->camera.rotate(
-                glm::vec3((
-                            app->mousePos.y - (float)motion->event_y) * app->camera.rotationSpeed,
-                          -(app->mousePos.x - (float)motion->event_x) * app->camera.rotationSpeed,
-                          0.0f));
-          app->viewUpdated = true;
-        }
-        if (app->mouseButtons.right) {
-          app->zoom += (app->mousePos.y - (float)motion->event_y) * .005f;
-          app->camera.translate(glm::vec3(-0.0f, 0.0f, (app->mousePos.y - (float)motion->event_y) * .005f * app->zoomSpeed));
-          app->viewUpdated = true;
-        }
-        if (app->mouseButtons.middle) {
-          app->cameraPos.x -= (app->mousePos.x - (float)motion->event_x) * 0.01f;
-          app->cameraPos.y -= (app->mousePos.y - (float)motion->event_y) * 0.01f;
-          app->camera.translate(
-                glm::vec3(
-                  -(app->mousePos.x - (float)(float)motion->event_x) * 0.01f,
-                  -(app->mousePos.y - (float)motion->event_y) * 0.01f,
-                  0.0f));
-          app->viewUpdated = true;
-          app->mousePos.x = (float)motion->event_x;
-          app->mousePos.y = (float)motion->event_y;
-        }
-        app->mousePos = glm::vec2((float)motion->event_x, (float)motion->event_y);
+        mouse_motion(app, (float)motion->event_x, (float)motion->event_y);
       }
         break;
       case XCB_BUTTON_PRESS: {
         xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
-        if (press->detail == XCB_BUTTON_INDEX_1)
-          app->mouseButtons.left = true;
-        if (press->detail == XCB_BUTTON_INDEX_2)
-          app->mouseButtons.middle = true;
-        if (press->detail == XCB_BUTTON_INDEX_3)
-          app->mouseButtons.right = true;
+        mouse_button(app, press->detail, true);
       }
         break;
       case XCB_BUTTON_RELEASE: {
         xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
-        if (press->detail == XCB_BUTTON_INDEX_1)
-          app->mouseButtons.left = false;
-        if (press->detail == XCB_BUTTON_INDEX_2)
-          app->mouseButtons.middle = false;
-        if (press->detail == XCB_BUTTON_INDEX_3)
-          app->mouseButtons.right = false;
+        mouse_button(app, press->detail, false);
       }
         break;
       case XCB_KEY_PRESS: {
         const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
-        switch (keyEvent->detail) {
-          case XCB_KEY_W:
-            app->camera.keys.up = true;
-            break;
-          case XCB_KEY_S:
-            app->camera.keys.down = true;
-            break;
-          case XCB_KEY_A:
-            app->camera.keys.left = true;
-            break;
-          case XCB_KEY_D:
-            app->camera.keys.right = true;
-            break;
-          case XCB_KEY_P:
-            app->renderer->timer.toggle_animation_pause();
-            break;
-          case XCB_KEY_F1:
-            if (app->renderer->enableTextOverlay)
-              app->renderer->textOverlay->visible = !app->renderer->textOverlay->visible;
-            break;
-        }
+        key_press(app, keyEvent->detail);
       }
         break;
       case XCB_KEY_RELEASE: {
         const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
-        switch (keyEvent->detail) {
-          case XCB_KEY_W:
-            app->camera.keys.up = false;
-            break;
-          case XCB_KEY_S:
-            app->camera.keys.down = false;
-            break;
-          case XCB_KEY_A:
-            app->camera.keys.left = false;
-            break;
-          case XCB_KEY_D:
-            app->camera.keys.right = false;
-            break;
-          case XCB_KEY_ESCAPE:
-            app->quit = true;
-            break;
-        }
-        app->keyPressed(keyEvent->detail);
+        key_release(app, keyEvent->detail);
       }
         break;
       case XCB_DESTROY_NOTIFY:
