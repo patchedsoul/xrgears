@@ -8,7 +8,6 @@
 
 #include "../vitamin-k/vikApplication.hpp"
 
-#include "vkcWindow.hpp"
 #include "vkcWindowXCB.hpp"
 #include "vkcWindowKMS.hpp"
 #include "vkcWindowWayland.hpp"
@@ -19,7 +18,7 @@ namespace vkc {
 class Application : public vik::Application {
 public:
    Renderer *renderer;
-   Window *window;
+   vik::Window *window;
    bool quit = false;
 
    Application(uint32_t w, uint32_t h) {

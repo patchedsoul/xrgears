@@ -11,7 +11,6 @@
 
 #include "vksApplication.hpp"
 #include "VikAssets.hpp"
-#include "vksWindow.hpp"
 #include "vksWindowWayland.hpp"
 #include "vksWindowXCB.hpp"
 #include "vksWindowDisplay.hpp"
@@ -179,7 +178,7 @@ void Application::prepare() {
   window->set_quit_cb(quit_cb);
 
   renderer->init_vulkan(name, window->required_extensions());
-  window->init(this);
+  window->init(renderer);
 
   std::string windowTitle = renderer->make_title_string(title);
   window->update_window_title(windowTitle);
@@ -201,7 +200,7 @@ void Application::loop() {
     renderer->timer.start();
     check_view_update();
 
-    window->iterate();
+    window->iterate(renderer);
 
     render();
     renderer->timer.increment();

@@ -4,10 +4,10 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "vkcWindow.hpp"
 #include "vkcApplication.hpp"
 #include "vkcRenderer.hpp"
 
+#include "../vitamin-k/vikWindow.hpp"
 #include "../vks/vksLog.hpp"
 
 static xcb_atom_t
@@ -29,7 +29,7 @@ get_atom(struct xcb_connection_t *conn, const char *name)
 }
 
 namespace vkc {
-class WindowXCB : public Window {
+class WindowXCB : public vik::Window {
 
   xcb_connection_t *conn;
   xcb_window_t window;

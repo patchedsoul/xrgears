@@ -16,7 +16,6 @@
 
 #include <string>
 
-#include "vksWindow.hpp"
 #include "vksApplication.hpp"
 
 #include "vksLog.hpp"
@@ -30,7 +29,7 @@
 #define XCB_KEY_P 0x21
 
 namespace vks {
-class WindowXCB : public Window {
+class WindowXCB : public vik::Window {
   xcb_connection_t *connection;
   xcb_screen_t *screen;
   xcb_window_t window;
@@ -83,7 +82,7 @@ class WindowXCB : public Window {
     sc->select_queue_and_format();
   }
 
-  void iterate() {
+  void iterate(vik::Renderer *r) {
     xcb_generic_event_t *event;
     //xcb_flush(connection);
     while ((event = xcb_poll_for_event(connection))) {
@@ -104,7 +103,7 @@ class WindowXCB : public Window {
   }
 
   // Set up a window using XCB and request event types
-  int init(bool fullscreen) {
+  int init(vik::Renderer *r) {
     uint32_t value_mask, value_list[32];
 
     if (connection == nullptr)
@@ -123,7 +122,7 @@ class WindowXCB : public Window {
         XCB_EVENT_MASK_BUTTON_PRESS |
         XCB_EVENT_MASK_BUTTON_RELEASE;
 
-    if (fullscreen)
+    if (r->settings->fullscreen)
       dimension_cb(screen->width_in_pixels, screen->height_in_pixels);
 
     xcb_create_window(connection,
@@ -144,7 +143,7 @@ class WindowXCB : public Window {
 
     free(reply);
 
-    if (fullscreen) {
+    if (r->settings->fullscreen) {
       xcb_intern_atom_reply_t *atom_wm_state = intern_atom_helper(connection, false, "_NET_WM_STATE");
       xcb_intern_atom_reply_t *atom_wm_fullscreen = intern_atom_helper(connection, false, "_NET_WM_STATE_FULLSCREEN");
       xcb_change_property(connection,

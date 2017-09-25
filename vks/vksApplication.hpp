@@ -42,7 +42,7 @@ class Application : public vik::Application {
  public:
   Renderer *renderer;
   Camera camera;
-  Window *window;
+  vik::Window *window;
 
   bool prepared = false;
   bool viewUpdated = false;

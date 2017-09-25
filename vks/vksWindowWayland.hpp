@@ -17,11 +17,11 @@
 
 #include <string>
 
-#include "vksWindow.hpp"
 #include "vksApplication.hpp"
+#include "vikWindow.hpp"
 
 namespace vks {
-class WindowWayland : public Window {
+class WindowWayland : public vik::Window {
   wl_display *display = nullptr;
   wl_registry *registry = nullptr;
   wl_compositor *compositor = nullptr;
@@ -64,7 +64,7 @@ class WindowWayland : public Window {
     wl_display_disconnect(display);
   }
 
-  void iterate() {
+  void iterate(vik::Renderer *r) {
     while (wl_display_prepare_read(display) != 0)
       wl_display_dispatch_pending(display);
     wl_display_flush(display);
@@ -300,7 +300,7 @@ class WindowWayland : public Window {
 
   static void PopupDoneCb(void *data, struct wl_shell_surface *shell_surface) {}
 
-  int init(bool fullscreen) {
+  int init(vik::Renderer *r) {
     surface = wl_compositor_create_surface(compositor);
     shell_surface = wl_shell_get_shell_surface(shell, surface);
 
@@ -313,7 +313,7 @@ class WindowWayland : public Window {
     vik_log_d("setting hmd refresh to %d", hmd_refresh);
     vik_log_d("setting hmd output to %p", hmd_output);
 
-    if (fullscreen)
+    if (r->settings->fullscreen)
       wl_shell_surface_set_fullscreen(shell_surface,
                                       WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
                                       hmd_refresh,

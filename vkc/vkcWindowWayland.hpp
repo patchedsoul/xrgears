@@ -11,15 +11,15 @@
 #include <wayland-client.h>
 #include <linux/input.h>
 
-#include "vkcWindow.hpp"
 #include "vkcApplication.hpp"
 #include "vkcRenderer.hpp"
 
 #include "../xdg-shell/xdg-shell-unstable-v6-client-protocol.h"
+#include "../vitamin-k/vikWindow.hpp"
 #include "../vks/vksLog.hpp"
 
 namespace vkc {
-class WindowWayland : public Window {
+class WindowWayland : public vik::Window {
 
   struct wl_display *display;
   struct wl_compositor *compositor;

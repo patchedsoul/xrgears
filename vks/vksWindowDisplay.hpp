@@ -13,10 +13,10 @@
 
 #include <vulkan/vulkan.h>
 
-#include "vksWindow.hpp"
+#include "vikWindow.hpp"
 
 namespace vks {
-class WindowKhrDisplay  : public Window {
+class WindowKhrDisplay  : public vik::Window {
  public:
   explicit WindowKhrDisplay() {}
   ~WindowKhrDisplay() {}
@@ -134,8 +134,8 @@ class WindowKhrDisplay  : public Window {
 
   void update_window_title(const std::string& title) {}
 
-  int init(bool fullscreen) {}
-  void iterate() {}
+  int init(vik::Renderer *r) {}
+  void iterate(vik::Renderer *r) {}
 
   VkBool32 check_support(VkPhysicalDevice physical_device) {
     return true;
