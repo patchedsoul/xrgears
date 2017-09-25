@@ -261,14 +261,6 @@ public:
     return 0;
   }
 
-  void create_surface(VkInstance instance, VkSurfaceKHR *vk_surface) {
-    VkWaylandSurfaceCreateInfoKHR surface_info = {};
-    surface_info.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
-    surface_info.display = display;
-    surface_info.surface = surface;
-    vkCreateWaylandSurfaceKHR(instance, &surface_info, NULL, vk_surface);
-  }
-
   void init_swap_chain(vik::Renderer *r) {
     r->swap_chain = new vik::SwapChainVK();
     vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;

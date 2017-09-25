@@ -67,6 +67,13 @@ class WindowWayland : public Window {
           physical_device, 0, display);
   }
 
+  VkResult create_surface(VkInstance instance, VkSurfaceKHR *vk_surface) {
+    VkWaylandSurfaceCreateInfoKHR surface_info = {};
+    surface_info.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+    surface_info.display = display;
+    surface_info.surface = surface;
+    return vkCreateWaylandSurfaceKHR(instance, &surface_info, NULL, vk_surface);
+  }
 
 };
 }
