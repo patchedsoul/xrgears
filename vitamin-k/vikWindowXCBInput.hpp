@@ -44,6 +44,7 @@ class WindowXCBInput : public WindowXCB {
   ~WindowXCBInput() {
     xcb_destroy_window(connection, window);
     xcb_disconnect(connection);
+    xcb_key_symbols_free(syms);
   }
 
   // Set up a window using XCB and request event types
@@ -51,6 +52,7 @@ class WindowXCBInput : public WindowXCB {
     uint32_t value_mask, value_list[32];
 
     window = xcb_generate_id(connection);
+    syms = xcb_key_symbols_alloc(connection);
 
     value_mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
     value_list[0] = screen->black_pixel;

@@ -77,7 +77,7 @@ include_directories(vkc)
 include_directories(vitamin-k)
 include_directories(xdg-shell)
 
-target_link_libraries(vks vulkan xcb assimp wayland-client gbm drm m stdc++ xdg-shell)
+target_link_libraries(vks vulkan xcb xcb-keysyms assimp wayland-client gbm drm m stdc++ xdg-shell)
 
 target_link_libraries(vkc vks)
 

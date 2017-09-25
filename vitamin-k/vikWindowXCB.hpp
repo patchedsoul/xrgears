@@ -3,14 +3,8 @@
 #include "vikWindow.hpp"
 
 #include <xcb/xcb.h>
-
-#define XCB_KEY_ESCAPE 0x9
-#define XCB_KEY_F1 0x43
-#define XCB_KEY_W 0x19
-#define XCB_KEY_A 0x26
-#define XCB_KEY_S 0x27
-#define XCB_KEY_D 0x28
-#define XCB_KEY_P 0x21
+#include <X11/keysym.h>
+#include <xcb/xcb_keysyms.h>
 
 namespace vik {
 class WindowXCB : public Window {
@@ -18,6 +12,15 @@ protected:
   xcb_connection_t *connection;
   xcb_window_t window = XCB_NONE;
   xcb_visualid_t root_visual;
+  xcb_key_symbols_t *syms;
+
+  WindowXCB() {
+    syms = xcb_key_symbols_alloc(connection);
+  }
+
+  ~WindowXCB() {
+      xcb_key_symbols_free(syms);
+  }
 
   static vik::Input::MouseButton xcb_to_vik_button(xcb_button_t button) {
     switch (button) {
@@ -30,21 +33,23 @@ protected:
     }
   }
 
-  static vik::Input::Key xcb_to_vik_key(xcb_keycode_t key) {
-    switch (key) {
-      case XCB_KEY_W:
+  vik::Input::Key xcb_to_vik_key(xcb_keycode_t key) {
+
+    xcb_keysym_t xcb_keyp = xcb_key_symbols_get_keysym(syms, key, 0);
+    switch (xcb_keyp) {
+      case XK_w:
         return vik::Input::Key::W;
-      case XCB_KEY_S:
+      case XK_s:
         return vik::Input::Key::S;
-      case XCB_KEY_A:
+      case XK_a:
         return vik::Input::Key::A;
-      case XCB_KEY_D:
+      case XK_d:
         return vik::Input::Key::D;
-      case XCB_KEY_P:
+      case XK_p:
         return vik::Input::Key::P;
-      case XCB_KEY_F1:
+      case XK_F1:
         return vik::Input::Key::F1;
-      case XCB_KEY_ESCAPE:
+      case XK_Escape:
         return vik::Input::Key::ESCAPE;
     }
   }
