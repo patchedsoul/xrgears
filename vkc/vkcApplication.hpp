@@ -55,11 +55,9 @@ public:
          return -1;
      }
 
-     std::function<void()> init_cb = [this]() { init(); };
      std::function<void()> update_cb = [this]() { update_scene(); };
      std::function<void()> quit_cb = [this]() { quit = true; };
 
-     window->set_init_cb(init_cb);
      window->set_update_cb(update_cb);
      window->set_quit_cb(quit_cb);
 
@@ -71,6 +69,8 @@ public:
       vik_log_f("Vulkan not supported on given surface");
 
      window->init_swap_chain(renderer);
+
+     init();
 
      renderer->create_frame_buffers(renderer->swap_chain);
 

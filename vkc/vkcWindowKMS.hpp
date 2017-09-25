@@ -174,8 +174,6 @@ public:
   void init_swap_chain(vik::Renderer *r) {
     r->swap_chain = new vik::SwapChainDRM();
 
-    init_cb();
-
     vik::SwapChainDRM *sc = (vik::SwapChainDRM*) r->swap_chain;
 
     sc->surface_format.format = VK_FORMAT_R8G8B8A8_SRGB;
