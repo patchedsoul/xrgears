@@ -18,6 +18,7 @@
 #include "vikMaterial.hpp"
 #include "vikAssets.hpp"
 #include "vikBuffer.hpp"
+#include "vikSkyBox.hpp"
 
 namespace vik {
 class Node {
@@ -65,7 +66,7 @@ class Node {
                            const VkDescriptorSetLayout& descriptorSetLayout,
                            VkDescriptorBufferInfo* lightsDescriptor,
                            VkDescriptorBufferInfo* cameraDescriptor,
-                           VikSkyBox *skyDome) {
+                           vik::SkyBox *skyDome) {
     VkDescriptorSetAllocateInfo allocInfo =
         vks::initializers::descriptorSetAllocateInfo(
           descriptorPool,

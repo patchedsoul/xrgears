@@ -13,6 +13,7 @@
 
 #include <string>
 
+namespace vik {
 struct Material {
   // Parameter block used as push constant block
   struct PushBlock {
@@ -30,3 +31,4 @@ struct Material {
     params.b = c.b;
   }
 };
+}

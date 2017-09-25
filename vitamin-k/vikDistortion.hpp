@@ -151,7 +151,7 @@ class Distortion {
           &uboHandle.descriptor);
   }
 
-  void createDescriptorSet(VikOffscreenPass *offscreenPass, const VkDescriptorPool& descriptorPool) {
+  void createDescriptorSet(OffscreenPass *offscreenPass, const VkDescriptorPool& descriptorPool) {
     std::vector<VkWriteDescriptorSet> writeDescriptorSets;
 
     // Textured quad descriptor set

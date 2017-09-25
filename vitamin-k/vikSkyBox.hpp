@@ -20,7 +20,8 @@
 #include "vikShader.hpp"
 #include "vikBuffer.hpp"
 
-class VikSkyBox {
+namespace vik {
+class SkyBox {
  private:
   vks::TextureCubeMap cubeMap;
   VkDescriptorSet descriptorSet;
@@ -30,9 +31,9 @@ class VikSkyBox {
   VkPipeline pipeline;
 
  public:
-  explicit VikSkyBox(VkDevice device) : device(device) {}
+  explicit SkyBox(VkDevice device) : device(device) {}
 
-  ~VikSkyBox() {
+  ~SkyBox() {
     cubeMap.destroy();
     model.destroy();
     vkDestroyPipeline(device, pipeline, nullptr);
@@ -128,3 +129,4 @@ class VikSkyBox {
     vkDestroyShaderModule(device, shaderStagesSky[2].module, nullptr);
   }
 };
+}

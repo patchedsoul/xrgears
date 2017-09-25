@@ -20,7 +20,8 @@
 // Offscreen frame buffer properties
 #define FB_DIM 2048
 
-class VikOffscreenPass {
+namespace vik {
+class OffscreenPass {
  private:
   VkDevice device;
 
@@ -44,11 +45,11 @@ class VikOffscreenPass {
   } offScreenFrameBuf;
 
  public:
-  explicit VikOffscreenPass(const VkDevice& d) {
+  explicit OffscreenPass(const VkDevice& d) {
     device = d;
   }
 
-  ~VikOffscreenPass() {
+  ~OffscreenPass() {
     vkDestroySampler(device, colorSampler, nullptr);
 
     // Color attachments
@@ -318,3 +319,4 @@ class VikOffscreenPass {
     return offScreenFrameBuf.renderPass;
   }
 };
+}

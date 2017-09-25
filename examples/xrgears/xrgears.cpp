@@ -57,9 +57,9 @@ public:
   bool enableDistortion = true;
   bool enableStereo = true;
 
-  VikSkyBox *skyBox;
+  vik::SkyBox *skyBox;
   vik::Distortion *hmdDistortion;
-  VikOffscreenPass *offscreenPass;
+  vik::OffscreenPass *offscreenPass;
 
   struct {
     VkDescriptorSet object;
@@ -307,10 +307,10 @@ public:
       glm::vec3(-3.1, -6.2, 0.0)
     };
 
-    std::vector<Material> materials = {
-      Material("Red", glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, 0.9f),
-      Material("Green", glm::vec3(0.0f, 1.0f, 0.2f), 0.5f, 0.1f),
-      Material("Blue", glm::vec3(0.0f, 0.0f, 1.0f), 0.5f, 0.5f)
+    std::vector<vik::Material> materials = {
+      vik::Material("Red", glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, 0.9f),
+      vik::Material("Green", glm::vec3(0.0f, 1.0f, 0.2f), 0.5f, 0.1f),
+      vik::Material("Blue", glm::vec3(0.0f, 0.0f, 1.0f), 0.5f, 0.5f)
     };
 
     std::vector<float> rotationSpeeds = { 1.0f, -2.0f, -2.0f };
@@ -344,7 +344,7 @@ public:
                           renderer->vksDevice,
                           renderer->queue);
 
-    Material teapotMaterial = Material("Cream", glm::vec3(1.0f, 1.0f, 0.7f), 1.0f, 1.0f);
+    vik::Material teapotMaterial = vik::Material("Cream", glm::vec3(1.0f, 1.0f, 0.7f), 1.0f, 1.0f);
     teapotNode->setMateral(teapotMaterial);
     nodes.push_back(teapotNode);
 
@@ -453,7 +453,7 @@ public:
      */
 
     std::vector<VkPushConstantRange> pushConstantRanges = {
-      vks::initializers::pushConstantRange(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(Material::PushBlock), sizeof(glm::vec3)),
+      vks::initializers::pushConstantRange(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(vik::Material::PushBlock), sizeof(glm::vec3)),
     };
 
     pPipelineLayoutCreateInfo.pushConstantRangeCount = pushConstantRanges.size();
@@ -677,7 +677,7 @@ public:
     }
 
     if (enableSky)
-      skyBox = new VikSkyBox(renderer->device);
+      skyBox = new vik::SkyBox(renderer->device);
 
 
     loadAssets();
@@ -688,7 +688,7 @@ public:
     setupDescriptorSetLayout();
 
     if (enableDistortion) {
-      offscreenPass = new VikOffscreenPass(renderer->device);
+      offscreenPass = new vik::OffscreenPass(renderer->device);
       offscreenPass->prepareOffscreenFramebuffer(renderer->vksDevice, renderer->physical_device);
       hmdDistortion = new vik::Distortion(renderer->device);
       hmdDistortion->generateQuads(renderer->vksDevice);
