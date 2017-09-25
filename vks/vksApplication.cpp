@@ -11,9 +11,9 @@
 
 #include "vksApplication.hpp"
 #include "VikAssets.hpp"
-#include "vksWindowWayland.hpp"
-#include "vksWindowXCB.hpp"
-#include "vksWindowDisplay.hpp"
+#include "vikWindowWaylandShell.hpp"
+#include "vikWindowXCBInput.hpp"
+#include "vikWindowKhrDisplay.hpp"
 
 #include "vikInput.hpp"
 

@@ -37,9 +37,6 @@
 #include "VikBuffer.hpp"
 #include "VikCameraStereo.hpp"
 #include "VikCameraHMD.hpp"
-#include "vksWindowXCB.hpp"
-#include "vksWindowWayland.hpp"
-#include "vksWindowDisplay.hpp"
 #include "vksLog.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
