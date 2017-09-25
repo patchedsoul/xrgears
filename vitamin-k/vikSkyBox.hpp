@@ -16,9 +16,9 @@
 #include "../vks/vksTexture.hpp"
 #include "../vks/vksModel.hpp"
 
-#include "VikAssets.hpp"
-#include "VikShader.hpp"
-#include "VikBuffer.hpp"
+#include "vikAssets.hpp"
+#include "vikShader.hpp"
+#include "vikBuffer.hpp"
 
 class VikSkyBox {
  private:

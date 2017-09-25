@@ -17,7 +17,7 @@
 
 #include "../vks/vksTools.hpp"
 
-#include "VikAssets.hpp"
+#include "vikAssets.hpp"
 
 class VikShader {
  public:

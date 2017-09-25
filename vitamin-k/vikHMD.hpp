@@ -25,8 +25,8 @@
 #include "../vks/vksLog.hpp"
 
 
-#include "VikCamera.hpp"
-#include "VikBuffer.hpp"
+#include "vikCamera.hpp"
+#include "vikBuffer.hpp"
 
 class VikHMD {
  private:

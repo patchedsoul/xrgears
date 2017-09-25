@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "VikNode.hpp"
+#include "vikNode.hpp"
 
 class VikNodeModel : public VikNode {
   vks::Model model;

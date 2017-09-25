@@ -47,7 +47,7 @@
 #include <glm/gtx/euler_angles.hpp>
 
 #include "../vkc/vkcRenderer.hpp"
-#include "VikShader.hpp"
+#include "vikShader.hpp"
 
 #define VK_PROTOTYPES
 #include <vulkan/vulkan.h>

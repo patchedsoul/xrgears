@@ -14,8 +14,8 @@
 #include "../vks/vksBuffer.hpp"
 #include "../vks/vksCamera.hpp"
 
-#include "VikCamera.hpp"
-#include "VikBuffer.hpp"
+#include "vikCamera.hpp"
+#include "vikBuffer.hpp"
 
 class VikCameraStereo : public VikCamera {
  public:

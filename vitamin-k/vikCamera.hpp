@@ -21,7 +21,7 @@
 
 #include "../vks/vksCamera.hpp"
 
-#include "VikBuffer.hpp"
+#include "vikBuffer.hpp"
 
 class VikCamera {
  public:

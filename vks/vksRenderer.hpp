@@ -13,7 +13,7 @@
 #include "vksTimer.hpp"
 #include "vksTextOverlay.hpp"
 #include "vikSettings.hpp"
-#include "VikShader.hpp"
+#include "vikShader.hpp"
 
 namespace vks {
 

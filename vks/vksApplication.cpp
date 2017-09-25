@@ -10,7 +10,7 @@
 #include <string>
 
 #include "vksApplication.hpp"
-#include "VikAssets.hpp"
+#include "vikAssets.hpp"
 #include "vikWindowWaylandShell.hpp"
 #include "vikWindowXCBInput.hpp"
 #include "vikWindowKhrDisplay.hpp"

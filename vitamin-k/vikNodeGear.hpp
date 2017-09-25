@@ -26,10 +26,10 @@
 #include "../vks/vksBuffer.hpp"
 #include "../vks/vksCamera.hpp"
 
-#include "VikMaterial.hpp"
-#include "VikGear.hpp"
-#include "VikSkyBox.hpp"
-#include "VikNode.hpp"
+#include "vikMaterial.hpp"
+#include "vikGear.hpp"
+#include "vikSkyBox.hpp"
+#include "vikNode.hpp"
 
 class VikNodeGear : public VikNode {
  private:

@@ -15,9 +15,9 @@
 
 #include "../vks/vksModel.hpp"
 
-#include "VikMaterial.hpp"
-#include "VikAssets.hpp"
-#include "VikBuffer.hpp"
+#include "vikMaterial.hpp"
+#include "vikAssets.hpp"
+#include "vikBuffer.hpp"
 
 
 class VikNode {

@@ -19,8 +19,8 @@
 #include "../vks/vksModel.hpp"
 #include "../vks/vksLog.hpp"
 
-#include "VikOffscreenPass.hpp"
-#include "VikShader.hpp"
+#include "vikOffscreenPass.hpp"
+#include "vikShader.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 

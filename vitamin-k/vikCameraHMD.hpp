@@ -13,9 +13,9 @@
 
 #include "../vks/vksCamera.hpp"
 
-#include "VikCamera.hpp"
-#include "VikBuffer.hpp"
-#include "VikHMD.hpp"
+#include "vikCamera.hpp"
+#include "vikBuffer.hpp"
+#include "vikHMD.hpp"
 
 class VikCameraHMD : public VikCamera {
  public:
