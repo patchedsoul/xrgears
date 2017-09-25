@@ -98,12 +98,19 @@ public:
     return 0;
   }
 
-  void create_surface(VkInstance instance, VkSurfaceKHR *surface) {
-    VkXcbSurfaceCreateInfoKHR surface_info = {};
-    surface_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-    surface_info.connection = connection;
-    surface_info.window = window;
-    vkCreateXcbSurfaceKHR(instance, &surface_info, NULL, surface);
+  void iterate(vik::Renderer *r) {
+    poll_events(r);
+
+    if (repaint) {
+
+      update_cb();
+
+      vik::SwapChainVK* sc = (vik::SwapChainVK*) r->swap_chain;
+      vkc::Renderer* vkc_renderer = (vkc::Renderer*) r;
+      sc->render(r->queue, vkc_renderer->semaphore);
+      schedule_repaint();
+    }
+    xcb_flush(connection);
   }
 
   void init_swap_chain(vik::Renderer *r) {
@@ -129,82 +136,69 @@ public:
     xcb_send_event(connection, 0, window, 0, (char *) &client_message);
   }
 
-
   void poll_events(vik::Renderer *r) {
     xcb_generic_event_t *event;
-    xcb_key_press_event_t *key_press;
-    xcb_client_message_event_t *client_message;
-    xcb_configure_notify_event_t *configure;
-
     event = xcb_wait_for_event(connection);
     while (event) {
-      switch (event->response_type & 0x7f) {
-        case XCB_CLIENT_MESSAGE:
-          client_message = (xcb_client_message_event_t *) event;
-          if (client_message->window != window)
-            break;
-
-          if (client_message->type == atom_wm_protocols &&
-              client_message->data.data32[0] == atom_wm_delete_window) {
-            exit(0);
-          }
-
-          if (client_message->type == XCB_ATOM_NOTICE)
-            repaint = true;
-          break;
-
-        case XCB_CONFIGURE_NOTIFY:
-          configure = (xcb_configure_notify_event_t *) event;
-          if (r->width != configure->width ||
-              r->height != configure->height) {
-
-            vik_log_d("XCB_CONFIGURE_NOTIFY %dx%d", r->width, r->height);
-
-            vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
-
-            if (sc != nullptr)
-              sc->destroy();
-
-            r->width = configure->width;
-            r->height = configure->height;
-          }
-          break;
-        case XCB_EXPOSE:
-          {
-            vik_log_d("XCB_EXPOSE");
-            vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
-            sc->create_simple(r->width, r->height);
-            sc->update_images();
-            vkc::Renderer* vkc_renderer = (vkc::Renderer*) r;
-            vkc_renderer->create_frame_buffers(r->swap_chain);
-            schedule_repaint();
-          }
-          break;
-        case XCB_KEY_PRESS:
-          key_press = (xcb_key_press_event_t *) event;
-          if (key_press->detail == 9)
-            exit(0);
-          break;
-      }
+      handle_event(event, r);
       free(event);
-
       event = xcb_poll_for_event(connection);
     }
   }
 
-  void iterate(vik::Renderer *r) {
-    poll_events(r);
+  void handle_event(const xcb_generic_event_t *event, vik::Renderer *r) {
+    xcb_key_press_event_t *key_press;
+    xcb_client_message_event_t *client_message;
+    xcb_configure_notify_event_t *configure;
 
-    if (repaint) {
+    switch (event->response_type & 0x7f) {
+      case XCB_CLIENT_MESSAGE:
+        client_message = (xcb_client_message_event_t *) event;
+        if (client_message->window != window)
+          break;
 
-      update_cb();
+        if (client_message->type == atom_wm_protocols &&
+            client_message->data.data32[0] == atom_wm_delete_window) {
+          exit(0);
+        }
 
-      vik::SwapChainVK* sc = (vik::SwapChainVK*) r->swap_chain;
-      vkc::Renderer* vkc_renderer = (vkc::Renderer*) r;
-      sc->render(r->queue, vkc_renderer->semaphore);
-      schedule_repaint();
+        if (client_message->type == XCB_ATOM_NOTICE)
+          repaint = true;
+        break;
+
+      case XCB_CONFIGURE_NOTIFY:
+        configure = (xcb_configure_notify_event_t *) event;
+        if (r->width != configure->width ||
+            r->height != configure->height) {
+
+          vik_log_d("XCB_CONFIGURE_NOTIFY %dx%d", r->width, r->height);
+
+          vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
+
+          if (sc != nullptr)
+            sc->destroy();
+
+          r->width = configure->width;
+          r->height = configure->height;
+        }
+        break;
+      case XCB_EXPOSE:
+        {
+          vik_log_d("XCB_EXPOSE");
+          vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
+          sc->create_simple(r->width, r->height);
+          sc->update_images();
+          vkc::Renderer* vkc_renderer = (vkc::Renderer*) r;
+          vkc_renderer->create_frame_buffers(r->swap_chain);
+          schedule_repaint();
+        }
+        break;
+      case XCB_KEY_PRESS:
+        key_press = (xcb_key_press_event_t *) event;
+        if (key_press->detail == 9)
+          exit(0);
+        break;
     }
-    xcb_flush(connection);
   }
 };
 }

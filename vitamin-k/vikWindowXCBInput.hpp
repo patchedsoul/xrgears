@@ -51,46 +51,6 @@ class WindowXCBInput : public WindowXCB {
     xcb_disconnect(connection);
   }
 
-  void init_swap_chain(vik::Renderer *r) {
-    VkResult err = VK_SUCCESS;
-
-    r->swap_chain = new vks::SwapChain();
-
-    vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
-
-    sc->set_context(r->instance, r->physical_device, r->device);
-
-    VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-    surfaceCreateInfo.connection = connection;
-    surfaceCreateInfo.window = window;
-    err = vkCreateXcbSurfaceKHR(r->instance, &surfaceCreateInfo, nullptr, &sc->surface);
-
-    vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
-
-    sc->select_queue_and_format();
-  }
-
-  void iterate(vik::Renderer *r) {
-    xcb_generic_event_t *event;
-    //xcb_flush(connection);
-    while ((event = xcb_poll_for_event(connection))) {
-      handle_event(event);
-      free(event);
-    }
-  }
-
-  void update_window_title(const std::string& title) {
-    xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-                        window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-                        title.size(), title.c_str());
-  }
-
-  static inline xcb_intern_atom_reply_t* intern_atom_helper(xcb_connection_t *conn, bool only_if_exists, const char *str) {
-    xcb_intern_atom_cookie_t cookie = xcb_intern_atom(conn, only_if_exists, strlen(str), str);
-    return xcb_intern_atom_reply(conn, cookie, NULL);
-  }
-
   // Set up a window using XCB and request event types
   int init(vik::Renderer *r) {
     uint32_t value_mask, value_list[32];
@@ -149,6 +109,41 @@ class WindowXCBInput : public WindowXCB {
     return 0;
   }
 
+  void iterate(vik::Renderer *r) {
+    xcb_generic_event_t *event;
+    //xcb_flush(connection);
+    while ((event = xcb_poll_for_event(connection))) {
+      handle_event(event);
+      free(event);
+    }
+  }
+
+  void init_swap_chain(vik::Renderer *r) {
+    VkResult err = VK_SUCCESS;
+
+    r->swap_chain = new vks::SwapChain();
+
+    vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
+
+    sc->set_context(r->instance, r->physical_device, r->device);
+
+    VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+    surfaceCreateInfo.connection = connection;
+    surfaceCreateInfo.window = window;
+    err = vkCreateXcbSurfaceKHR(r->instance, &surfaceCreateInfo, nullptr, &sc->surface);
+
+    vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
+
+    sc->select_queue_and_format();
+  }
+
+  void update_window_title(const std::string& title) {
+    xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
+                        window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+                        title.size(), title.c_str());
+  }
+
   void handle_event(const xcb_generic_event_t *event) {
     switch (event->response_type & 0x7f) {
       case XCB_CLIENT_MESSAGE:
@@ -192,5 +187,11 @@ class WindowXCBInput : public WindowXCB {
         break;
     }
   }
+
+  static inline xcb_intern_atom_reply_t* intern_atom_helper(xcb_connection_t *conn, bool only_if_exists, const char *str) {
+    xcb_intern_atom_cookie_t cookie = xcb_intern_atom(conn, only_if_exists, strlen(str), str);
+    return xcb_intern_atom_reply(conn, cookie, NULL);
+  }
+
 };
 }

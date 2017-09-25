@@ -49,6 +49,14 @@ protected:
     }
   }
 
+  VkResult create_surface(VkInstance instance, VkSurfaceKHR *surface) {
+    VkXcbSurfaceCreateInfoKHR surface_info = {};
+    surface_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+    surface_info.connection = connection;
+    surface_info.window = window;
+    return vkCreateXcbSurfaceKHR(instance, &surface_info, NULL, surface);
+  }
+
 public:
   const std::vector<const char*> required_extensions() {
     return { VK_KHR_XCB_SURFACE_EXTENSION_NAME };
