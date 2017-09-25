@@ -151,42 +151,10 @@ class WindowWayland : public Window {
   {}
 
   static void pointerMotionCb(void *data, wl_pointer *pointer, uint32_t time,
-                              wl_fixed_t sx, wl_fixed_t sy) {
+                              wl_fixed_t x, wl_fixed_t y) {
     WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
-    self->pointerMotion(pointer, time, sx, sy);
-  }
-
-  void pointerMotion(wl_pointer *pointer, uint32_t time,
-                     wl_fixed_t sx, wl_fixed_t sy) {
-    double x = wl_fixed_to_double(sx);
-    double y = wl_fixed_to_double(sy);
-
-    double dx = app->mousePos.x - x;
-    double dy = app->mousePos.y - y;
-
-    if (app->mouseButtons.left) {
-      app->rotation.x += dy * 1.25f * app->rotationSpeed;
-      app->rotation.y -= dx * 1.25f * app->rotationSpeed;
-      app->camera.rotate(glm::vec3(
-                      dy * app->camera.rotationSpeed,
-                      -dx * app->camera.rotationSpeed,
-                      0.0f));
-      app->viewUpdated = true;
-    }
-
-    if (app->mouseButtons.right) {
-      app->zoom += dy * .005f * app->zoomSpeed;
-      app->camera.translate(glm::vec3(-0.0f, 0.0f, dy * .005f * app->zoomSpeed));
-      app->viewUpdated = true;
-    }
-
-    if (app->mouseButtons.middle) {
-      app->cameraPos.x -= dx * 0.01f;
-      app->cameraPos.y -= dy * 0.01f;
-      app->camera.translate(glm::vec3(-dx * 0.01f, -dy * 0.01f, 0.0f));
-      app->viewUpdated = true;
-    }
-    app->mousePos = glm::vec2(x, y);
+    self->pointer_motion_cb(wl_fixed_to_double(x),
+                            wl_fixed_to_double(y));
   }
 
   static void pointerButtonCb(void *data,

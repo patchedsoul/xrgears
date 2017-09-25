@@ -60,6 +60,45 @@ void Application::prepare() {
       vik_log_f("Unsupported window backend.");
   }
 
+  std::function<void(double x, double y)> pointer_motion_cb =
+      [this](double x, double y) {
+    double dx = mousePos.x - x;
+    double dy = mousePos.y - y;
+
+    if (mouseButtons.left) {
+      rotation.x += dy * 1.25f * rotationSpeed;
+      rotation.y -= dx * 1.25f * rotationSpeed;
+      camera.rotate(glm::vec3(
+                      dy * camera.rotationSpeed,
+                      -dx * camera.rotationSpeed,
+                      0.0f));
+      viewUpdated = true;
+    }
+
+    if (mouseButtons.right) {
+      zoom += dy * .005f * zoomSpeed;
+      camera.translate(glm::vec3(-0.0f, 0.0f, dy * .005f * zoomSpeed));
+      viewUpdated = true;
+    }
+
+    if (mouseButtons.middle) {
+      cameraPos.x -= dx * 0.01f;
+      cameraPos.y -= dy * 0.01f;
+      camera.translate(glm::vec3(-dx * 0.01f, -dy * 0.01f, 0.0f));
+      viewUpdated = true;
+    }
+    mousePos = glm::vec2(x, y);
+  };
+
+  /*
+  std::function<void()> scroll_cb = [this]() {  };
+  std::function<void()> motion_cb = [this]() {  };
+  std::function<void()> keyboard_cb = [this]() {  };
+  */
+
+  window->set_pointer_motion_cb(pointer_motion_cb);
+  //window->set_quit_cb(quit_cb);
+
   renderer->init_vulkan(name, window->required_extensions());
   window->init(this);
   window->init_swap_chain(renderer);

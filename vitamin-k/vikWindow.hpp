@@ -29,6 +29,8 @@ public:
   std::function<void()> update_cb;
   std::function<void()> quit_cb;
 
+  std::function<void(double x, double y)> pointer_motion_cb;
+
   Window() {}
   ~Window() {}
 
@@ -42,6 +44,10 @@ public:
 
   void set_quit_cb(std::function<void()> cb) {
     quit_cb = cb;
+  }
+
+  void set_pointer_motion_cb(std::function<void(double x, double y)> cb) {
+    pointer_motion_cb = cb;
   }
 
   static inline bool streq(const char *a, const char *b) {

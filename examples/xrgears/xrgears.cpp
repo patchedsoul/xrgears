@@ -56,7 +56,7 @@ public:
   VikCamera* vikCamera;
 
   bool enableSky = true;
-  bool enableHMDCam = true;
+  bool enableHMDCam = false;
   bool enableDistortion = true;
   bool enableStereo = true;
 
