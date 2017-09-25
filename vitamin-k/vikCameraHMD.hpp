@@ -14,7 +14,6 @@
 #include "../vks/vksCamera.hpp"
 
 #include "vikCamera.hpp"
-#include "vikBuffer.hpp"
 #include "vikHMD.hpp"
 
 namespace vik {

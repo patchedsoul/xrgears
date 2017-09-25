@@ -26,7 +26,6 @@
 
 
 #include "vikCamera.hpp"
-#include "vikBuffer.hpp"
 
 namespace vik {
 class HMD {

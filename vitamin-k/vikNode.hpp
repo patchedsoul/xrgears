@@ -17,7 +17,6 @@
 
 #include "vikMaterial.hpp"
 #include "vikAssets.hpp"
-#include "vikBuffer.hpp"
 #include "vikSkyBox.hpp"
 
 namespace vik {
@@ -117,7 +116,7 @@ class Node {
   }
 
   void prepareUniformBuffer(vks::Device *vulkanDevice) {
-    Buffer::create(vulkanDevice, &uniformBuffer, sizeof(ubo));
+    vulkanDevice->create_and_map(&uniformBuffer, sizeof(ubo));
   }
 
   virtual void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout) {}

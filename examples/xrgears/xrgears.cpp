@@ -34,7 +34,6 @@
 #include "vikNodeModel.hpp"
 #include "vikCamera.hpp"
 #include "vikHMD.hpp"
-#include "vikBuffer.hpp"
 #include "vikCameraStereo.hpp"
 #include "vikCameraHMD.hpp"
 #include "vksLog.hpp"
@@ -576,7 +575,7 @@ public:
   // Prepare and initialize uniform buffer containing shader uniforms
   void prepareUniformBuffers()
   {
-    vik::Buffer::create(renderer->vksDevice, &uniformBuffers.lights, sizeof(uboLights));
+    renderer->vksDevice->create_and_map(&uniformBuffers.lights, sizeof(uboLights));
 
     vikCamera->prepareUniformBuffers(renderer->vksDevice);
 

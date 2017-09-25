@@ -15,7 +15,6 @@
 #include "../vks/vksCamera.hpp"
 
 #include "vikCamera.hpp"
-#include "vikBuffer.hpp"
 
 namespace vik {
 class CameraStereo : public Camera {

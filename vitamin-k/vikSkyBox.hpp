@@ -18,7 +18,6 @@
 
 #include "vikAssets.hpp"
 #include "vikShader.hpp"
-#include "vikBuffer.hpp"
 
 namespace vik {
 class SkyBox {

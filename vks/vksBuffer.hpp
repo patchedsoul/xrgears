@@ -15,6 +15,7 @@
 #include "vulkan/vulkan.h"
 
 #include "vksTools.hpp"
+#include "vksDevice.hpp"
 
 namespace vks {
 /**

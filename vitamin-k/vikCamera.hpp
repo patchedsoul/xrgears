@@ -21,8 +21,6 @@
 
 #include "../vks/vksCamera.hpp"
 
-#include "vikBuffer.hpp"
-
 namespace vik {
 class Camera {
  public:
@@ -48,7 +46,7 @@ class Camera {
   }
 
   void prepareUniformBuffers(vks::Device *vulkanDevice) {
-    Buffer::create(vulkanDevice, &uniformBuffer, sizeof(uboCamera));
+    vulkanDevice->create_and_map(&uniformBuffer, sizeof(uboCamera));
   }
 };
 }

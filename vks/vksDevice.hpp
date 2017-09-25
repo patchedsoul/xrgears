@@ -352,6 +352,20 @@ class Device {
     return VK_SUCCESS;
   }
 
+  void create_and_map(vks::Buffer *buffer,
+                     VkDeviceSize size) {
+    vik_log_check(
+          createBuffer(
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+            | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            buffer,
+            size));
+
+    // Map persistent
+    vik_log_check(buffer->map());
+  }
+
   /**
     * Create a buffer on the device
     *
