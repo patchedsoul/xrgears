@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 
 #include <vector>
+#include <functional>
 
 #include "../vks/vksLog.hpp"
 
@@ -20,8 +21,14 @@ public:
   uint32_t image_count = 0;
   VkSurfaceFormatKHR surface_format;
 
+  std::function<void(uint32_t index)> render_cb;
+
   SwapChain() {}
   ~SwapChain() {}
+
+  void set_render_cb(std::function<void(uint32_t index)> cb) {
+    render_cb = cb;
+  }
 
   void create_image_view(const VkDevice &device, const VkImage& image,
                          const VkFormat &format, VkImageView *view) {

@@ -8,12 +8,11 @@ namespace vik {
 class SwapChainVK : public SwapChain {
 
 protected:
- VkInstance instance;
- VkDevice device;
- VkPhysicalDevice physical_device;
+  VkInstance instance;
+  VkDevice device;
+  VkPhysicalDevice physical_device;
 
 public:
-
   /** @brief Handle to the current swap chain, required for recreation */
   VkSwapchainKHR swap_chain = VK_NULL_HANDLE;
 
@@ -197,6 +196,24 @@ public:
         return VK_PRESENT_MODE_IMMEDIATE_KHR;
     }
     return mode;
+  }
+
+  void render(VkQueue queue, VkSemaphore semaphore) {
+    uint32_t present_index = 0;
+    VkResult result = acquire_next_image(semaphore, &present_index);
+    switch (result) {
+      case VK_SUCCESS:
+        render_cb(present_index);
+        vik_log_check(present(queue, present_index));
+        break;
+      case VK_TIMEOUT:
+        // TODO: XCB times out
+        break;
+      default:
+        vik_log_e("vkAcquireNextImageKHR failed: %s",
+                   vks::Log::result_string(result).c_str());
+        break;
+    }
   }
 
 };

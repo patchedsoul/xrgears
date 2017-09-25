@@ -324,24 +324,6 @@ public:
     wait_and_reset_fences();
   }
 
-  void render_swapchain_vk(vik::SwapChainVK *swap_chain) {
-    uint32_t present_index = 0;
-    VkResult result = swap_chain->acquire_next_image(semaphore, &present_index);
-    switch (result) {
-      case VK_SUCCESS:
-        render(present_index);
-        vik_log_check(swap_chain->present(queue, present_index));
-        break;
-      case VK_TIMEOUT:
-        // TODO: XCB times out
-        break;
-      default:
-        vik_log_e("vkAcquireNextImageKHR failed: %s",
-                   vks::Log::result_string(result).c_str());
-        break;
-    }
-  }
-
   void create_frame_buffer(VkImageView *view, VkFramebuffer *frame_buffer) {
     VkFramebufferCreateInfo framebufferinfo = {};
     framebufferinfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
