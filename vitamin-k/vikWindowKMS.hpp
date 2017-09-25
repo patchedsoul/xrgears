@@ -22,7 +22,7 @@
 #include <linux/major.h>
 
 #include "../vkc/vkcRenderer.hpp"
-#include "../vitamin-k/vikWindow.hpp"
+#include "vikWindow.hpp"
 #include "../vks/vksLog.hpp"
 
 static void
