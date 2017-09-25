@@ -17,7 +17,7 @@
 
 namespace vks {
 
-class Renderer : public vik::Renderer {
+class RendererVks : public vik::Renderer {
 public:
   Timer timer;
   Device *vksDevice;
@@ -71,12 +71,12 @@ public:
     enabled_features_cb = cb;
   }
 
-  Renderer() {
+  RendererVks() {
     width = 2560;
     height = 1440;
   }
 
-  ~Renderer() {
+  ~RendererVks() {
     if (enableTextOverlay)
       delete textOverlay;
 

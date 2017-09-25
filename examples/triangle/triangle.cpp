@@ -33,7 +33,7 @@
 // See "prepareVertices" for details on what's staging and on why to use it
 #define USE_STAGING true
 
-class Triangle : public vks::Application
+class Triangle : public vks::ApplicationVks
 {
 public:
   // Vertex layout used in this example
@@ -111,7 +111,7 @@ public:
   // Used to check the completion of queue operations (e.g. command buffer execution)
   std::vector<VkFence> waitFences;
 
-  Triangle() : Application() {
+  Triangle() : ApplicationVks() {
     zoom = -2.5f;
     title = "Vulkan Example - Basic indexed triangle";
     // Values not set here are initialized in the base class constructor
@@ -814,7 +814,7 @@ public:
   }
 
   void prepare() {
-    Application::prepare();
+    ApplicationVks::prepare();
     prepareSynchronizationPrimitives();
     prepareVertices(USE_STAGING);
     prepareUniformBuffers();

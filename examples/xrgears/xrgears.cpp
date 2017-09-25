@@ -41,7 +41,7 @@
 
 #define VERTEX_BUFFER_BIND_ID 0
 
-class XRGears : public vks::Application {
+class XRGears : public vks::ApplicationVks {
 public:
   // Vertex layout for the models
   vks::VertexLayout vertexLayout = vks::VertexLayout({
@@ -92,10 +92,10 @@ public:
   // Semaphore used to synchronize between offscreen and final scene rendering
   VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
-  XRGears() : Application() {
+  XRGears() : ApplicationVks() {
     title = "XR Gears";
     renderer->enableTextOverlay = true;
-    camera.type = vks::Camera::CameraType::firstperson;
+    camera.type = vks::CameraBase::CameraType::firstperson;
     camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
     camera.setTranslation(glm::vec3(2.2f, 3.2f, -7.6));
     camera.setPerspective(60.0f, (float)renderer->width / (float)renderer->height, 0.1f, 256.0f);
@@ -663,7 +663,7 @@ public:
   }
 
   void prepare() {
-    Application::prepare();
+    ApplicationVks::prepare();
 
     hmd = new vik::HMD();
 

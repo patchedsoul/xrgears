@@ -20,7 +20,7 @@ struct StereoView {
   glm::mat4 view[2];
 };
 
-class Camera {
+class CameraBase {
  private:
   float fov;
   float znear, zfar;

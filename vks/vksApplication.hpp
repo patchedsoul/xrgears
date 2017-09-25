@@ -39,11 +39,11 @@
 namespace vks {
 class Window;
 
-class Application : public vik::Application {
+class ApplicationVks : public vik::Application {
 
  public:
-  Renderer *renderer;
-  Camera camera;
+  RendererVks *renderer;
+  CameraBase camera;
   vik::Window *window;
 
   bool prepared = false;
@@ -68,8 +68,8 @@ class Application : public vik::Application {
     bool middle = false;
   } mouseButtons;
 
-  Application() {
-    renderer = new Renderer();
+  ApplicationVks() {
+    renderer = new RendererVks();
 
     std::function<void()> set_window_resize_cb = [this]() { windowResize(); };
     renderer->set_window_resize_cb(set_window_resize_cb);
@@ -78,7 +78,7 @@ class Application : public vik::Application {
     renderer->set_enabled_features_cb(enabled_features_cb);
   }
 
-  ~Application() {
+  ~ApplicationVks() {
     delete renderer;
   }
 

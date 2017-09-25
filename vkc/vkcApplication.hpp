@@ -15,17 +15,17 @@
 
 namespace vkc {
 
-class Application : public vik::Application {
+class ApplicationVkc : public vik::Application {
 public:
-   Renderer *renderer;
+   RendererVkc *renderer;
    vik::Window *window;
    bool quit = false;
 
-   Application(uint32_t w, uint32_t h) {
-     renderer = new Renderer(w, h);
+   ApplicationVkc(uint32_t w, uint32_t h) {
+     renderer = new RendererVkc(w, h);
    }
 
-   ~Application() {
+   ~ApplicationVkc() {
      delete renderer;
    }
 

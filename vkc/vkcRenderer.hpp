@@ -13,7 +13,7 @@
 
 namespace vkc {
 
-class Renderer : public vik::Renderer {
+class RendererVkc : public vik::Renderer {
 public:
   VkPipelineLayout pipeline_layout;
   VkPipeline pipeline;
@@ -30,13 +30,13 @@ public:
 
   uint32_t vertex_offset, colors_offset, normals_offset;
 
-  Renderer(uint32_t w, uint32_t h) {
+  RendererVkc(uint32_t w, uint32_t h) {
     width = w;
     height = h;
     gettimeofday(&start_tv, NULL);
   }
 
-  ~Renderer() {
+  ~RendererVkc() {
   }
 
   VkResult create_instance(const std::string &name,

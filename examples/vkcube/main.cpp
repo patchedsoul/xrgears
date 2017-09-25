@@ -52,7 +52,7 @@
 #define VK_PROTOTYPES
 #include <vulkan/vulkan.h>
 
-class Cube : public vkc::Application {
+class Cube : public vkc::ApplicationVkc {
 public:
 
   void *map;
@@ -63,7 +63,7 @@ public:
     float normal[12];
   };
 
-  Cube(uint32_t w, uint32_t h) : vkc::Application(w, h) {}
+  Cube(uint32_t w, uint32_t h) : vkc::ApplicationVkc(w, h) {}
 
   void init_pipeline() {
     VkVertexInputBindingDescription vertexBinding[] = {
