@@ -112,8 +112,8 @@ class WindowXCBInput : public WindowXCB {
   }
 
   void init_swap_chain(Renderer *r) {
-    r->swap_chain = new vks::SwapChain();
-    vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
+    r->swap_chain = new SwapChainVkComplex();
+    SwapChainVkComplex *sc = (SwapChainVkComplex*) r->swap_chain;
     sc->set_context(r->instance, r->physical_device, r->device);
 
     VkResult err = create_surface(r->instance, &sc->surface);

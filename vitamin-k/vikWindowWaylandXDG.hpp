@@ -95,7 +95,7 @@ public:
     flush();
     update_cb();
     SwapChainVK* sc = (SwapChainVK*) r->swap_chain;
-    vkc::RendererVkc* vkc_renderer = (vkc::RendererVkc*) r;
+    RendererVkc* vkc_renderer = (RendererVkc*) r;
     sc->render(r->queue, vkc_renderer->semaphore);
   }
 

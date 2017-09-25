@@ -11,7 +11,7 @@
 #include "../vitamin-k/vikSwapChainDRM.hpp"
 #include "../vitamin-k/vikRenderer.hpp"
 
-namespace vkc {
+namespace vik {
 
 class RendererVkc : public vik::Renderer {
 public:
@@ -233,7 +233,7 @@ public:
                                           &cmdBufferAllocateInfo,
                                           &cmd_buffer);
     vik_log_e_if(r != VK_SUCCESS, "vkAllocateCommandBuffers: %s",
-                 vks::Log::result_string(r).c_str());
+                 Log::result_string(r).c_str());
 
     VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
     cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -241,7 +241,7 @@ public:
 
     r = vkBeginCommandBuffer(cmd_buffer, &cmdBufferBeginInfo);
     vik_log_e_if(r != VK_SUCCESS, "vkBeginCommandBuffer: %s",
-                 vks::Log::result_string(r).c_str());
+                 Log::result_string(r).c_str());
 
     std::array<VkClearValue,1> clearValues = {};
     clearValues[0].color = { { 0.2f, 0.2f, 0.2f, 1.0f } };
@@ -315,7 +315,7 @@ public:
 
     r = vkEndCommandBuffer(cmd_buffer);
     vik_log_e_if(r != VK_SUCCESS,
-                 "vkEndCommandBuffer: %s", vks::Log::result_string(r).c_str());
+                 "vkEndCommandBuffer: %s", Log::result_string(r).c_str());
   }
 
   void render(uint32_t index) {

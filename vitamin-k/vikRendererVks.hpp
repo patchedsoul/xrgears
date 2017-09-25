@@ -15,7 +15,7 @@
 #include "vikSettings.hpp"
 #include "vikShader.hpp"
 
-namespace vks {
+namespace vik {
 
 class RendererVks : public vik::Renderer {
 public:
@@ -80,7 +80,7 @@ public:
     if (enableTextOverlay)
       delete textOverlay;
 
-    SwapChain *sc = (SwapChain*) swap_chain;
+    SwapChainVkComplex *sc = (SwapChainVkComplex*) swap_chain;
     sc->cleanup();
     if (descriptorPool != VK_NULL_HANDLE)
       vkDestroyDescriptorPool(device, descriptorPool, nullptr);
@@ -106,17 +106,17 @@ public:
     delete vksDevice;
 
     if (settings->validation)
-      vks::debug::freeDebugCallback(instance);
+      debug::freeDebugCallback(instance);
 
     vkDestroyInstance(instance, nullptr);
   }
 
   void prepare() {
     if (vksDevice->enableDebugMarkers)
-      vks::debugmarker::setup(device);
+      debugmarker::setup(device);
     createCommandPool();
 
-    SwapChain *sc = (SwapChain*) swap_chain;
+    SwapChainVkComplex *sc = (SwapChainVkComplex*) swap_chain;
     sc->create(&width, &height, settings->vsync);
 
     createCommandBuffers();
@@ -174,8 +174,8 @@ public:
     instance_info.ppEnabledExtensionNames = extensions.data();
 
     if (settings->validation) {
-      instance_info.enabledLayerCount = vks::debug::validationLayerCount;
-      instance_info.ppEnabledLayerNames = vks::debug::validationLayerNames;
+      instance_info.enabledLayerCount = debug::validationLayerCount;
+      instance_info.ppEnabledLayerNames = debug::validationLayerNames;
     }
 
     return vkCreateInstance(&instance_info, nullptr, &instance);
@@ -196,7 +196,7 @@ public:
     drawCmdBuffers.resize(swap_chain->image_count);
 
     VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-        vks::initializers::commandBufferAllocateInfo(
+        initializers::commandBufferAllocateInfo(
           cmdPool,
           VK_COMMAND_BUFFER_LEVEL_PRIMARY,
           static_cast<uint32_t>(drawCmdBuffers.size()));
@@ -214,7 +214,7 @@ public:
     VkCommandBuffer cmdBuffer;
 
     VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-        vks::initializers::commandBufferAllocateInfo(
+        initializers::commandBufferAllocateInfo(
           cmdPool,
           level,
           1);
@@ -223,7 +223,7 @@ public:
 
     // If requested, also start the new command buffer
     if (begin) {
-      VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+      VkCommandBufferBeginInfo cmdBufInfo = initializers::commandBufferBeginInfo();
       vik_log_check(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
     }
 
@@ -302,7 +302,7 @@ public:
     std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
     err = vkEnumeratePhysicalDevices(instance, &gpuCount, physicalDevices.data());
 
-    vik_log_f_if(err, "Could not enumerate physical devices: %s", vks::Log::result_string(err).c_str());
+    vik_log_f_if(err, "Could not enumerate physical devices: %s", Log::result_string(err).c_str());
 
     // GPU selection
     if (settings->list_gpus_and_exit) {
@@ -339,7 +339,7 @@ public:
         VkPhysicalDeviceProperties deviceProperties;
         vkGetPhysicalDeviceProperties(devices[i], &deviceProperties);
         vik_log_i("Device [%d] : %s", i, deviceProperties.deviceName);
-        vik_log_i(" Type: %s", vks::tools::physicalDeviceTypeString(deviceProperties.deviceType).c_str());
+        vik_log_i(" Type: %s", tools::physicalDeviceTypeString(deviceProperties.deviceType).c_str());
         vik_log_i(" API: %d.%d.%d", deviceProperties.apiVersion >> 22, (deviceProperties.apiVersion >> 12) & 0x3ff, deviceProperties.apiVersion & 0xfff);
       }
     }
@@ -358,7 +358,7 @@ public:
     // For validating (debugging) an appplication the error and warning bits should suffice
     VkDebugReportFlagsEXT debugReportFlags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
     // Additional flags include performance info, loader and layer debug messages, etc.
-    vks::debug::setupDebugging(instance, debugReportFlags, VK_NULL_HANDLE);
+    debug::setupDebugging(instance, debugReportFlags, VK_NULL_HANDLE);
   }
 
   void init_vulkan(const std::string &name, const std::vector<const char*> &extensions) {
@@ -368,7 +368,7 @@ public:
     err = create_instance(name, extensions);
 
     vik_log_f_if(err, "Could not create Vulkan instance: %s",
-                 vks::Log::result_string(err).c_str());
+                 Log::result_string(err).c_str());
 
     // If requested, we enable the default validation layers for debugging
     if (settings->validation)
@@ -384,7 +384,7 @@ public:
     // Vulkan device creation
     // This is handled by a separate class that gets a logical device representation
     // and encapsulates functions related to a device
-    vksDevice = new vks::Device(physical_device);
+    vksDevice = new Device(physical_device);
 
     /*
     enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
@@ -394,7 +394,7 @@ public:
     */
 
     VkResult res = vksDevice->createLogicalDevice(enabledFeatures, enabledExtensions);
-    vik_log_f_if(res != VK_SUCCESS, "Could not create Vulkan device: %s", vks::Log::result_string(res).c_str());
+    vik_log_f_if(res != VK_SUCCESS, "Could not create Vulkan device: %s", Log::result_string(res).c_str());
 
     device = vksDevice->logicalDevice;
 
@@ -404,7 +404,7 @@ public:
     vkGetDeviceQueue(device, vksDevice->queueFamilyIndices.graphics, 0, &queue);
 
     // Find a suitable depth format
-    VkBool32 validDepthFormat = vks::tools::getSupportedDepthFormat(physical_device, &depthFormat);
+    VkBool32 validDepthFormat = tools::getSupportedDepthFormat(physical_device, &depthFormat);
     assert(validDepthFormat);
 
     init_semaphores();
@@ -413,7 +413,7 @@ public:
 
   void init_semaphores() {
     // Create synchronization objects
-    VkSemaphoreCreateInfo semaphoreCreateInfo = vks::initializers::semaphoreCreateInfo();
+    VkSemaphoreCreateInfo semaphoreCreateInfo = initializers::semaphoreCreateInfo();
     // Create a semaphore used to synchronize image presentation
     // Ensures that the image is displayed before we start submitting new commands to the queu
     vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
@@ -428,7 +428,7 @@ public:
     // Set up submit info structure
     // Semaphores will stay the same during application lifetime
     // Command buffer submission info is set by each example
-    submitInfo = vks::initializers::submitInfo();
+    submitInfo = initializers::submitInfo();
     submitInfo.pWaitDstStageMask = &submitPipelineStages;
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = &semaphores.presentComplete;
@@ -439,7 +439,7 @@ public:
   void createCommandPool() {
     VkCommandPoolCreateInfo cmdPoolInfo = {};
     cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    SwapChain *sc = (SwapChain*) swap_chain;
+    SwapChainVkComplex *sc = (SwapChainVkComplex*) swap_chain;
     cmdPoolInfo.queueFamilyIndex = sc->queueNodeIndex;
     cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     vik_log_check(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
@@ -481,7 +481,7 @@ public:
     height = destHeight;
     // TODO: Create kms swapchain here.
 
-    SwapChain *sc = (SwapChain*) swap_chain;
+    SwapChainVkComplex *sc = (SwapChainVkComplex*) swap_chain;
     sc->create(&width, &height, settings->vsync);
     // Recreate the frame buffers
 

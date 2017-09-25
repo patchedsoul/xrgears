@@ -24,7 +24,7 @@
 namespace vik {
 class Camera {
  public:
-  vks::Buffer uniformBuffer;
+  Buffer uniformBuffer;
 
   struct UBOCamera {
     glm::mat4 projection[2];
@@ -37,7 +37,7 @@ class Camera {
     uniformBuffer.destroy();
   }
 
-  virtual void update(vks::CameraBase camera) {
+  virtual void update(CameraBase camera) {
     uboCamera.projection[0] = camera.matrices.perspective;
     uboCamera.view[0] = camera.matrices.view;
     uboCamera.skyView[0] = glm::mat4(glm::mat3(camera.matrices.view));
@@ -45,7 +45,7 @@ class Camera {
     memcpy(uniformBuffer.mapped, &uboCamera, sizeof(uboCamera));
   }
 
-  void prepareUniformBuffers(vks::Device *vulkanDevice) {
+  void prepareUniformBuffers(Device *vulkanDevice) {
     vulkanDevice->create_and_map(&uniformBuffer, sizeof(uboCamera));
   }
 };

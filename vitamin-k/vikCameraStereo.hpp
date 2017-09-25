@@ -34,7 +34,7 @@ class CameraStereo : public Camera {
     eyeSeparation += delta;
   }
 
-  void update(vks::CameraBase camera) {
+  void update(CameraBase camera) {
     // Geometry shader matrices for the two viewports
     // See http://paulbourke.net/stereographics/stereorender/
 

@@ -37,7 +37,7 @@ class NodeGear : public Node {
   Gear gear;
 
  public:
-  void generate(vks::Device *vulkanDevice, GearInfo *gearinfo, VkQueue queue) {
+  void generate(Device *vulkanDevice, GearInfo *gearinfo, VkQueue queue) {
     gear.generate(vulkanDevice, gearinfo, queue);
   }
 

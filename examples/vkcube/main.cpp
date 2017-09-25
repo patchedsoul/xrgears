@@ -35,24 +35,25 @@
  * to configure when configuring vkcube
  */
 
-#include "vikApplicationVkc.hpp"
-
 #include <sys/time.h>
 #include <string.h>
-
-#include "vikLog.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-#include "vikRendererVkc.hpp"
-#include "vikShader.hpp"
-
 #define VK_PROTOTYPES
 #include <vulkan/vulkan.h>
 
-class Cube : public vkc::ApplicationVkc {
+#include "vikApplicationVkc.hpp"
+#include "vikLog.hpp"
+
+#include "vikRendererVkc.hpp"
+#include "vikShader.hpp"
+
+
+
+class Cube : public vik::ApplicationVkc {
 public:
 
   void *map;
@@ -63,7 +64,7 @@ public:
     float normal[12];
   };
 
-  Cube(uint32_t w, uint32_t h) : vkc::ApplicationVkc(w, h) {}
+  Cube(uint32_t w, uint32_t h) : ApplicationVkc(w, h) {}
 
   void init_pipeline() {
     VkVertexInputBindingDescription vertexBinding[] = {

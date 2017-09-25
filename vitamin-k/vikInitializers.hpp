@@ -13,7 +13,7 @@
 #include <vector>
 #include "vulkan/vulkan.h"
 
-namespace vks {
+namespace vik {
 namespace initializers {
 
 inline VkMemoryAllocateInfo memoryAllocateInfo() {

@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-namespace vks {
+namespace vik {
 class Timer {
 public:
 

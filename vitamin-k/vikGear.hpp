@@ -41,8 +41,8 @@ struct GearInfo {
 
 class Gear {
  public:
-  vks::Buffer vertexBuffer;
-  vks::Buffer indexBuffer;
+  Buffer vertexBuffer;
+  Buffer indexBuffer;
   uint32_t indexCount;
 
   ~Gear() {
@@ -63,7 +63,7 @@ class Gear {
     iBuffer->push_back(c);
   }
 
-  void generate(vks::Device *vulkanDevice, GearInfo *gearinfo, VkQueue queue) {
+  void generate(Device *vulkanDevice, GearInfo *gearinfo, VkQueue queue) {
     std::vector<Vertex> vBuffer;
     std::vector<uint32_t> iBuffer;
 
@@ -196,7 +196,7 @@ class Gear {
     bool useStaging = true;
 
     if (useStaging) {
-      vks::Buffer vertexStaging, indexStaging;
+      Buffer vertexStaging, indexStaging;
 
       // Create staging buffers
       // Vertex data

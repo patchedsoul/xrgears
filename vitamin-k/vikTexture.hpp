@@ -22,11 +22,11 @@
 #include "vikBuffer.hpp"
 #include "vikLog.hpp"
 
-namespace vks {
+namespace vik {
 /** @brief Vulkan texture base class */
 class Texture {
  public:
-  vks::Device *device;
+  Device *device;
   VkImage image;
   VkImageLayout imageLayout;
   VkDeviceMemory deviceMemory;
@@ -74,13 +74,13 @@ class Texture2D : public Texture {
   void loadFromFile(
       std::string filename,
       VkFormat format,
-      vks::Device *device,
+      Device *device,
       VkQueue copyQueue,
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
       VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
       bool forceLinear = false) {
 
-    vik_log_f_if(!vks::tools::fileExists(filename), "File not found: Could not load texture from %s", filename.c_str());
+    vik_log_f_if(!tools::fileExists(filename), "File not found: Could not load texture from %s", filename.c_str());
 
     gli::texture2d tex2D(gli::load(filename.c_str()));
 
@@ -102,7 +102,7 @@ class Texture2D : public Texture {
     // limited amount of formats and features (mip maps, cubemaps, arrays, etc.)
     VkBool32 useStaging = !forceLinear;
 
-    VkMemoryAllocateInfo memAllocInfo = vks::initializers::memoryAllocateInfo();
+    VkMemoryAllocateInfo memAllocInfo = initializers::memoryAllocateInfo();
     VkMemoryRequirements memReqs;
 
     // Use a separate command buffer for texture loading
@@ -113,7 +113,7 @@ class Texture2D : public Texture {
       VkBuffer stagingBuffer;
       VkDeviceMemory stagingMemory;
 
-      VkBufferCreateInfo bufferCreateInfo = vks::initializers::bufferCreateInfo();
+      VkBufferCreateInfo bufferCreateInfo = initializers::bufferCreateInfo();
       bufferCreateInfo.size = tex2D.size();
       // This buffer is used as a transfer source for the buffer copy
       bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
@@ -158,7 +158,7 @@ class Texture2D : public Texture {
       }
 
       // Create optimal tiled target image
-      VkImageCreateInfo imageCreateInfo = vks::initializers::imageCreateInfo();
+      VkImageCreateInfo imageCreateInfo = initializers::imageCreateInfo();
       imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
       imageCreateInfo.format = format;
       imageCreateInfo.mipLevels = mipLevels;
@@ -190,7 +190,7 @@ class Texture2D : public Texture {
 
       // Image barrier for optimal image (target)
       // Optimal image will be used as destination for the copy
-      vks::tools::setImageLayout(
+      tools::setImageLayout(
             copyCmd,
             image,
             VK_IMAGE_LAYOUT_UNDEFINED,
@@ -208,7 +208,7 @@ class Texture2D : public Texture {
 
       // Change texture image layout to shader read after all mip levels have been copied
       this->imageLayout = imageLayout;
-      vks::tools::setImageLayout(
+      tools::setImageLayout(
             copyCmd,
             image,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -231,7 +231,7 @@ class Texture2D : public Texture {
       VkImage mappableImage;
       VkDeviceMemory mappableMemory;
 
-      VkImageCreateInfo imageCreateInfo = vks::initializers::imageCreateInfo();
+      VkImageCreateInfo imageCreateInfo = initializers::imageCreateInfo();
       imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
       imageCreateInfo.format = format;
       imageCreateInfo.extent = { width, height, 1 };
@@ -289,7 +289,7 @@ class Texture2D : public Texture {
       imageLayout = imageLayout;
 
       // Setup image memory barrier
-      vks::tools::setImageLayout(copyCmd, image, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, imageLayout);
+      tools::setImageLayout(copyCmd, image, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, imageLayout);
 
       device->flushCommandBuffer(copyCmd, copyQueue);
     }
@@ -354,7 +354,7 @@ class Texture2D : public Texture {
       VkFormat format,
       uint32_t width,
       uint32_t height,
-      vks::Device *device,
+      Device *device,
       VkQueue copyQueue,
       VkFilter filter = VK_FILTER_LINEAR,
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
@@ -366,7 +366,7 @@ class Texture2D : public Texture {
     height = height;
     mipLevels = 1;
 
-    VkMemoryAllocateInfo memAllocInfo = vks::initializers::memoryAllocateInfo();
+    VkMemoryAllocateInfo memAllocInfo = initializers::memoryAllocateInfo();
     VkMemoryRequirements memReqs;
 
     // Use a separate command buffer for texture loading
@@ -376,7 +376,7 @@ class Texture2D : public Texture {
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingMemory;
 
-    VkBufferCreateInfo bufferCreateInfo = vks::initializers::bufferCreateInfo();
+    VkBufferCreateInfo bufferCreateInfo = initializers::bufferCreateInfo();
     bufferCreateInfo.size = bufferSize;
     // This buffer is used as a transfer source for the buffer copy
     bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
@@ -411,7 +411,7 @@ class Texture2D : public Texture {
     bufferCopyRegion.bufferOffset = 0;
 
     // Create optimal tiled target image
-    VkImageCreateInfo imageCreateInfo = vks::initializers::imageCreateInfo();
+    VkImageCreateInfo imageCreateInfo = initializers::imageCreateInfo();
     imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
     imageCreateInfo.format = format;
     imageCreateInfo.mipLevels = mipLevels;
@@ -443,7 +443,7 @@ class Texture2D : public Texture {
 
     // Image barrier for optimal image (target)
     // Optimal image will be used as destination for the copy
-    vks::tools::setImageLayout(
+    tools::setImageLayout(
           copyCmd,
           image,
           VK_IMAGE_LAYOUT_UNDEFINED,
@@ -461,7 +461,7 @@ class Texture2D : public Texture {
 
     // Change texture image layout to shader read after all mip levels have been copied
     this->imageLayout = imageLayout;
-    vks::tools::setImageLayout(
+    tools::setImageLayout(
           copyCmd,
           image,
           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -523,12 +523,12 @@ class Texture2DArray : public Texture {
   void loadFromFile(
       std::string filename,
       VkFormat format,
-      vks::Device *device,
+      Device *device,
       VkQueue copyQueue,
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
       VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
 
-    vik_log_f_if(!vks::tools::fileExists(filename),
+    vik_log_f_if(!tools::fileExists(filename),
                  "File not found: Could not load texture from %s",
                  filename.c_str());
 
@@ -542,14 +542,14 @@ class Texture2DArray : public Texture {
     layerCount = static_cast<uint32_t>(tex2DArray.layers());
     mipLevels = static_cast<uint32_t>(tex2DArray.levels());
 
-    VkMemoryAllocateInfo memAllocInfo = vks::initializers::memoryAllocateInfo();
+    VkMemoryAllocateInfo memAllocInfo = initializers::memoryAllocateInfo();
     VkMemoryRequirements memReqs;
 
     // Create a host-visible staging buffer that contains the raw image data
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingMemory;
 
-    VkBufferCreateInfo bufferCreateInfo = vks::initializers::bufferCreateInfo();
+    VkBufferCreateInfo bufferCreateInfo = initializers::bufferCreateInfo();
     bufferCreateInfo.size = tex2DArray.size();
     // This buffer is used as a transfer source for the buffer copy
     bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
@@ -597,7 +597,7 @@ class Texture2DArray : public Texture {
     }
 
     // Create optimal tiled target image
-    VkImageCreateInfo imageCreateInfo = vks::initializers::imageCreateInfo();
+    VkImageCreateInfo imageCreateInfo = initializers::imageCreateInfo();
     imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
     imageCreateInfo.format = format;
     imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -633,7 +633,7 @@ class Texture2DArray : public Texture {
     subresourceRange.levelCount = mipLevels;
     subresourceRange.layerCount = layerCount;
 
-    vks::tools::setImageLayout(
+    tools::setImageLayout(
           copyCmd,
           image,
           VK_IMAGE_LAYOUT_UNDEFINED,
@@ -651,7 +651,7 @@ class Texture2DArray : public Texture {
 
     // Change texture image layout to shader read after all faces have been copied
     this->imageLayout = imageLayout;
-    vks::tools::setImageLayout(
+    tools::setImageLayout(
           copyCmd,
           image,
           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -661,7 +661,7 @@ class Texture2DArray : public Texture {
     device->flushCommandBuffer(copyCmd, copyQueue);
 
     // Create sampler
-    VkSamplerCreateInfo samplerCreateInfo = vks::initializers::samplerCreateInfo();
+    VkSamplerCreateInfo samplerCreateInfo = initializers::samplerCreateInfo();
     samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
     samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
     samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -677,7 +677,7 @@ class Texture2DArray : public Texture {
     vik_log_check(vkCreateSampler(device->logicalDevice, &samplerCreateInfo, nullptr, &sampler));
 
     // Create image view
-    VkImageViewCreateInfo viewCreateInfo = vks::initializers::imageViewCreateInfo();
+    VkImageViewCreateInfo viewCreateInfo = initializers::imageViewCreateInfo();
     viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
     viewCreateInfo.format = format;
     viewCreateInfo.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
@@ -713,12 +713,12 @@ class TextureCubeMap : public Texture {
   void loadFromFile(
       std::string filename,
       VkFormat format,
-      vks::Device *device,
+      Device *device,
       VkQueue copyQueue,
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
       VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
 
-    vik_log_f_if(!vks::tools::fileExists(filename),
+    vik_log_f_if(!tools::fileExists(filename),
                  "File not found: Could not load texture from %s",
                  filename.c_str());
 
@@ -731,14 +731,14 @@ class TextureCubeMap : public Texture {
     height = static_cast<uint32_t>(texCube.extent().y);
     mipLevels = static_cast<uint32_t>(texCube.levels());
 
-    VkMemoryAllocateInfo memAllocInfo = vks::initializers::memoryAllocateInfo();
+    VkMemoryAllocateInfo memAllocInfo = initializers::memoryAllocateInfo();
     VkMemoryRequirements memReqs;
 
     // Create a host-visible staging buffer that contains the raw image data
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingMemory;
 
-    VkBufferCreateInfo bufferCreateInfo = vks::initializers::bufferCreateInfo();
+    VkBufferCreateInfo bufferCreateInfo = initializers::bufferCreateInfo();
     bufferCreateInfo.size = texCube.size();
     // This buffer is used as a transfer source for the buffer copy
     bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
@@ -786,7 +786,7 @@ class TextureCubeMap : public Texture {
     }
 
     // Create optimal tiled target image
-    VkImageCreateInfo imageCreateInfo = vks::initializers::imageCreateInfo();
+    VkImageCreateInfo imageCreateInfo = initializers::imageCreateInfo();
     imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
     imageCreateInfo.format = format;
     imageCreateInfo.mipLevels = mipLevels;
@@ -826,7 +826,7 @@ class TextureCubeMap : public Texture {
     subresourceRange.levelCount = mipLevels;
     subresourceRange.layerCount = 6;
 
-    vks::tools::setImageLayout(
+    tools::setImageLayout(
           copyCmd,
           image,
           VK_IMAGE_LAYOUT_UNDEFINED,
@@ -844,7 +844,7 @@ class TextureCubeMap : public Texture {
 
     // Change texture image layout to shader read after all faces have been copied
     this->imageLayout = imageLayout;
-    vks::tools::setImageLayout(
+    tools::setImageLayout(
           copyCmd,
           image,
           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -854,7 +854,7 @@ class TextureCubeMap : public Texture {
     device->flushCommandBuffer(copyCmd, copyQueue);
 
     // Create sampler
-    VkSamplerCreateInfo samplerCreateInfo = vks::initializers::samplerCreateInfo();
+    VkSamplerCreateInfo samplerCreateInfo = initializers::samplerCreateInfo();
     samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
     samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
     samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -870,7 +870,7 @@ class TextureCubeMap : public Texture {
     vik_log_check(vkCreateSampler(device->logicalDevice, &samplerCreateInfo, nullptr, &sampler));
 
     // Create image view
-    VkImageViewCreateInfo viewCreateInfo = vks::initializers::imageViewCreateInfo();
+    VkImageViewCreateInfo viewCreateInfo = initializers::imageViewCreateInfo();
     viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
     viewCreateInfo.format = format;
     viewCreateInfo.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };

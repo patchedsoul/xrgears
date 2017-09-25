@@ -22,11 +22,11 @@
 namespace vik {
 class SkyBox {
  private:
-  vks::TextureCubeMap cubeMap;
+  TextureCubeMap cubeMap;
   VkDescriptorSet descriptorSet;
   VkDevice device;
   VkDescriptorImageInfo textureDescriptor;
-  vks::Model model;
+  Model model;
   VkPipeline pipeline;
 
  public:
@@ -41,21 +41,21 @@ class SkyBox {
   void initTextureDescriptor() {
     // Image descriptor for the cube map texture
     textureDescriptor =
-        vks::initializers::descriptorImageInfo(
+        initializers::descriptorImageInfo(
           cubeMap.sampler,
           cubeMap.view,
           cubeMap.imageLayout);
   }
 
   VkWriteDescriptorSet getCubeMapWriteDescriptorSet(unsigned binding, VkDescriptorSet ds) {
-    return vks::initializers::writeDescriptorSet(
+    return initializers::writeDescriptorSet(
           ds,
           VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
           binding,
           &textureDescriptor);
   }
 
-  void loadAssets(vks::VertexLayout vertexLayout, vks::Device *vulkanDevice, VkQueue queue) {
+  void loadAssets(VertexLayout vertexLayout, Device *vulkanDevice, VkQueue queue) {
     // Skybox
     model.loadFromFile(vik::Assets::getAssetPath() + "models/cube.obj", vertexLayout, 10.0f, vulkanDevice, queue);
     cubeMap.loadFromFile(
@@ -73,7 +73,7 @@ class SkyBox {
     vik_log_check(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
 
     std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
-      vks::initializers::writeDescriptorSet(
+      initializers::writeDescriptorSet(
       descriptorSet,
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       2,
@@ -104,7 +104,7 @@ class SkyBox {
   void createPipeline(VkGraphicsPipelineCreateInfo* pipelineCreateInfo,
                       const VkPipelineCache& pipelineCache) {
     VkPipelineRasterizationStateCreateInfo rasterizationStateSky =
-        vks::initializers::pipelineRasterizationStateCreateInfo(
+        initializers::pipelineRasterizationStateCreateInfo(
           VK_POLYGON_MODE_FILL,
           VK_CULL_MODE_BACK_BIT,
           VK_FRONT_FACE_COUNTER_CLOCKWISE,

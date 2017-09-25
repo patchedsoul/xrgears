@@ -11,23 +11,23 @@
 
 #define LOG_TO_STD_ERR 0
 
-#define vik_log(...) vks::Log::log(__FILE__, __LINE__, __VA_ARGS__)
-#define vik_log_d(...) vik_log(vks::Log::DEBUG, __VA_ARGS__)
-#define vik_log_i(...) vik_log(vks::Log::INFO, __VA_ARGS__)
-#define vik_log_w(...) vik_log(vks::Log::WARNING, __VA_ARGS__)
-#define vik_log_e(...) vik_log(vks::Log::ERROR, __VA_ARGS__)
-#define vik_log_f(...) vik_log(vks::Log::FATAL, __VA_ARGS__)
-#define vik_log_if(...) vks::Log::log_if(__FILE__, __LINE__, __VA_ARGS__)
-#define vik_log_f_if(...) vik_log_if(vks::Log::FATAL, __VA_ARGS__)
-#define vik_log_e_if(...) vik_log_if(vks::Log::ERROR, __VA_ARGS__)
+#define vik_log(...) vik::Log::log(__FILE__, __LINE__, __VA_ARGS__)
+#define vik_log_d(...) vik_log(vik::Log::DEBUG, __VA_ARGS__)
+#define vik_log_i(...) vik_log(vik::Log::INFO, __VA_ARGS__)
+#define vik_log_w(...) vik_log(vik::Log::WARNING, __VA_ARGS__)
+#define vik_log_e(...) vik_log(vik::Log::ERROR, __VA_ARGS__)
+#define vik_log_f(...) vik_log(vik::Log::FATAL, __VA_ARGS__)
+#define vik_log_if(...) vik::Log::log_if(__FILE__, __LINE__, __VA_ARGS__)
+#define vik_log_f_if(...) vik_log_if(vik::Log::FATAL, __VA_ARGS__)
+#define vik_log_e_if(...) vik_log_if(vik::Log::ERROR, __VA_ARGS__)
 
 // Macro to check and display Vulkan return results
 #define vik_log_check(f) {\
   VkResult res = (f);\
-  vik_log_f_if(res != VK_SUCCESS, "VkResult is %s", vks::Log::result_string(res).c_str());\
+  vik_log_f_if(res != VK_SUCCESS, "VkResult is %s", vik::Log::result_string(res).c_str());\
 }
 
-namespace vks {
+namespace vik {
 class Log {
 
   static const bool use_color = true;

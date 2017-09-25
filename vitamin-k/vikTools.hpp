@@ -44,7 +44,7 @@
 
 #define ASSET_PATH "./data/"
 
-namespace vks {
+namespace vik {
 namespace tools {
 
 /** @brief Returns the device type as a string */
@@ -99,7 +99,7 @@ static void setImageLayout(
     VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
     VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT) {
   // Create an image barrier object
-  VkImageMemoryBarrier imageMemoryBarrier = vks::initializers::imageMemoryBarrier();
+  VkImageMemoryBarrier imageMemoryBarrier = initializers::imageMemoryBarrier();
   imageMemoryBarrier.oldLayout = oldImageLayout;
   imageMemoryBarrier.newLayout = newImageLayout;
   imageMemoryBarrier.image = image;
@@ -235,7 +235,7 @@ static void insertImageMemoryBarrier(
     VkPipelineStageFlags srcStageMask,
     VkPipelineStageFlags dstStageMask,
     VkImageSubresourceRange subresourceRange) {
-  VkImageMemoryBarrier imageMemoryBarrier = vks::initializers::imageMemoryBarrier();
+  VkImageMemoryBarrier imageMemoryBarrier = initializers::imageMemoryBarrier();
   imageMemoryBarrier.srcAccessMask = srcAccessMask;
   imageMemoryBarrier.dstAccessMask = dstAccessMask;
   imageMemoryBarrier.oldLayout = oldImageLayout;

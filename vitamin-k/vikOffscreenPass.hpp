@@ -69,7 +69,7 @@ class OffscreenPass {
 
   // Create a frame buffer attachment
   void createAttachment(
-      vks::Device *vulkanDevice,
+      Device *vulkanDevice,
       VkFormat format,
       VkImageUsageFlagBits usage,
       FrameBufferAttachment *attachment) {
@@ -90,7 +90,7 @@ class OffscreenPass {
 
     assert(aspectMask > 0);
 
-    VkImageCreateInfo image = vks::initializers::imageCreateInfo();
+    VkImageCreateInfo image = initializers::imageCreateInfo();
     image.imageType = VK_IMAGE_TYPE_2D;
     image.format = format;
     image.extent.width = offScreenFrameBuf.width;
@@ -102,7 +102,7 @@ class OffscreenPass {
     image.tiling = VK_IMAGE_TILING_OPTIMAL;
     image.usage = usage | VK_IMAGE_USAGE_SAMPLED_BIT;
 
-    VkMemoryAllocateInfo memAlloc = vks::initializers::memoryAllocateInfo();
+    VkMemoryAllocateInfo memAlloc = initializers::memoryAllocateInfo();
     VkMemoryRequirements memReqs;
 
     vik_log_check(vkCreateImage(device, &image, nullptr, &attachment->image));
@@ -112,7 +112,7 @@ class OffscreenPass {
     vik_log_check(vkAllocateMemory(device, &memAlloc, nullptr, &attachment->mem));
     vik_log_check(vkBindImageMemory(device, attachment->image, attachment->mem, 0));
 
-    VkImageViewCreateInfo imageView = vks::initializers::imageViewCreateInfo();
+    VkImageViewCreateInfo imageView = initializers::imageViewCreateInfo();
     imageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
     imageView.format = format;
     imageView.subresourceRange = {};
@@ -126,7 +126,7 @@ class OffscreenPass {
   }
 
   // Prepare a new framebuffer and attachments for offscreen rendering (G-Buffer)
-  void prepareOffscreenFramebuffer(vks::Device *vulkanDevice, const VkPhysicalDevice& physicalDevice) {
+  void prepareOffscreenFramebuffer(Device *vulkanDevice, const VkPhysicalDevice& physicalDevice) {
     offScreenFrameBuf.width = FB_DIM;
     offScreenFrameBuf.height = FB_DIM;
 
@@ -141,7 +141,7 @@ class OffscreenPass {
     // Depth attachment
     // Find a suitable depth format
     VkFormat attDepthFormat;
-    VkBool32 validDepthFormat = vks::tools::getSupportedDepthFormat(physicalDevice, &attDepthFormat);
+    VkBool32 validDepthFormat = tools::getSupportedDepthFormat(physicalDevice, &attDepthFormat);
     assert(validDepthFormat);
 
     createAttachment(
@@ -232,7 +232,7 @@ class OffscreenPass {
     vik_log_check(vkCreateFramebuffer(device, &fbufCreateInfo, nullptr, &offScreenFrameBuf.frameBuffer));
 
     // Create sampler to sample from the color attachments
-    VkSamplerCreateInfo sampler = vks::initializers::samplerCreateInfo();
+    VkSamplerCreateInfo sampler = initializers::samplerCreateInfo();
     sampler.magFilter = VK_FILTER_NEAREST;
     sampler.minFilter = VK_FILTER_NEAREST;
     sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -249,14 +249,14 @@ class OffscreenPass {
 
   VkDescriptorImageInfo getDescriptorImageInfo() {
     // Image descriptors for the offscreen color attachments
-    return vks::initializers::descriptorImageInfo(
+    return initializers::descriptorImageInfo(
           colorSampler,
           offScreenFrameBuf.diffuseColor.view,
           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
 
   VkWriteDescriptorSet getImageWriteDescriptorSet(const VkDescriptorSet& descriptorSet, VkDescriptorImageInfo *texDescriptorPosition, uint32_t binding) {
-    return vks::initializers::writeDescriptorSet(
+    return initializers::writeDescriptorSet(
           descriptorSet,
           VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
           binding,
@@ -269,7 +269,7 @@ class OffscreenPass {
     clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
     clearValues[1].depthStencil = { 1.0f, 0 };
 
-    VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
+    VkRenderPassBeginInfo renderPassBeginInfo = initializers::renderPassBeginInfo();
     renderPassBeginInfo.renderPass =  offScreenFrameBuf.renderPass;
     renderPassBeginInfo.framebuffer = offScreenFrameBuf.frameBuffer;
     renderPassBeginInfo.renderArea.extent.width = offScreenFrameBuf.width;
@@ -282,14 +282,14 @@ class OffscreenPass {
 
   void setViewPortAndScissor(const VkCommandBuffer& cmdBuffer) {
     VkViewport viewport =
-        vks::initializers::viewport(
+        initializers::viewport(
           (float)offScreenFrameBuf.width,
           (float)offScreenFrameBuf.height,
           0.0f, 1.0f);
     vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
 
     VkRect2D scissor =
-        vks::initializers::rect2D(
+        initializers::rect2D(
           offScreenFrameBuf.width,
           offScreenFrameBuf.height,
           0, 0);
@@ -309,8 +309,8 @@ class OffscreenPass {
     vkCmdSetViewport(cmdBuffer, 0, 2, viewports);
 
     VkRect2D scissorRects[2] = {
-      vks::initializers::rect2D(w / 2, h, 0, 0),
-      vks::initializers::rect2D(w / 2, h, w / 2, 0),
+      initializers::rect2D(w / 2, h, 0, 0),
+      initializers::rect2D(w / 2, h, w / 2, 0),
     };
     vkCmdSetScissor(cmdBuffer, 0, 2, scissorRects);
   }

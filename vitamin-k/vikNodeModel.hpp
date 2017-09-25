@@ -16,15 +16,15 @@
 
 namespace vik {
 class NodeModel : public Node {
-  vks::Model model;
+  Model model;
 
  public:
   ~NodeModel() {
     model.destroy();
   }
 
-  void loadModel(const std::string& name, vks::VertexLayout layout,
-                 float scale,  vks::Device *device, VkQueue queue) {
+  void loadModel(const std::string& name, VertexLayout layout,
+                 float scale,  Device *device, VkQueue queue) {
     model.loadFromFile(vik::Assets::getAssetPath() + "models/" + name,
                        layout,
                        scale,

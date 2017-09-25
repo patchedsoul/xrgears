@@ -26,9 +26,9 @@
 #include "vikLog.hpp"
 #include "vikSwapChainVK.hpp"
 
-namespace vks {
+namespace vik {
 
-class SwapChain : public vik::SwapChainVK {
+class SwapChainVkComplex : public vik::SwapChainVK {
  public:
   // Index of the deteced graphics and presenting device queue
   /** @brief Queue family index of the detected graphics and presenting device queue */

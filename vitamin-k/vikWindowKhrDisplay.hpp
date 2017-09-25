@@ -28,8 +28,8 @@ class WindowKhrDisplay  : public Window {
 
   void init_swap_chain(Renderer *r) {
 
-    r->swap_chain = new SwapChain();
-    vks::SwapChain *sc = (vks::SwapChain*) r->swap_chain;
+    r->swap_chain = new SwapChainVkComplex();
+    SwapChainVkComplex *sc = (SwapChainVkComplex*) r->swap_chain;
     sc->set_context(r->instance, r->physical_device, r->device);
 
     uint32_t displayPropertyCount;

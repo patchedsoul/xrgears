@@ -28,7 +28,7 @@ class Shader {
     shaderStage.stage = stage;
 
     std::string path = Assets::getShaderPath() + fileName;
-    shaderStage.module = vks::tools::loadShader(path.c_str(), device);
+    shaderStage.module = tools::loadShader(path.c_str(), device);
     shaderStage.pName = "main";
     assert(shaderStage.module != VK_NULL_HANDLE);
     return shaderStage;

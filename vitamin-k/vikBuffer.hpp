@@ -17,7 +17,7 @@
 #include "vikTools.hpp"
 #include "vikDevice.hpp"
 
-namespace vks {
+namespace vik {
 /**
   * @brief Encapsulates access to a Vulkan buffer backed up by device memory
   * @note To be filled by an external source like the VulkanDevice

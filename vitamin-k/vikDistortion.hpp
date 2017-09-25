@@ -28,8 +28,8 @@ namespace vik {
 class Distortion {
  private:
   VkDevice device;
-  vks::Model quad;
-  vks::Buffer uboHandle;
+  Model quad;
+  Buffer uboHandle;
 
   struct {
     glm::vec4 hmdWarpParam;
@@ -62,39 +62,39 @@ class Distortion {
 
   void createPipeLine(const VkRenderPass& renderPass, const VkPipelineCache& pipelineCache) {
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
-        vks::initializers::pipelineInputAssemblyStateCreateInfo(
+        initializers::pipelineInputAssemblyStateCreateInfo(
           VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
           0,
           VK_FALSE);
 
     VkPipelineRasterizationStateCreateInfo rasterizationState =
-        vks::initializers::pipelineRasterizationStateCreateInfo(
+        initializers::pipelineRasterizationStateCreateInfo(
           VK_POLYGON_MODE_FILL,
           VK_CULL_MODE_BACK_BIT,
           VK_FRONT_FACE_CLOCKWISE,
           0);
 
     VkPipelineColorBlendAttachmentState blendAttachmentState =
-        vks::initializers::pipelineColorBlendAttachmentState(
+        initializers::pipelineColorBlendAttachmentState(
           0xf,
           VK_FALSE);
 
     VkPipelineColorBlendStateCreateInfo colorBlendState =
-        vks::initializers::pipelineColorBlendStateCreateInfo(
+        initializers::pipelineColorBlendStateCreateInfo(
           1,
           &blendAttachmentState);
 
     VkPipelineDepthStencilStateCreateInfo depthStencilState =
-        vks::initializers::pipelineDepthStencilStateCreateInfo(
+        initializers::pipelineDepthStencilStateCreateInfo(
           VK_TRUE,
           VK_TRUE,
           VK_COMPARE_OP_LESS_OR_EQUAL);
 
     VkPipelineViewportStateCreateInfo viewportState =
-        vks::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+        initializers::pipelineViewportStateCreateInfo(1, 1, 0);
 
     VkPipelineMultisampleStateCreateInfo multisampleState =
-        vks::initializers::pipelineMultisampleStateCreateInfo(
+        initializers::pipelineMultisampleStateCreateInfo(
           VK_SAMPLE_COUNT_1_BIT,
           0);
 
@@ -103,12 +103,12 @@ class Distortion {
       VK_DYNAMIC_STATE_SCISSOR
     };
     VkPipelineDynamicStateCreateInfo dynamicState =
-        vks::initializers::pipelineDynamicStateCreateInfo(
+        initializers::pipelineDynamicStateCreateInfo(
           dynamicStateEnables.data(),
           static_cast<uint32_t>(dynamicStateEnables.size()),
           0);
     VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-        vks::initializers::pipelineCreateInfo(
+        initializers::pipelineCreateInfo(
           nullptr,
           renderPass,
           0);
@@ -134,7 +134,7 @@ class Distortion {
                                       // "hmddistortion/ph5-distortion.frag.spv",
                                       VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    VkPipelineVertexInputStateCreateInfo emptyInputState = vks::initializers::pipelineVertexInputStateCreateInfo();
+    VkPipelineVertexInputStateCreateInfo emptyInputState = initializers::pipelineVertexInputStateCreateInfo();
     pipelineCreateInfo.pVertexInputState = &emptyInputState;
     pipelineCreateInfo.layout = pipelineLayout;
     vik_log_check(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
@@ -144,7 +144,7 @@ class Distortion {
   }
 
   VkWriteDescriptorSet getUniformWriteDescriptorSet(uint32_t binding) {
-    return vks::initializers::writeDescriptorSet(
+    return initializers::writeDescriptorSet(
           descriptorSet,
           VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
           binding,
@@ -156,7 +156,7 @@ class Distortion {
 
     // Textured quad descriptor set
     VkDescriptorSetAllocateInfo allocInfo =
-        vks::initializers::descriptorSetAllocateInfo(
+        initializers::descriptorSetAllocateInfo(
           descriptorPool,
           &descriptorSetLayout,
           1);
@@ -179,19 +179,19 @@ class Distortion {
     // Deferred shading layout
     std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
       // Binding 0 : Render texture target
-      vks::initializers::descriptorSetLayoutBinding(
+      initializers::descriptorSetLayoutBinding(
       VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
       VK_SHADER_STAGE_FRAGMENT_BIT,
       0),
       // Binding 1 : Fragment shader uniform buffer
-      vks::initializers::descriptorSetLayoutBinding(
+      initializers::descriptorSetLayoutBinding(
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       VK_SHADER_STAGE_FRAGMENT_BIT,
       1),
     };
 
     VkDescriptorSetLayoutCreateInfo descriptorLayout =
-        vks::initializers::descriptorSetLayoutCreateInfo(
+        initializers::descriptorSetLayoutCreateInfo(
           setLayoutBindings.data(),
           static_cast<uint32_t>(setLayoutBindings.size()));
 
@@ -200,7 +200,7 @@ class Distortion {
 
   void createPipeLineLayout() {
     VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
-        vks::initializers::pipelineLayoutCreateInfo(
+        initializers::pipelineLayoutCreateInfo(
           &descriptorSetLayout,
           1);
 
@@ -228,7 +228,7 @@ class Distortion {
     vkCmdDraw(commandBuffer, 12, 1, 0, 0);
   }
 
-  void generateQuads(vks::Device *vulkanDevice) {
+  void generateQuads(Device *vulkanDevice) {
     // Setup vertices for multiple screen aligned quads
     // Used for displaying final result and debug
     struct Vertex {
@@ -306,7 +306,7 @@ class Distortion {
     memcpy(uboHandle.mapped, &uboData, sizeof(uboData));
   }
 
-  void prepareUniformBuffer(vks::Device *vulkanDevice) {
+  void prepareUniformBuffer(Device *vulkanDevice) {
     // Warp UBO in deferred fragment shader
     vik_log_check(vulkanDevice->createBuffer(
                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,

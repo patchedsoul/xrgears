@@ -106,7 +106,7 @@ public:
       update_cb();
 
       SwapChainVK* sc = (SwapChainVK*) r->swap_chain;
-      vkc::RendererVkc* vkc_renderer = (vkc::RendererVkc*) r;
+      RendererVkc* vkc_renderer = (RendererVkc*) r;
       sc->render(r->queue, vkc_renderer->semaphore);
       schedule_repaint();
     }
@@ -186,7 +186,7 @@ public:
           SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
           sc->create_simple(r->width, r->height);
           sc->update_images();
-          vkc::RendererVkc* vkc_renderer = (vkc::RendererVkc*) r;
+          RendererVkc* vkc_renderer = (RendererVkc*) r;
           vkc_renderer->create_frame_buffers(r->swap_chain);
           schedule_repaint();
         }

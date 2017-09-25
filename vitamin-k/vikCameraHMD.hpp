@@ -31,7 +31,7 @@ class CameraHMD : public Camera {
     m[2][1] = -m[2][1];
   }
 
-  void update(vks::CameraBase camera) {
+  void update(CameraBase camera) {
     glm::mat4 hmdProjectionLeft, hmdProjectionRight;
     glm::mat4 hmdViewLeft, hmdViewRight;
 

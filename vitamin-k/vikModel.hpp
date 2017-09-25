@@ -29,7 +29,7 @@
 #include "vikDevice.hpp"
 #include "vikBuffer.hpp"
 
-namespace vks {
+namespace vik {
 /** @brief Vertex layout components */
 typedef enum Component {
   VERTEX_COMPONENT_POSITION = 0x0,
@@ -97,8 +97,8 @@ struct ModelCreateInfo {
 
 struct Model {
   VkDevice device = nullptr;
-  vks::Buffer vertices;
-  vks::Buffer indices;
+  Buffer vertices;
+  Buffer indices;
   uint32_t indexCount = 0;
   uint32_t vertexCount = 0;
 
@@ -140,7 +140,7 @@ struct Model {
     * @param copyQueue Queue used for the memory staging copy commands (must support transfer)
     * @param (Optional) flags ASSIMP model loading flags
     */
-  bool loadFromFile(const std::string& filename, vks::VertexLayout layout, vks::ModelCreateInfo *createInfo, vks::Device *device, VkQueue copyQueue, const int flags = defaultFlags) {
+  bool loadFromFile(const std::string& filename, VertexLayout layout, ModelCreateInfo *createInfo, Device *device, VkQueue copyQueue, const int flags = defaultFlags) {
     this->device = device->logicalDevice;
 
     Assimp::Importer Importer;
@@ -266,7 +266,7 @@ struct Model {
 
       // Use staging buffer to move vertex and index buffer to device local memory
       // Create staging buffers
-      vks::Buffer vertexStaging, indexStaging;
+      Buffer vertexStaging, indexStaging;
 
       // Vertex buffer
       vik_log_check(device->createBuffer(
@@ -335,8 +335,8 @@ struct Model {
     * @param copyQueue Queue used for the memory staging copy commands (must support transfer)
     * @param (Optional) flags ASSIMP model loading flags
     */
-  bool loadFromFile(const std::string& filename, vks::VertexLayout layout, float scale, vks::Device *device, VkQueue copyQueue, const int flags = defaultFlags) {
-    vks::ModelCreateInfo modelCreateInfo(scale, 1.0f, 0.0f);
+  bool loadFromFile(const std::string& filename, VertexLayout layout, float scale, Device *device, VkQueue copyQueue, const int flags = defaultFlags) {
+    ModelCreateInfo modelCreateInfo(scale, 1.0f, 0.0f);
     return loadFromFile(filename, layout, &modelCreateInfo, device, copyQueue, flags);
   }
 };

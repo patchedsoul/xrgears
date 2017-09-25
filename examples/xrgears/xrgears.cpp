@@ -40,12 +40,12 @@
 
 #define VERTEX_BUFFER_BIND_ID 0
 
-class XRGears : public vks::ApplicationVks {
+class XRGears : public vik::ApplicationVks {
 public:
   // Vertex layout for the models
-  vks::VertexLayout vertexLayout = vks::VertexLayout({
-    vks::VERTEX_COMPONENT_POSITION,
-    vks::VERTEX_COMPONENT_NORMAL
+  vik::VertexLayout vertexLayout = vik::VertexLayout({
+    vik::VERTEX_COMPONENT_POSITION,
+    vik::VERTEX_COMPONENT_NORMAL
   });
 
   vik::HMD* hmd;
@@ -77,7 +77,7 @@ public:
   } uboLights;
 
   struct {
-    vks::Buffer lights;
+    vik::Buffer lights;
   } uniformBuffers;
 
   struct {
@@ -94,7 +94,7 @@ public:
   XRGears() : ApplicationVks() {
     title = "XR Gears";
     renderer->enableTextOverlay = true;
-    camera.type = vks::CameraBase::CameraType::firstperson;
+    camera.type = vik::CameraBase::CameraType::firstperson;
     camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
     camera.setTranslation(glm::vec3(2.2f, 3.2f, -7.6));
     camera.setPerspective(60.0f, (float)renderer->width / (float)renderer->height, 0.1f, 256.0f);
@@ -157,7 +157,7 @@ public:
   }
 
   inline VkRenderPassBeginInfo defaultRenderPassBeginInfo() {
-    VkRenderPassBeginInfo renderPassBeginInfo = vks::initializers::renderPassBeginInfo();
+    VkRenderPassBeginInfo renderPassBeginInfo = vik::initializers::renderPassBeginInfo();
     renderPassBeginInfo.renderPass = renderer->render_pass;
     renderPassBeginInfo.renderArea.offset.x = 0;
     renderPassBeginInfo.renderArea.offset.y = 0;
@@ -178,17 +178,17 @@ public:
     // Set target frame buffer
     renderPassBeginInfo.framebuffer = frameBuffer;
 
-    VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+    VkCommandBufferBeginInfo cmdBufInfo = vik::initializers::commandBufferBeginInfo();
     vik_log_check(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 
     vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    VkViewport viewport = vks::initializers::viewport(
+    VkViewport viewport = vik::initializers::viewport(
           (float) renderer->width, (float) renderer->height,
           0.0f, 1.0f);
     vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
 
-    VkRect2D scissor = vks::initializers::rect2D(renderer->width, renderer->height, 0, 0);
+    VkRect2D scissor = vik::initializers::rect2D(renderer->width, renderer->height, 0, 0);
     vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
     // Final composition as full screen quad
@@ -205,7 +205,7 @@ public:
       offScreenCmdBuffer = renderer->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 
     // Create a semaphore used to synchronize offscreen rendering and usage
-    VkSemaphoreCreateInfo semaphoreCreateInfo = vks::initializers::semaphoreCreateInfo();
+    VkSemaphoreCreateInfo semaphoreCreateInfo = vik::initializers::semaphoreCreateInfo();
     vik_log_check(vkCreateSemaphore(renderer->device, &semaphoreCreateInfo, nullptr, &offscreenSemaphore));
 
     VkFramebuffer unused;
@@ -215,11 +215,11 @@ public:
 
   void buildPbrCommandBuffer(VkCommandBuffer& cmdBuffer, VkFramebuffer& framebuffer, bool offScreen) {
 
-    VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+    VkCommandBufferBeginInfo cmdBufInfo = vik::initializers::commandBufferBeginInfo();
     vik_log_check(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 
-    if (vks::debugmarker::active)
-      vks::debugmarker::beginRegion(cmdBuffer,
+    if (vik::debugmarker::active)
+      vik::debugmarker::beginRegion(cmdBuffer,
                                     offScreen ? "Pbr offscreen" : "PBR Pass Onscreen",
                                     glm::vec4(0.3f, 0.94f, 1.0f, 1.0f));
 
@@ -248,8 +248,8 @@ public:
 
     vkCmdEndRenderPass(cmdBuffer);
 
-    if (vks::debugmarker::active)
-      vks::debugmarker::endRegion(cmdBuffer);
+    if (vik::debugmarker::active)
+      vik::debugmarker::endRegion(cmdBuffer);
 
     vik_log_check(vkEndCommandBuffer(cmdBuffer));
   }
@@ -265,10 +265,10 @@ public:
   }
 
   void setMonoViewPortAndScissors(VkCommandBuffer cmdBuffer) {
-    VkViewport viewport = vks::initializers::viewport((float)renderer->width, (float)renderer->height, 0.0f, 1.0f);
+    VkViewport viewport = vik::initializers::viewport((float)renderer->width, (float)renderer->height, 0.0f, 1.0f);
     vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
 
-    VkRect2D scissor = vks::initializers::rect2D(renderer->width, renderer->height, 0, 0);
+    VkRect2D scissor = vik::initializers::rect2D(renderer->width, renderer->height, 0, 0);
     vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
   }
 
@@ -282,8 +282,8 @@ public:
     vkCmdSetViewport(cmdBuffer, 0, 2, viewports);
 
     VkRect2D scissorRects[2] = {
-      vks::initializers::rect2D(renderer->width/2, renderer->height, 0, 0),
-      vks::initializers::rect2D(renderer->width/2, renderer->height, renderer->width / 2, 0),
+      vik::initializers::rect2D(renderer->width/2, renderer->height, 0, 0),
+      vik::initializers::rect2D(renderer->width/2, renderer->height, renderer->width / 2, 0),
     };
     vkCmdSetScissor(cmdBuffer, 0, 2, scissorRects);
   }
@@ -357,7 +357,7 @@ public:
     // Binding and attribute descriptions are shared across all gears
     vertices.bindingDescriptions.resize(1);
     vertices.bindingDescriptions[0] =
-        vks::initializers::vertexInputBindingDescription(
+        vik::initializers::vertexInputBindingDescription(
           VERTEX_BUFFER_BIND_ID,
           sizeof(vik::Vertex),
           VK_VERTEX_INPUT_RATE_VERTEX);
@@ -367,27 +367,27 @@ public:
     vertices.attributeDescriptions.resize(3);
     // Location 0 : Position
     vertices.attributeDescriptions[0] =
-        vks::initializers::vertexInputAttributeDescription(
+        vik::initializers::vertexInputAttributeDescription(
           VERTEX_BUFFER_BIND_ID,
           0,
           VK_FORMAT_R32G32B32_SFLOAT,
           0);
     // Location 1 : Normal
     vertices.attributeDescriptions[1] =
-        vks::initializers::vertexInputAttributeDescription(
+        vik::initializers::vertexInputAttributeDescription(
           VERTEX_BUFFER_BIND_ID,
           1,
           VK_FORMAT_R32G32B32_SFLOAT,
           sizeof(float) * 3);
     // Location 2 : Color
     vertices.attributeDescriptions[2] =
-        vks::initializers::vertexInputAttributeDescription(
+        vik::initializers::vertexInputAttributeDescription(
           VERTEX_BUFFER_BIND_ID,
           2,
           VK_FORMAT_R32G32B32_SFLOAT,
           sizeof(float) * 6);
 
-    vertices.inputState = vks::initializers::pipelineVertexInputStateCreateInfo();
+    vertices.inputState = vik::initializers::pipelineVertexInputStateCreateInfo();
     vertices.inputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertices.bindingDescriptions.size());
     vertices.inputState.pVertexBindingDescriptions = vertices.bindingDescriptions.data();
     vertices.inputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertices.attributeDescriptions.size());
@@ -398,12 +398,12 @@ public:
   {
     // Example uses two ubos
     std::vector<VkDescriptorPoolSize> poolSizes = {
-      vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16),
-      vks::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 6)
+      vik::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16),
+      vik::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 6)
     };
 
     VkDescriptorPoolCreateInfo descriptorPoolInfo =
-        vks::initializers::descriptorPoolCreateInfo(
+        vik::initializers::descriptorPoolCreateInfo(
           static_cast<uint32_t>(poolSizes.size()),
           poolSizes.data(),
           6);
@@ -416,17 +416,17 @@ public:
     std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
     {
       // ubo model
-      vks::initializers::descriptorSetLayoutBinding(
+      vik::initializers::descriptorSetLayoutBinding(
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       VK_SHADER_STAGE_GEOMETRY_BIT, //VK_SHADER_STAGE_VERTEX_BIT,
       0),
       // ubo lights
-      vks::initializers::descriptorSetLayoutBinding(
+      vik::initializers::descriptorSetLayoutBinding(
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       VK_SHADER_STAGE_FRAGMENT_BIT,
       1),
       // ubo camera
-      vks::initializers::descriptorSetLayoutBinding(
+      vik::initializers::descriptorSetLayoutBinding(
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
       2)
@@ -434,25 +434,25 @@ public:
 
     // cube map sampler
     //if (enableSky)
-      setLayoutBindings.push_back(vks::initializers::descriptorSetLayoutBinding(
+      setLayoutBindings.push_back(vik::initializers::descriptorSetLayoutBinding(
                                     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                     VK_SHADER_STAGE_FRAGMENT_BIT,
                                     3));
 
     VkDescriptorSetLayoutCreateInfo descriptorLayout =
-        vks::initializers::descriptorSetLayoutCreateInfo(setLayoutBindings);
+        vik::initializers::descriptorSetLayoutCreateInfo(setLayoutBindings);
 
     vik_log_check(vkCreateDescriptorSetLayout(renderer->device, &descriptorLayout, nullptr, &descriptorSetLayout));
 
     VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
-        vks::initializers::pipelineLayoutCreateInfo(&descriptorSetLayout, 1);
+        vik::initializers::pipelineLayoutCreateInfo(&descriptorSetLayout, 1);
 
     /*
      * Push Constants
      */
 
     std::vector<VkPushConstantRange> pushConstantRanges = {
-      vks::initializers::pushConstantRange(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(vik::Material::PushBlock), sizeof(glm::vec3)),
+      vik::initializers::pushConstantRange(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(vik::Material::PushBlock), sizeof(glm::vec3)),
     };
 
     pPipelineLayoutCreateInfo.pushConstantRangeCount = pushConstantRanges.size();
@@ -464,7 +464,7 @@ public:
   void setupDescriptorSet() {
     if (enableSky) {
       VkDescriptorSetAllocateInfo allocInfo =
-          vks::initializers::descriptorSetAllocateInfo(
+          vik::initializers::descriptorSetAllocateInfo(
             renderer->descriptorPool,
             &descriptorSetLayout,
             1);
@@ -481,35 +481,35 @@ public:
 
   void preparePipelines() {
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
-        vks::initializers::pipelineInputAssemblyStateCreateInfo(
+        vik::initializers::pipelineInputAssemblyStateCreateInfo(
           VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
           0,
           VK_FALSE);
 
     VkPipelineRasterizationStateCreateInfo rasterizationState =
-        vks::initializers::pipelineRasterizationStateCreateInfo(
+        vik::initializers::pipelineRasterizationStateCreateInfo(
           VK_POLYGON_MODE_FILL,
           VK_CULL_MODE_BACK_BIT,
           VK_FRONT_FACE_CLOCKWISE);
 
     VkPipelineColorBlendAttachmentState blendAttachmentState =
-        vks::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE);
+        vik::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE);
 
     VkPipelineColorBlendStateCreateInfo colorBlendState =
-        vks::initializers::pipelineColorBlendStateCreateInfo(1, &blendAttachmentState);
+        vik::initializers::pipelineColorBlendStateCreateInfo(1, &blendAttachmentState);
 
     VkPipelineDepthStencilStateCreateInfo depthStencilState =
-        vks::initializers::pipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
+        vik::initializers::pipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
     VkPipelineViewportStateCreateInfo viewportState;
     if (enableStereo)
-      viewportState = vks::initializers::pipelineViewportStateCreateInfo(2, 2, 0);
+      viewportState = vik::initializers::pipelineViewportStateCreateInfo(2, 2, 0);
     else
-      viewportState = vks::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+      viewportState = vik::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
 
 
     VkPipelineMultisampleStateCreateInfo multisampleState =
-        vks::initializers::pipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
+        vik::initializers::pipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
 
     std::vector<VkDynamicState> dynamicStateEnables = {
       VK_DYNAMIC_STATE_VIEWPORT,
@@ -517,7 +517,7 @@ public:
       VK_DYNAMIC_STATE_LINE_WIDTH
     };
     VkPipelineDynamicStateCreateInfo dynamicState =
-        vks::initializers::pipelineDynamicStateCreateInfo(dynamicStateEnables);
+        vik::initializers::pipelineDynamicStateCreateInfo(dynamicStateEnables);
 
     // Load shaders
     std::array<VkPipelineShaderStageCreateInfo, 3> shaderStages;
@@ -533,19 +533,19 @@ public:
     else
       usedPass =renderer->render_pass;
 
-    pipelineCreateInfo = vks::initializers::pipelineCreateInfo(pipelineLayout, usedPass);
+    pipelineCreateInfo = vik::initializers::pipelineCreateInfo(pipelineLayout, usedPass);
 
     // Vertex bindings an attributes
     std::vector<VkVertexInputBindingDescription> vertexInputBindings = {
-      vks::initializers::vertexInputBindingDescription(0, vertexLayout.stride(), VK_VERTEX_INPUT_RATE_VERTEX),
+      vik::initializers::vertexInputBindingDescription(0, vertexLayout.stride(), VK_VERTEX_INPUT_RATE_VERTEX),
     };
     std::vector<VkVertexInputAttributeDescription> vertexInputAttributes = {
-      vks::initializers::vertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0),					// Location 0: Position
-      vks::initializers::vertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 3),	// Location 1: Normals
-      vks::initializers::vertexInputAttributeDescription(0, 2, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 6),	// Location 2: Color
+      vik::initializers::vertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0),					// Location 0: Position
+      vik::initializers::vertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 3),	// Location 1: Normals
+      vik::initializers::vertexInputAttributeDescription(0, 2, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 6),	// Location 2: Color
 
     };
-    VkPipelineVertexInputStateCreateInfo vertexInputState = vks::initializers::pipelineVertexInputStateCreateInfo();
+    VkPipelineVertexInputStateCreateInfo vertexInputState = vik::initializers::pipelineVertexInputStateCreateInfo();
     vertexInputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertexInputBindings.size());
     vertexInputState.pVertexBindingDescriptions = vertexInputBindings.data();
     vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributes.size());
@@ -589,7 +589,7 @@ public:
   {
     vikCamera->update(camera);
 
-    vks::StereoView sv = {};
+    vik::StereoView sv = {};
     sv.view[0] = vikCamera->uboCamera.view[0];
     sv.view[1] = vikCamera->uboCamera.view[1];
 

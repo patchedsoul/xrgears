@@ -36,7 +36,7 @@ class Node {
     Material material;
   } info;
 
-  vks::Buffer uniformBuffer;
+  Buffer uniformBuffer;
 
   Node() {
   }
@@ -67,7 +67,7 @@ class Node {
                            VkDescriptorBufferInfo* cameraDescriptor,
                            vik::SkyBox *skyDome) {
     VkDescriptorSetAllocateInfo allocInfo =
-        vks::initializers::descriptorSetAllocateInfo(
+        initializers::descriptorSetAllocateInfo(
           descriptorPool,
           &descriptorSetLayout,
           1);
@@ -76,17 +76,17 @@ class Node {
 
     std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
       // Binding 0 : Vertex shader uniform buffer
-      vks::initializers::writeDescriptorSet(
+      initializers::writeDescriptorSet(
       descriptorSet,
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       0,
       &uniformBuffer.descriptor),
-      vks::initializers::writeDescriptorSet(
+      initializers::writeDescriptorSet(
       descriptorSet,
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       1,
       lightsDescriptor),
-      vks::initializers::writeDescriptorSet(
+      initializers::writeDescriptorSet(
       descriptorSet,
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       2,
@@ -103,7 +103,7 @@ class Node {
                            nullptr);
   }
 
-  void updateUniformBuffer(vks::StereoView sv, float timer) {
+  void updateUniformBuffer(StereoView sv, float timer) {
     ubo.model = glm::mat4();
 
     ubo.model = glm::translate(ubo.model, info.pos);
@@ -115,7 +115,7 @@ class Node {
     memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
   }
 
-  void prepareUniformBuffer(vks::Device *vulkanDevice) {
+  void prepareUniformBuffer(Device *vulkanDevice) {
     vulkanDevice->create_and_map(&uniformBuffer, sizeof(ubo));
   }
 

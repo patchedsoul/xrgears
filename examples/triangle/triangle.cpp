@@ -33,7 +33,7 @@
 // See "prepareVertices" for details on what's staging and on why to use it
 #define USE_STAGING true
 
-class Triangle : public vks::ApplicationVks
+class Triangle : public vik::ApplicationVks
 {
 public:
   // Vertex layout used in this example
@@ -206,7 +206,7 @@ public:
     // If requested, also start the new command buffer
     if (begin)
     {
-      VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+      VkCommandBufferBeginInfo cmdBufInfo = vik::initializers::commandBufferBeginInfo();
       vik_log_check(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
     }
 

@@ -14,7 +14,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace vks {
+namespace vik {
 
 struct StereoView {
   glm::mat4 view[2];

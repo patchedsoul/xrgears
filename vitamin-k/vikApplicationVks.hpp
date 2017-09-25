@@ -36,7 +36,7 @@
 
 #include "vikApplication.hpp"
 
-namespace vks {
+namespace vik {
 class Window;
 
 class ApplicationVks : public vik::Application {

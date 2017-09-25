@@ -211,7 +211,7 @@ public:
         break;
       default:
         vik_log_e("vkAcquireNextImageKHR failed: %s",
-                   vks::Log::result_string(result).c_str());
+                   Log::result_string(result).c_str());
         break;
     }
   }

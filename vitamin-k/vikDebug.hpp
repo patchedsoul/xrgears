@@ -28,7 +28,7 @@
 #include <vector>
 #include <sstream>
 
-namespace vks {
+namespace vik {
 namespace debug {
 // Default validation layers
 // On desktop the LunarG loaders exposes a meta layer that contains all layers
