@@ -145,7 +145,8 @@ public:
           shaderStages);
   }
 
-  VkResult create_instance(const std::string& name, const std::vector<const char*> &window_extensions) {
+  VkResult create_instance(const std::string& name,
+                           const std::vector<const char*> &window_extensions) {
 
     VkApplicationInfo app_info = {};
     app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -159,26 +160,25 @@ public:
     };
 
     // Enable surface extensions depending on window system
-    extensions.insert(extensions.end(), window_extensions.begin(), window_extensions.end());
-
-    for (const char* windowExtension : window_extensions)
-      extensions.push_back(windowExtension);
+    extensions.insert(extensions.end(),
+                      window_extensions.begin(),
+                      window_extensions.end());
 
     if (settings->validation)
       extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
-    VkInstanceCreateInfo instanceCreateInfo = {};
-    instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instanceCreateInfo.pApplicationInfo = &app_info;
-    instanceCreateInfo.enabledExtensionCount = extensions.size();
-    instanceCreateInfo.ppEnabledExtensionNames = extensions.data();
+    VkInstanceCreateInfo instance_info = {};
+    instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instance_info.pApplicationInfo = &app_info;
+    instance_info.enabledExtensionCount = extensions.size();
+    instance_info.ppEnabledExtensionNames = extensions.data();
 
     if (settings->validation) {
-      instanceCreateInfo.enabledLayerCount = vks::debug::validationLayerCount;
-      instanceCreateInfo.ppEnabledLayerNames = vks::debug::validationLayerNames;
+      instance_info.enabledLayerCount = vks::debug::validationLayerCount;
+      instance_info.ppEnabledLayerNames = vks::debug::validationLayerNames;
     }
 
-    return vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
+    return vkCreateInstance(&instance_info, nullptr, &instance);
   }
 
   bool checkCommandBuffers() {

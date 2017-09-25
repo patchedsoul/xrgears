@@ -39,32 +39,38 @@ public:
   ~Renderer() {
   }
 
-  VkResult create_instance(const std::string &name, const char *extension) {
+  VkResult create_instance(const std::string &name,
+                           const std::vector<const char*> &window_extensions) {
     VkApplicationInfo app_info = {};
     app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     app_info.pApplicationName = name.c_str();
     app_info.pEngineName = "vitamin-k";
     app_info.apiVersion = VK_MAKE_VERSION(1, 0, 2);
 
-    const char * names[2] = {
+    std::vector<const char*> extensions = {
       VK_KHR_SURFACE_EXTENSION_NAME,
-      extension,
     };
 
-    VkInstanceCreateInfo instanceinfo = {};
-    instanceinfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instanceinfo.pApplicationInfo = &app_info;
-    instanceinfo.enabledExtensionCount = extension ? (uint32_t) 2 : 0;
-    instanceinfo.ppEnabledExtensionNames = names;
+    // Enable surface extensions depending on window system
+    extensions.insert(extensions.end(),
+                      window_extensions.begin(),
+                      window_extensions.end());
 
-    vkCreateInstance(&instanceinfo,
+    VkInstanceCreateInfo instance_info = {};
+    instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instance_info.pApplicationInfo = &app_info;
+    instance_info.enabledExtensionCount = extensions.size();
+    instance_info.ppEnabledExtensionNames = extensions.data();
+
+    vkCreateInstance(&instance_info,
                      NULL,
                      &instance);
   }
 
-  void init_vulkan(const char *extension) {
+  void init_vulkan(const std::string& name,
+                   const std::vector<const char*> &window_extensions) {
 
-    create_instance("vkcube", extension);
+    create_instance(name, window_extensions);
     uint32_t count;
     vkEnumeratePhysicalDevices(instance, &count, NULL);
     VkPhysicalDevice pd[count];

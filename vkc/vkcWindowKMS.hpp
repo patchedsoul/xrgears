@@ -164,8 +164,14 @@ public:
 
     gbm_dev = gbm_create_device(fd);
 
-    r->init_vulkan(NULL);
+    return 0;
+  }
 
+  const std::vector<const char*> required_extensions() {
+    return {};
+  }
+
+  void init_swap_chain(vik::Renderer *r) {
     r->swap_chain = new vik::SwapChainDRM();
 
     init_cb();
@@ -176,18 +182,7 @@ public:
 
     sc->init(r->device, sc->surface_format.format, gbm_dev, fd,
              r->width, r->height, r->render_pass);
-    r->create_frame_buffers(r->swap_chain);
     sc->set_mode_and_page_flip(fd, crtc, connector);
-
-    return 0;
-  }
-
-  const std::vector<const char*> required_extensions() {
-    return {};
-  }
-
-  void init_swap_chain(vik::Renderer *r) {
-
   }
 
   void update_window_title(const std::string& title) {}

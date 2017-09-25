@@ -35,6 +35,7 @@ class WindowXCB : public Window {
   xcb_window_t window;
   xcb_atom_t atom_wm_protocols;
   xcb_atom_t atom_wm_delete_window;
+  xcb_visualid_t root_visual;
 
   bool repaint = false;
 
@@ -99,16 +100,7 @@ public:
 
     xcb_flush(conn);
 
-    r->init_vulkan(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
-
-    VkBool32 ret = vkGetPhysicalDeviceXcbPresentationSupportKHR(
-          r->physical_device, 0, conn, iter.data->root_visual);
-    vik_log_f_if(!ret, "Vulkan not supported on given X window");
-
-    init_surface(r);
-    init_cb();
-
-    vik_log_d("init xcb done");
+    root_visual = iter.data->root_visual;
 
     return 0;
   }
@@ -117,28 +109,32 @@ public:
     return { VK_KHR_XCB_SURFACE_EXTENSION_NAME };
   }
 
-  void init_swap_chain(vik::Renderer *r) {
-
+  void create_surface(VkInstance instance, VkSurfaceKHR *surface) {
+    VkXcbSurfaceCreateInfoKHR surface_info = {};
+    surface_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+    surface_info.connection = conn;
+    surface_info.window = window;
+    vkCreateXcbSurfaceKHR(instance, &surface_info, NULL, surface);
   }
 
-  void update_window_title(const std::string& title) {}
+  void init_swap_chain(vik::Renderer *r) {
+    VkBool32 ret = vkGetPhysicalDeviceXcbPresentationSupportKHR(
+          r->physical_device, 0, conn, root_visual);
+    vik_log_f_if(!ret, "Vulkan not supported on given X window");
 
-  void init_surface(Renderer *r) {
-    VkXcbSurfaceCreateInfoKHR surfaceInfo = {};
-
-    surfaceInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-    surfaceInfo.connection = conn;
-    surfaceInfo.window = window;
-    if (r->swap_chain == nullptr)
-      r->swap_chain = new vik::SwapChainVK();
-
+    r->swap_chain = new vik::SwapChainVK();
     vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
     sc->set_context(r->instance, r->physical_device, r->device);
 
-    vkCreateXcbSurfaceKHR(r->instance, &surfaceInfo, NULL, &sc->surface);
+    create_surface(r->instance, &sc->surface);
 
     sc->choose_surface_format();
+    init_cb();
+    sc->create_simple(r->width, r->height);
+    sc->update_images();
   }
+
+  void update_window_title(const std::string& title) {}
 
   void schedule_repaint() {
     xcb_client_message_event_t client_message;
@@ -190,19 +186,14 @@ public:
           }
           break;
         case XCB_EXPOSE:
-          vik_log_d("XCB_EXPOSE");
-          //if (r->swap_chain == nullptr) {
-        {
-          if (r->swap_chain == nullptr) {
-            r->swap_chain = new vik::SwapChainVK();
+          {
+            vik_log_d("XCB_EXPOSE");
+            vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
+            sc->create_simple(r->width, r->height);
+            sc->update_images();
+            r->create_frame_buffers(r->swap_chain);
+            schedule_repaint();
           }
-          vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
-          sc->set_context(r->instance, r->physical_device, r->device);
-          sc->create_simple(r->width, r->height);
-          sc->update_images();
-          r->create_frame_buffers(r->swap_chain);
-        }
-          schedule_repaint();
           break;
         case XCB_KEY_PRESS:
           key_press = (xcb_key_press_event_t *) event;

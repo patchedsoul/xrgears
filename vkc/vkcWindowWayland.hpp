@@ -264,7 +264,7 @@ public:
 
     zxdg_toplevel_v6_add_listener(xdg_toplevel, &xdg_toplevel_listener, this);
 
-    zxdg_toplevel_v6_set_title(xdg_toplevel, "vkcube");
+    update_window_title("vkcube");
 
     //zxdg_surface_v6_set_window_geometry(xdg_surface, 2560, 0, 1920, 1200);
 
@@ -273,31 +273,6 @@ public:
     wait_for_configure = true;
     wl_surface_commit(surface);
 
-    r->init_vulkan(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
-
-    if (!vkGetPhysicalDeviceWaylandPresentationSupportKHR(r->physical_device, 0, display))
-      vik_log_f("Vulkan not supported on given Wayland surface");
-
-    VkWaylandSurfaceCreateInfoKHR waylandSurfaceInfo = {};
-    waylandSurfaceInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
-    waylandSurfaceInfo.display = display;
-    waylandSurfaceInfo.surface = surface;
-
-    r->swap_chain = new vik::SwapChainVK();
-    vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
-    sc->set_context(r->instance, r->physical_device, r->device);
-    vik_log_f_if(sc == NULL, "no swapchain!");
-    vkCreateWaylandSurfaceKHR(r->instance, &waylandSurfaceInfo, NULL, &sc->surface);
-
-    sc->choose_surface_format();
-    init_cb();
-
-
-    sc->create_simple(r->width, r->height);
-    sc->update_images();
-    r->create_frame_buffers(r->swap_chain);
-
-
     return 0;
   }
 
@@ -305,11 +280,34 @@ public:
     return { VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME };
   }
 
-  void init_swap_chain(vik::Renderer *r) {
-
+  void create_surface(VkInstance instance, VkSurfaceKHR *vk_surface) {
+    VkWaylandSurfaceCreateInfoKHR surface_info = {};
+    surface_info.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+    surface_info.display = display;
+    surface_info.surface = surface;
+    vkCreateWaylandSurfaceKHR(instance, &surface_info, NULL, vk_surface);
   }
 
-  void update_window_title(const std::string& title) {}
+  void init_swap_chain(vik::Renderer *r) {
+    if (!vkGetPhysicalDeviceWaylandPresentationSupportKHR(r->physical_device, 0, display))
+      vik_log_f("Vulkan not supported on given Wayland surface");
+
+    r->swap_chain = new vik::SwapChainVK();
+    vik::SwapChainVK *sc = (vik::SwapChainVK*) r->swap_chain;
+    sc->set_context(r->instance, r->physical_device, r->device);
+
+    create_surface(r->instance, &sc->surface);
+
+    sc->choose_surface_format();
+    init_cb();
+
+    sc->create_simple(r->width, r->height);
+    sc->update_images();
+  }
+
+  void update_window_title(const std::string& title) {
+    zxdg_toplevel_v6_set_title(xdg_toplevel, title.c_str());
+  }
 
   void flush() {
     while (wl_display_prepare_read(display) != 0)

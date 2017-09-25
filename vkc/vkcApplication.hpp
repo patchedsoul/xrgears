@@ -63,7 +63,15 @@ public:
      window->set_update_cb(update_cb);
      window->set_quit_cb(quit_cb);
 
-     return window->init(renderer);
+     int ret = window->init(renderer);
+
+     renderer->init_vulkan("vkcube", window->required_extensions());
+
+     window->init_swap_chain(renderer);
+
+     renderer->create_frame_buffers(renderer->swap_chain);
+
+     return ret;
    }
 
    void init_window_auto() {
