@@ -125,8 +125,6 @@ public:
     sc->update_images();
   }
 
-  void update_window_title(const std::string& title) {}
-
   void schedule_repaint() {
     xcb_client_message_event_t client_message;
     client_message.response_type = XCB_CLIENT_MESSAGE;

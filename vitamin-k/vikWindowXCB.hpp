@@ -67,5 +67,11 @@ public:
           physical_device, 0, connection, root_visual);
   }
 
+  void update_window_title(const std::string& title) {
+    xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
+                        window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+                        title.size(), title.c_str());
+  }
+
 };
 }

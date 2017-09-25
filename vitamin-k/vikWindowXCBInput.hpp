@@ -131,12 +131,6 @@ class WindowXCBInput : public WindowXCB {
     sc->select_queue_and_format();
   }
 
-  void update_window_title(const std::string& title) {
-    xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-                        window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-                        title.size(), title.c_str());
-  }
-
   void handle_event(const xcb_generic_event_t *event) {
     switch (event->response_type & 0x7f) {
       case XCB_CLIENT_MESSAGE:
