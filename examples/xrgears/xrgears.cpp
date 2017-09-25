@@ -95,7 +95,7 @@ public:
   XRGears() : Application() {
     title = "XR Gears";
     renderer->enableTextOverlay = true;
-    camera.type = Camera::CameraType::firstperson;
+    camera.type = vks::Camera::CameraType::firstperson;
     camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
     camera.setTranslation(glm::vec3(2.2f, 3.2f, -7.6));
     camera.setPerspective(60.0f, (float)renderer->width / (float)renderer->height, 0.1f, 256.0f);
@@ -590,7 +590,7 @@ public:
   {
     vikCamera->update(camera);
 
-    StereoView sv = {};
+    vks::StereoView sv = {};
     sv.view[0] = vikCamera->uboCamera.view[0];
     sv.view[1] = vikCamera->uboCamera.view[1];
 

@@ -32,7 +32,7 @@ class CameraHMD : public VikCamera {
     m[2][1] = -m[2][1];
   }
 
-  void update(Camera camera) {
+  void update(vks::Camera camera) {
     glm::mat4 hmdProjectionLeft, hmdProjectionRight;
     glm::mat4 hmdViewLeft, hmdViewRight;
 

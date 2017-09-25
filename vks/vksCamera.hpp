@@ -14,6 +14,8 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+namespace vks {
+
 struct StereoView {
   glm::mat4 view[2];
 };
@@ -180,3 +182,4 @@ class Camera {
     return retVal;
   }
 };
+}

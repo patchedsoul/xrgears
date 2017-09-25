@@ -35,7 +35,7 @@ class CameraStereo : public VikCamera {
     eyeSeparation += delta;
   }
 
-  void update(Camera camera) {
+  void update(vks::Camera camera) {
     // Geometry shader matrices for the two viewports
     // See http://paulbourke.net/stereographics/stereorender/
 

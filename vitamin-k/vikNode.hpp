@@ -103,7 +103,7 @@ class Node {
                            nullptr);
   }
 
-  void updateUniformBuffer(StereoView sv, float timer) {
+  void updateUniformBuffer(vks::StereoView sv, float timer) {
     ubo.model = glm::mat4();
 
     ubo.model = glm::translate(ubo.model, info.pos);

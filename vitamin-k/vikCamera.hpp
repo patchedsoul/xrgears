@@ -39,7 +39,7 @@ class VikCamera {
     uniformBuffer.destroy();
   }
 
-  virtual void update(Camera camera) {
+  virtual void update(vks::Camera camera) {
     uboCamera.projection[0] = camera.matrices.perspective;
     uboCamera.view[0] = camera.matrices.view;
     uboCamera.skyView[0] = glm::mat4(glm::mat3(camera.matrices.view));
