@@ -161,20 +161,15 @@ class WindowWayland : public Window {
                               wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button,
                               uint32_t state) {
     WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
-    self->pointerButton(pointer, serial, time, button, state);
-  }
-
-  void pointerButton(struct wl_pointer *pointer,
-                     uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
     switch (button) {
       case BTN_LEFT:
-        app->mouseButtons.left = !!state;
+        self->pointer_button_cb(vik::Input::MouseButton::Left, state);
         break;
       case BTN_MIDDLE:
-        app->mouseButtons.middle = !!state;
+        self->pointer_button_cb(vik::Input::MouseButton::Middle, state);
         break;
       case BTN_RIGHT:
-        app->mouseButtons.right = !!state;
+        self->pointer_button_cb(vik::Input::MouseButton::Right, state);
         break;
       default:
         break;

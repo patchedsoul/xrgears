@@ -16,6 +16,8 @@
 #include "vksWindowXCB.hpp"
 #include "vksWindowDisplay.hpp"
 
+#include "vikInput.hpp"
+
 namespace vks {
 
 Application::Application() {
@@ -90,14 +92,25 @@ void Application::prepare() {
     mousePos = glm::vec2(x, y);
   };
 
-  /*
-  std::function<void()> scroll_cb = [this]() {  };
-  std::function<void()> motion_cb = [this]() {  };
-  std::function<void()> keyboard_cb = [this]() {  };
-  */
+  std::function<void(vik::Input::MouseButton button, uint32_t state)> pointer_button_cb =
+      [this](vik::Input::MouseButton button, uint32_t state) {
+    switch (button) {
+      case vik::Input::MouseButton::Left:
+        mouseButtons.left = !!state;
+        break;
+      case vik::Input::MouseButton::Middle:
+        mouseButtons.middle = !!state;
+        break;
+      case vik::Input::MouseButton::Right:
+        mouseButtons.right = !!state;
+        break;
+      default:
+        break;
+    }
+  };
 
   window->set_pointer_motion_cb(pointer_motion_cb);
-  //window->set_quit_cb(quit_cb);
+  window->set_pointer_button_cb(pointer_button_cb);
 
   renderer->init_vulkan(name, window->required_extensions());
   window->init(this);

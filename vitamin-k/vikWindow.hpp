@@ -7,6 +7,7 @@
 
 #include "vikSwapChain.hpp"
 #include "vikRenderer.hpp"
+#include "vikInput.hpp"
 
 namespace vik {
 class Window {
@@ -30,6 +31,7 @@ public:
   std::function<void()> quit_cb;
 
   std::function<void(double x, double y)> pointer_motion_cb;
+  std::function<void(vik::Input::MouseButton button, uint32_t state)> pointer_button_cb;
 
   Window() {}
   ~Window() {}
@@ -48,6 +50,11 @@ public:
 
   void set_pointer_motion_cb(std::function<void(double x, double y)> cb) {
     pointer_motion_cb = cb;
+  }
+
+  void set_pointer_button_cb(std::function<void(vik::Input::MouseButton button,
+                                                uint32_t state)> cb) {
+    pointer_button_cb = cb;
   }
 
   static inline bool streq(const char *a, const char *b) {
