@@ -41,7 +41,7 @@ class Window;
 
 class ApplicationVks : public vik::Application {
 
- public:
+public:
   RendererVks *renderer;
   CameraBase camera;
 
