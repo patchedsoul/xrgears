@@ -38,6 +38,9 @@ public:
 
   enum window_type type = AUTO;
 
+  uint32_t width = 1280;
+  uint32_t height = 720;
+
   std::string help_string() {
     std::string help =
         "A XR demo for Vulkan and OpenHMD\n"

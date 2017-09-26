@@ -28,12 +28,11 @@ public:
 
   Settings *settings;
 
-  Renderer() {}
-  ~Renderer() {}
-
-  void set_settings(Settings *s) {
+  Renderer(Settings *s) {
     settings = s;
   }
+
+  ~Renderer() {}
 
   void set_swap_chain(SwapChain *sc) {
     swap_chain = sc;

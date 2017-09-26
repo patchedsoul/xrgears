@@ -91,7 +91,7 @@ public:
   // Semaphore used to synchronize between offscreen and final scene rendering
   VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
-  XRGears() : ApplicationVks() {
+  XRGears(int argc, char *argv[]) : ApplicationVks(argc, argv) {
     title = "XR Gears";
     camera.type = vik::CameraBase::CameraType::firstperson;
     camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -744,14 +744,9 @@ public:
   }
 };
 
-XRGears *app;
-
 int main(int argc, char *argv[]) {
-  app = new XRGears();
-  app->parse_arguments(argc, argv);
-  app->prepare();
-  app->loop();
-  delete(app);
-
+  XRGears app(argc, argv);
+  app.prepare();
+  app.loop();
   return 0;
 }

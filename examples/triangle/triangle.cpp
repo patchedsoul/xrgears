@@ -111,7 +111,7 @@ public:
   // Used to check the completion of queue operations (e.g. command buffer execution)
   std::vector<VkFence> waitFences;
 
-  Triangle() : ApplicationVks() {
+  Triangle(int argc, char *argv[]) : ApplicationVks(argc, argv) {
     zoom = -2.5f;
     title = "Vulkan Example - Basic indexed triangle";
     // Values not set here are initialized in the base class constructor
@@ -838,11 +838,8 @@ public:
 };
 
 int main(int argc, char *argv[]) {
-  Triangle *app = new Triangle();
-  app->parse_arguments(argc, argv);
-  app->prepare();
-  app->loop();
-  delete(app);
-
+  Triangle app(argc, argv);
+  app.prepare();
+  app.loop();
   return 0;
 }

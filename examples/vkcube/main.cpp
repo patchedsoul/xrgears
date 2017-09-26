@@ -64,7 +64,7 @@ public:
     float normal[12];
   };
 
-  Cube(uint32_t w, uint32_t h) : ApplicationVkc(w, h) {}
+  Cube(int argc, char *argv[]) : vik::ApplicationVkc(argc, argv) {}
 
   void init_pipeline() {
     VkVertexInputBindingDescription vertexBinding[] = {
@@ -465,9 +465,7 @@ public:
 };
 
 int main(int argc, char *argv[]) {
-  //Cube app(1920, 1200);
-  Cube app(2560, 1440);
-  app.parse_args(argc, argv);
+  Cube app(argc, argv);
   app.init();
   app.loop();
   return 0;

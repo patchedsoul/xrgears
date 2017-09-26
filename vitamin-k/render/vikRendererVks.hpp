@@ -69,9 +69,9 @@ public:
     enabled_features_cb = cb;
   }
 
-  RendererVks() {
-    width = 2560;
-    height = 1440;
+  RendererVks(Settings *s) : Renderer(s) {
+    width = s->width;
+    height = s->height;
   }
 
   ~RendererVks() {

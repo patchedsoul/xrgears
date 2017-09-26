@@ -62,8 +62,8 @@ public:
     bool middle = false;
   } mouseButtons;
 
-  ApplicationVks() {
-    renderer = new RendererVks();
+  ApplicationVks(int argc, char *argv[]) : Application(argc, argv) {
+    renderer = new RendererVks(&settings);
 
     std::function<void()> set_window_resize_cb = [this]() { windowResize(); };
     renderer->set_window_resize_cb(set_window_resize_cb);
@@ -81,11 +81,6 @@ public:
   virtual void keyPressed(uint32_t) {}
   virtual void buildCommandBuffers() {}
   virtual void getEnabledFeatures() {}
-
-  void parse_arguments(int argc, char *argv[]) {
-    settings.parse_args(argc, argv);
-    renderer->set_settings(&settings);
-  }
 
   void check_view_update() {
     if (viewUpdated) {

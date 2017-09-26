@@ -30,9 +30,9 @@ public:
 
   uint32_t vertex_offset, colors_offset, normals_offset;
 
-  RendererVkc(uint32_t w, uint32_t h) {
-    width = w;
-    height = h;
+  RendererVkc(Settings *s) : Renderer(s) {
+    width = s->width;
+    height = s->height;
     gettimeofday(&start_tv, NULL);
   }
 

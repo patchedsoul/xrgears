@@ -3,7 +3,6 @@
 #include <functional>
 
 #include "render/vikSwapChain.hpp"
-#include "render/vikRenderer.hpp"
 #include "input/vikInput.hpp"
 
 namespace vik {

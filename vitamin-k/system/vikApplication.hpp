@@ -16,7 +16,11 @@ public:
     Window *window;
     bool quit = false;
 
-    Application() {}
+    Application(int argc, char *argv[]) {
+      if (!settings.parse_args(argc, argv))
+        vik_log_f("Invalid arguments.");
+    }
+
     ~Application()  {}
 
     int init_window_from_settings() {

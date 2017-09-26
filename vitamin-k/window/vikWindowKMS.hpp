@@ -21,7 +21,6 @@
 #include <linux/vt.h>
 #include <linux/major.h>
 
-#include "render/vikRenderer.hpp"
 #include "vikWindow.hpp"
 #include "system/vikLog.hpp"
 #include "render/vikSwapChainDRM.hpp"

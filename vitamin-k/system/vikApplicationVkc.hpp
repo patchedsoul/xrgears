@@ -17,18 +17,12 @@ class ApplicationVkc : public Application {
 public:
   RendererVkc *renderer;
 
-  ApplicationVkc(uint32_t width, uint32_t height) {
-    renderer = new RendererVkc(width, height);
+  ApplicationVkc(int argc, char *argv[]) : Application(argc, argv) {
+    renderer = new RendererVkc(&settings);
   }
 
   ~ApplicationVkc() {
     delete renderer;
-  }
-
-  void parse_args(int argc, char *argv[]) {
-    if (!settings.parse_args(argc, argv))
-      vik_log_f("Invalid arguments.");
-    renderer->set_settings(&settings);
   }
 
   void init() {
