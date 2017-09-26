@@ -107,8 +107,8 @@ public:
     create_surface(r->instance, &sc->surface);
 
     sc->choose_surface_format();
-    sc->create_simple(r->width, r->height);
-    sc->update_images();
+
+    recreate_swap_chain_vk_cb();
   }
 
   void update_window_title(const std::string& title) {
