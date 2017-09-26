@@ -125,7 +125,7 @@ public:
   }
 
   // Return -1 on failure.
-  int init(Renderer* r) {
+  int init(uint32_t width, uint32_t height, bool fullscreen) {
     drmModeRes *resources;
     drmModeEncoder *encoder;
     int i;
@@ -159,8 +159,7 @@ public:
     vik_log_i("mode info: hdisplay %d, vdisplay %d",
               crtc->mode.hdisplay, crtc->mode.vdisplay);
 
-    r->width = crtc->mode.hdisplay;
-    r->height = crtc->mode.vdisplay;
+    dimension_cb(crtc->mode.hdisplay, crtc->mode.vdisplay);
 
     gbm_dev = gbm_create_device(fd);
 

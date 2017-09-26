@@ -42,7 +42,7 @@ public:
   ~WindowXCBSimple() {}
 
   // Return -1 on failure.
-  int init(Renderer* r) {
+  int init(uint32_t width, uint32_t height, bool fullscreen) {
     xcb_screen_iterator_t iter;
     static const char title[] = "Vulkan Cube";
 
@@ -65,8 +65,8 @@ public:
                       window,
                       iter.data->root,
                       0, 0,
-                      r->width,
-                      r->height,
+                      width,
+                      height,
                       0,
                       XCB_WINDOW_CLASS_INPUT_OUTPUT,
                       iter.data->root_visual,

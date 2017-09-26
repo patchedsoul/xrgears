@@ -214,7 +214,7 @@ public:
     window->set_quit_cb(quit_cb);
 
     renderer->init_vulkan(name, window->required_extensions());
-    window->init(renderer);
+    window->init(renderer->width, renderer->height, settings.fullscreen);
 
     std::string windowTitle = renderer->make_title_string(title);
     window->update_window_title(windowTitle);

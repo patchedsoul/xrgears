@@ -135,7 +135,7 @@ class WindowKhrDisplay  : public Window {
 
   void update_window_title(const std::string& title) {}
 
-  int init(Renderer *r) {}
+  int init(uint32_t width, uint32_t height, bool fullscreen) {}
   void iterate(Renderer *r) {}
 
   VkBool32 check_support(VkPhysicalDevice physical_device) {

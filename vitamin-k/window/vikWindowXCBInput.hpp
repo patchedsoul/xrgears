@@ -26,19 +26,6 @@ class WindowXCBInput : public WindowXCB {
  public:
   explicit WindowXCBInput() {
     name = "xcb-input";
-
-    xcb_screen_iterator_t iter;
-    int scr;
-
-    connection = xcb_connect(NULL, &scr);
-
-    vik_log_f_if(connection == NULL, "Failed to create XCB connection");
-
-    iter = xcb_setup_roots_iterator(xcb_get_setup(connection));
-    while (scr-- > 0)
-      xcb_screen_next(&iter);
-    screen = iter.data;
-    root_visual = iter.data->root_visual;
   }
 
   ~WindowXCBInput() {
@@ -48,7 +35,21 @@ class WindowXCBInput : public WindowXCB {
   }
 
   // Set up a window using XCB and request event types
-  int init(Renderer *r) {
+  int init(uint32_t width, uint32_t height, bool fullscreen) {
+    xcb_screen_iterator_t iter;
+    int scr;
+
+    connection = xcb_connect(NULL, &scr);
+
+    if (connection == NULL)
+      return -1;
+
+    iter = xcb_setup_roots_iterator(xcb_get_setup(connection));
+    while (scr-- > 0)
+      xcb_screen_next(&iter);
+    screen = iter.data;
+    root_visual = iter.data->root_visual;
+
     uint32_t value_mask, value_list[32];
 
     window = xcb_generate_id(connection);
@@ -65,7 +66,7 @@ class WindowXCBInput : public WindowXCB {
         XCB_EVENT_MASK_BUTTON_PRESS |
         XCB_EVENT_MASK_BUTTON_RELEASE;
 
-    if (r->settings->fullscreen)
+    if (fullscreen)
       dimension_cb(screen->width_in_pixels, screen->height_in_pixels);
 
     xcb_create_window(connection,
@@ -86,7 +87,7 @@ class WindowXCBInput : public WindowXCB {
 
     free(reply);
 
-    if (r->settings->fullscreen) {
+    if (fullscreen) {
       xcb_intern_atom_reply_t *atom_wm_state = intern_atom_helper(connection, false, "_NET_WM_STATE");
       xcb_intern_atom_reply_t *atom_wm_fullscreen = intern_atom_helper(connection, false, "_NET_WM_STATE_FULLSCREEN");
       xcb_change_property(connection,

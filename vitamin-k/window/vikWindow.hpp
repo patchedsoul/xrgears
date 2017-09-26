@@ -68,7 +68,7 @@ public:
 
 
 
-  virtual int init(Renderer *r) = 0;
+  virtual int init(uint32_t width, uint32_t height, bool fullscreen) = 0;
   virtual void iterate(Renderer *r) = 0;
   virtual const std::vector<const char*> required_extensions() = 0;
   virtual void init_swap_chain(Renderer *r) = 0;

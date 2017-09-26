@@ -30,7 +30,7 @@ public:
   ~WindowWaylandXDG() {}
 
   // Return -1 on failure.
-  int init(Renderer* r) {
+  int init(uint32_t width, uint32_t height, bool fullscreen) {
     display = wl_display_connect(NULL);
     if (!display)
       return -1;

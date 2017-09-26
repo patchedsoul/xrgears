@@ -55,7 +55,7 @@ public:
     wl_display_disconnect(display);
   }
 
-  int init(Renderer *r) {
+  int init(uint32_t width, uint32_t height, bool fullscreen) {
     surface = wl_compositor_create_surface(compositor);
     shell_surface = wl_shell_get_shell_surface(shell, surface);
 
@@ -68,7 +68,7 @@ public:
     vik_log_d("setting hmd refresh to %d", hmd_refresh);
     vik_log_d("setting hmd output to %p", hmd_output);
 
-    if (r->settings->fullscreen)
+    if (fullscreen)
       wl_shell_surface_set_fullscreen(shell_surface,
                                       WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
                                       hmd_refresh,

@@ -37,9 +37,17 @@ public:
     std::function<void()> update_cb = [this]() { update_scene(); };
     std::function<void()> quit_cb = [this]() { quit = true; };
 
+    std::function<void(uint32_t width, uint32_t height)> dimension_cb =
+        [this](uint32_t width, uint32_t height) {
+      renderer->width = width;
+      renderer->height = height;
+    };
+
+    window->set_dimension_cb(dimension_cb);
+
     window->set_update_cb(update_cb);
     window->set_quit_cb(quit_cb);
-    window->init(renderer);
+    window->init(renderer->width, renderer->height, settings.fullscreen);
 
     renderer->init_vulkan("vkcube", window->required_extensions());
 
