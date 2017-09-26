@@ -141,6 +141,14 @@ public:
       init_text_overlay();
       updateTextOverlay(title);
     }
+
+    destWidth = width;
+    destHeight = height;
+  }
+
+  void wait_idle() {
+    // Flush device to make sure all resources can be freed
+    vkDeviceWaitIdle(device);
   }
 
   void init_text_overlay() {

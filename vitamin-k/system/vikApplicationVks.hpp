@@ -201,9 +201,6 @@ public:
   }
 
   void loop() {
-    renderer->destWidth = renderer->width;
-    renderer->destHeight = renderer->height;
-
     while (!quit) {
       renderer->timer.start();
       check_view_update();
@@ -218,8 +215,7 @@ public:
       renderer->check_tick_finnished(title);
     }
 
-    // Flush device to make sure all resources can be freed
-    vkDeviceWaitIdle(renderer->device);
+    renderer->wait_idle();
   }
 
   void update_camera(float frame_time) {
