@@ -47,6 +47,17 @@ public:
 
     window->set_update_cb(update_cb);
     window->set_quit_cb(quit_cb);
+
+    std::function<void(Input::Key key, bool state)> keyboard_key_cb =
+        [this](Input::Key key, bool state) {
+      switch (key) {
+        case Input::Key::ESCAPE:
+          quit = true;
+          break;
+      }
+    };
+    window->set_keyboard_key_cb(keyboard_key_cb);
+
     window->init(renderer->width, renderer->height, settings.fullscreen);
 
     renderer->init_vulkan("vkcube", window->required_extensions());

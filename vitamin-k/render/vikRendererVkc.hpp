@@ -318,5 +318,13 @@ public:
     }
   }
 
+  void recreate_swap_chain_vk() {
+    SwapChainVK *sc = (SwapChainVK*) swap_chain;
+    sc->destroy();
+    sc->create_simple(width, height);
+    sc->update_images();
+    create_frame_buffers(swap_chain);
+  }
+
 };
 }
