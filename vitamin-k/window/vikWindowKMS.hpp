@@ -47,6 +47,8 @@ class WindowKMS : public Window {
   pollfd pfd[2];
   drmEventContext evctx;
 
+  SwapChainDRM swap_chain;
+
 public:
   WindowKMS() {
     gbm_dev = NULL;
@@ -170,16 +172,17 @@ public:
     return {};
   }
 
-  void init_swap_chain(Renderer *r) {
-    r->swap_chain = new SwapChainDRM();
+  void init_swap_chain(VkInstance instance, VkPhysicalDevice physical_device,
+                       VkDevice device, uint32_t width, uint32_t height) {
+    swap_chain.surface_format.format = VK_FORMAT_R8G8B8A8_SRGB;
 
-    SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain;
+    swap_chain.init(device, swap_chain.surface_format.format, gbm_dev, fd,
+             width, height);
+    swap_chain.set_mode_and_page_flip(fd, crtc, connector);
+  }
 
-    sc->surface_format.format = VK_FORMAT_R8G8B8A8_SRGB;
-
-    sc->init(r->device, sc->surface_format.format, gbm_dev, fd,
-             r->width, r->height);
-    sc->set_mode_and_page_flip(fd, crtc, connector);
+  SwapChain* get_swap_chain() {
+    return (SwapChain*) &swap_chain;
   }
 
   void update_window_title(const std::string& title) {}
@@ -197,22 +200,19 @@ public:
     }
   }
 
-  void render(Renderer *r) {
+  void render() {
     drmHandleEvent(fd, &evctx);
-
     update_cb();
-
-    SwapChainDRM *sc = (SwapChainDRM*) r->swap_chain;
-    sc->render(fd, crtc->crtc_id);
+    swap_chain.render(fd, crtc->crtc_id);
   }
 
-  void iterate(Renderer *r) {
+  void iterate(VkQueue queue, VkSemaphore semaphore) {
     int ret = poll(pfd, 2, -1);
     vik_log_f_if(ret == -1, "poll failed");
     if (pfd[0].revents & POLLIN)
       poll_events();
     if (pfd[1].revents & POLLIN)
-      render(r);
+      render();
   }
 
   VkBool32 check_support(VkPhysicalDevice physical_device) {

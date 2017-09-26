@@ -13,7 +13,7 @@
 
 namespace vik {
 
-class RendererVkc : public vik::Renderer {
+class RendererVkc : public Renderer {
 public:
   VkPipelineLayout pipeline_layout;
   VkPipeline pipeline;
@@ -311,17 +311,11 @@ public:
                         frame_buffer);
   }
 
-  void create_frame_buffers(vik::SwapChain *swap_chain) {
-    frame_buffers.resize(swap_chain->image_count);
-    for (uint32_t i = 0; i < swap_chain->image_count; i++) {
-      create_frame_buffer(&swap_chain->buffers[i].view, &frame_buffers[i]);
+  void create_frame_buffers(SwapChain *sc) {
+    frame_buffers.resize(sc->image_count);
+    for (uint32_t i = 0; i < sc->image_count; i++) {
+      create_frame_buffer(&sc->buffers[i].view, &frame_buffers[i]);
     }
   }
-
-  void recreate_swap_chain_vk() {
-    ((SwapChainVK*) swap_chain)->recreate_simple(width, height);
-    create_frame_buffers(swap_chain);
-  }
-
 };
 }

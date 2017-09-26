@@ -32,6 +32,8 @@ class WindowXCBSimple : public WindowXCB {
   xcb_atom_t atom_wm_protocols;
   xcb_atom_t atom_wm_delete_window;
 
+  SwapChainVK swap_chain;
+
   bool repaint = false;
 
 public:
@@ -99,26 +101,27 @@ public:
     return 0;
   }
 
-  void iterate(Renderer *r) {
+  void iterate(VkQueue queue, VkSemaphore semaphore) {
     poll_events();
 
     if (repaint) {
       update_cb();
 
-      SwapChainVK* sc = (SwapChainVK*) r->swap_chain;
-      RendererVkc* vkc_renderer = (RendererVkc*) r;
-      sc->render(r->queue, vkc_renderer->semaphore);
+      swap_chain.render(queue, semaphore);
       schedule_repaint();
     }
     xcb_flush(connection);
   }
 
-  void init_swap_chain(Renderer *r) {
-    r->swap_chain = new SwapChainVK();
-    SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
-    sc->set_context(r->instance, r->physical_device, r->device);
-    create_surface(r->instance, &sc->surface);
-    sc->choose_surface_format();
+  void init_swap_chain(VkInstance instance, VkPhysicalDevice physical_device,
+                       VkDevice device, uint32_t width, uint32_t height) {
+    swap_chain.set_context(instance, physical_device, device);
+    create_surface(instance, &swap_chain.surface);
+    swap_chain.choose_surface_format();
+  }
+
+  SwapChain* get_swap_chain() {
+    return (SwapChain*) &swap_chain;
   }
 
   void schedule_repaint() {
@@ -158,8 +161,9 @@ public:
   }
 
   void handle_expose(const xcb_expose_event_t *event) {
-      vik_log_d("XCB_EXPOSE");
-      recreate_swap_chain_vk_cb();
+      vik_log_d("XCB_EXPOSE %dx%d", event->width, event->height);
+      swap_chain.recreate_simple(event->width, event->height);
+      recreate_frame_buffers_cb(&swap_chain);
       schedule_repaint();
   }
 

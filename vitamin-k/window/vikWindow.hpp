@@ -15,7 +15,7 @@ public:
   std::function<void()> update_cb;
   std::function<void()> quit_cb;
 
-  std::function<void()> recreate_swap_chain_vk_cb;
+  std::function<void(SwapChain *sc)> recreate_frame_buffers_cb;
   std::function<void()> recreate_swap_chain_drm_cb;
 
   std::function<void(double x, double y)> pointer_motion_cb;
@@ -41,8 +41,8 @@ public:
     quit_cb = cb;
   }
 
-  void set_recreate_swap_chain_vk_cb(std::function<void()> cb) {
-    recreate_swap_chain_vk_cb = cb;
+  void set_recreate_swap_chain_vk_cb(std::function<void(SwapChain *sc)> cb) {
+    recreate_frame_buffers_cb = cb;
   }
 
   void set_recreate_swap_chain_drm_cb(std::function<void()> cb) {
@@ -77,12 +77,13 @@ public:
     dimension_cb = cb;
   }
 
-
+  virtual SwapChain* get_swap_chain() = 0;
 
   virtual int init(uint32_t width, uint32_t height, bool fullscreen) = 0;
-  virtual void iterate(Renderer *r) = 0;
+  virtual void iterate(VkQueue queue, VkSemaphore semaphore) = 0;
   virtual const std::vector<const char*> required_extensions() = 0;
-  virtual void init_swap_chain(Renderer *r) = 0;
+  virtual void init_swap_chain(VkInstance instance, VkPhysicalDevice physical_device,
+                               VkDevice device, uint32_t width, uint32_t height) = 0;
   virtual void update_window_title(const std::string& title) = 0;
   virtual VkBool32 check_support(VkPhysicalDevice physical_device) = 0;
 };

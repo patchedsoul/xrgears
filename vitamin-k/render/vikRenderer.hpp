@@ -35,6 +35,10 @@ public:
     settings = s;
   }
 
+  void set_swap_chain(SwapChain *sc) {
+    swap_chain = sc;
+  }
+
   VkResult create_instance(const std::string& name,
                            const std::vector<const char*> &window_extensions) {
     VkApplicationInfo app_info = {};

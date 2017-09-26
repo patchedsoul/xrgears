@@ -18,6 +18,7 @@ class WindowWaylandXDG : public WindowWayland {
   struct zxdg_surface_v6 *xdg_surface;
   struct zxdg_toplevel_v6 *xdg_toplevel;
   bool wait_for_configure;
+  SwapChainVK swap_chain;
 
 public:
   WindowWaylandXDG() {
@@ -91,24 +92,27 @@ public:
     }
   }
 
-  void iterate(Renderer *r) {
+  void iterate(VkQueue queue, VkSemaphore semaphore) {
     flush();
     update_cb();
-    SwapChainVK* sc = (SwapChainVK*) r->swap_chain;
-    RendererVkc* vkc_renderer = (RendererVkc*) r;
-    sc->render(r->queue, vkc_renderer->semaphore);
+    swap_chain.render(queue, semaphore);
   }
 
-  void init_swap_chain(Renderer *r) {
-    r->swap_chain = new SwapChainVK();
-    SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
-    sc->set_context(r->instance, r->physical_device, r->device);
+  void init_swap_chain(VkInstance instance, VkPhysicalDevice physical_device,
+                       VkDevice device, uint32_t width, uint32_t height) {
+    swap_chain.set_context(instance, physical_device, device);
 
-    create_surface(r->instance, &sc->surface);
+    create_surface(instance, &swap_chain.surface);
 
-    sc->choose_surface_format();
+    swap_chain.choose_surface_format();
 
-    recreate_swap_chain_vk_cb();
+    swap_chain.recreate_simple(width, height);
+
+    recreate_frame_buffers_cb(&swap_chain);
+  }
+
+  SwapChain* get_swap_chain() {
+    return (SwapChain*) &swap_chain;
   }
 
   void update_window_title(const std::string& title) {

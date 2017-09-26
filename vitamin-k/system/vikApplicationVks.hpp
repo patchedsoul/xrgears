@@ -219,7 +219,11 @@ public:
     std::string windowTitle = renderer->make_title_string(title);
     window->update_window_title(windowTitle);
 
-    window->init_swap_chain(renderer);
+    window->init_swap_chain(renderer->instance, renderer->physical_device,
+                            renderer->device, renderer->width, renderer->height);
+
+    renderer->set_swap_chain(window->get_swap_chain());
+
     renderer->prepare();
 
     if (settings.enable_text_overlay)
@@ -236,7 +240,7 @@ public:
       renderer->timer.start();
       check_view_update();
 
-      window->iterate(renderer);
+      window->iterate(nullptr, nullptr);
 
       render();
       renderer->timer.increment();

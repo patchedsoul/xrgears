@@ -18,6 +18,9 @@
 
 namespace vik {
 class WindowKhrDisplay  : public Window {
+
+  SwapChainVkComplex swap_chain;
+
  public:
   explicit WindowKhrDisplay() {}
   ~WindowKhrDisplay() {}
@@ -26,24 +29,23 @@ class WindowKhrDisplay  : public Window {
     return { VK_KHR_DISPLAY_EXTENSION_NAME };
   }
 
-  void init_swap_chain(Renderer *r) {
+  void init_swap_chain(VkInstance instance, VkPhysicalDevice physical_device,
+                       VkDevice device, uint32_t width, uint32_t height) {
 
-    r->swap_chain = new SwapChainVkComplex();
-    SwapChainVkComplex *sc = (SwapChainVkComplex*) r->swap_chain;
-    sc->set_context(r->instance, r->physical_device, r->device);
+    swap_chain.set_context(instance, physical_device, device);
 
     uint32_t displayPropertyCount;
 
     // Get display property
-    vkGetPhysicalDeviceDisplayPropertiesKHR(r->physical_device, &displayPropertyCount, NULL);
+    vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device, &displayPropertyCount, NULL);
     VkDisplayPropertiesKHR* pDisplayProperties = new VkDisplayPropertiesKHR[displayPropertyCount];
-    vkGetPhysicalDeviceDisplayPropertiesKHR(r->physical_device, &displayPropertyCount, pDisplayProperties);
+    vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device, &displayPropertyCount, pDisplayProperties);
 
     // Get plane property
     uint32_t planePropertyCount;
-    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(r->physical_device, &planePropertyCount, NULL);
+    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physical_device, &planePropertyCount, NULL);
     VkDisplayPlanePropertiesKHR* pPlaneProperties = new VkDisplayPlanePropertiesKHR[planePropertyCount];
-    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(r->physical_device, &planePropertyCount, pPlaneProperties);
+    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physical_device, &planePropertyCount, pPlaneProperties);
 
     VkDisplayKHR display = VK_NULL_HANDLE;
     VkDisplayModeKHR displayMode;
@@ -53,14 +55,14 @@ class WindowKhrDisplay  : public Window {
     for (uint32_t i = 0; i < displayPropertyCount; ++i) {
       display = pDisplayProperties[i].display;
       uint32_t modeCount;
-      vkGetDisplayModePropertiesKHR(r->physical_device, display, &modeCount, NULL);
+      vkGetDisplayModePropertiesKHR(physical_device, display, &modeCount, NULL);
       pModeProperties = new VkDisplayModePropertiesKHR[modeCount];
-      vkGetDisplayModePropertiesKHR(r->physical_device, display, &modeCount, pModeProperties);
+      vkGetDisplayModePropertiesKHR(physical_device, display, &modeCount, pModeProperties);
 
       for (uint32_t j = 0; j < modeCount; ++j) {
         const VkDisplayModePropertiesKHR* mode = &pModeProperties[j];
 
-        if (mode->parameters.visibleRegion.width == r->width && mode->parameters.visibleRegion.height == r->height) {
+        if (mode->parameters.visibleRegion.width == width && mode->parameters.visibleRegion.height == height) {
           displayMode = mode->displayMode;
           foundMode = true;
           break;
@@ -79,11 +81,11 @@ class WindowKhrDisplay  : public Window {
     for (uint32_t i = 0; i < planePropertyCount; i++) {
       uint32_t planeIndex = i;
       uint32_t displayCount;
-      vkGetDisplayPlaneSupportedDisplaysKHR(r->physical_device, planeIndex, &displayCount, NULL);
+      vkGetDisplayPlaneSupportedDisplaysKHR(physical_device, planeIndex, &displayCount, NULL);
       if (pDisplays)
         delete [] pDisplays;
       pDisplays = new VkDisplayKHR[displayCount];
-      vkGetDisplayPlaneSupportedDisplaysKHR(r->physical_device, planeIndex, &displayCount, pDisplays);
+      vkGetDisplayPlaneSupportedDisplaysKHR(physical_device, planeIndex, &displayCount, pDisplays);
 
       // Find a display that matches the current plane
       bestPlaneIndex = UINT32_MAX;
@@ -99,7 +101,7 @@ class WindowKhrDisplay  : public Window {
     vik_log_f_if(bestPlaneIndex == UINT32_MAX, "Can't find a plane for displaying!");
 
     VkDisplayPlaneCapabilitiesKHR planeCap;
-    vkGetDisplayPlaneCapabilitiesKHR(r->physical_device, displayMode, bestPlaneIndex, &planeCap);
+    vkGetDisplayPlaneCapabilitiesKHR(physical_device, displayMode, bestPlaneIndex, &planeCap);
     VkDisplayPlaneAlphaFlagBitsKHR alphaMode;
 
     if (planeCap.supportedAlpha & VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR)
@@ -119,10 +121,10 @@ class WindowKhrDisplay  : public Window {
     surfaceInfo.transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     surfaceInfo.globalAlpha = 1.0;
     surfaceInfo.alphaMode = alphaMode;
-    surfaceInfo.imageExtent.width = r->width;
-    surfaceInfo.imageExtent.height = r->height;
+    surfaceInfo.imageExtent.width = width;
+    surfaceInfo.imageExtent.height = height;
 
-    VkResult result = vkCreateDisplayPlaneSurfaceKHR(r->instance, &surfaceInfo, NULL, &sc->surface);
+    VkResult result = vkCreateDisplayPlaneSurfaceKHR(instance, &surfaceInfo, NULL, &swap_chain.surface);
     vik_log_f_if(result !=VK_SUCCESS, "Failed to create surface!");
 
     delete[] pDisplays;
@@ -130,13 +132,17 @@ class WindowKhrDisplay  : public Window {
     delete[] pDisplayProperties;
     delete[] pPlaneProperties;
 
-    sc->select_queue_and_format();
+    swap_chain.select_queue_and_format();
+  }
+
+  SwapChain* get_swap_chain() {
+    return (SwapChain*) &swap_chain;
   }
 
   void update_window_title(const std::string& title) {}
 
   int init(uint32_t width, uint32_t height, bool fullscreen) {}
-  void iterate(Renderer *r) {}
+  void iterate(VkQueue queue, VkSemaphore semaphore) {}
 
   VkBool32 check_support(VkPhysicalDevice physical_device) {
     return true;

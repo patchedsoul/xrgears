@@ -23,6 +23,8 @@ class WindowXCBInput : public WindowXCB {
   xcb_screen_t *screen;
   xcb_intern_atom_reply_t *atom_wm_delete_window;
 
+  SwapChainVkComplex swap_chain;
+
  public:
   explicit WindowXCBInput() {
     name = "xcb-input";
@@ -104,7 +106,7 @@ class WindowXCBInput : public WindowXCB {
     return 0;
   }
 
-  void iterate(Renderer *r) {
+  void iterate(VkQueue queue, VkSemaphore semaphore) {
     xcb_generic_event_t *event;
     while ((event = xcb_poll_for_event(connection))) {
       handle_event(event);
@@ -112,15 +114,18 @@ class WindowXCBInput : public WindowXCB {
     }
   }
 
-  void init_swap_chain(Renderer *r) {
-    r->swap_chain = new SwapChainVkComplex();
-    SwapChainVkComplex *sc = (SwapChainVkComplex*) r->swap_chain;
-    sc->set_context(r->instance, r->physical_device, r->device);
+  void init_swap_chain(VkInstance instance, VkPhysicalDevice physical_device,
+                       VkDevice device, uint32_t width, uint32_t height) {
+    swap_chain.set_context(instance, physical_device, device);
 
-    VkResult err = create_surface(r->instance, &sc->surface);
+    VkResult err = create_surface(instance, &swap_chain.surface);
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
 
-    sc->select_queue_and_format();
+    swap_chain.select_queue_and_format();
+  }
+
+  SwapChain* get_swap_chain() {
+    return (SwapChain*) &swap_chain;
   }
 
   void handle_client_message(const xcb_client_message_event_t *event) {

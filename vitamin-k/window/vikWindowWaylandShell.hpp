@@ -24,6 +24,8 @@ class WindowWaylandShell : public WindowWayland {
   wl_pointer *pointer = nullptr;
   wl_shell_surface *shell_surface = nullptr;
 
+  SwapChainVkComplex swap_chain;
+
 public:
   explicit WindowWaylandShell() {
     name = "wayland-shell";
@@ -76,7 +78,7 @@ public:
     return 0;
   }
 
-  void iterate(Renderer *r) {
+  void iterate(VkQueue queue, VkSemaphore semaphore) {
     while (wl_display_prepare_read(display) != 0)
       wl_display_dispatch_pending(display);
     wl_display_flush(display);
@@ -84,15 +86,18 @@ public:
     wl_display_dispatch_pending(display);
   }
 
-  void init_swap_chain(Renderer *r) {
-    r->swap_chain = new SwapChainVkComplex();
-    SwapChainVkComplex *sc = (SwapChainVkComplex*) r->swap_chain;
-    sc->set_context(r->instance, r->physical_device, r->device);
+  void init_swap_chain(VkInstance instance, VkPhysicalDevice physical_device,
+                       VkDevice device, uint32_t width, uint32_t height) {
+    swap_chain.set_context(instance, physical_device, device);
 
-    VkResult err = create_surface(r->instance, &sc->surface);
+    VkResult err = create_surface(instance, &swap_chain.surface);
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
 
-    sc->select_queue_and_format();
+    swap_chain.select_queue_and_format();
+  }
+
+  SwapChain* get_swap_chain() {
+    return (SwapChain*) &swap_chain;
   }
 
   void update_window_title(const std::string& title) {

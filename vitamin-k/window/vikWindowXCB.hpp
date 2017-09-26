@@ -6,6 +6,8 @@
 #include <X11/keysym.h>
 #include <xcb/xcb_keysyms.h>
 
+#include <string>
+
 namespace vik {
 class WindowXCB : public Window {
 protected:

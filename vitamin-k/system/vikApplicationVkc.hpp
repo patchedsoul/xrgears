@@ -17,8 +17,8 @@ class ApplicationVkc : public Application {
 public:
   RendererVkc *renderer;
 
-  ApplicationVkc(uint32_t w, uint32_t h) {
-    renderer = new RendererVkc(w, h);
+  ApplicationVkc(uint32_t width, uint32_t height) {
+    renderer = new RendererVkc(width, height);
   }
 
   ~ApplicationVkc() {
@@ -37,8 +37,8 @@ public:
     std::function<void()> update_cb = [this]() { update_scene(); };
     std::function<void()> quit_cb = [this]() { quit = true; };
 
-    std::function<void()> recreate_swap_chain_vk_cb = [this]() {
-      renderer->recreate_swap_chain_vk();
+    std::function<void(SwapChain *sc)> recreate_swap_chain_vk_cb = [this](SwapChain *sc) {
+      renderer->create_frame_buffers(sc);
     };
     window->set_recreate_swap_chain_vk_cb(recreate_swap_chain_vk_cb);
 
@@ -70,7 +70,9 @@ public:
     if (!window->check_support(renderer->physical_device))
       vik_log_f("Vulkan not supported on given surface");
 
-    window->init_swap_chain(renderer);
+    window->init_swap_chain(renderer->instance, renderer->physical_device,
+                            renderer->device, renderer->width, renderer->height);
+    renderer->set_swap_chain(window->get_swap_chain());
 
     std::function<void(uint32_t index)> render_cb =
         [this](uint32_t index) { renderer->render(index); };
@@ -105,7 +107,7 @@ public:
 
   void loop() {
     while (!quit)
-      window->iterate(renderer);
+      window->iterate(renderer->queue, renderer->semaphore);
   }
 
   virtual void init_cb() = 0;
