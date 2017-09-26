@@ -50,6 +50,12 @@ public:
     vkCreateSwapchainKHR(device, &swapchainfo, NULL, &swap_chain);
   }
 
+  void recreate_simple(uint32_t width, uint32_t height) {
+    destroy();
+    create_simple(width, height);
+    update_images();
+  }
+
   void destroy() {
     if (image_count > 0) {
       vkDestroySwapchainKHR(device, swap_chain, NULL);

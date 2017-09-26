@@ -15,6 +15,9 @@ public:
   std::function<void()> update_cb;
   std::function<void()> quit_cb;
 
+  std::function<void()> recreate_swap_chain_vk_cb;
+  std::function<void()> recreate_swap_chain_drm_cb;
+
   std::function<void(double x, double y)> pointer_motion_cb;
   std::function<void(Input::MouseButton button, bool state)> pointer_button_cb;
   std::function<void(Input::MouseScrollAxis axis, double value)> pointer_axis_cb;
@@ -36,6 +39,14 @@ public:
 
   void set_quit_cb(std::function<void()> cb) {
     quit_cb = cb;
+  }
+
+  void set_recreate_swap_chain_vk_cb(std::function<void()> cb) {
+    recreate_swap_chain_vk_cb = cb;
+  }
+
+  void set_recreate_swap_chain_drm_cb(std::function<void()> cb) {
+    recreate_swap_chain_drm_cb = cb;
   }
 
   void set_pointer_motion_cb(std::function<void(double x, double y)> cb) {

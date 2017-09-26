@@ -37,6 +37,11 @@ public:
     std::function<void()> update_cb = [this]() { update_scene(); };
     std::function<void()> quit_cb = [this]() { quit = true; };
 
+    std::function<void()> recreate_swap_chain_vk_cb = [this]() {
+      renderer->recreate_swap_chain_vk();
+    };
+    window->set_recreate_swap_chain_vk_cb(recreate_swap_chain_vk_cb);
+
     std::function<void(uint32_t width, uint32_t height)> dimension_cb =
         [this](uint32_t width, uint32_t height) {
       renderer->width = width;

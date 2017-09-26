@@ -100,7 +100,7 @@ public:
   }
 
   void iterate(Renderer *r) {
-    poll_events(r);
+    poll_events();
 
     if (repaint) {
       update_cb();
@@ -130,11 +130,11 @@ public:
     xcb_send_event(connection, 0, window, 0, (char *) &client_message);
   }
 
-  void poll_events(Renderer *r) {
+  void poll_events() {
     xcb_generic_event_t *event;
     event = xcb_wait_for_event(connection);
     while (event) {
-      handle_event(event, r);
+      handle_event(event);
       free(event);
       event = xcb_poll_for_event(connection);
     }
@@ -157,14 +157,13 @@ public:
     dimension_cb(event->width, event->height);
   }
 
-  void handle_expose(const xcb_expose_event_t *event, Renderer *r) {
+  void handle_expose(const xcb_expose_event_t *event) {
       vik_log_d("XCB_EXPOSE");
-      RendererVkc* vkc_renderer = (RendererVkc*) r;
-      vkc_renderer->recreate_swap_chain_vk();
+      recreate_swap_chain_vk_cb();
       schedule_repaint();
   }
 
-  void handle_event(const xcb_generic_event_t *event, Renderer *r) {
+  void handle_event(const xcb_generic_event_t *event) {
     switch (event->response_type & 0x7f) {
       case XCB_CLIENT_MESSAGE:
         handle_client_message((xcb_client_message_event_t*)event);
@@ -173,7 +172,7 @@ public:
         handle_configure((xcb_configure_notify_event_t*) event);
         break;
       case XCB_EXPOSE:
-        handle_expose((xcb_expose_event_t*) event, r);
+        handle_expose((xcb_expose_event_t*) event);
         break;
       case XCB_KEY_PRESS:
         const xcb_key_release_event_t *key_event = (const xcb_key_release_event_t *)event;
