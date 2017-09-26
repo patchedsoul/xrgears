@@ -57,25 +57,23 @@ public:
     renderer->create_frame_buffers(renderer->swap_chain);
   }
 
-
-
   void init_window_auto() {
-    settings.type = Window::WAYLAND_XDG;
+    settings.type = Settings::WAYLAND_XDG;
     if (init_window_from_settings() == -1) {
       vik_log_e("failed to initialize wayland, falling back to xcb");
       delete(window);
-      settings.type = Window::XCB_SIMPLE;
+      settings.type = Settings::XCB_SIMPLE;
       if (init_window_from_settings() == -1) {
         vik_log_e("failed to initialize xcb, falling back to kms");
         delete(window);
-        settings.type = Window::KMS;
+        settings.type = Settings::KMS;
         init_window_from_settings();
       }
     }
   }
 
   void init_window() {
-    if (settings.type == Window::AUTO)
+    if (settings.type == Settings::AUTO)
       init_window_auto();
     else if (init_window_from_settings() == -1)
       vik_log_f("failed to initialize %s", window->name.c_str());

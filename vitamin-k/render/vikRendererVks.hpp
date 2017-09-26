@@ -17,7 +17,7 @@
 
 namespace vik {
 
-class RendererVks : public vik::Renderer {
+class RendererVks : public Renderer {
 public:
   Timer timer;
   Device *vksDevice;
@@ -129,8 +129,8 @@ public:
   void init_text_overlay() {
     // Load the text rendering shaders
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-    shaderStages.push_back(vik::Shader::load(device, "base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
-    shaderStages.push_back(vik::Shader::load(device, "base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
+    shaderStages.push_back(Shader::load(device, "base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
+    shaderStages.push_back(Shader::load(device, "base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
 
     textOverlay = new TextOverlay(
           vksDevice,
@@ -141,42 +141,6 @@ public:
           &width,
           &height,
           shaderStages);
-  }
-
-  VkResult create_instance(const std::string& name,
-                           const std::vector<const char*> &window_extensions) {
-
-    VkApplicationInfo app_info = {};
-    app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    app_info.pApplicationName = name.c_str();
-    app_info.pEngineName = "vitamin-k";
-    app_info.apiVersion = VK_MAKE_VERSION(1, 0, 2);
-
-    std::vector<const char*> extensions = {
-      VK_KHR_SURFACE_EXTENSION_NAME,
-      VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
-    };
-
-    // Enable surface extensions depending on window system
-    extensions.insert(extensions.end(),
-                      window_extensions.begin(),
-                      window_extensions.end());
-
-    if (settings->validation)
-      extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-
-    VkInstanceCreateInfo instance_info = {};
-    instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instance_info.pApplicationInfo = &app_info;
-    instance_info.enabledExtensionCount = extensions.size();
-    instance_info.ppEnabledExtensionNames = extensions.data();
-
-    if (settings->validation) {
-      instance_info.enabledLayerCount = debug::validationLayerCount;
-      instance_info.ppEnabledLayerNames = debug::validationLayerNames;
-    }
-
-    return vkCreateInstance(&instance_info, nullptr, &instance);
   }
 
   bool checkCommandBuffers() {
@@ -252,12 +216,10 @@ public:
     vik_log_check(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
   }
 
-  void check_tick_finnished(vik::Window *window, const std::string& title) {
+  void check_tick_finnished(const std::string& title) {
     if (timer.tick_finnished()) {
       timer.update_fps();
-      if (!settings->enable_text_overlay)
-        window->update_window_title(make_title_string(title));
-      else
+      if (settings->enable_text_overlay)
         updateTextOverlay(title);
       timer.reset();
     }
@@ -265,7 +227,7 @@ public:
 
   void prepareFrame() {
     // Acquire the next image from the swap chain
-    vik::SwapChainVK *sc = (vik::SwapChainVK*) swap_chain;
+    SwapChainVK *sc = (SwapChainVK*) swap_chain;
     VkResult err = sc->acquire_next_image(semaphores.presentComplete, &currentBuffer);
     // Recreate the swapchain if it's no longer compatible with the surface (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
     if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR))
@@ -283,7 +245,7 @@ public:
       waitSemaphore = semaphores.renderComplete;
     }
 
-    vik::SwapChainVK *sc = (vik::SwapChainVK*) swap_chain;
+    SwapChainVK *sc = (SwapChainVK*) swap_chain;
     vik_log_check(sc->present(queue, currentBuffer, waitSemaphore));
     vik_log_check(vkQueueWaitIdle(queue));
   }
@@ -695,10 +657,5 @@ public:
     depthStencilView.image = depthStencil.image;
     vik_log_check(vkCreateImageView(device, &depthStencilView, nullptr, &depthStencil.view));
   }
-
-
-
-
-
 };
 }

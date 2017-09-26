@@ -21,24 +21,24 @@ public:
 
     int init_window_from_settings() {
       switch (settings.type) {
-        case Window::KMS:
+        case Settings::KMS:
           window = new WindowKMS();
           break;
-        case Window::XCB_SIMPLE:
+        case Settings::XCB_SIMPLE:
           window = new WindowXCBSimple();
           break;
-        case Window::WAYLAND_XDG:
+        case Settings::WAYLAND_XDG:
           window = new WindowWaylandXDG();
           break;
-        case Window::WAYLAND_LEGACY:
+        case Settings::WAYLAND_LEGACY:
           window = new WindowWaylandShell();
           break;
-        case Window::XCB_MOUSE:
+        case Settings::XCB_MOUSE:
           window = new WindowXCBInput();
           break;
-        case Window::KHR_DISPLAY:
+        case Settings::KHR_DISPLAY:
           window = new WindowKhrDisplay();
-        case Window::AUTO:
+        case Settings::AUTO:
           return -1;
       }
     }

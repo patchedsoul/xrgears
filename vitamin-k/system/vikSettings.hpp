@@ -2,16 +2,27 @@
 
 #include <stdint.h>
 #include <getopt.h>
-
+#include <stdio.h>
+#include <string.h>
 #include <string>
 
 #include "vikLog.hpp"
 
-#include "window/vikWindow.hpp"
-
 namespace vik {
 class Settings {
 public:
+
+  enum window_type {
+    AUTO = 0,
+    KMS,
+    XCB_SIMPLE,
+    XCB_MOUSE,
+    WAYLAND_XDG,
+    WAYLAND_LEGACY,
+    KHR_DISPLAY,
+    INVALID
+  };
+
   /** @brief Activates validation layers (and message output) when set to true */
   bool validation = false;
   /** @brief Set to true if fullscreen mode has been requested via command line */
@@ -25,7 +36,7 @@ public:
 
   bool enable_text_overlay = true;
 
-  enum Window::window_type type = Window::AUTO;
+  enum window_type type = AUTO;
 
   std::string help_string() {
     std::string help =
@@ -114,8 +125,8 @@ public:
         }
         */
       } else if (opt == 'w' || optname == "window") {
-        type = vik::Window::window_type_from_string(optarg);
-        if (type == vik::Window::INVALID)
+        type = window_type_from_string(optarg);
+        if (type == INVALID)
           vik_log_f("option -m given bad display mode");
       } else
         vik_log_f("Unknown option %s", optname.c_str());
@@ -125,6 +136,29 @@ public:
       vik_log_w("trailing args");
 
     return true;
+  }
+
+  static inline bool streq(const char *a, const char *b) {
+    return strcmp(a, b) == 0;
+  }
+
+  static window_type window_type_from_string(const char *s) {
+    if (streq(s, "auto"))
+      return AUTO;
+    else if (streq(s, "kms"))
+      return KMS;
+    else if (streq(s, "xcb"))
+      return XCB_SIMPLE;
+    else if (streq(s, "wayland"))
+      return WAYLAND_XDG;
+    else if (streq(s, "xcb-input"))
+      return XCB_MOUSE;
+    else if (streq(s, "wayland-legacy"))
+      return WAYLAND_LEGACY;
+    else if (streq(s, "khr-display"))
+      return KHR_DISPLAY;
+    else
+      return INVALID;
   }
 
 };

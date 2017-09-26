@@ -39,34 +39,6 @@ public:
   ~RendererVkc() {
   }
 
-  VkResult create_instance(const std::string &name,
-                           const std::vector<const char*> &window_extensions) {
-    VkApplicationInfo app_info = {};
-    app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    app_info.pApplicationName = name.c_str();
-    app_info.pEngineName = "vitamin-k";
-    app_info.apiVersion = VK_MAKE_VERSION(1, 0, 2);
-
-    std::vector<const char*> extensions = {
-      VK_KHR_SURFACE_EXTENSION_NAME,
-    };
-
-    // Enable surface extensions depending on window system
-    extensions.insert(extensions.end(),
-                      window_extensions.begin(),
-                      window_extensions.end());
-
-    VkInstanceCreateInfo instance_info = {};
-    instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instance_info.pApplicationInfo = &app_info;
-    instance_info.enabledExtensionCount = extensions.size();
-    instance_info.ppEnabledExtensionNames = extensions.data();
-
-    vkCreateInstance(&instance_info,
-                     NULL,
-                     &instance);
-  }
-
   void init_vulkan(const std::string& name,
                    const std::vector<const char*> &window_extensions) {
 

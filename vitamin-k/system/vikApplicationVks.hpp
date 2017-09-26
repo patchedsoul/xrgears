@@ -243,7 +243,7 @@ public:
       float frame_time = renderer->timer.update_frame_time();
       update_camera(frame_time);
       renderer->timer.update_animation_timer();
-      renderer->check_tick_finnished(window, title);
+      renderer->check_tick_finnished(title);
     }
 
     // Flush device to make sure all resources can be freed
