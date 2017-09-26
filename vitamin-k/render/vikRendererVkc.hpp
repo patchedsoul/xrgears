@@ -61,11 +61,10 @@ public:
       vik_log_f("Vulkan not supported on given surface");
 
     window->init_swap_chain(instance, physical_device, device, width, height);
-    set_swap_chain(window->get_swap_chain());
 
     auto render_cb = [this](uint32_t index) { render(index); };
-    swap_chain->set_render_cb(render_cb);
-    create_frame_buffers(swap_chain);
+    window->get_swap_chain()->set_render_cb(render_cb);
+    create_frame_buffers(window->get_swap_chain());
   }
 
   void init_vulkan(const std::string& name,

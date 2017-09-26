@@ -449,7 +449,7 @@ public:
   }
 
   void init_cb() {
-    renderer->init_render_pass(renderer->swap_chain->surface_format.format);
+    renderer->init_render_pass(renderer->window->get_swap_chain()->surface_format.format);
 
     VkDescriptorSetLayout set_layout = init_descriptor_set_layout();
     init_pipeline_layout(set_layout);

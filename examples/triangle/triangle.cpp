@@ -323,7 +323,7 @@ public:
 
   void draw() {
     // Get next image in the swap chain (back/front buffer)
-    vik::SwapChainVK *sc = (vik::SwapChainVK*) renderer->swap_chain;
+    vik::SwapChainVK *sc = (vik::SwapChainVK*) renderer->window->get_swap_chain();
     vik_log_check(sc->acquire_next_image(presentCompleteSemaphore, &renderer->currentBuffer));
 
     // Use a fence to wait until the command buffer has finished execution before using it again

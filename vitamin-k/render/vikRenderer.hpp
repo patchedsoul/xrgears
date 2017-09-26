@@ -25,8 +25,6 @@ public:
   uint32_t width;
   uint32_t height;
 
-  SwapChain *swap_chain;
-
   Settings *settings;
 
   Window *window;
@@ -37,10 +35,6 @@ public:
   }
 
   ~Renderer() {}
-
-  void set_swap_chain(SwapChain *sc) {
-    swap_chain = sc;
-  }
 
   VkResult create_instance(const std::string& name,
                            const std::vector<const char*> &window_extensions) {

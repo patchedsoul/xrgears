@@ -85,7 +85,7 @@ public:
     if (settings->enable_text_overlay)
       delete textOverlay;
 
-    SwapChainVkComplex *sc = (SwapChainVkComplex*) swap_chain;
+    SwapChainVkComplex *sc = (SwapChainVkComplex*) window->get_swap_chain();
     sc->cleanup();
     if (descriptorPool != VK_NULL_HANDLE)
       vkDestroyDescriptorPool(device, descriptorPool, nullptr);
@@ -123,13 +123,12 @@ public:
     std::string windowTitle = make_title_string(title);
     window->update_window_title(windowTitle);
     window->init_swap_chain(instance, physical_device, device, width, height);
-    set_swap_chain(window->get_swap_chain());
 
     if (vksDevice->enableDebugMarkers)
       debugmarker::setup(device);
     createCommandPool();
 
-    SwapChainVkComplex *sc = (SwapChainVkComplex*) swap_chain;
+    SwapChainVkComplex *sc = (SwapChainVkComplex*) window->get_swap_chain();
     sc->create(&width, &height, settings->vsync);
 
     createCommandBuffers();
@@ -161,7 +160,7 @@ public:
           vksDevice,
           queue,
           &frame_buffers,
-          swap_chain->surface_format.format,
+          window->get_swap_chain()->surface_format.format,
           depthFormat,
           &width,
           &height,
@@ -178,9 +177,9 @@ public:
   void createCommandBuffers() {
     // Create one command buffer for each swap chain image and reuse for rendering
 
-    vik_log_d("Swapchain image count %d", swap_chain->image_count);
+    vik_log_d("Swapchain image count %d", window->get_swap_chain()->image_count);
 
-    drawCmdBuffers.resize(swap_chain->image_count);
+    drawCmdBuffers.resize(window->get_swap_chain()->image_count);
 
     VkCommandBufferAllocateInfo cmdBufAllocateInfo =
         initializers::commandBufferAllocateInfo(
@@ -252,7 +251,7 @@ public:
 
   void prepareFrame() {
     // Acquire the next image from the swap chain
-    SwapChainVK *sc = (SwapChainVK*) swap_chain;
+    SwapChainVK *sc = (SwapChainVK*) window->get_swap_chain();
     VkResult err = sc->acquire_next_image(semaphores.presentComplete, &currentBuffer);
     // Recreate the swapchain if it's no longer compatible with the surface (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
     if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR))
@@ -270,7 +269,7 @@ public:
       waitSemaphore = semaphores.renderComplete;
     }
 
-    SwapChainVK *sc = (SwapChainVK*) swap_chain;
+    SwapChainVK *sc = (SwapChainVK*) window->get_swap_chain();
     vik_log_check(sc->present(queue, currentBuffer, waitSemaphore));
     vik_log_check(vkQueueWaitIdle(queue));
   }
@@ -424,7 +423,7 @@ public:
   void createCommandPool() {
     VkCommandPoolCreateInfo cmdPoolInfo = {};
     cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    SwapChainVkComplex *sc = (SwapChainVkComplex*) swap_chain;
+    SwapChainVkComplex *sc = (SwapChainVkComplex*) window->get_swap_chain();
     cmdPoolInfo.queueFamilyIndex = sc->queueNodeIndex;
     cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     vik_log_check(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
@@ -466,7 +465,7 @@ public:
     height = destHeight;
     // TODO: Create kms swapchain here.
 
-    SwapChainVkComplex *sc = (SwapChainVkComplex*) swap_chain;
+    SwapChainVkComplex *sc = (SwapChainVkComplex*) window->get_swap_chain();
     sc->create(&width, &height, settings->vsync);
     // Recreate the frame buffers
 
@@ -534,9 +533,9 @@ public:
     frameBufferCreateInfo.layers = 1;
 
     // Create frame buffers for every swap chain image
-    frame_buffers.resize(swap_chain->image_count);
+    frame_buffers.resize(window->get_swap_chain()->image_count);
     for (uint32_t i = 0; i < frame_buffers.size(); i++) {
-      attachments[0] = swap_chain->buffers[i].view;
+      attachments[0] = window->get_swap_chain()->buffers[i].view;
       vik_log_check(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frame_buffers[i]));
     }
   }
@@ -544,7 +543,7 @@ public:
   void create_render_pass() {
     std::array<VkAttachmentDescription, 2> attachments = {};
     // Color attachment
-    attachments[0].format = swap_chain->surface_format.format;
+    attachments[0].format = window->get_swap_chain()->surface_format.format;
     attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
     attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
