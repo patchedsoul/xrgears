@@ -23,16 +23,16 @@
 #include <array>
 #include <vector>
 
-#include "vikTools.hpp"
-#include "vikInitializers.hpp"
+#include "render/vikTools.hpp"
+#include "render/vikInitializers.hpp"
 
-#include "vikCameraBase.hpp"
-#include "vikRendererVks.hpp"
-#include "vikTimer.hpp"
+#include "scene/vikCameraBase.hpp"
+#include "render/vikRendererVks.hpp"
+#include "render/vikTimer.hpp"
 
-#include "vikWindowWaylandShell.hpp"
-#include "vikWindowXCBInput.hpp"
-#include "vikWindowKhrDisplay.hpp"
+#include "window/vikWindowWaylandShell.hpp"
+#include "window/vikWindowXCBInput.hpp"
+#include "window/vikWindowKhrDisplay.hpp"
 
 #include "vikApplication.hpp"
 

@@ -5,9 +5,9 @@
 
 #include <functional>
 
-#include "vikSwapChain.hpp"
-#include "vikRenderer.hpp"
-#include "vikInput.hpp"
+#include "render/vikSwapChain.hpp"
+#include "render/vikRenderer.hpp"
+#include "input/vikInput.hpp"
 
 namespace vik {
 class Window {

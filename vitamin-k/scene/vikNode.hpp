@@ -13,10 +13,10 @@
 
 #include <vector>
 
-#include "vikModel.hpp"
+#include "render/vikModel.hpp"
 
 #include "vikMaterial.hpp"
-#include "vikAssets.hpp"
+#include "system/vikAssets.hpp"
 #include "vikSkyBox.hpp"
 
 namespace vik {

@@ -20,7 +20,7 @@
 #include "vikTools.hpp"
 #include "vikDevice.hpp"
 #include "vikBuffer.hpp"
-#include "vikLog.hpp"
+#include "system/vikLog.hpp"
 
 namespace vik {
 /** @brief Vulkan texture base class */

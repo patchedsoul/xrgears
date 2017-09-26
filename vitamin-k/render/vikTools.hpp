@@ -23,7 +23,7 @@
 #include <stdexcept>
 
 #include "vikInitializers.hpp"
-#include "vikLog.hpp"
+#include "system/vikLog.hpp"
 
 // Custom define for better code readability
 #define VK_FLAGS_NONE 0

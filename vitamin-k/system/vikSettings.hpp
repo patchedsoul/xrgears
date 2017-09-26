@@ -7,7 +7,7 @@
 
 #include "vikLog.hpp"
 
-#include "vikWindow.hpp"
+#include "window/vikWindow.hpp"
 
 namespace vik {
 class Settings {

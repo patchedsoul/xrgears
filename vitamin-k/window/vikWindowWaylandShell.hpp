@@ -14,7 +14,7 @@
 #include <vulkan/vulkan.h>
 
 #include "vikWindowWayland.hpp"
-#include "vikSwapChainVKComplex.hpp"
+#include "render/vikSwapChainVKComplex.hpp"
 
 namespace vik {
 class WindowWaylandShell : public WindowWayland {

@@ -12,7 +12,7 @@
 #include "vikSwapChainVKComplex.hpp"
 #include "vikTimer.hpp"
 #include "vikTextOverlay.hpp"
-#include "vikSettings.hpp"
+#include "system/vikSettings.hpp"
 #include "vikShader.hpp"
 
 namespace vik {

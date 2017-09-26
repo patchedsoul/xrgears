@@ -24,19 +24,19 @@
 
 #include <vulkan/vulkan.h>
 
-#include "vikApplicationVks.hpp"
-#include "vikModel.hpp"
+#include "system/vikApplicationVks.hpp"
+#include "render/vikModel.hpp"
 
-#include "vikNodeGear.hpp"
-#include "vikSkyBox.hpp"
-#include "vikDistortion.hpp"
-#include "vikOffscreenPass.hpp"
-#include "vikNodeModel.hpp"
-#include "vikCamera.hpp"
-#include "vikHMD.hpp"
-#include "vikCameraStereo.hpp"
-#include "vikCameraHMD.hpp"
-#include "vikLog.hpp"
+#include "scene/vikNodeGear.hpp"
+#include "scene/vikSkyBox.hpp"
+#include "render/vikDistortion.hpp"
+#include "render/vikOffscreenPass.hpp"
+#include "scene/vikNodeModel.hpp"
+#include "scene/vikCamera.hpp"
+#include "input/vikHMD.hpp"
+#include "scene/vikCameraStereo.hpp"
+#include "scene/vikCameraHMD.hpp"
+#include "system/vikLog.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 

@@ -20,12 +20,12 @@
 
 #include <openhmd/openhmd.h>
 
-#include "vikCameraBase.hpp"
-#include "vikBuffer.hpp"
-#include "vikLog.hpp"
+#include "scene/vikCameraBase.hpp"
+#include "render/vikBuffer.hpp"
+#include "system/vikLog.hpp"
 
 
-#include "vikCamera.hpp"
+#include "scene/vikCamera.hpp"
 
 namespace vik {
 class HMD {

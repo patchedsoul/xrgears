@@ -13,11 +13,11 @@
 
 #include <vector>
 
-#include "vikTexture.hpp"
-#include "vikModel.hpp"
+#include "render/vikTexture.hpp"
+#include "render/vikModel.hpp"
 
-#include "vikAssets.hpp"
-#include "vikShader.hpp"
+#include "system/vikAssets.hpp"
+#include "render/vikShader.hpp"
 
 namespace vik {
 class SkyBox {

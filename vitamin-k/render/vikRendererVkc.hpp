@@ -7,9 +7,9 @@
 
 #include <array>
 
-#include "../vitamin-k/vikSwapChainVK.hpp"
-#include "../vitamin-k/vikSwapChainDRM.hpp"
-#include "../vitamin-k/vikRenderer.hpp"
+#include "vikSwapChainVK.hpp"
+#include "vikSwapChainDRM.hpp"
+#include "vikRenderer.hpp"
 
 namespace vik {
 

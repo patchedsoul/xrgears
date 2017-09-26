@@ -22,8 +22,8 @@
 
 #include <vector>
 
-#include "vikTools.hpp"
-#include "vikBuffer.hpp"
+#include "render/vikTools.hpp"
+#include "render/vikBuffer.hpp"
 #include "vikCameraBase.hpp"
 
 #include "vikMaterial.hpp"

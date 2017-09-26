@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "vikBuffer.hpp"
+#include "render/vikBuffer.hpp"
 #include "vikCameraBase.hpp"
 
 #include "vikCamera.hpp"

@@ -14,7 +14,7 @@
 #include <vulkan/vulkan.h>
 
 #include "vikWindow.hpp"
-#include "vikSwapChainVKComplex.hpp"
+#include "render/vikSwapChainVKComplex.hpp"
 
 namespace vik {
 class WindowKhrDisplay  : public Window {

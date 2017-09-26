@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "vikModel.hpp"
-#include "vikLog.hpp"
+#include "system/vikLog.hpp"
 
 #include "vikOffscreenPass.hpp"
 #include "vikShader.hpp"

@@ -8,10 +8,10 @@
 
 #include "vikApplication.hpp"
 
-#include "vikWindowXCBSimple.hpp"
-#include "vikWindowKMS.hpp"
-#include "vikWindowWaylandXDG.hpp"
-#include "vikRendererVkc.hpp"
+#include "window/vikWindowXCBSimple.hpp"
+#include "window/vikWindowKMS.hpp"
+#include "window/vikWindowWaylandXDG.hpp"
+#include "render/vikRendererVkc.hpp"
 
 namespace vik {
 

@@ -45,11 +45,11 @@
 #define VK_PROTOTYPES
 #include <vulkan/vulkan.h>
 
-#include "vikApplicationVkc.hpp"
-#include "vikLog.hpp"
+#include "system/vikApplicationVkc.hpp"
+#include "system/vikLog.hpp"
 
-#include "vikRendererVkc.hpp"
-#include "vikShader.hpp"
+#include "render/vikRendererVkc.hpp"
+#include "render/vikShader.hpp"
 
 
 

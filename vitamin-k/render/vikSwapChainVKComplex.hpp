@@ -23,7 +23,7 @@
 
 #include "vikTools.hpp"
 
-#include "vikLog.hpp"
+#include "system/vikLog.hpp"
 #include "vikSwapChainVK.hpp"
 
 namespace vik {

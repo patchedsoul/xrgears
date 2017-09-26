@@ -17,7 +17,7 @@
 
 #include "vikTools.hpp"
 
-#include "vikAssets.hpp"
+#include "system/vikAssets.hpp"
 
 namespace vik {
 class Shader {
