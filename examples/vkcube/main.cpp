@@ -448,7 +448,7 @@ public:
     update_uniform_buffer(t);
   }
 
-  void init() {
+  void init_cb() {
     renderer->init_render_pass(renderer->swap_chain->surface_format.format);
 
     VkDescriptorSetLayout set_layout = init_descriptor_set_layout();
@@ -468,7 +468,7 @@ int main(int argc, char *argv[]) {
   //Cube app(1920, 1200);
   Cube app(2560, 1440);
   app.parse_args(argc, argv);
-  app.init_window();
+  app.init();
   app.loop();
   return 0;
 }

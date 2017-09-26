@@ -44,7 +44,6 @@ class ApplicationVks : public vik::Application {
  public:
   RendererVks *renderer;
   CameraBase camera;
-  vik::Window *window;
 
   bool prepared = false;
   bool viewUpdated = false;
@@ -61,7 +60,6 @@ class ApplicationVks : public vik::Application {
   std::string title = "Vulkan Example";
   std::string name = "vulkanExample";
 
-  bool quit = false;
   struct {
     bool left = false;
     bool right = false;

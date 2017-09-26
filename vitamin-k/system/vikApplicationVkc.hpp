@@ -18,8 +18,7 @@ namespace vik {
 class ApplicationVkc : public Application {
 public:
    RendererVkc *renderer;
-   Window *window;
-   bool quit = false;
+
 
    ApplicationVkc(uint32_t w, uint32_t h) {
      renderer = new RendererVkc(w, h);
@@ -35,7 +34,33 @@ public:
      renderer->set_settings(&settings);
    }
 
-   int init_window(Window::window_type m) {
+   void init() {
+     init_window();
+
+     std::function<void()> update_cb = [this]() { update_scene(); };
+     std::function<void()> quit_cb = [this]() { quit = true; };
+
+     window->set_update_cb(update_cb);
+     window->set_quit_cb(quit_cb);
+     window->init(renderer);
+
+     renderer->init_vulkan("vkcube", window->required_extensions());
+
+     if (!window->check_support(renderer->physical_device))
+      vik_log_f("Vulkan not supported on given surface");
+
+     window->init_swap_chain(renderer);
+
+     std::function<void(uint32_t index)> render_cb =
+         [this](uint32_t index) { renderer->render(index); };
+     renderer->swap_chain->set_render_cb(render_cb);
+
+     init_cb();
+
+     renderer->create_frame_buffers(renderer->swap_chain);
+   }
+
+   int init_window_from_settings() {
      switch (settings.type) {
        case Window::KMS:
          window = new WindowKMS();
@@ -53,44 +78,19 @@ public:
        case Window::AUTO:
          return -1;
      }
-
-     std::function<void()> update_cb = [this]() { update_scene(); };
-     std::function<void()> quit_cb = [this]() { quit = true; };
-
-     window->set_update_cb(update_cb);
-     window->set_quit_cb(quit_cb);
-
-     int ret = window->init(renderer);
-
-     renderer->init_vulkan("vkcube", window->required_extensions());
-
-     if (!window->check_support(renderer->physical_device))
-      vik_log_f("Vulkan not supported on given surface");
-
-     window->init_swap_chain(renderer);
-
-     std::function<void(uint32_t index)> render_cb =
-         [this](uint32_t index) { renderer->render(index); };
-     renderer->swap_chain->set_render_cb(render_cb);
-
-     init();
-
-     renderer->create_frame_buffers(renderer->swap_chain);
-
-     return ret;
    }
 
    void init_window_auto() {
      settings.type = Window::WAYLAND_XDG;
-     if (init_window(settings.type) == -1) {
+     if (init_window_from_settings() == -1) {
        vik_log_e("failed to initialize wayland, falling back to xcb");
        delete(window);
        settings.type = Window::XCB_SIMPLE;
-       if (init_window(settings.type) == -1) {
+       if (init_window_from_settings() == -1) {
          vik_log_e("failed to initialize xcb, falling back to kms");
          delete(window);
          settings.type = Window::KMS;
-         init_window(settings.type);
+         init_window_from_settings();
        }
      }
    }
@@ -98,7 +98,7 @@ public:
    void init_window() {
      if (settings.type == Window::AUTO)
        init_window_auto();
-     else if (init_window(settings.type) == -1)
+     else if (init_window_from_settings() == -1)
        vik_log_f("failed to initialize %s", window->name.c_str());
    }
 
@@ -107,8 +107,7 @@ public:
        window->iterate(renderer);
    }
 
-   virtual void init() = 0;
-   //virtual void render(struct RenderBuffer *b) = 0;
+   virtual void init_cb() = 0;
    virtual void update_scene() = 0;
 
 };
