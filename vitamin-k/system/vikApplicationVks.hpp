@@ -71,28 +71,8 @@ public:
 
     std::function<void()> enabled_features_cb = [this]() { getEnabledFeatures(); };
     renderer->set_enabled_features_cb(enabled_features_cb);
-  }
 
-  ~ApplicationVks() {
-    delete renderer;
-  }
-
-  virtual void render() = 0;
-  virtual void viewChanged() {}
-  virtual void keyPressed(uint32_t) {}
-  virtual void buildCommandBuffers() {}
-  virtual void getEnabledFeatures() {}
-
-  void check_view_update() {
-    if (viewUpdated) {
-      viewUpdated = false;
-      viewChanged();
-    }
-  }
-
-  virtual void prepare() {
-    std::function<void(double x, double y)> pointer_motion_cb =
-        [this](double x, double y) {
+    auto pointer_motion_cb = [this](double x, double y) {
       double dx = mousePos.x - x;
       double dy = mousePos.y - y;
 
@@ -121,8 +101,7 @@ public:
       mousePos = glm::vec2(x, y);
     };
 
-    std::function<void(Input::MouseButton button, bool state)> pointer_button_cb =
-        [this](Input::MouseButton button, bool state) {
+    auto pointer_button_cb = [this](Input::MouseButton button, bool state) {
       switch (button) {
         case Input::MouseButton::Left:
           mouseButtons.left = state;
@@ -136,8 +115,7 @@ public:
       }
     };
 
-    std::function<void(Input::MouseScrollAxis axis, double value)> pointer_axis_cb =
-        [this](Input::MouseScrollAxis axis, double value) {
+    auto pointer_axis_cb = [this](Input::MouseScrollAxis axis, double value) {
       switch (axis) {
         case Input::MouseScrollAxis::X:
           zoom += value * 0.005f * zoomSpeed;
@@ -149,8 +127,7 @@ public:
       }
     };
 
-    std::function<void(Input::Key key, bool state)> keyboard_key_cb =
-        [this](Input::Key key, bool state) {
+    auto keyboard_key_cb = [this](Input::Key key, bool state) {
       switch (key) {
         case Input::Key::W:
           camera.keys.up = state;
@@ -181,8 +158,16 @@ public:
         keyPressed(key);
     };
 
-    std::function<void(uint32_t width, uint32_t height)> configure_cb =
-        [this](uint32_t width, uint32_t height) {
+    window->set_pointer_motion_cb(pointer_motion_cb);
+    window->set_pointer_button_cb(pointer_button_cb);
+    window->set_pointer_axis_cb(pointer_axis_cb);
+    window->set_keyboard_key_cb(keyboard_key_cb);
+
+    auto quit_cb = [this]() { quit = true; };
+    window->set_quit_cb(quit_cb);
+
+    // TODO: move to renderer
+    auto configure_cb = [this](uint32_t width, uint32_t height) {
       if ((prepared) && ((width != renderer->width) || (height != renderer->height))) {
         renderer->destWidth = width;
         renderer->destHeight = height;
@@ -190,40 +175,29 @@ public:
           windowResize();
       }
     };
-
-    std::function<void(uint32_t width, uint32_t height)> dimension_cb =
-        [this](uint32_t width, uint32_t height) {
-      renderer->width = renderer->destWidth = width;
-      renderer->height = renderer->destHeight = height;
-    };
-
-    window->set_pointer_motion_cb(pointer_motion_cb);
-    window->set_pointer_button_cb(pointer_button_cb);
-    window->set_pointer_axis_cb(pointer_axis_cb);
-    window->set_keyboard_key_cb(keyboard_key_cb);
     window->set_configure_cb(configure_cb);
-    window->set_dimension_cb(dimension_cb);
 
-    std::function<void()> quit_cb = [this]() { quit = true; };
-    window->set_quit_cb(quit_cb);
+  }
 
-    renderer->init_vulkan(name, window->required_extensions());
-    window->init(renderer->width, renderer->height, settings.fullscreen);
+  ~ApplicationVks() {
+    delete renderer;
+  }
 
-    std::string windowTitle = renderer->make_title_string(title);
-    window->update_window_title(windowTitle);
+  virtual void render() = 0;
+  virtual void viewChanged() {}
+  virtual void keyPressed(uint32_t) {}
+  virtual void buildCommandBuffers() {}
+  virtual void getEnabledFeatures() {}
 
-    window->init_swap_chain(renderer->instance, renderer->physical_device,
-                            renderer->device, renderer->width, renderer->height);
+  void check_view_update() {
+    if (viewUpdated) {
+      viewUpdated = false;
+      viewChanged();
+    }
+  }
 
-    renderer->set_swap_chain(window->get_swap_chain());
-
-    renderer->prepare();
-
-    if (settings.enable_text_overlay)
-      renderer->updateTextOverlay(title);
-
-    vik_log_d("prepare done");
+  virtual void prepare() {
+    renderer->prepare(name, title);
   }
 
   void loop() {

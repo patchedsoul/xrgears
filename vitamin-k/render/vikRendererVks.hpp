@@ -72,6 +72,13 @@ public:
   RendererVks(Settings *s, Window *w) : Renderer(s, w) {
     width = s->width;
     height = s->height;
+
+    auto dimension_cb = [this](uint32_t w, uint32_t h) {
+      width = destWidth = w;
+      height = destHeight = h;
+    };
+    window->set_dimension_cb(dimension_cb);
+
   }
 
   ~RendererVks() {
@@ -109,7 +116,15 @@ public:
     vkDestroyInstance(instance, nullptr);
   }
 
-  void prepare() {
+  void prepare(const std::string &name, const std::string &title) {
+    init_vulkan(name, window->required_extensions());
+    window->init(width, height, settings->fullscreen);
+
+    std::string windowTitle = make_title_string(title);
+    window->update_window_title(windowTitle);
+    window->init_swap_chain(instance, physical_device, device, width, height);
+    set_swap_chain(window->get_swap_chain());
+
     if (vksDevice->enableDebugMarkers)
       debugmarker::setup(device);
     createCommandPool();
@@ -122,8 +137,10 @@ public:
     create_render_pass();
     createPipelineCache();
     create_frame_buffers();
-    if (settings->enable_text_overlay)
+    if (settings->enable_text_overlay) {
       init_text_overlay();
+      updateTextOverlay(title);
+    }
   }
 
   void init_text_overlay() {
