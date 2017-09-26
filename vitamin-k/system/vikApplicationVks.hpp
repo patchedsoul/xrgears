@@ -63,7 +63,8 @@ public:
   } mouseButtons;
 
   ApplicationVks(int argc, char *argv[]) : Application(argc, argv) {
-    renderer = new RendererVks(&settings);
+    init_window_from_settings();
+    renderer = new RendererVks(&settings, window);
 
     std::function<void()> set_window_resize_cb = [this]() { windowResize(); };
     renderer->set_window_resize_cb(set_window_resize_cb);
@@ -90,8 +91,6 @@ public:
   }
 
   virtual void prepare() {
-    init_window_from_settings();
-
     std::function<void(double x, double y)> pointer_motion_cb =
         [this](double x, double y) {
       double dx = mousePos.x - x;

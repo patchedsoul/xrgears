@@ -30,13 +30,42 @@ public:
 
   uint32_t vertex_offset, colors_offset, normals_offset;
 
-  RendererVkc(Settings *s) : Renderer(s) {
+  RendererVkc(Settings *s, Window *w) : Renderer(s, w) {
     width = s->width;
     height = s->height;
     gettimeofday(&start_tv, NULL);
+
+    auto recreate_swap_chain_vk_cb = [this](SwapChain *sc) {
+      create_frame_buffers(sc);
+    };
+    window->set_recreate_swap_chain_vk_cb(recreate_swap_chain_vk_cb);
+
+    auto dimension_cb = [this](uint32_t w, uint32_t h) {
+      width = w;
+      height = h;
+    };
+
+    window->set_dimension_cb(dimension_cb);
+
   }
 
   ~RendererVkc() {
+  }
+
+  void init(const std::string& name) {
+    window->init(width, height, settings->fullscreen);
+
+    init_vulkan(name, window->required_extensions());
+
+    if (!window->check_support(physical_device))
+      vik_log_f("Vulkan not supported on given surface");
+
+    window->init_swap_chain(instance, physical_device, device, width, height);
+    set_swap_chain(window->get_swap_chain());
+
+    auto render_cb = [this](uint32_t index) { render(index); };
+    swap_chain->set_render_cb(render_cb);
+    create_frame_buffers(swap_chain);
   }
 
   void init_vulkan(const std::string& name,

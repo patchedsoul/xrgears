@@ -18,33 +18,12 @@ public:
   RendererVkc *renderer;
 
   ApplicationVkc(int argc, char *argv[]) : Application(argc, argv) {
-    renderer = new RendererVkc(&settings);
-  }
-
-  ~ApplicationVkc() {
-    delete renderer;
-  }
-
-  void init() {
     init_window();
+    renderer = new RendererVkc(&settings, window);
 
-    std::function<void()> update_cb = [this]() { update_scene(); };
-    std::function<void()> quit_cb = [this]() { quit = true; };
-
-    std::function<void(SwapChain *sc)> recreate_swap_chain_vk_cb = [this](SwapChain *sc) {
-      renderer->create_frame_buffers(sc);
-    };
-    window->set_recreate_swap_chain_vk_cb(recreate_swap_chain_vk_cb);
-
-    std::function<void(uint32_t width, uint32_t height)> dimension_cb =
-        [this](uint32_t width, uint32_t height) {
-      renderer->width = width;
-      renderer->height = height;
-    };
-
-    window->set_dimension_cb(dimension_cb);
-
+    auto update_cb = [this]() { update_scene(); };
     window->set_update_cb(update_cb);
+    auto quit_cb = [this]() { quit = true; };
     window->set_quit_cb(quit_cb);
 
     std::function<void(Input::Key key, bool state)> keyboard_key_cb =
@@ -56,25 +35,15 @@ public:
       }
     };
     window->set_keyboard_key_cb(keyboard_key_cb);
+  }
 
-    window->init(renderer->width, renderer->height, settings.fullscreen);
+  ~ApplicationVkc() {
+    delete renderer;
+  }
 
-    renderer->init_vulkan("vkcube", window->required_extensions());
-
-    if (!window->check_support(renderer->physical_device))
-      vik_log_f("Vulkan not supported on given surface");
-
-    window->init_swap_chain(renderer->instance, renderer->physical_device,
-                            renderer->device, renderer->width, renderer->height);
-    renderer->set_swap_chain(window->get_swap_chain());
-
-    std::function<void(uint32_t index)> render_cb =
-        [this](uint32_t index) { renderer->render(index); };
-    renderer->swap_chain->set_render_cb(render_cb);
-
+  void init() {
+    renderer->init("vkcube");
     init_cb();
-
-    renderer->create_frame_buffers(renderer->swap_chain);
   }
 
   void init_window_auto() {

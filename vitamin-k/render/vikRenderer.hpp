@@ -8,6 +8,7 @@
 #include "vikSwapChain.hpp"
 #include "system/vikSettings.hpp"
 #include "vikDebug.hpp"
+#include "window/vikWindow.hpp"
 
 namespace vik {
 
@@ -28,8 +29,11 @@ public:
 
   Settings *settings;
 
-  Renderer(Settings *s) {
+  Window *window;
+
+  Renderer(Settings *s, Window *w) {
     settings = s;
+    window = w;
   }
 
   ~Renderer() {}

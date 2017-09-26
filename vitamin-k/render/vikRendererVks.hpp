@@ -69,7 +69,7 @@ public:
     enabled_features_cb = cb;
   }
 
-  RendererVks(Settings *s) : Renderer(s) {
+  RendererVks(Settings *s, Window *w) : Renderer(s, w) {
     width = s->width;
     height = s->height;
   }
