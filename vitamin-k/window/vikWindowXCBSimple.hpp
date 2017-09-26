@@ -144,57 +144,61 @@ public:
     }
   }
 
-  void handle_event(const xcb_generic_event_t *event, Renderer *r) {
-    xcb_key_press_event_t *key_press;
-    xcb_client_message_event_t *client_message;
-    xcb_configure_notify_event_t *configure;
+  void handle_client_message(const xcb_client_message_event_t *event) {
+    if (event->window != window)
+      return;
 
+    if (event->type == atom_wm_protocols &&
+        event->data.data32[0] == atom_wm_delete_window)
+      quit_cb();
+
+    if (event->type == XCB_ATOM_NOTICE)
+      repaint = true;
+  }
+
+  void handle_configure(const xcb_configure_notify_event_t *event, Renderer *r) {
+    if (r->width != event->width ||
+        r->height != event->height) {
+
+      vik_log_d("XCB_CONFIGURE_NOTIFY %dx%d", r->width, r->height);
+
+      SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
+
+      if (sc != nullptr)
+        sc->destroy();
+
+      dimension_cb(event->width, event->height);
+    }
+  }
+
+  void handle_expose(const xcb_expose_event_t *event, Renderer *r) {
+      vik_log_d("XCB_EXPOSE");
+      SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
+      sc->create_simple(r->width, r->height);
+      sc->update_images();
+      RendererVkc* vkc_renderer = (RendererVkc*) r;
+      vkc_renderer->create_frame_buffers(r->swap_chain);
+      schedule_repaint();
+  }
+
+  void handle_key_press(const xcb_key_press_event_t *event) {
+    if (event->detail == 9)
+        quit_cb();
+  }
+
+  void handle_event(const xcb_generic_event_t *event, Renderer *r) {
     switch (event->response_type & 0x7f) {
       case XCB_CLIENT_MESSAGE:
-        client_message = (xcb_client_message_event_t *) event;
-        if (client_message->window != window)
-          break;
-
-        if (client_message->type == atom_wm_protocols &&
-            client_message->data.data32[0] == atom_wm_delete_window) {
-          exit(0);
-        }
-
-        if (client_message->type == XCB_ATOM_NOTICE)
-          repaint = true;
+        handle_client_message((xcb_client_message_event_t*)event);
         break;
-
       case XCB_CONFIGURE_NOTIFY:
-        configure = (xcb_configure_notify_event_t *) event;
-        if (r->width != configure->width ||
-            r->height != configure->height) {
-
-          vik_log_d("XCB_CONFIGURE_NOTIFY %dx%d", r->width, r->height);
-
-          SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
-
-          if (sc != nullptr)
-            sc->destroy();
-
-          r->width = configure->width;
-          r->height = configure->height;
-        }
+        handle_configure((xcb_configure_notify_event_t*) event, r);
         break;
       case XCB_EXPOSE:
-        {
-          vik_log_d("XCB_EXPOSE");
-          SwapChainVK *sc = (SwapChainVK*) r->swap_chain;
-          sc->create_simple(r->width, r->height);
-          sc->update_images();
-          RendererVkc* vkc_renderer = (RendererVkc*) r;
-          vkc_renderer->create_frame_buffers(r->swap_chain);
-          schedule_repaint();
-        }
+        handle_expose((xcb_expose_event_t*) event, r);
         break;
       case XCB_KEY_PRESS:
-        key_press = (xcb_key_press_event_t *) event;
-        if (key_press->detail == 9)
-          exit(0);
+        handle_key_press((xcb_key_press_event_t*) event);
         break;
     }
   }
