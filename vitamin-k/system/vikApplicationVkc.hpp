@@ -8,9 +8,7 @@
 
 #include "vikApplication.hpp"
 
-#include "window/vikWindowXCBSimple.hpp"
-#include "window/vikWindowKMS.hpp"
-#include "window/vikWindowWaylandXDG.hpp"
+
 #include "render/vikRendererVkc.hpp"
 
 namespace vik {
@@ -18,7 +16,6 @@ namespace vik {
 class ApplicationVkc : public Application {
 public:
   RendererVkc *renderer;
-
 
   ApplicationVkc(uint32_t w, uint32_t h) {
     renderer = new RendererVkc(w, h);
@@ -60,25 +57,7 @@ public:
     renderer->create_frame_buffers(renderer->swap_chain);
   }
 
-  int init_window_from_settings() {
-    switch (settings.type) {
-      case Window::KMS:
-        window = new WindowKMS();
-        break;
-      case Window::XCB_SIMPLE:
-        window = new WindowXCBSimple();
-        break;
-      case Window::WAYLAND_XDG:
-        window = new WindowWaylandXDG();
-        break;
-      case Window::WAYLAND_LEGACY:
-        break;
-      case Window::XCB_MOUSE:
-        break;
-      case Window::AUTO:
-        return -1;
-    }
-  }
+
 
   void init_window_auto() {
     settings.type = Window::WAYLAND_XDG;

@@ -30,16 +30,12 @@
 #include "render/vikRendererVks.hpp"
 #include "render/vikTimer.hpp"
 
-#include "window/vikWindowWaylandShell.hpp"
-#include "window/vikWindowXCBInput.hpp"
-#include "window/vikWindowKhrDisplay.hpp"
-
 #include "vikApplication.hpp"
 
 namespace vik {
 class Window;
 
-class ApplicationVks : public vik::Application {
+class ApplicationVks : public Application {
 
 public:
   RendererVks *renderer;
@@ -99,20 +95,7 @@ public:
   }
 
   virtual void prepare() {
-
-    switch (settings.type) {
-      case vik::Window::WAYLAND_LEGACY:
-        window = new vik::WindowWaylandShell();
-        break;
-      case vik::Window::XCB_MOUSE:
-        window = new vik::WindowXCBInput();
-        break;
-      case vik::Window::KHR_DISPLAY:
-        window = new vik::WindowKhrDisplay();
-        break;
-      default:
-        vik_log_f("Unsupported window backend.");
-    }
+    init_window_from_settings();
 
     std::function<void(double x, double y)> pointer_motion_cb =
         [this](double x, double y) {
@@ -144,25 +127,25 @@ public:
       mousePos = glm::vec2(x, y);
     };
 
-    std::function<void(vik::Input::MouseButton button, bool state)> pointer_button_cb =
-        [this](vik::Input::MouseButton button, bool state) {
+    std::function<void(Input::MouseButton button, bool state)> pointer_button_cb =
+        [this](Input::MouseButton button, bool state) {
       switch (button) {
-        case vik::Input::MouseButton::Left:
+        case Input::MouseButton::Left:
           mouseButtons.left = state;
           break;
-        case vik::Input::MouseButton::Middle:
+        case Input::MouseButton::Middle:
           mouseButtons.middle = state;
           break;
-        case vik::Input::MouseButton::Right:
+        case Input::MouseButton::Right:
           mouseButtons.right = state;
           break;
       }
     };
 
-    std::function<void(vik::Input::MouseScrollAxis axis, double value)> pointer_axis_cb =
-        [this](vik::Input::MouseScrollAxis axis, double value) {
+    std::function<void(Input::MouseScrollAxis axis, double value)> pointer_axis_cb =
+        [this](Input::MouseScrollAxis axis, double value) {
       switch (axis) {
-        case vik::Input::MouseScrollAxis::X:
+        case Input::MouseScrollAxis::X:
           zoom += value * 0.005f * zoomSpeed;
           camera.translate(glm::vec3(0.0f, 0.0f, value * 0.005f * zoomSpeed));
           viewUpdated = true;
@@ -172,30 +155,30 @@ public:
       }
     };
 
-    std::function<void(vik::Input::Key key, bool state)> keyboard_key_cb =
-        [this](vik::Input::Key key, bool state) {
+    std::function<void(Input::Key key, bool state)> keyboard_key_cb =
+        [this](Input::Key key, bool state) {
       switch (key) {
-        case vik::Input::Key::W:
+        case Input::Key::W:
           camera.keys.up = state;
           break;
-        case vik::Input::Key::S:
+        case Input::Key::S:
           camera.keys.down = state;
           break;
-        case vik::Input::Key::A:
+        case Input::Key::A:
           camera.keys.left = state;
           break;
-        case vik::Input::Key::D:
+        case Input::Key::D:
           camera.keys.right = state;
           break;
-        case vik::Input::Key::P:
+        case Input::Key::P:
           if (state)
             renderer->timer.toggle_animation_pause();
           break;
-        case vik::Input::Key::F1:
-          if (state && renderer->enableTextOverlay)
+        case Input::Key::F1:
+          if (state && settings.enable_text_overlay)
             renderer->textOverlay->visible = !renderer->textOverlay->visible;
           break;
-        case vik::Input::Key::ESCAPE:
+        case Input::Key::ESCAPE:
           quit = true;
           break;
       }
@@ -239,7 +222,7 @@ public:
     window->init_swap_chain(renderer);
     renderer->prepare();
 
-    if (renderer->enableTextOverlay)
+    if (settings.enable_text_overlay)
       renderer->updateTextOverlay(title);
 
     vik_log_d("prepare done");
@@ -284,7 +267,7 @@ public:
 
     vkDeviceWaitIdle(renderer->device);
 
-    if (renderer->enableTextOverlay) {
+    if (settings.enable_text_overlay) {
       renderer->textOverlay->reallocateCommandBuffers();
       renderer->updateTextOverlay(title);
     }

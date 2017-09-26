@@ -58,8 +58,6 @@ public:
   uint32_t destHeight;
   uint32_t currentBuffer = 0;
 
-  bool enableTextOverlay = true;
-
   std::function<void()> window_resize_cb;
   std::function<void()> enabled_features_cb;
 
@@ -77,7 +75,7 @@ public:
   }
 
   ~RendererVks() {
-    if (enableTextOverlay)
+    if (settings->enable_text_overlay)
       delete textOverlay;
 
     SwapChainVkComplex *sc = (SwapChainVkComplex*) swap_chain;
@@ -124,7 +122,7 @@ public:
     create_render_pass();
     createPipelineCache();
     create_frame_buffers();
-    if (enableTextOverlay)
+    if (settings->enable_text_overlay)
       init_text_overlay();
   }
 
@@ -257,7 +255,7 @@ public:
   void check_tick_finnished(vik::Window *window, const std::string& title) {
     if (timer.tick_finnished()) {
       timer.update_fps();
-      if (!enableTextOverlay)
+      if (!settings->enable_text_overlay)
         window->update_window_title(make_title_string(title));
       else
         updateTextOverlay(title);
@@ -278,7 +276,7 @@ public:
 
   void submitFrame() {
     VkSemaphore waitSemaphore;
-    if (enableTextOverlay && textOverlay->visible) {
+    if (settings->enable_text_overlay && textOverlay->visible) {
       submit_text_overlay();
       waitSemaphore = semaphores.textOverlayComplete;
     } else {
@@ -448,13 +446,13 @@ public:
   std::string make_title_string(const std::string& title) {
     std::string device_str(deviceProperties.deviceName);
     std::string windowTitle = title + " - " + device_str;
-    if (!enableTextOverlay)
+    if (!settings->enable_text_overlay)
       windowTitle += " - " + std::to_string(timer.frames_since_tick) + " fps";
     return windowTitle;
   }
 
   void updateTextOverlay(const std::string& title) {
-    if (!enableTextOverlay)
+    if (!settings->enable_text_overlay)
       return;
 
     std::stringstream ss;

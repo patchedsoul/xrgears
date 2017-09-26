@@ -23,6 +23,8 @@ public:
 
   bool list_gpus_and_exit = false;
 
+  bool enable_text_overlay = true;
+
   enum Window::window_type type = Window::AUTO;
 
   std::string help_string() {
