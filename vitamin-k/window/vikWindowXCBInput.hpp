@@ -123,11 +123,15 @@ class WindowXCBInput : public WindowXCB {
     sc->select_queue_and_format();
   }
 
+  void handle_client_message(const xcb_client_message_event_t *event) {
+    if (event->data.data32[0] == atom_wm_delete_window->atom)
+      quit_cb();
+  }
+
   void handle_event(const xcb_generic_event_t *event) {
     switch (event->response_type & 0x7f) {
       case XCB_CLIENT_MESSAGE:
-        if ((*(xcb_client_message_event_t*)event).data.data32[0] == (*atom_wm_delete_window).atom)
-          quit_cb();
+        handle_client_message((const xcb_client_message_event_t *)event);
         break;
       case XCB_MOTION_NOTIFY: {
         xcb_motion_notify_event_t *motion = (xcb_motion_notify_event_t *)event;
