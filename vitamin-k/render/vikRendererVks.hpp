@@ -116,9 +116,9 @@ public:
     vkDestroyInstance(instance, nullptr);
   }
 
-  void prepare(const std::string &name, const std::string &title) {
+  void init(const std::string &name, const std::string &title) {
     init_vulkan(name, window->required_extensions());
-    window->init(width, height, settings->fullscreen);
+    window->init(width, height);
 
     window->update_window_title(make_title_string(title));
     window->get_swap_chain()->set_context(instance, physical_device, device);
@@ -126,11 +126,8 @@ public:
 
     if (vksDevice->enableDebugMarkers)
       debugmarker::setup(device);
+
     createCommandPool();
-
-    SwapChainVkComplex *sc = (SwapChainVkComplex*) window->get_swap_chain();
-    sc->create(&width, &height, settings->vsync);
-
     createCommandBuffers();
     setupDepthStencil();
     create_render_pass();
@@ -463,7 +460,6 @@ public:
     // Recreate swap chain
     width = destWidth;
     height = destHeight;
-    // TODO: Create kms swapchain here.
 
     SwapChainVkComplex *sc = (SwapChainVkComplex*) window->get_swap_chain();
     sc->create(&width, &height, settings->vsync);

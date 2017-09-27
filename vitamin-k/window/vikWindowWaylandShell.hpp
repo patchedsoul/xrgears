@@ -27,7 +27,7 @@ class WindowWaylandShell : public WindowWayland {
   SwapChainVkComplex swap_chain;
 
 public:
-  explicit WindowWaylandShell() {
+  WindowWaylandShell(Settings *s) : WindowWayland(s) {
     name = "wayland-shell";
     display = wl_display_connect(NULL);
     vik_log_f_if(!display, "Could not connect to Wayland display!");
@@ -57,7 +57,7 @@ public:
     wl_display_disconnect(display);
   }
 
-  int init(uint32_t width, uint32_t height, bool fullscreen) {
+  int init(uint32_t width, uint32_t height) {
     surface = wl_compositor_create_surface(compositor);
     shell_surface = wl_shell_get_shell_surface(shell, surface);
 
@@ -70,7 +70,7 @@ public:
     vik_log_d("setting hmd refresh to %d", hmd_refresh);
     vik_log_d("setting hmd output to %p", hmd_output);
 
-    if (fullscreen)
+    if (settings->fullscreen)
       wl_shell_surface_set_fullscreen(shell_surface,
                                       WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
                                       hmd_refresh,
@@ -89,8 +89,8 @@ public:
   void init_swap_chain(uint32_t width, uint32_t height) {
     VkResult err = create_surface(swap_chain.instance, &swap_chain.surface);
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
-
     swap_chain.select_queue_and_format();
+    swap_chain.create(&width, &height, settings->vsync);
   }
 
   SwapChain* get_swap_chain() {

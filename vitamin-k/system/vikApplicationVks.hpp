@@ -197,7 +197,7 @@ public:
   }
 
   virtual void prepare() {
-    renderer->prepare(name, title);
+    renderer->init(name, title);
   }
 
   void loop() {

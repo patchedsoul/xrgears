@@ -18,6 +18,12 @@ class WindowWayland : public Window {
 
   wl_output *hmd_output = nullptr;
 
+  WindowWayland(Settings *s) : Window(s) {
+  }
+
+  ~WindowWayland() {
+  }
+
   static Input::Key wayland_to_vik_key(uint32_t key) {
     switch (key) {
       case KEY_W:

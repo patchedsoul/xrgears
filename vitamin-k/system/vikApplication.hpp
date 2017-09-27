@@ -26,22 +26,22 @@ public:
     int init_window_from_settings() {
       switch (settings.type) {
         case Settings::KMS:
-          window = new WindowKMS();
+          window = new WindowKMS(&settings);
           break;
         case Settings::XCB_SIMPLE:
-          window = new WindowXCBSimple();
+          window = new WindowXCBSimple(&settings);
           break;
         case Settings::WAYLAND_XDG:
-          window = new WindowWaylandXDG();
+          window = new WindowWaylandXDG(&settings);
           break;
         case Settings::WAYLAND_LEGACY:
-          window = new WindowWaylandShell();
+          window = new WindowWaylandShell(&settings);
           break;
         case Settings::XCB_MOUSE:
-          window = new WindowXCBInput();
+          window = new WindowXCBInput(&settings);
           break;
         case Settings::KHR_DISPLAY:
-          window = new WindowKhrDisplay();
+          window = new WindowKhrDisplay(&settings);
         case Settings::AUTO:
           return -1;
       }

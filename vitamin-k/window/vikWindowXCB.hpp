@@ -16,7 +16,7 @@ protected:
   xcb_visualid_t root_visual;
   xcb_key_symbols_t *syms;
 
-  WindowXCB() {
+  WindowXCB(Settings *s) : Window(s) {
   }
 
   ~WindowXCB() {

@@ -22,7 +22,7 @@ class WindowKhrDisplay  : public Window {
   SwapChainVkComplex swap_chain;
 
  public:
-  explicit WindowKhrDisplay() {}
+  WindowKhrDisplay(Settings *s) : Window(s) {}
   ~WindowKhrDisplay() {}
 
   const std::vector<const char*> required_extensions() {
@@ -140,7 +140,7 @@ class WindowKhrDisplay  : public Window {
 
   void update_window_title(const std::string& title) {}
 
-  int init(uint32_t width, uint32_t height, bool fullscreen) {}
+  int init(uint32_t width, uint32_t height) {}
   void iterate(VkQueue queue, VkSemaphore semaphore) {}
 
   VkBool32 check_support(VkPhysicalDevice physical_device) {

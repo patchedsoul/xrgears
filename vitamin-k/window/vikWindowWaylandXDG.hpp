@@ -21,7 +21,7 @@ class WindowWaylandXDG : public WindowWayland {
   SwapChainVK swap_chain;
 
 public:
-  WindowWaylandXDG() {
+  WindowWaylandXDG(Settings *s) : WindowWayland(s) {
     name = "wayland-xdg";
     seat = NULL;
     keyboard = NULL;
@@ -31,7 +31,7 @@ public:
   ~WindowWaylandXDG() {}
 
   // Return -1 on failure.
-  int init(uint32_t width, uint32_t height, bool fullscreen) {
+  int init(uint32_t width, uint32_t height) {
     display = wl_display_connect(NULL);
     if (!display)
       return -1;

@@ -4,6 +4,7 @@
 
 #include "render/vikSwapChain.hpp"
 #include "input/vikInput.hpp"
+#include "system/vikSettings.hpp"
 
 namespace vik {
 class Window {
@@ -24,7 +25,12 @@ public:
   std::function<void(uint32_t width, uint32_t height)> configure_cb;
   std::function<void(uint32_t width, uint32_t height)> dimension_cb;
 
-  Window() {}
+  Settings *settings;
+
+  Window(Settings *s) {
+    settings = s;
+  }
+
   ~Window() {}
 
   void set_init_cb(std::function<void()> cb) {
@@ -73,7 +79,7 @@ public:
 
   virtual SwapChain* get_swap_chain() = 0;
 
-  virtual int init(uint32_t width, uint32_t height, bool fullscreen) = 0;
+  virtual int init(uint32_t width, uint32_t height) = 0;
   virtual void iterate(VkQueue queue, VkSemaphore semaphore) = 0;
   virtual const std::vector<const char*> required_extensions() = 0;
   virtual void init_swap_chain(uint32_t width, uint32_t height) = 0;

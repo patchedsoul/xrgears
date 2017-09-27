@@ -53,15 +53,11 @@ public:
   }
 
   void init(const std::string& name) {
-    window->init(width, height, settings->fullscreen);
-
     init_vulkan(name, window->required_extensions());
-
+    window->init(width, height);
     if (!window->check_support(physical_device))
       vik_log_f("Vulkan not supported on given surface");
-
     window->get_swap_chain()->set_context(instance, physical_device, device);
-
     window->init_swap_chain(width, height);
 
     auto render_cb = [this](uint32_t index) { render(index); };

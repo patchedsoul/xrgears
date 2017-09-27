@@ -49,7 +49,7 @@ class WindowKMS : public Window {
   SwapChainDRM swap_chain;
 
 public:
-  WindowKMS() {
+  WindowKMS(Settings *s) : Window(s) {
     gbm_dev = NULL;
     name = "kms";
 
@@ -126,7 +126,7 @@ public:
   }
 
   // Return -1 on failure.
-  int init(uint32_t width, uint32_t height, bool fullscreen) {
+  int init(uint32_t width, uint32_t height) {
     drmModeRes *resources;
     drmModeEncoder *encoder;
     int i;

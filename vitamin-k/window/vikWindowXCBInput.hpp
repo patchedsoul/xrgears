@@ -26,7 +26,7 @@ class WindowXCBInput : public WindowXCB {
   SwapChainVkComplex swap_chain;
 
  public:
-  explicit WindowXCBInput() {
+  explicit WindowXCBInput(Settings *s) : WindowXCB(s) {
     name = "xcb-input";
   }
 
@@ -37,7 +37,7 @@ class WindowXCBInput : public WindowXCB {
   }
 
   // Set up a window using XCB and request event types
-  int init(uint32_t width, uint32_t height, bool fullscreen) {
+  int init(uint32_t width, uint32_t height) {
     xcb_screen_iterator_t iter;
     int scr;
 
@@ -68,7 +68,7 @@ class WindowXCBInput : public WindowXCB {
         XCB_EVENT_MASK_BUTTON_PRESS |
         XCB_EVENT_MASK_BUTTON_RELEASE;
 
-    if (fullscreen)
+    if (settings->fullscreen)
       dimension_cb(screen->width_in_pixels, screen->height_in_pixels);
 
     xcb_create_window(connection,
@@ -89,7 +89,7 @@ class WindowXCBInput : public WindowXCB {
 
     free(reply);
 
-    if (fullscreen) {
+    if (settings->fullscreen) {
       xcb_intern_atom_reply_t *atom_wm_state = intern_atom_helper(connection, false, "_NET_WM_STATE");
       xcb_intern_atom_reply_t *atom_wm_fullscreen = intern_atom_helper(connection, false, "_NET_WM_STATE_FULLSCREEN");
       xcb_change_property(connection,
@@ -118,6 +118,7 @@ class WindowXCBInput : public WindowXCB {
     VkResult err = create_surface(swap_chain.instance, &swap_chain.surface);
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
     swap_chain.select_queue_and_format();
+    swap_chain.create(&width, &height, settings->vsync);
   }
 
   SwapChain* get_swap_chain() {

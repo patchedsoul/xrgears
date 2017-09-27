@@ -37,14 +37,14 @@ class WindowXCBSimple : public WindowXCB {
   bool repaint = false;
 
 public:
-  WindowXCBSimple() {
+  WindowXCBSimple(Settings *s) : WindowXCB(s) {
     name = "xcb-simple";
   }
 
   ~WindowXCBSimple() {}
 
   // Return -1 on failure.
-  int init(uint32_t width, uint32_t height, bool fullscreen) {
+  int init(uint32_t width, uint32_t height) {
     xcb_screen_iterator_t iter;
     static const char title[] = "Vulkan Cube";
 
