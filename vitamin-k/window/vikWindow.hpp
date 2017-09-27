@@ -45,7 +45,7 @@ public:
     quit_cb = cb;
   }
 
-  void set_recreate_swap_chain_vk_cb(std::function<void()> cb) {
+  void set_recreate_frame_buffers_cb(std::function<void()> cb) {
     recreate_frame_buffers_cb = cb;
   }
 

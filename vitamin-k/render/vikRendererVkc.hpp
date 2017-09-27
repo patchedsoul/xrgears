@@ -35,10 +35,7 @@ public:
     height = s->height;
     gettimeofday(&start_tv, NULL);
 
-    auto recreate_swap_chain_vk_cb = [this]() {
-      create_frame_buffers();
-    };
-    window->set_recreate_swap_chain_vk_cb(recreate_swap_chain_vk_cb);
+    window->set_recreate_frame_buffers_cb([this]() { create_frame_buffers(); });
 
     auto dimension_cb = [this](uint32_t w, uint32_t h) {
       width = w;

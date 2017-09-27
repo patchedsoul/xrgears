@@ -130,7 +130,7 @@ public:
   }
 
   // Enable physical device features required for this example
-  virtual void getEnabledFeatures() {
+  virtual void get_enabled_features() {
     // Geometry shader support is required for this example
     if (renderer->deviceFeatures.geometryShader)
       renderer->enabledFeatures.geometryShader = VK_TRUE;
@@ -144,7 +144,7 @@ public:
       vik_log_f("Feature not supported: Selected GPU does not support multi viewports!");
   }
 
-  void buildCommandBuffers() {
+  void build_command_buffers() {
     vik_log_d("Draw command buffers size: %ld", renderer->drawCmdBuffers.size());
 
     if (enableDistortion)
@@ -201,7 +201,7 @@ public:
   // Build command buffer for rendering the scene to the offscreen frame buffer attachments
   void buildOffscreenCommandBuffer() {
     if (offScreenCmdBuffer == VK_NULL_HANDLE)
-      offScreenCmdBuffer = renderer->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+      offScreenCmdBuffer = renderer->create_command_buffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 
     // Create a semaphore used to synchronize offscreen rendering and usage
     VkSemaphoreCreateInfo semaphoreCreateInfo = vik::initializers::semaphoreCreateInfo();
@@ -618,7 +618,7 @@ public:
   }
 
   void draw() {
-    renderer->prepareFrame();
+    renderer->prepare_frame();
 
     renderer->submitInfo.commandBufferCount = 1;
 
@@ -657,11 +657,11 @@ public:
     // Submit to queue
     renderer->submitInfo.pCommandBuffers = &renderer->drawCmdBuffers[renderer->currentBuffer];
     vik_log_check(vkQueueSubmit(renderer->queue, 1, &renderer->submitInfo, VK_NULL_HANDLE));
-    renderer->submitFrame();
+    renderer->submit_frame();
   }
 
-  void prepare() {
-    ApplicationVks::prepare();
+  void init() {
+    ApplicationVks::init();
 
     hmd = new vik::HMD();
 
@@ -700,7 +700,7 @@ public:
 
     preparePipelines();
     setupDescriptorSet();
-    buildCommandBuffers();
+    build_command_buffers();
 
     if (enableDistortion)
       buildOffscreenCommandBuffer();
@@ -720,7 +720,7 @@ public:
       updateUniformBuffers();
   }
 
-  virtual void viewChanged() {
+  virtual void view_changed_cb() {
     updateUniformBuffers();
   }
 
@@ -730,7 +730,7 @@ public:
     updateUniformBuffers();
   }
 
-  virtual void keyPressed(uint32_t keyCode) {
+  virtual void key_pressed(uint32_t keyCode) {
     /*
     switch (keyCode) {
       case KEY_KPADD:
@@ -746,7 +746,7 @@ public:
 
 int main(int argc, char *argv[]) {
   XRGears app(argc, argv);
-  app.prepare();
+  app.init();
   app.loop();
   return 0;
 }

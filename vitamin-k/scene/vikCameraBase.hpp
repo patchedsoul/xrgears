@@ -74,7 +74,7 @@ class CameraBase {
     matrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
   }
 
-  void updateAspectRatio(float aspect) {
+  void update_aspect_ratio(float aspect) {
     matrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
   }
 

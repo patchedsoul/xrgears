@@ -244,7 +244,7 @@ public:
   // Build separate command buffers for every framebuffer image
   // Unlike in OpenGL all rendering commands are recorded once into command buffers that are then resubmitted to the queue
   // This allows to generate work upfront and from multiple threads, one of the biggest advantages of Vulkan
-  void buildCommandBuffers() {
+  void build_command_buffers() {
     VkCommandBufferBeginInfo cmdBufInfo = {};
     cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     cmdBufInfo.pNext = nullptr;
@@ -813,8 +813,8 @@ public:
     vkUnmapMemory(renderer->device, uniformBufferVS.memory);
   }
 
-  void prepare() {
-    ApplicationVks::prepare();
+  void init() {
+    ApplicationVks::init();
     prepareSynchronizationPrimitives();
     prepareVertices(USE_STAGING);
     prepareUniformBuffers();
@@ -822,7 +822,7 @@ public:
     preparePipelines();
     setupDescriptorPool();
     setupDescriptorSet();
-    buildCommandBuffers();
+    build_command_buffers();
     prepared = true;
   }
 
@@ -832,14 +832,14 @@ public:
     draw();
   }
 
-  virtual void viewChanged() {
+  virtual void view_changed_cb() {
     updateUniformBuffers();
   }
 };
 
 int main(int argc, char *argv[]) {
   Triangle app(argc, argv);
-  app.prepare();
+  app.init();
   app.loop();
   return 0;
 }

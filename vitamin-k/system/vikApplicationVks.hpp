@@ -43,7 +43,6 @@ public:
 
   bool prepared = false;
   bool viewUpdated = false;
-  bool resizing = false;
 
   float zoom = 0;
   float rotationSpeed = 1.0f;
@@ -66,10 +65,10 @@ public:
     init_window_from_settings();
     renderer = new RendererVks(&settings, window);
 
-    std::function<void()> set_window_resize_cb = [this]() { windowResize(); };
+    std::function<void()> set_window_resize_cb = [this]() { resize(); };
     renderer->set_window_resize_cb(set_window_resize_cb);
 
-    std::function<void()> enabled_features_cb = [this]() { getEnabledFeatures(); };
+    std::function<void()> enabled_features_cb = [this]() { get_enabled_features(); };
     renderer->set_enabled_features_cb(enabled_features_cb);
 
     auto pointer_motion_cb = [this](double x, double y) {
@@ -155,7 +154,7 @@ public:
       }
 
       if (state)
-        keyPressed(key);
+        key_pressed(key);
     };
 
     window->set_pointer_motion_cb(pointer_motion_cb);
@@ -172,7 +171,7 @@ public:
         renderer->destWidth = width;
         renderer->destHeight = height;
         if ((renderer->destWidth > 0) && (renderer->destHeight > 0))
-          windowResize();
+          resize();
       }
     };
     window->set_configure_cb(configure_cb);
@@ -184,19 +183,19 @@ public:
   }
 
   virtual void render() = 0;
-  virtual void viewChanged() {}
-  virtual void keyPressed(uint32_t) {}
-  virtual void buildCommandBuffers() {}
-  virtual void getEnabledFeatures() {}
+  virtual void view_changed_cb() {}
+  virtual void key_pressed(uint32_t) {}
+  virtual void build_command_buffers() {}
+  virtual void get_enabled_features() {}
 
   void check_view_update() {
     if (viewUpdated) {
       viewUpdated = false;
-      viewChanged();
+      view_changed_cb();
     }
   }
 
-  virtual void prepare() {
+  virtual void init() {
     renderer->init(name, title);
   }
 
@@ -224,27 +223,27 @@ public:
       viewUpdated = true;
   }
 
-  void windowResize() {
+  void resize() {
     if (!prepared)
       return;
     prepared = false;
 
     renderer->resize();
 
-    buildCommandBuffers();
+    build_command_buffers();
 
     vkDeviceWaitIdle(renderer->device);
 
     if (settings.enable_text_overlay) {
       renderer->textOverlay->reallocateCommandBuffers();
-      renderer->updateTextOverlay(title);
+      renderer->update_text_overlay(title);
     }
 
-    camera.updateAspectRatio(renderer->get_aspect_ratio());
+    camera.update_aspect_ratio(renderer->get_aspect_ratio());
 
     // Notify derived class
     //windowResized();
-    viewChanged();
+    view_changed_cb();
 
     prepared = true;
   }

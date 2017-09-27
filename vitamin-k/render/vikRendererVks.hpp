@@ -90,7 +90,7 @@ public:
     if (descriptorPool != VK_NULL_HANDLE)
       vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 
-    destroyCommandBuffers();
+    destroy_command_buffers();
     vkDestroyRenderPass(device, render_pass, nullptr);
     for (uint32_t i = 0; i < frame_buffers.size(); i++)
       vkDestroyFramebuffer(device, frame_buffers[i], nullptr);
@@ -127,15 +127,15 @@ public:
     if (vksDevice->enableDebugMarkers)
       debugmarker::setup(device);
 
-    createCommandPool();
-    createCommandBuffers();
-    setupDepthStencil();
+    create_command_pool();
+    create_command_buffers();
+    init_depth_stencil();
     create_render_pass();
-    createPipelineCache();
+    create_pipeline_cache();
     create_frame_buffers();
     if (settings->enable_text_overlay) {
       init_text_overlay();
-      updateTextOverlay(title);
+      update_text_overlay(title);
     }
 
     destWidth = width;
@@ -164,14 +164,14 @@ public:
           shaderStages);
   }
 
-  bool checkCommandBuffers() {
+  bool check_command_buffers() {
     for (auto& cmdBuffer : drawCmdBuffers)
       if (cmdBuffer == VK_NULL_HANDLE)
         return false;
     return true;
   }
 
-  void createCommandBuffers() {
+  void create_command_buffers() {
     // Create one command buffer for each swap chain image and reuse for rendering
 
     vik_log_d("Swapchain image count %d", window->get_swap_chain()->image_count);
@@ -189,11 +189,11 @@ public:
     vik_log_d("created %ld command buffers", drawCmdBuffers.size());
   }
 
-  void destroyCommandBuffers() {
+  void destroy_command_buffers() {
     vkFreeCommandBuffers(device, cmdPool, static_cast<uint32_t>(drawCmdBuffers.size()), drawCmdBuffers.data());
   }
 
-  VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin) {
+  VkCommandBuffer create_command_buffer(VkCommandBufferLevel level, bool begin) {
     VkCommandBuffer cmdBuffer;
 
     VkCommandBufferAllocateInfo cmdBufAllocateInfo =
@@ -213,7 +213,7 @@ public:
     return cmdBuffer;
   }
 
-  void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free) {
+  void flush_command_buffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free) {
     if (commandBuffer == VK_NULL_HANDLE)
       return;
 
@@ -231,7 +231,7 @@ public:
       vkFreeCommandBuffers(device, cmdPool, 1, &commandBuffer);
   }
 
-  void createPipelineCache() {
+  void create_pipeline_cache() {
     VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
     pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
     vik_log_check(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
@@ -241,12 +241,12 @@ public:
     if (timer.tick_finnished()) {
       timer.update_fps();
       if (settings->enable_text_overlay)
-        updateTextOverlay(title);
+        update_text_overlay(title);
       timer.reset();
     }
   }
 
-  void prepareFrame() {
+  void prepare_frame() {
     // Acquire the next image from the swap chain
     SwapChainVK *sc = (SwapChainVK*) window->get_swap_chain();
     VkResult err = sc->acquire_next_image(semaphores.presentComplete, &currentBuffer);
@@ -257,7 +257,7 @@ public:
       vik_log_check(err);
   }
 
-  void submitFrame() {
+  void submit_frame() {
     VkSemaphore waitSemaphore;
     if (settings->enable_text_overlay && textOverlay->visible) {
       submit_text_overlay();
@@ -417,7 +417,7 @@ public:
     submitInfo.pSignalSemaphores = &semaphores.renderComplete;
   }
 
-  void createCommandPool() {
+  void create_command_pool() {
     VkCommandPoolCreateInfo cmdPoolInfo = {};
     cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     SwapChainVkComplex *sc = (SwapChainVkComplex*) window->get_swap_chain();
@@ -434,7 +434,7 @@ public:
     return windowTitle;
   }
 
-  void updateTextOverlay(const std::string& title) {
+  void update_text_overlay(const std::string& title) {
     if (!settings->enable_text_overlay)
       return;
 
@@ -468,7 +468,7 @@ public:
     vkDestroyImageView(device, depthStencil.view, nullptr);
     vkDestroyImage(device, depthStencil.image, nullptr);
     vkFreeMemory(device, depthStencil.mem, nullptr);
-    setupDepthStencil();
+    init_depth_stencil();
 
     for (uint32_t i = 0; i < frame_buffers.size(); i++)
       vkDestroyFramebuffer(device, frame_buffers[i], nullptr);
@@ -476,8 +476,8 @@ public:
 
     // Command buffers need to be recreated as they may store
     // references to the recreated frame buffer
-    destroyCommandBuffers();
-    createCommandBuffers();
+    destroy_command_buffers();
+    create_command_buffers();
   }
 
   void submit_text_overlay() {
@@ -621,7 +621,7 @@ public:
     vik_log_d("renderpass setup complete");
   }
 
-  void setupDepthStencil() {
+  void init_depth_stencil() {
     VkImageCreateInfo image = {};
     image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     image.pNext = NULL;
