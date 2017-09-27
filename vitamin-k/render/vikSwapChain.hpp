@@ -16,6 +16,9 @@ struct SwapChainBuffer {
 
 class SwapChain {
 public:
+  VkPhysicalDevice physical_device;
+  VkDevice device;
+  VkInstance instance;
   std::vector<SwapChainBuffer> buffers;
 
   uint32_t image_count = 0;
@@ -28,6 +31,20 @@ public:
 
   void set_render_cb(std::function<void(uint32_t index)> cb) {
     render_cb = cb;
+  }
+
+  /**
+  * Set instance, physical and logical device to use for the swapchain and get all required function pointers
+  *
+  * @param instance Vulkan instance to use
+  * @param physicalDevice Physical device used to query properties and formats relevant to the swapchain
+  * @param device Logical representation of the device to create the swapchain for
+  *
+  */
+  void set_context(VkInstance i, VkPhysicalDevice p, VkDevice d) {
+    instance = i;
+    physical_device = p;
+    device = d;
   }
 
   void create_image_view(const VkDevice &device, const VkImage& image,

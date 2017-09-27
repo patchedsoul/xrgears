@@ -6,12 +6,6 @@
 
 namespace vik {
 class SwapChainVK : public SwapChain {
-
-protected:
-  VkInstance instance;
-  VkDevice device;
-  VkPhysicalDevice physical_device;
-
 public:
   /** @brief Handle to the current swap chain, required for recreation */
   VkSwapchainKHR swap_chain = VK_NULL_HANDLE;
@@ -141,20 +135,6 @@ public:
     }
 
     assert(surface_format.format != VK_FORMAT_UNDEFINED);
-  }
-
-  /**
-  * Set instance, physical and logical device to use for the swapchain and get all required function pointers
-  *
-  * @param instance Vulkan instance to use
-  * @param physicalDevice Physical device used to query properties and formats relevant to the swapchain
-  * @param device Logical representation of the device to create the swapchain for
-  *
-  */
-  void set_context(VkInstance i, VkPhysicalDevice p, VkDevice d) {
-    instance = i;
-    physical_device = p;
-    device = d;
   }
 
   void update_images() {

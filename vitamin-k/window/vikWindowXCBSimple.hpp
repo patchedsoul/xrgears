@@ -113,10 +113,8 @@ public:
     xcb_flush(connection);
   }
 
-  void init_swap_chain(VkInstance instance, VkPhysicalDevice physical_device,
-                       VkDevice device, uint32_t width, uint32_t height) {
-    swap_chain.set_context(instance, physical_device, device);
-    create_surface(instance, &swap_chain.surface);
+  void init_swap_chain(uint32_t width, uint32_t height) {
+    create_surface(swap_chain.instance, &swap_chain.surface);
     swap_chain.choose_surface_format();
   }
 
@@ -163,7 +161,7 @@ public:
   void handle_expose(const xcb_expose_event_t *event) {
       vik_log_d("XCB_EXPOSE %dx%d", event->width, event->height);
       swap_chain.recreate_simple(event->width, event->height);
-      recreate_frame_buffers_cb(&swap_chain);
+      recreate_frame_buffers_cb();
       schedule_repaint();
   }
 

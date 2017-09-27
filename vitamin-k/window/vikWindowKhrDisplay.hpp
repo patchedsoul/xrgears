@@ -29,12 +29,11 @@ class WindowKhrDisplay  : public Window {
     return { VK_KHR_DISPLAY_EXTENSION_NAME };
   }
 
-  void init_swap_chain(VkInstance instance, VkPhysicalDevice physical_device,
-                       VkDevice device, uint32_t width, uint32_t height) {
-
-    swap_chain.set_context(instance, physical_device, device);
+  void init_swap_chain(uint32_t width, uint32_t height) {
 
     uint32_t displayPropertyCount;
+
+    VkPhysicalDevice physical_device = swap_chain.physical_device;
 
     // Get display property
     vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device, &displayPropertyCount, NULL);
@@ -124,7 +123,7 @@ class WindowKhrDisplay  : public Window {
     surfaceInfo.imageExtent.width = width;
     surfaceInfo.imageExtent.height = height;
 
-    VkResult result = vkCreateDisplayPlaneSurfaceKHR(instance, &surfaceInfo, NULL, &swap_chain.surface);
+    VkResult result = vkCreateDisplayPlaneSurfaceKHR(swap_chain.instance, &surfaceInfo, NULL, &swap_chain.surface);
     vik_log_f_if(result !=VK_SUCCESS, "Failed to create surface!");
 
     delete[] pDisplays;

@@ -98,17 +98,15 @@ public:
     swap_chain.render(queue, semaphore);
   }
 
-  void init_swap_chain(VkInstance instance, VkPhysicalDevice physical_device,
-                       VkDevice device, uint32_t width, uint32_t height) {
-    swap_chain.set_context(instance, physical_device, device);
+  void init_swap_chain(uint32_t width, uint32_t height) {
 
-    create_surface(instance, &swap_chain.surface);
+    create_surface(swap_chain.instance, &swap_chain.surface);
 
     swap_chain.choose_surface_format();
 
     swap_chain.recreate_simple(width, height);
 
-    recreate_frame_buffers_cb(&swap_chain);
+    recreate_frame_buffers_cb();
   }
 
   SwapChain* get_swap_chain() {

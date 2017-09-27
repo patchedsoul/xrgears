@@ -21,10 +21,8 @@ public:
     init_window();
     renderer = new RendererVkc(&settings, window);
 
-    auto update_cb = [this]() { update_scene(); };
-    window->set_update_cb(update_cb);
-    auto quit_cb = [this]() { quit = true; };
-    window->set_quit_cb(quit_cb);
+    window->set_update_cb([this]() { update_scene(); });
+    window->set_quit_cb([this]() { quit = true; });
 
     std::function<void(Input::Key key, bool state)> keyboard_key_cb =
         [this](Input::Key key, bool state) {
@@ -70,7 +68,7 @@ public:
 
   void loop() {
     while (!quit)
-      window->iterate(renderer->queue, renderer->semaphore);
+      renderer->iterate();
   }
 
   virtual void init_cb() = 0;

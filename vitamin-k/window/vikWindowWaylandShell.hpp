@@ -86,11 +86,8 @@ public:
     wl_display_dispatch_pending(display);
   }
 
-  void init_swap_chain(VkInstance instance, VkPhysicalDevice physical_device,
-                       VkDevice device, uint32_t width, uint32_t height) {
-    swap_chain.set_context(instance, physical_device, device);
-
-    VkResult err = create_surface(instance, &swap_chain.surface);
+  void init_swap_chain(uint32_t width, uint32_t height) {
+    VkResult err = create_surface(swap_chain.instance, &swap_chain.surface);
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
 
     swap_chain.select_queue_and_format();

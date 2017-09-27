@@ -171,11 +171,10 @@ public:
     return {};
   }
 
-  void init_swap_chain(VkInstance instance, VkPhysicalDevice physical_device,
-                       VkDevice device, uint32_t width, uint32_t height) {
+  void init_swap_chain(uint32_t width, uint32_t height) {
     swap_chain.surface_format.format = VK_FORMAT_R8G8B8A8_SRGB;
 
-    swap_chain.init(device, swap_chain.surface_format.format, gbm_dev, fd,
+    swap_chain.init(swap_chain.device, swap_chain.surface_format.format, gbm_dev, fd,
              width, height);
     swap_chain.set_mode_and_page_flip(fd, crtc, connector);
   }

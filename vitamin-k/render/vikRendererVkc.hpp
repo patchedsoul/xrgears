@@ -35,8 +35,8 @@ public:
     height = s->height;
     gettimeofday(&start_tv, NULL);
 
-    auto recreate_swap_chain_vk_cb = [this](SwapChain *sc) {
-      create_frame_buffers(sc);
+    auto recreate_swap_chain_vk_cb = [this]() {
+      create_frame_buffers();
     };
     window->set_recreate_swap_chain_vk_cb(recreate_swap_chain_vk_cb);
 
@@ -60,11 +60,13 @@ public:
     if (!window->check_support(physical_device))
       vik_log_f("Vulkan not supported on given surface");
 
-    window->init_swap_chain(instance, physical_device, device, width, height);
+    window->get_swap_chain()->set_context(instance, physical_device, device);
+
+    window->init_swap_chain(width, height);
 
     auto render_cb = [this](uint32_t index) { render(index); };
     window->get_swap_chain()->set_render_cb(render_cb);
-    create_frame_buffers(window->get_swap_chain());
+    create_frame_buffers();
   }
 
   void init_vulkan(const std::string& name,
@@ -318,31 +320,24 @@ public:
                  "vkEndCommandBuffer: %s", Log::result_string(r).c_str());
   }
 
+  void iterate() {
+    window->iterate(queue, semaphore);
+  }
+
   void render(uint32_t index) {
     build_command_buffer(frame_buffers[index]);
     submit_queue();
     wait_and_reset_fences();
   }
 
-  void create_frame_buffer(VkImageView *view, VkFramebuffer *frame_buffer) {
-    VkFramebufferCreateInfo framebufferinfo = {};
-    framebufferinfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferinfo.renderPass = render_pass;
-    framebufferinfo.attachmentCount = 1;
-    framebufferinfo.pAttachments = view;
-    framebufferinfo.width = width;
-    framebufferinfo.height = height;
-    framebufferinfo.layers = 1;
-    vkCreateFramebuffer(device,
-                        &framebufferinfo,
-                        NULL,
-                        frame_buffer);
-  }
-
-  void create_frame_buffers(SwapChain *sc) {
-    frame_buffers.resize(sc->image_count);
-    for (uint32_t i = 0; i < sc->image_count; i++) {
-      create_frame_buffer(&sc->buffers[i].view, &frame_buffers[i]);
+  void create_frame_buffers() {
+    uint32_t count = window->get_swap_chain()->image_count;
+    frame_buffers.resize(count);
+    for (uint32_t i = 0; i < count; i++) {
+      std::vector<VkImageView> attachments = {
+        window->get_swap_chain()->buffers[i].view
+      };
+      create_frame_buffer(&frame_buffers[i], attachments);
     }
   }
 };

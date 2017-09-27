@@ -70,5 +70,23 @@ public:
 
     return vkCreateInstance(&instance_info, nullptr, &instance);
   }
+
+  void create_frame_buffer(VkFramebuffer *frame_buffer,
+                           const std::vector<VkImageView> &attachments) {
+    VkFramebufferCreateInfo frame_buffer_info = {};
+    frame_buffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    frame_buffer_info.renderPass = render_pass;
+    frame_buffer_info.attachmentCount = attachments.size();
+    frame_buffer_info.pAttachments = attachments.data();
+    frame_buffer_info.width = width;
+    frame_buffer_info.height = height;
+    frame_buffer_info.layers = 1;
+
+    vik_log_check(vkCreateFramebuffer(device,
+                                      &frame_buffer_info,
+                                      nullptr,
+                                      frame_buffer));
+  }
+
 };
 }

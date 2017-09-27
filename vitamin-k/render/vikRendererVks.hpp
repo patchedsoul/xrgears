@@ -120,9 +120,9 @@ public:
     init_vulkan(name, window->required_extensions());
     window->init(width, height, settings->fullscreen);
 
-    std::string windowTitle = make_title_string(title);
-    window->update_window_title(windowTitle);
-    window->init_swap_chain(instance, physical_device, device, width, height);
+    window->update_window_title(make_title_string(title));
+    window->get_swap_chain()->set_context(instance, physical_device, device);
+    window->init_swap_chain(width, height);
 
     if (vksDevice->enableDebugMarkers)
       debugmarker::setup(device);
@@ -514,29 +514,18 @@ public:
   }
 
   void create_frame_buffers() {
-    vik_log_d("setupFrameBuffer");
+    uint32_t count = window->get_swap_chain()->image_count;
 
+    // Create frame buffers for every swap chain image
+    frame_buffers.resize(count);
 
-    VkImageView attachments[2];
-
+    std::vector<VkImageView> attachments = std::vector<VkImageView>(2);
     // Depth/Stencil attachment is the same for all frame buffers
     attachments[1] = depthStencil.view;
 
-    VkFramebufferCreateInfo frameBufferCreateInfo = {};
-    frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    frameBufferCreateInfo.pNext = NULL;
-    frameBufferCreateInfo.renderPass = render_pass;
-    frameBufferCreateInfo.attachmentCount = 2;
-    frameBufferCreateInfo.pAttachments = attachments;
-    frameBufferCreateInfo.width = width;
-    frameBufferCreateInfo.height = height;
-    frameBufferCreateInfo.layers = 1;
-
-    // Create frame buffers for every swap chain image
-    frame_buffers.resize(window->get_swap_chain()->image_count);
-    for (uint32_t i = 0; i < frame_buffers.size(); i++) {
+    for (uint32_t i = 0; i < count; i++) {
       attachments[0] = window->get_swap_chain()->buffers[i].view;
-      vik_log_check(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frame_buffers[i]));
+      create_frame_buffer(&frame_buffers[i], attachments);
     }
   }
 

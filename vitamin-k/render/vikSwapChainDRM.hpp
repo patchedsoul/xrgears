@@ -28,7 +28,7 @@
 
 namespace vik {
 
-struct kms_buffer {
+struct KMSBuffer {
   gbm_bo *gbm_buffer;
   VkDeviceMemory mem;
   uint32_t fb;
@@ -39,7 +39,7 @@ class SwapChainDRM : public SwapChain {
 
 public:
 
-  std::vector<kms_buffer> kms_buffers;
+  std::vector<KMSBuffer> kms_buffers;
   int current;
 
   SwapChainDRM() {
@@ -57,8 +57,8 @@ public:
         (PFN_vkCreateDmaBufImageINTEL)vkGetDeviceProcAddr(device, "vkCreateDmaBufImageINTEL");
 
     for (uint32_t i = 0; i < image_count; i++) {
-      vik::SwapChainBuffer *b = &buffers[i];
-      kms_buffer *kms_b = &kms_buffers[i];
+      SwapChainBuffer *b = &buffers[i];
+      KMSBuffer *kms_b = &kms_buffers[i];
       int buffer_fd, stride, ret;
 
       kms_b->gbm_buffer = gbm_bo_create(gbm_dev, width, height,
@@ -116,7 +116,7 @@ public:
     int index = current & 1;
 
     render_cb(index);
-    vik::kms_buffer *kms_b = &kms_buffers[index];
+    KMSBuffer *kms_b = &kms_buffers[index];
     int ret = drmModePageFlip(fd, crtc_id, kms_b->fb,
                               DRM_MODE_PAGE_FLIP_EVENT, NULL);
     vik_log_f_if(ret < 0, "pageflip failed: %m");
