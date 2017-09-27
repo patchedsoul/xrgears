@@ -9,7 +9,7 @@
 #include "vikRenderer.hpp"
 
 #include "vikDevice.hpp"
-#include "vikSwapChainVKComplex.hpp"
+#include "vikSwapChainVK.hpp"
 #include "vikTimer.hpp"
 #include "vikTextOverlay.hpp"
 #include "system/vikSettings.hpp"

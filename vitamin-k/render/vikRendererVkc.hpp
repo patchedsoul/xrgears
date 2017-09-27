@@ -7,8 +7,6 @@
 
 #include <array>
 
-#include "vikSwapChainVK.hpp"
-#include "vikSwapChainDRM.hpp"
 #include "vikRenderer.hpp"
 
 namespace vik {
