@@ -6,6 +6,7 @@
 #include <functional>
 
 #include "system/vikLog.hpp"
+#include "system/vikSettings.hpp"
 
 namespace vik {
 
@@ -24,10 +25,24 @@ public:
   uint32_t image_count = 0;
   VkSurfaceFormatKHR surface_format;
 
+  Settings *settings;
+
   std::function<void(uint32_t index)> render_cb;
 
   SwapChain() {}
   ~SwapChain() {}
+
+  virtual void cleanup() = 0;
+
+  virtual uint32_t get_queue_index() {
+    return 0;
+  }
+
+  virtual void create(uint32_t width, uint32_t height) = 0;
+
+  void set_settings(Settings *s) {
+    settings = s;
+  }
 
   void set_render_cb(std::function<void(uint32_t index)> cb) {
     render_cb = cb;

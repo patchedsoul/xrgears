@@ -15,7 +15,7 @@ public:
   SwapChainVK() {}
   ~SwapChainVK() {}
 
-  void create_simple(uint32_t width, uint32_t height) {
+  void create(uint32_t width, uint32_t height) {
     VkSurfaceCapabilitiesKHR surface_caps;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface,
                                               &surface_caps);
@@ -44,9 +44,9 @@ public:
     vkCreateSwapchainKHR(device, &swapchainfo, NULL, &swap_chain);
   }
 
-  void recreate_simple(uint32_t width, uint32_t height) {
+  void recreate(uint32_t width, uint32_t height) {
     destroy();
-    create_simple(width, height);
+    create(width, height);
     update_images();
   }
 
@@ -200,6 +200,23 @@ public:
                    Log::result_string(result).c_str());
         break;
     }
+  }
+
+  /**
+  * Destroy and free Vulkan resources used for the swapchain
+  */
+  void cleanup() {
+    if (swap_chain != VK_NULL_HANDLE) {
+      for (uint32_t i = 0; i < image_count; i++)
+        vkDestroyImageView(device, buffers[i].view, nullptr);
+    }
+
+    if (surface != VK_NULL_HANDLE) {
+      vkDestroySwapchainKHR(device, swap_chain, nullptr);
+      vkDestroySurfaceKHR(instance, surface, nullptr);
+    }
+    surface = VK_NULL_HANDLE;
+    swap_chain = VK_NULL_HANDLE;
   }
 
 };

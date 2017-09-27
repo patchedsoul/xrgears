@@ -34,6 +34,15 @@ class SwapChainVkComplex : public vik::SwapChainVK {
   /** @brief Queue family index of the detected graphics and presenting device queue */
   uint32_t queueNodeIndex = UINT32_MAX;
 
+  std::function<void(uint32_t width, uint32_t height)> dimension_cb;
+  void set_dimension_cb(std::function<void(uint32_t width, uint32_t height)> cb) {
+    dimension_cb = cb;
+  }
+
+  uint32_t get_queue_index() {
+    return queueNodeIndex;
+  }
+
   uint32_t select_queue() {
     // Get available queue family properties
     uint32_t queueCount;
@@ -133,19 +142,18 @@ class SwapChainVkComplex : public vik::SwapChainVK {
     select_format();
   }
 
-  VkExtent2D select_extent(const VkSurfaceCapabilitiesKHR &surfCaps, uint32_t *width, uint32_t *height) {
+  VkExtent2D select_extent(const VkSurfaceCapabilitiesKHR &surfCaps, uint32_t width, uint32_t height) {
     VkExtent2D swapchainExtent = {};
     // If width (and height) equals the special value 0xFFFFFFFF, the size of the surface will be set by the swapchain
     if (surfCaps.currentExtent.width == (uint32_t)-1) {
       // If the surface size is undefined, the size is set to
       // the size of the images requested.
-      swapchainExtent.width = *width;
-      swapchainExtent.height = *height;
+      swapchainExtent.width = width;
+      swapchainExtent.height = height;
     } else {
       // If the surface size is defined, the swap chain size must match
       swapchainExtent = surfCaps.currentExtent;
-      *width = surfCaps.currentExtent.width;
-      *height = surfCaps.currentExtent.height;
+      dimension_cb(surfCaps.currentExtent.width, surfCaps.currentExtent.height);
     }
     return swapchainExtent;
   }
@@ -199,7 +207,7 @@ class SwapChainVkComplex : public vik::SwapChainVK {
   * @param height Pointer to the height of the swapchain (may be adjusted to fit the requirements of the swapchain)
   * @param vsync (Optional) Can be used to force vsync'd rendering (by using VK_PRESENT_MODE_FIFO_KHR as presentation mode)
   */
-  void create(uint32_t *width, uint32_t *height, bool vsync = false) {
+  void create(uint32_t width, uint32_t height) {
     // Get physical device surface properties and formats
     VkSurfaceCapabilitiesKHR surfCaps;
     vik_log_check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &surfCaps));
@@ -226,7 +234,7 @@ class SwapChainVkComplex : public vik::SwapChainVK {
 
     swap_chain_info.minImageCount = select_image_count(surfCaps);
     swap_chain_info.preTransform = select_transform_flags(surfCaps);
-    swap_chain_info.presentMode = vsync ? VK_PRESENT_MODE_FIFO_KHR : select_present_mode();
+    swap_chain_info.presentMode = settings->vsync ? VK_PRESENT_MODE_FIFO_KHR : select_present_mode();
     swap_chain_info.compositeAlpha = select_composite_alpha(surfCaps);
 
     // Set additional usage flag for blitting from the swapchain images if supported
@@ -243,21 +251,5 @@ class SwapChainVkComplex : public vik::SwapChainVK {
     update_images();
   }
 
-  /**
-  * Destroy and free Vulkan resources used for the swapchain
-  */
-  void cleanup() {
-    if (swap_chain != VK_NULL_HANDLE) {
-      for (uint32_t i = 0; i < image_count; i++)
-        vkDestroyImageView(device, buffers[i].view, nullptr);
-    }
-
-    if (surface != VK_NULL_HANDLE) {
-      vkDestroySwapchainKHR(device, swap_chain, nullptr);
-      vkDestroySurfaceKHR(instance, surface, nullptr);
-    }
-    surface = VK_NULL_HANDLE;
-    swap_chain = VK_NULL_HANDLE;
-  }
 };
 }

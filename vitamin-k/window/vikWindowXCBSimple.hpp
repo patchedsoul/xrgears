@@ -160,7 +160,7 @@ public:
 
   void handle_expose(const xcb_expose_event_t *event) {
       vik_log_d("XCB_EXPOSE %dx%d", event->width, event->height);
-      swap_chain.recreate_simple(event->width, event->height);
+      swap_chain.recreate(event->width, event->height);
       recreate_frame_buffers_cb();
       schedule_repaint();
   }

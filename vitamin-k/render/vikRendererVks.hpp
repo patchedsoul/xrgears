@@ -85,8 +85,7 @@ public:
     if (settings->enable_text_overlay)
       delete textOverlay;
 
-    SwapChainVkComplex *sc = (SwapChainVkComplex*) window->get_swap_chain();
-    sc->cleanup();
+    window->get_swap_chain()->cleanup();
     if (descriptorPool != VK_NULL_HANDLE)
       vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 
@@ -420,8 +419,7 @@ public:
   void create_command_pool() {
     VkCommandPoolCreateInfo cmdPoolInfo = {};
     cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    SwapChainVkComplex *sc = (SwapChainVkComplex*) window->get_swap_chain();
-    cmdPoolInfo.queueFamilyIndex = sc->queueNodeIndex;
+    cmdPoolInfo.queueFamilyIndex = window->get_swap_chain()->get_queue_index();
     cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     vik_log_check(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
   }
@@ -461,8 +459,7 @@ public:
     width = destWidth;
     height = destHeight;
 
-    SwapChainVkComplex *sc = (SwapChainVkComplex*) window->get_swap_chain();
-    sc->create(&width, &height, settings->vsync);
+    window->get_swap_chain()->create(width, height);
     // Recreate the frame buffers
 
     vkDestroyImageView(device, depthStencil.view, nullptr);

@@ -104,7 +104,7 @@ public:
 
     swap_chain.choose_surface_format();
 
-    swap_chain.recreate_simple(width, height);
+    swap_chain.recreate(width, height);
 
     recreate_frame_buffers_cb();
   }

@@ -51,6 +51,13 @@ public:
   ~SwapChainDRM() {
   }
 
+  void cleanup() {
+
+  }
+
+  void create(uint32_t width, uint32_t height) {
+  }
+
   void init(VkDevice device, VkFormat image_format, gbm_device *gbm_dev, int fd,
             uint32_t width, uint32_t height) {
     PFN_vkCreateDmaBufImageINTEL create_dma_buf_image =
