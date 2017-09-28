@@ -79,6 +79,7 @@ public:
     };
     window->set_dimension_cb(dimension_cb);
 
+    window->set_recreate_frame_buffers_cb([this]() { create_frame_buffers(); });
   }
 
   ~RendererVks() {
