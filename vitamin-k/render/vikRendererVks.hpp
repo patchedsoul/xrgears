@@ -28,7 +28,6 @@ public:
   VkPhysicalDeviceFeatures enabledFeatures{};
 
   VkFormat depthFormat;
-  VkCommandPool cmdPool;
   VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
   VkPipelineCache pipelineCache;
 
@@ -45,7 +44,7 @@ public:
     VkSemaphore render_complete;
   } semaphores;
 
-  std::vector<VkCommandBuffer> drawCmdBuffers;
+  std::vector<VkCommandBuffer> cmd_buffers;
 
 
   std::vector<const char*> enabledExtensions;
@@ -122,7 +121,7 @@ public:
 
     vkDestroyPipelineCache(device, pipelineCache, nullptr);
 
-    vkDestroyCommandPool(device, cmdPool, nullptr);
+    vkDestroyCommandPool(device, cmd_pool, nullptr);
 
     vkDestroySemaphore(device, semaphores.present_complete, nullptr);
     vkDestroySemaphore(device, semaphores.render_complete, nullptr);
@@ -163,106 +162,51 @@ public:
   }
 
   bool check_command_buffers() {
-    for (auto& cmdBuffer : drawCmdBuffers)
-      if (cmdBuffer == VK_NULL_HANDLE)
+    for (auto& cmd_buffer : cmd_buffers)
+      if (cmd_buffer == VK_NULL_HANDLE)
         return false;
     return true;
   }
 
   void create_command_buffers() {
     // Create one command buffer for each swap chain image and reuse for rendering
+    cmd_buffers.resize(window->get_swap_chain()->image_count);
 
-    vik_log_d("Swapchain image count %d", window->get_swap_chain()->image_count);
-
-    drawCmdBuffers.resize(window->get_swap_chain()->image_count);
-
-    VkCommandBufferAllocateInfo cmdBufAllocateInfo =
+    VkCommandBufferAllocateInfo cmd_buffer_info =
         initializers::commandBufferAllocateInfo(
-          cmdPool,
+          cmd_pool,
           VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-          static_cast<uint32_t>(drawCmdBuffers.size()));
+          static_cast<uint32_t>(cmd_buffers.size()));
 
-    vik_log_check(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, drawCmdBuffers.data()));
-
-    vik_log_d("created %ld command buffers", drawCmdBuffers.size());
+    vik_log_check(vkAllocateCommandBuffers(device,
+                                           &cmd_buffer_info,
+                                           cmd_buffers.data()));
   }
 
   void destroy_command_buffers() {
-    vkFreeCommandBuffers(device, cmdPool, static_cast<uint32_t>(drawCmdBuffers.size()), drawCmdBuffers.data());
+    vkFreeCommandBuffers(device, cmd_pool, static_cast<uint32_t>(cmd_buffers.size()), cmd_buffers.data());
   }
 
-  VkCommandBuffer create_command_buffer(VkCommandBufferLevel level, bool begin) {
-    VkCommandBuffer cmdBuffer;
+  VkCommandBuffer create_command_buffer() {
+    VkCommandBuffer cmd_buffer;
 
-    VkCommandBufferAllocateInfo cmdBufAllocateInfo =
+    VkCommandBufferAllocateInfo cmd_buffer_info =
         initializers::commandBufferAllocateInfo(
-          cmdPool,
-          level,
+          cmd_pool,
+          VK_COMMAND_BUFFER_LEVEL_PRIMARY,
           1);
 
-    vik_log_check(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, &cmdBuffer));
+    vik_log_check(vkAllocateCommandBuffers(device,
+                                           &cmd_buffer_info,
+                                           &cmd_buffer));
 
-    // If requested, also start the new command buffer
-    if (begin) {
-      VkCommandBufferBeginInfo cmdBufInfo = initializers::commandBufferBeginInfo();
-      vik_log_check(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
-    }
-
-    return cmdBuffer;
-  }
-
-  void flush_command_buffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free) {
-    if (commandBuffer == VK_NULL_HANDLE)
-      return;
-
-    vik_log_check(vkEndCommandBuffer(commandBuffer));
-
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
-
-    vik_log_check(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
-    vik_log_check(vkQueueWaitIdle(queue));
-
-    if (free)
-      vkFreeCommandBuffers(device, cmdPool, 1, &commandBuffer);
+    return cmd_buffer;
   }
 
   void create_pipeline_cache() {
     VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
     pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
     vik_log_check(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
-  }
-
-  virtual void check_tick_finnished() {
-    if (timer.tick_finnished()) {
-      timer.update_fps();
-      timer.reset();
-    }
-  }
-
-  void prepare_frame() {
-    // Acquire the next image from the swap chain
-    SwapChainVK *sc = (SwapChainVK*) window->get_swap_chain();
-    VkResult err = sc->acquire_next_image(semaphores.present_complete, &currentBuffer);
-    // Recreate the swapchain if it's no longer compatible with the surface
-    // (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
-    if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR))
-      resize();
-    else
-      vik_log_check(err);
-  }
-
-  // Present the current buffer to the swap chain
-  // Pass the semaphore signaled by the command buffer submission from
-  // the submit info as the wait semaphore for swap chain presentation
-  // This ensures that the image is not presented to the windowing system
-  // until all commands have been submitted
-  virtual void submit_frame() {
-    SwapChainVK *sc = (SwapChainVK*) window->get_swap_chain();
-    vik_log_check(sc->present(queue, currentBuffer, semaphores.render_complete));
-    vik_log_check(vkQueueWaitIdle(queue));
   }
 
   void init_physical_device() {
@@ -402,7 +346,7 @@ public:
     cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     cmdPoolInfo.queueFamilyIndex = window->get_swap_chain()->get_queue_index();
     cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    vik_log_check(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
+    vik_log_check(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmd_pool));
   }
 
   std::string make_title_string(const std::string& title) {
@@ -468,7 +412,7 @@ public:
   }
 
   VkCommandBuffer* get_current_command_buffer() {
-    return &drawCmdBuffers[currentBuffer];
+    return &cmd_buffers[currentBuffer];
   }
 
   void create_frame_buffers() {
@@ -626,11 +570,43 @@ public:
     vik_log_check(vkCreateImageView(device, &depthStencilView, nullptr, &depthStencil.view));
   }
 
+  virtual void check_tick_finnished() {
+    if (timer.tick_finnished()) {
+      timer.update_fps();
+      timer.reset();
+    }
+  }
+
+  void prepare_frame() {
+    // Acquire the next image from the swap chain
+    SwapChainVK *sc = (SwapChainVK*) window->get_swap_chain();
+    VkResult err = sc->acquire_next_image(semaphores.present_complete, &currentBuffer);
+    // Recreate the swapchain if it's no longer compatible with the surface
+    // (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
+    if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR))
+      resize();
+    else
+      vik_log_check(err);
+  }
+
+  // Present the current buffer to the swap chain
+  // Pass the semaphore signaled by the command buffer submission from
+  // the submit info as the wait semaphore for swap chain presentation
+  // This ensures that the image is not presented to the windowing system
+  // until all commands have been submitted
+  virtual void submit_frame() {
+    SwapChainVK *sc = (SwapChainVK*) window->get_swap_chain();
+    vik_log_check(sc->present(queue, currentBuffer, semaphores.render_complete));
+    vik_log_check(vkQueueWaitIdle(queue));
+  }
+
   void render() {
     timer.start();
     frame_start_cb();
     window->iterate(nullptr, nullptr);
+    prepare_frame();
     render_cb();
+    submit_frame();
     timer.increment();
     float frame_time = timer.update_frame_time();
     frame_end_cb(frame_time);

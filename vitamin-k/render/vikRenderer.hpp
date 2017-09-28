@@ -18,6 +18,8 @@ public:
   VkDevice device;
   VkPhysicalDevice physical_device;
 
+  VkCommandPool cmd_pool;
+
   VkQueue queue;
   std::vector<VkFramebuffer> frame_buffers;
   VkRenderPass render_pass;

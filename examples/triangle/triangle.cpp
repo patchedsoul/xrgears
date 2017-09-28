@@ -181,7 +181,7 @@ public:
     fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     // Create in signaled state so we don't wait on first render of each command buffer
     fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-    waitFences.resize(renderer->drawCmdBuffers.size());
+    waitFences.resize(renderer->cmd_buffers.size());
     for (auto& fence : waitFences)
     {
       vik_log_check(vkCreateFence(renderer->device, &fenceCreateInfo, nullptr, &fence));
@@ -195,7 +195,7 @@ public:
 
     VkCommandBufferAllocateInfo cmdBufAllocateInfo = {};
     cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    cmdBufAllocateInfo.commandPool = renderer->cmdPool;
+    cmdBufAllocateInfo.commandPool = renderer->cmd_pool;
     cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     cmdBufAllocateInfo.commandBufferCount = 1;
 
@@ -236,7 +236,7 @@ public:
     vik_log_check(vkWaitForFences(renderer->device, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
 
     vkDestroyFence(renderer->device, fence, nullptr);
-    vkFreeCommandBuffers(renderer->device, renderer->cmdPool, 1, &commandBuffer);
+    vkFreeCommandBuffers(renderer->device, renderer->cmd_pool, 1, &commandBuffer);
   }
 
   // Build separate command buffers for every framebuffer image
@@ -264,17 +264,17 @@ public:
     renderPassBeginInfo.clearValueCount = 2;
     renderPassBeginInfo.pClearValues = clearValues;
 
-    vik_log_d("we will process %ld draw buffers", renderer->drawCmdBuffers.size());
+    vik_log_d("we will process %ld draw buffers", renderer->cmd_buffers.size());
 
-    for (int32_t i = 0; i < renderer->drawCmdBuffers.size(); ++i) {
+    for (int32_t i = 0; i < renderer->cmd_buffers.size(); ++i) {
       // Set target frame buffer
       renderPassBeginInfo.framebuffer = renderer->frame_buffers[i];
 
-      vik_log_check(vkBeginCommandBuffer(renderer->drawCmdBuffers[i], &cmdBufInfo));
+      vik_log_check(vkBeginCommandBuffer(renderer->cmd_buffers[i], &cmdBufInfo));
 
       // Start the first sub pass specified in our default render pass setup by the base class
       // This will clear the color and depth attachment
-      vkCmdBeginRenderPass(renderer->drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+      vkCmdBeginRenderPass(renderer->cmd_buffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
       // Update dynamic viewport state
       VkViewport viewport = {};
@@ -282,7 +282,7 @@ public:
       viewport.width = (float) renderer->width;
       viewport.minDepth = (float) 0.0f;
       viewport.maxDepth = (float) 1.0f;
-      vkCmdSetViewport(renderer->drawCmdBuffers[i], 0, 1, &viewport);
+      vkCmdSetViewport(renderer->cmd_buffers[i], 0, 1, &viewport);
 
       // Update dynamic scissor state
       VkRect2D scissor = {};
@@ -290,40 +290,36 @@ public:
       scissor.extent.height = renderer->height;
       scissor.offset.x = 0;
       scissor.offset.y = 0;
-      vkCmdSetScissor(renderer->drawCmdBuffers[i], 0, 1, &scissor);
+      vkCmdSetScissor(renderer->cmd_buffers[i], 0, 1, &scissor);
 
       // Bind descriptor sets describing shader binding points
-      vkCmdBindDescriptorSets(renderer->drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+      vkCmdBindDescriptorSets(renderer->cmd_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 
       // Bind the rendering pipeline
       // The pipeline (state object) contains all states of the rendering pipeline, binding it will set all the states specified at pipeline creation time
-      vkCmdBindPipeline(renderer->drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+      vkCmdBindPipeline(renderer->cmd_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
       // Bind triangle vertex buffer (contains position and colors)
       VkDeviceSize offsets[1] = { 0 };
-      vkCmdBindVertexBuffers(renderer->drawCmdBuffers[i], 0, 1, &vertices.buffer, offsets);
+      vkCmdBindVertexBuffers(renderer->cmd_buffers[i], 0, 1, &vertices.buffer, offsets);
 
       // Bind triangle index buffer
-      vkCmdBindIndexBuffer(renderer->drawCmdBuffers[i], indices.buffer, 0, VK_INDEX_TYPE_UINT32);
+      vkCmdBindIndexBuffer(renderer->cmd_buffers[i], indices.buffer, 0, VK_INDEX_TYPE_UINT32);
 
       // Draw indexed triangle
-      vkCmdDrawIndexed(renderer->drawCmdBuffers[i], indices.count, 1, 0, 0, 1);
+      vkCmdDrawIndexed(renderer->cmd_buffers[i], indices.count, 1, 0, 0, 1);
 
-      vkCmdEndRenderPass(renderer->drawCmdBuffers[i]);
+      vkCmdEndRenderPass(renderer->cmd_buffers[i]);
 
       // Ending the render pass will add an implicit barrier transitioning the frame buffer color attachment to
       // VK_IMAGE_LAYOUT_PRESENT_SRC_KHR for presenting it to the windowing system
 
-      vik_log_check(vkEndCommandBuffer(renderer->drawCmdBuffers[i]));
+      vik_log_check(vkEndCommandBuffer(renderer->cmd_buffers[i]));
     }
-    vik_log_d("buildCommandBuffers size: %ld", renderer->drawCmdBuffers.size());
+    vik_log_d("buildCommandBuffers size: %ld", renderer->cmd_buffers.size());
   }
 
   void draw() {
-
-
-    renderer->prepare_frame();
-
     // Use a fence to wait until the command buffer has finished execution before using it again
     vik_log_check(vkWaitForFences(renderer->device, 1, &waitFences[renderer->currentBuffer], VK_TRUE, UINT64_MAX));
     vik_log_check(vkResetFences(renderer->device, 1, &waitFences[renderer->currentBuffer]));
@@ -332,8 +328,6 @@ public:
     submit_info.pCommandBuffers = renderer->get_current_command_buffer();
    // Submit to the graphics queue passing a wait fence
     vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, waitFences[renderer->currentBuffer]));
-
-    renderer->submit_frame();
   }
 
   // Prepare vertex and index buffers for an indexed triangle

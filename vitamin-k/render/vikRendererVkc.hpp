@@ -20,7 +20,6 @@ public:
   VkDescriptorSet descriptor_set;
   VkSemaphore semaphore;
   VkFence fence;
-  VkCommandPool cmd_pool;
 
   timeval start_tv;
 

@@ -145,14 +145,14 @@ public:
   }
 
   void build_command_buffers() {
-    vik_log_d("Draw command buffers size: %ld", renderer->drawCmdBuffers.size());
+    vik_log_d("Draw command buffers size: %ld", renderer->cmd_buffers.size());
 
     if (enableDistortion)
-      for (int32_t i = 0; i < renderer->drawCmdBuffers.size(); ++i)
-        buildWarpCommandBuffer(renderer->drawCmdBuffers[i], renderer->frame_buffers[i]);
+      for (int32_t i = 0; i < renderer->cmd_buffers.size(); ++i)
+        buildWarpCommandBuffer(renderer->cmd_buffers[i], renderer->frame_buffers[i]);
     else
-      for (int32_t i = 0; i < renderer->drawCmdBuffers.size(); ++i)
-        buildPbrCommandBuffer(renderer->drawCmdBuffers[i], renderer->frame_buffers[i], false);
+      for (int32_t i = 0; i < renderer->cmd_buffers.size(); ++i)
+        buildPbrCommandBuffer(renderer->cmd_buffers[i], renderer->frame_buffers[i], false);
   }
 
   inline VkRenderPassBeginInfo defaultRenderPassBeginInfo() {
@@ -201,7 +201,7 @@ public:
   // Build command buffer for rendering the scene to the offscreen frame buffer attachments
   void buildOffscreenCommandBuffer() {
     if (offScreenCmdBuffer == VK_NULL_HANDLE)
-      offScreenCmdBuffer = renderer->create_command_buffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+      offScreenCmdBuffer = renderer->create_command_buffer();
 
     // Create a semaphore used to synchronize offscreen rendering and usage
     VkSemaphoreCreateInfo semaphoreCreateInfo = vik::initializers::semaphoreCreateInfo();
@@ -618,8 +618,6 @@ public:
   }
 
   void draw() {
-    renderer->prepare_frame();
-
     VkSubmitInfo submit_info = renderer->init_render_submit_info();
 
     if (enableDistortion) {
@@ -657,7 +655,6 @@ public:
     // Submit to queue
     submit_info.pCommandBuffers = renderer->get_current_command_buffer();
     vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, VK_NULL_HANDLE));
-    renderer->submit_frame();
   }
 
   void init() {
