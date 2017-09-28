@@ -16,10 +16,29 @@ protected:
   xcb_visualid_t root_visual;
   xcb_key_symbols_t *syms;
 
+  xcb_atom_t atom_wm_protocols;
+  xcb_atom_t atom_wm_delete_window;
+
   WindowXCB(Settings *s) : Window(s) {
   }
 
   ~WindowXCB() {
+  }
+
+  xcb_atom_t get_atom(const char *name) {
+    xcb_intern_atom_cookie_t cookie;
+    xcb_intern_atom_reply_t *reply;
+    xcb_atom_t atom;
+
+    cookie = xcb_intern_atom(connection, 0, strlen(name), name);
+    reply = xcb_intern_atom_reply(connection, cookie, NULL);
+    if (reply)
+      atom = reply->atom;
+    else
+      atom = XCB_NONE;
+
+    free(reply);
+    return atom;
   }
 
   static Input::MouseButton xcb_to_vik_button(xcb_button_t button) {

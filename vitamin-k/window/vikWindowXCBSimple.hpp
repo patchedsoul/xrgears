@@ -6,25 +6,7 @@
 #include "render/vikRendererVkc.hpp"
 #include "vikWindowXCB.hpp"
 #include "system/vikLog.hpp"
-#include "render/vikSwapChainVK.hpp"
-
-static xcb_atom_t
-get_atom(struct xcb_connection_t *conn, const char *name)
-{
-  xcb_intern_atom_cookie_t cookie;
-  xcb_intern_atom_reply_t *reply;
-  xcb_atom_t atom;
-
-  cookie = xcb_intern_atom(conn, 0, strlen(name), name);
-  reply = xcb_intern_atom_reply(conn, cookie, NULL);
-  if (reply)
-    atom = reply->atom;
-  else
-    atom = XCB_NONE;
-
-  free(reply);
-  return atom;
-}
+#include "render/vikSwapChainVKComplex.hpp"
 
 namespace vik {
 class WindowXCBSimple : public WindowXCB {
@@ -43,54 +25,56 @@ public:
 
   ~WindowXCBSimple() {}
 
-  // Return -1 on failure.
-  int init(uint32_t width, uint32_t height) {
-    xcb_screen_iterator_t iter;
-    static const char title[] = "Vulkan Cube";
-
+  int connect() {
     connection = xcb_connect(0, 0);
-    if (xcb_connection_has_error(connection))
-      return -1;
+    return !xcb_connection_has_error(connection);
+  }
 
+  void create_window(uint32_t width, uint32_t height,
+                     const xcb_screen_iterator_t& iter) {
     window = xcb_generate_id(connection);
-
     uint32_t window_values[] = {
       XCB_EVENT_MASK_EXPOSURE |
       XCB_EVENT_MASK_STRUCTURE_NOTIFY |
       XCB_EVENT_MASK_KEY_PRESS
     };
-
-    iter = xcb_setup_roots_iterator(xcb_get_setup(connection));
-
     xcb_create_window(connection,
                       XCB_COPY_FROM_PARENT,
                       window,
                       iter.data->root,
                       0, 0,
-                      width,
-                      height,
+                      width, height,
                       0,
                       XCB_WINDOW_CLASS_INPUT_OUTPUT,
                       iter.data->root_visual,
-                      XCB_CW_EVENT_MASK, window_values);
+                      XCB_CW_EVENT_MASK,
+                      window_values);
+  }
 
-    atom_wm_protocols = get_atom(connection, "WM_PROTOCOLS");
-    atom_wm_delete_window = get_atom(connection, "WM_DELETE_WINDOW");
+  // Return -1 on failure.
+  int init(uint32_t width, uint32_t height) {
+    if (!connect())
+      return -1;
+
+    xcb_screen_iterator_t iter =
+        xcb_setup_roots_iterator(xcb_get_setup(connection));
+
+    syms = xcb_key_symbols_alloc(connection);
+
+    create_window(width, height, iter);
+
+    atom_wm_protocols = get_atom("WM_PROTOCOLS");
+    atom_wm_delete_window = get_atom("WM_DELETE_WINDOW");
     xcb_change_property(connection,
                         XCB_PROP_MODE_REPLACE,
                         window,
                         atom_wm_protocols,
                         XCB_ATOM_ATOM,
                         32,
-                        1, &atom_wm_delete_window);
+                        1,
+                        &atom_wm_delete_window);
 
-    xcb_change_property(connection,
-                        XCB_PROP_MODE_REPLACE,
-                        window,
-                        get_atom(connection, "_NET_WM_NAME"),
-                        get_atom(connection, "UTF8_STRING"),
-                        8, // sizeof(char),
-                        strlen(title), title);
+    update_window_title("Vulkan Cube");
 
     xcb_map_window(connection, window);
 
@@ -101,9 +85,9 @@ public:
     return 0;
   }
 
+
   void iterate(VkQueue queue, VkSemaphore semaphore) {
     poll_events();
-
     if (repaint) {
       update_cb();
 
@@ -118,6 +102,24 @@ public:
     swap_chain.choose_surface_format();
   }
 
+  /*
+  void init_swap_chain(uint32_t width, uint32_t height) {
+    create_surface(swap_chain.instance, &swap_chain.surface);
+    swap_chain.set_dimension_cb(dimension_cb);
+    swap_chain.set_settings(settings);
+    swap_chain.select_queue_and_format();
+  }
+*/
+/*
+  void init_swap_chain(uint32_t width, uint32_t height) {
+    VkResult err = create_surface(swap_chain.instance, &swap_chain.surface);
+    vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
+    swap_chain.set_dimension_cb(dimension_cb);
+    swap_chain.select_queue_and_format();
+    swap_chain.set_settings(settings);
+    swap_chain.create(width, height);
+  }
+*/
   SwapChain* get_swap_chain() {
     return (SwapChain*) &swap_chain;
   }
@@ -159,10 +161,10 @@ public:
   }
 
   void handle_expose(const xcb_expose_event_t *event) {
-      vik_log_d("XCB_EXPOSE %dx%d", event->width, event->height);
-      swap_chain.recreate(event->width, event->height);
-      recreate_frame_buffers_cb();
-      schedule_repaint();
+    vik_log_d("XCB_EXPOSE %dx%d", event->width, event->height);
+    swap_chain.recreate(event->width, event->height);
+    recreate_frame_buffers_cb();
+    schedule_repaint();
   }
 
   void handle_event(const xcb_generic_event_t *event) {
@@ -170,8 +172,12 @@ public:
       case XCB_CLIENT_MESSAGE:
         handle_client_message((xcb_client_message_event_t*)event);
         break;
-      case XCB_CONFIGURE_NOTIFY:
+      case XCB_CONFIGURE_NOTIFY: {
         handle_configure((xcb_configure_notify_event_t*) event);
+        const xcb_configure_notify_event_t *cfg_event =
+            (const xcb_configure_notify_event_t*) event;
+        //configure_cb(cfg_event->width, cfg_event->height);
+      }
         break;
       case XCB_EXPOSE:
         handle_expose((xcb_expose_event_t*) event);

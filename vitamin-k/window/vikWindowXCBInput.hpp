@@ -20,8 +20,6 @@
 
 namespace vik {
 class WindowXCBInput : public WindowXCB {
-  xcb_screen_t *screen;
-  xcb_intern_atom_reply_t *atom_wm_delete_window;
 
   SwapChainVkComplex swap_chain;
 
@@ -49,56 +47,60 @@ class WindowXCBInput : public WindowXCB {
     iter = xcb_setup_roots_iterator(xcb_get_setup(connection));
     while (scr-- > 0)
       xcb_screen_next(&iter);
-    screen = iter.data;
+    xcb_screen_t *screen = iter.data;
     root_visual = iter.data->root_visual;
-
-    uint32_t value_mask, value_list[32];
 
     window = xcb_generate_id(connection);
     syms = xcb_key_symbols_alloc(connection);
 
-    value_mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
-    value_list[0] = screen->black_pixel;
-    value_list[1] =
-        XCB_EVENT_MASK_KEY_RELEASE |
-        XCB_EVENT_MASK_KEY_PRESS |
-        XCB_EVENT_MASK_EXPOSURE |
-        XCB_EVENT_MASK_STRUCTURE_NOTIFY |
-        XCB_EVENT_MASK_POINTER_MOTION |
-        XCB_EVENT_MASK_BUTTON_PRESS |
-        XCB_EVENT_MASK_BUTTON_RELEASE;
+    uint32_t window_values[] = {
+      XCB_EVENT_MASK_KEY_RELEASE |
+      XCB_EVENT_MASK_KEY_PRESS |
+      XCB_EVENT_MASK_STRUCTURE_NOTIFY |
+      XCB_EVENT_MASK_POINTER_MOTION |
+      XCB_EVENT_MASK_BUTTON_PRESS |
+      XCB_EVENT_MASK_BUTTON_RELEASE
+    };
 
-    if (settings->fullscreen)
-      dimension_cb(screen->width_in_pixels, screen->height_in_pixels);
+    if (settings->fullscreen) {
+      width = screen->width_in_pixels;
+      height = screen->height_in_pixels;
+      dimension_cb(width, height);
+    }
 
     xcb_create_window(connection,
                       XCB_COPY_FROM_PARENT,
                       window, screen->root,
-                      0, 0, screen->width_in_pixels, screen->height_in_pixels, 0,
+                      0, 0,
+                      width, height,
+                      0,
                       XCB_WINDOW_CLASS_INPUT_OUTPUT,
                       screen->root_visual,
-                      value_mask, value_list);
+                      XCB_CW_EVENT_MASK,
+                      window_values);
 
-    /* Magic code that will send notification when window is destroyed */
-    xcb_intern_atom_reply_t* reply = intern_atom_helper(connection, true, "WM_PROTOCOLS");
-    atom_wm_delete_window = intern_atom_helper(connection, false, "WM_DELETE_WINDOW");
+    /* Will send notification when window is destroyed */
+    atom_wm_protocols = get_atom("WM_PROTOCOLS");
+    atom_wm_delete_window = get_atom("WM_DELETE_WINDOW");
 
-    xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-                        window, (*reply).atom, 4, 32, 1,
-                        &(*atom_wm_delete_window).atom);
-
-    free(reply);
+    xcb_change_property(connection,
+                        XCB_PROP_MODE_REPLACE,
+                        window,
+                        atom_wm_protocols,
+                        XCB_ATOM_ATOM,
+                        32, 1,
+                        &atom_wm_delete_window);
 
     if (settings->fullscreen) {
-      xcb_intern_atom_reply_t *atom_wm_state = intern_atom_helper(connection, false, "_NET_WM_STATE");
-      xcb_intern_atom_reply_t *atom_wm_fullscreen = intern_atom_helper(connection, false, "_NET_WM_STATE_FULLSCREEN");
+      xcb_atom_t atom_wm_state = get_atom("_NET_WM_STATE");
+      xcb_atom_t atom_wm_fullscreen = get_atom("_NET_WM_STATE_FULLSCREEN");
       xcb_change_property(connection,
                           XCB_PROP_MODE_REPLACE,
-                          window, atom_wm_state->atom,
-                          XCB_ATOM_ATOM, 32, 1,
-                          &(atom_wm_fullscreen->atom));
-      free(atom_wm_fullscreen);
-      free(atom_wm_state);
+                          window,
+                          atom_wm_state,
+                          XCB_ATOM_ATOM,
+                          32, 1,
+                          &atom_wm_fullscreen);
     }
 
     xcb_map_window(connection, window);
@@ -128,7 +130,7 @@ class WindowXCBInput : public WindowXCB {
   }
 
   void handle_client_message(const xcb_client_message_event_t *event) {
-    if (event->data.data32[0] == atom_wm_delete_window->atom)
+    if (event->data.data32[0] == atom_wm_delete_window)
       quit_cb();
   }
 
@@ -173,11 +175,6 @@ class WindowXCBInput : public WindowXCB {
       default:
         break;
     }
-  }
-
-  static inline xcb_intern_atom_reply_t* intern_atom_helper(xcb_connection_t *conn, bool only_if_exists, const char *str) {
-    xcb_intern_atom_cookie_t cookie = xcb_intern_atom(conn, only_if_exists, strlen(str), str);
-    return xcb_intern_atom_reply(conn, cookie, NULL);
   }
 
 };
