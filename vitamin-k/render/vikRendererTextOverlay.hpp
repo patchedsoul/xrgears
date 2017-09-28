@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "vikRendererVks.hpp"
 
 namespace vik {
@@ -11,6 +13,8 @@ public:
 
   VkSemaphore text_overlay_complete;
 
+  std::string name;
+
   RendererTextOverlay(Settings *s, Window *w) : RendererVks(s, w) {}
   ~RendererTextOverlay() {
     vkDestroySemaphore(device, text_overlay_complete, nullptr);
@@ -18,11 +22,12 @@ public:
       delete textOverlay;
   }
 
-  void init(const std::string &name, const std::string &title) {
-    RendererVks::init(name, title);
+  void init(const std::string &n) {
+    RendererVks::init(n);
+    name = n;
     if (settings->enable_text_overlay) {
       init_text_overlay();
-      update_text_overlay(title);
+      update_text_overlay();
     }
   }
 
@@ -57,7 +62,7 @@ public:
     return submit_info;
   }
 
-  void update_text_overlay(const std::string& title) {
+  void update_text_overlay() {
     if (!settings->enable_text_overlay)
       return;
 
@@ -69,7 +74,7 @@ public:
        << " fps)";
     std::string deviceName(deviceProperties.deviceName);
 
-    textOverlay->update(title, ss.str(), deviceName);
+    textOverlay->update(name, ss.str(), deviceName);
   }
 
   VkSubmitInfo submit_text_overlay() {
@@ -78,11 +83,11 @@ public:
     vik_log_check(vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE));
   }
 
-  void check_tick_finnished(const std::string& title) {
+  void check_tick_finnished() {
     if (timer.tick_finnished()) {
       timer.update_fps();
       if (settings->enable_text_overlay)
-        update_text_overlay(title);
+        update_text_overlay();
       timer.reset();
     }
   }
@@ -91,8 +96,7 @@ public:
     RendererVks::resize();
     if (settings->enable_text_overlay) {
       textOverlay->reallocateCommandBuffers();
-      std::string title = "Foo.";
-      update_text_overlay(title);
+      update_text_overlay();
     }
   }
 

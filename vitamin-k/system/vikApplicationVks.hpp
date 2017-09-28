@@ -52,8 +52,7 @@ public:
   glm::vec3 cameraPos = glm::vec3();
   glm::vec2 mousePos;
 
-  std::string title = "Vulkan Example";
-  std::string name = "vulkanExample";
+  std::string name = "vitamin-k Example";
 
   struct {
     bool left = false;
@@ -196,7 +195,7 @@ public:
   }
 
   virtual void init() {
-    renderer->init(name, title);
+    renderer->init(name);
   }
 
   void loop() {
@@ -211,7 +210,7 @@ public:
       float frame_time = renderer->timer.update_frame_time();
       update_camera(frame_time);
       renderer->timer.update_animation_timer();
-      renderer->check_tick_finnished(title);
+      renderer->check_tick_finnished();
     }
 
     renderer->wait_idle();
@@ -226,12 +225,9 @@ public:
   void resize() {
     renderer->resize();
 
-
     build_command_buffers();
 
     vkDeviceWaitIdle(renderer->device);
-
-
 
     camera.update_aspect_ratio(renderer->get_aspect_ratio());
 

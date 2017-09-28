@@ -108,7 +108,7 @@ public:
 
   Triangle(int argc, char *argv[]) : ApplicationVks(argc, argv) {
     zoom = -2.5f;
-    title = "Vulkan Example - Basic indexed triangle";
+    name = "Triangle";
     // Values not set here are initialized in the base class constructor
   }
 

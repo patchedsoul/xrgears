@@ -108,11 +108,11 @@ public:
     vkDestroyInstance(instance, nullptr);
   }
 
-  void init(const std::string &name, const std::string &title) {
-    init_vulkan(title, window->required_extensions());
+  void init(const std::string &name) {
+    init_vulkan(name, window->required_extensions());
     window->init(width, height);
 
-    window->update_window_title(make_title_string(title));
+    window->update_window_title(make_title_string(name));
     window->get_swap_chain()->set_context(instance, physical_device, device);
     window->init_swap_chain(width, height);
 
@@ -208,7 +208,7 @@ public:
     vik_log_check(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
   }
 
-  virtual void check_tick_finnished(const std::string& title) {
+  virtual void check_tick_finnished() {
     if (timer.tick_finnished()) {
       timer.update_fps();
       timer.reset();

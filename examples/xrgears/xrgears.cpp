@@ -92,7 +92,7 @@ public:
   VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
   XRGears(int argc, char *argv[]) : ApplicationVks(argc, argv) {
-    title = "XR Gears";
+    name = "XR Gears";
     camera.type = vik::CameraBase::CameraType::firstperson;
     camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
     camera.setTranslation(glm::vec3(2.2f, 3.2f, -7.6));
