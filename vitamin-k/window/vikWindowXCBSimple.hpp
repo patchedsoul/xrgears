@@ -74,9 +74,6 @@ public:
   }
 
   void handle_client_message(const xcb_client_message_event_t *event) {
-    if (event->window != window)
-      return;
-
     WindowXCB::handle_client_message(event);
 
     if (event->type == XCB_ATOM_NOTICE)

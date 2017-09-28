@@ -187,9 +187,6 @@ public:
   }
 
   virtual void handle_client_message(const xcb_client_message_event_t *event) {
-    if (event->window != window)
-      return;
-
     if (event->type == atom_wm_protocols &&
         event->data.data32[0] == atom_wm_delete_window)
       quit_cb();
