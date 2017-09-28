@@ -637,7 +637,7 @@ public:
       // Offscreen rendering
 
       // Wait for swap chain presentation to finish
-      submit_info.pWaitSemaphores = &renderer->semaphores.presentComplete;
+      submit_info.pWaitSemaphores = &renderer->semaphores.present_complete;
       // Signal ready with offscreen semaphore
       submit_info.pSignalSemaphores = &offscreenSemaphore;
 
@@ -651,7 +651,7 @@ public:
       // Wait for offscreen semaphore
       submit_info.pWaitSemaphores = &offscreenSemaphore;
       // Signal ready with render complete semaphpre
-      submit_info.pSignalSemaphores = &renderer->semaphores.renderComplete;
+      submit_info.pSignalSemaphores = &renderer->semaphores.render_complete;
     }
 
     // Submit to queue

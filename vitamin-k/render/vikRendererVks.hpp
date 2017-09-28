@@ -44,9 +44,9 @@ public:
   } depthStencil;
 
   struct {
-    VkSemaphore presentComplete;
-    VkSemaphore renderComplete;
-    VkSemaphore textOverlayComplete;
+    VkSemaphore present_complete;
+    VkSemaphore render_complete;
+    VkSemaphore text_overlay_complete;
   } semaphores;
 
   std::vector<VkCommandBuffer> drawCmdBuffers;
@@ -104,9 +104,9 @@ public:
 
     vkDestroyCommandPool(device, cmdPool, nullptr);
 
-    vkDestroySemaphore(device, semaphores.presentComplete, nullptr);
-    vkDestroySemaphore(device, semaphores.renderComplete, nullptr);
-    vkDestroySemaphore(device, semaphores.textOverlayComplete, nullptr);
+    vkDestroySemaphore(device, semaphores.present_complete, nullptr);
+    vkDestroySemaphore(device, semaphores.render_complete, nullptr);
+    vkDestroySemaphore(device, semaphores.text_overlay_complete, nullptr);
 
     delete vksDevice;
 
@@ -249,8 +249,9 @@ public:
   void prepare_frame() {
     // Acquire the next image from the swap chain
     SwapChainVK *sc = (SwapChainVK*) window->get_swap_chain();
-    VkResult err = sc->acquire_next_image(semaphores.presentComplete, &currentBuffer);
-    // Recreate the swapchain if it's no longer compatible with the surface (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
+    VkResult err = sc->acquire_next_image(semaphores.present_complete, &currentBuffer);
+    // Recreate the swapchain if it's no longer compatible with the surface
+    // (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
     if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR))
       window_resize_cb();
     else
@@ -267,7 +268,7 @@ public:
     }
 
     SwapChainVK *sc = (SwapChainVK*) window->get_swap_chain();
-    vik_log_check(sc->present(queue, currentBuffer, waitSemaphore));
+    vik_log_check(sc->present(queue, currentBuffer, semaphores.render_complete));
     vik_log_check(vkQueueWaitIdle(queue));
   }
 
@@ -397,14 +398,14 @@ public:
     VkSemaphoreCreateInfo semaphoreCreateInfo = initializers::semaphoreCreateInfo();
     // Create a semaphore used to synchronize image presentation
     // Ensures that the image is displayed before we start submitting new commands to the queu
-    vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
+    vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.present_complete));
     // Create a semaphore used to synchronize command submission
     // Ensures that the image is not presented until all commands have been sumbitted and executed
-    vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.renderComplete));
+    vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.render_complete));
     // Create a semaphore used to synchronize command submission
     // Ensures that the image is not presented until all commands for the text overlay have been sumbitted and executed
     // Will be inserted after the render complete semaphore if the text overlay is enabled
-    vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.textOverlayComplete));
+    vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.text_overlay_complete));
   }
 
   void create_command_pool() {
@@ -492,9 +493,9 @@ public:
     VkSubmitInfo submit_info = initializers::submitInfo();
     submit_info.pWaitDstStageMask = &submitPipelineStages;
     submit_info.waitSemaphoreCount = 1;
-    submit_info.pWaitSemaphores = &semaphores.presentComplete;
+    submit_info.pWaitSemaphores = &semaphores.present_complete;
     submit_info.signalSemaphoreCount = 1;
-    submit_info.pSignalSemaphores = &semaphores.renderComplete;
+    submit_info.pSignalSemaphores = &semaphores.render_complete;
     submit_info.commandBufferCount = 1;
     return submit_info;
   }
