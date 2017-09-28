@@ -98,7 +98,7 @@ public:
         destWidth = w;
         destHeight = h;
         if ((destWidth > 0) && (destHeight > 0))
-          window_resize_cb();
+          resize();
       }
     };
     window->set_configure_cb(configure_cb);
@@ -249,7 +249,7 @@ public:
     // Recreate the swapchain if it's no longer compatible with the surface
     // (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
     if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR))
-      window_resize_cb();
+      resize();
     else
       vik_log_check(err);
   }
@@ -419,7 +419,7 @@ public:
 
   virtual void resize() {
     // Ensure all operations on the device have been finished before destroying resources
-    vkDeviceWaitIdle(device);
+    wait_idle();
 
     // Recreate swap chain
     width = destWidth;
@@ -441,6 +441,8 @@ public:
     // references to the recreated frame buffer
     destroy_command_buffers();
     create_command_buffers();
+
+    window_resize_cb();
   }
 
   VkSubmitInfo init_render_submit_info() {

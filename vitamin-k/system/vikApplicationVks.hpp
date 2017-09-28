@@ -214,11 +214,9 @@ public:
   }
 
   void resize() {
-    renderer->resize();
-
     build_command_buffers();
 
-    vkDeviceWaitIdle(renderer->device);
+    renderer->wait_idle();
 
     camera.update_aspect_ratio(renderer->get_aspect_ratio());
 
