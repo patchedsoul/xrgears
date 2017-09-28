@@ -27,7 +27,8 @@
 #include "render/vikInitializers.hpp"
 
 #include "scene/vikCameraBase.hpp"
-#include "render/vikRendererVks.hpp"
+#include "render/vikRendererTextOverlay.hpp"
+
 #include "render/vikTimer.hpp"
 
 #include "vikApplication.hpp"
@@ -38,7 +39,7 @@ class Window;
 class ApplicationVks : public Application {
 
 public:
-  RendererVks *renderer;
+  RendererTextOverlay *renderer;
   CameraBase camera;
 
   bool prepared = false;
@@ -63,7 +64,7 @@ public:
 
   ApplicationVks(int argc, char *argv[]) : Application(argc, argv) {
     init_window_from_settings();
-    renderer = new RendererVks(&settings, window);
+    renderer = new RendererTextOverlay(&settings, window);
 
     std::function<void()> set_window_resize_cb = [this]() { resize(); };
     renderer->set_window_resize_cb(set_window_resize_cb);
