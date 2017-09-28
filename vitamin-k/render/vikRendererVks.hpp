@@ -46,11 +46,8 @@ public:
 
   std::vector<VkCommandBuffer> cmd_buffers;
 
-
   std::vector<const char*> enabledExtensions;
 
-  uint32_t destWidth;
-  uint32_t destHeight;
   uint32_t currentBuffer = 0;
 
   std::function<void()> window_resize_cb;
@@ -85,20 +82,18 @@ public:
     height = s->height;
 
     auto dimension_cb = [this](uint32_t w, uint32_t h) {
-      width = destWidth = w;
-      height = destHeight = h;
+      width = w;
+      height = h;
     };
     window->set_dimension_cb(dimension_cb);
 
     window->set_recreate_frame_buffers_cb([this]() { create_frame_buffers(); });
 
     auto configure_cb = [this](uint32_t w, uint32_t h) {
-      if (((w != width) || (h != height))) {
-        destWidth = w;
-        destHeight = h;
-        if ((destWidth > 0) && (destHeight > 0))
+      if (((w != width) || (h != height))
+          && (width > 0) && (width > 0))
           resize();
-      }
+
     };
     window->set_expose_cb(configure_cb);
 
@@ -151,9 +146,6 @@ public:
     create_render_pass();
     create_pipeline_cache();
     create_frame_buffers();
-
-    destWidth = width;
-    destHeight = height;
   }
 
   void wait_idle() {
@@ -364,10 +356,6 @@ public:
   virtual void resize() {
     // Ensure all operations on the device have been finished before destroying resources
     wait_idle();
-
-    // Recreate swap chain
-    width = destWidth;
-    height = destHeight;
 
     window->get_swap_chain()->create(width, height);
     // Recreate the frame buffers
