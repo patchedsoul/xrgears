@@ -188,29 +188,6 @@ public:
     }
   }
 
-  // Get a new command buffer from the command pool
-  // If begin is true, the command buffer is also started so we can start adding commands
-  VkCommandBuffer getCommandBuffer(bool begin) {
-    VkCommandBuffer cmdBuffer;
-
-    VkCommandBufferAllocateInfo cmdBufAllocateInfo = {};
-    cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    cmdBufAllocateInfo.commandPool = renderer->cmd_pool;
-    cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    cmdBufAllocateInfo.commandBufferCount = 1;
-
-    vik_log_check(vkAllocateCommandBuffers(renderer->device, &cmdBufAllocateInfo, &cmdBuffer));
-
-    // If requested, also start the new command buffer
-    if (begin)
-    {
-      VkCommandBufferBeginInfo cmdBufInfo = vik::initializers::commandBufferBeginInfo();
-      vik_log_check(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
-    }
-
-    return cmdBuffer;
-  }
-
   // End the command buffer and submit it to the queue
   // Uses a fence to ensure command buffer has finished executing before deleting it
   void flushCommandBuffer(VkCommandBuffer commandBuffer) {
@@ -439,7 +416,9 @@ public:
 
       // Buffer copies have to be submitted to a queue, so we need a command buffer for them
       // Note: Some devices offer a dedicated transfer queue (with only the transfer bit set) that may be faster when doing lots of copies
-      VkCommandBuffer copyCmd = getCommandBuffer(true);
+      VkCommandBuffer copyCmd = renderer->create_command_buffer();
+      VkCommandBufferBeginInfo cmdBufInfo = vik::initializers::commandBufferBeginInfo();
+      vik_log_check(vkBeginCommandBuffer(copyCmd, &cmdBufInfo));
 
       // Put buffer region copies into command buffer
       VkBufferCopy copyRegion = {};
