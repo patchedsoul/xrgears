@@ -21,7 +21,6 @@ class RendererVks : public Renderer {
 public:
   Timer timer;
   Device *vksDevice;
-  TextOverlay *textOverlay;
 
   VkPhysicalDeviceProperties deviceProperties;
   VkPhysicalDeviceFeatures deviceFeatures;
@@ -83,9 +82,6 @@ public:
   }
 
   ~RendererVks() {
-    if (settings->enable_text_overlay)
-      delete textOverlay;
-
     window->get_swap_chain()->cleanup();
     if (descriptorPool != VK_NULL_HANDLE)
       vkDestroyDescriptorPool(device, descriptorPool, nullptr);
@@ -133,10 +129,6 @@ public:
     create_render_pass();
     create_pipeline_cache();
     create_frame_buffers();
-    if (settings->enable_text_overlay) {
-      init_text_overlay();
-      update_text_overlay(title);
-    }
 
     destWidth = width;
     destHeight = height;
@@ -145,23 +137,6 @@ public:
   void wait_idle() {
     // Flush device to make sure all resources can be freed
     vkDeviceWaitIdle(device);
-  }
-
-  void init_text_overlay() {
-    // Load the text rendering shaders
-    std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-    shaderStages.push_back(Shader::load(device, "base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
-    shaderStages.push_back(Shader::load(device, "base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
-
-    textOverlay = new TextOverlay(
-          vksDevice,
-          queue,
-          &frame_buffers,
-          window->get_swap_chain()->surface_format.format,
-          depthFormat,
-          &width,
-          &height,
-          shaderStages);
   }
 
   bool check_command_buffers() {
@@ -237,11 +212,9 @@ public:
     vik_log_check(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
   }
 
-  void check_tick_finnished(const std::string& title) {
+  virtual void check_tick_finnished(const std::string& title) {
     if (timer.tick_finnished()) {
       timer.update_fps();
-      if (settings->enable_text_overlay)
-        update_text_overlay(title);
       timer.reset();
     }
   }
@@ -258,15 +231,7 @@ public:
       vik_log_check(err);
   }
 
-  void submit_frame() {
-    VkSemaphore waitSemaphore;
-    if (settings->enable_text_overlay && textOverlay->visible) {
-      submit_text_overlay();
-      waitSemaphore = semaphores.textOverlayComplete;
-    } else {
-      waitSemaphore = semaphores.renderComplete;
-    }
-
+  virtual void submit_frame() {
     SwapChainVK *sc = (SwapChainVK*) window->get_swap_chain();
     vik_log_check(sc->present(queue, currentBuffer, semaphores.render_complete));
     vik_log_check(vkQueueWaitIdle(queue));
@@ -424,21 +389,6 @@ public:
     return windowTitle;
   }
 
-  void update_text_overlay(const std::string& title) {
-    if (!settings->enable_text_overlay)
-      return;
-
-    std::stringstream ss;
-    ss << std::fixed
-       << std::setprecision(3)
-       << (timer.frame_time_seconds * 1000.0f)
-       << "ms (" << timer.frames_per_second
-       << " fps)";
-    std::string deviceName(deviceProperties.deviceName);
-
-    textOverlay->update(title, ss.str(), deviceName);
-  }
-
   float get_aspect_ratio() {
     return (float)width / (float)height;
   }
@@ -467,26 +417,6 @@ public:
     // references to the recreated frame buffer
     destroy_command_buffers();
     create_command_buffers();
-  }
-
-  VkSubmitInfo submit_text_overlay() {
-    VkSubmitInfo submit_info = init_text_submit_info();
-    submit_info.pCommandBuffers = &textOverlay->cmdBuffers[currentBuffer];
-    vik_log_check(vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE));
-  }
-
-  VkSubmitInfo init_text_submit_info() {
-    // Wait for color attachment output to finish before rendering the text overlay
-    VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-
-    VkSubmitInfo submit_info = initializers::submitInfo();
-    submit_info.pWaitDstStageMask = &stageFlags;
-    submit_info.waitSemaphoreCount = 1;
-    submit_info.pWaitSemaphores = &semaphores.renderComplete;
-    submit_info.signalSemaphoreCount = 1;
-    submit_info.pSignalSemaphores = &semaphores.textOverlayComplete;
-    submit_info.commandBufferCount = 1;
-    return submit_info;
   }
 
   VkSubmitInfo init_render_submit_info() {
@@ -619,7 +549,6 @@ public:
   void init_depth_stencil() {
     VkImageCreateInfo image = {};
     image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    image.pNext = NULL;
     image.imageType = VK_IMAGE_TYPE_2D;
     image.format = depthFormat;
     image.extent = { width, height, 1 };
@@ -632,13 +561,11 @@ public:
 
     VkMemoryAllocateInfo mem_alloc = {};
     mem_alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    mem_alloc.pNext = NULL;
     mem_alloc.allocationSize = 0;
     mem_alloc.memoryTypeIndex = 0;
 
     VkImageViewCreateInfo depthStencilView = {};
     depthStencilView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    depthStencilView.pNext = NULL;
     depthStencilView.viewType = VK_IMAGE_VIEW_TYPE_2D;
     depthStencilView.format = depthFormat;
     depthStencilView.flags = 0;
