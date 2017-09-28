@@ -23,16 +23,25 @@ public:
 
   timeval start_tv;
 
-  VkCommandBuffer cmd_buffer;
-
   uint32_t vertex_offset, colors_offset, normals_offset;
+
+  std::function<void()> init_cb;
+
+  void set_init_cb(std::function<void()> cb) {
+    init_cb = cb;
+  }
 
   RendererVkc(Settings *s, Window *w) : Renderer(s, w) {
     width = s->width;
     height = s->height;
     gettimeofday(&start_tv, NULL);
 
-    window->set_recreate_frame_buffers_cb([this]() { create_frame_buffers(); });
+    window->set_recreate_frame_buffers_cb([this]() {
+      create_frame_buffers();
+      allocate_command_buffers();
+      for (int i = 0; i < window->get_swap_chain()->image_count; i++)
+        build_command_buffer(cmd_buffers[i], frame_buffers[i]);
+    });
 
     auto dimension_cb = [this](uint32_t w, uint32_t h) {
       width = w;
@@ -45,6 +54,9 @@ public:
       width = w;
       height = h;
       create_frame_buffers();
+      allocate_command_buffers();
+      for (int i = 0; i < window->get_swap_chain()->image_count; i++)
+        build_command_buffer(cmd_buffers[i], frame_buffers[i]);
     };
 
     window->set_expose_cb(expose_cb);
@@ -56,6 +68,7 @@ public:
 
   void init(const std::string& name) {
     init_vulkan(name, window->required_extensions());
+    init_vk_objects();
     window->init(width, height);
     window->update_window_title(name);
     if (!window->check_support(physical_device))
@@ -65,7 +78,15 @@ public:
 
     auto render_cb = [this](uint32_t index) { render(index); };
     window->get_swap_chain()->set_render_cb(render_cb);
+
+    init_render_pass(window->get_swap_chain()->surface_format.format);
+
+    init_cb();
+
     create_frame_buffers();
+    allocate_command_buffers();
+    for (int i = 0; i < window->get_swap_chain()->image_count; i++)
+      build_command_buffer(cmd_buffers[i], frame_buffers[i]);
   }
 
   void init_vulkan(const std::string& name,
@@ -181,6 +202,8 @@ public:
                         NULL,
                         &cmd_pool);
 
+    vik_log_e("Creating command pool.");
+
     VkSemaphoreCreateInfo semaphoreinfo = {};
     semaphoreinfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -190,7 +213,7 @@ public:
                       &semaphore);
   }
 
-  void submit_queue() {
+  void submit_queue(VkCommandBuffer cmd_buffer) {
     VkPipelineStageFlags stageflags[] = {
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
     };
@@ -216,31 +239,13 @@ public:
     return (get_ms_from_tv(tv) - get_ms_from_tv(start_tv)) / 5;
   }
 
-  void wait_and_reset_fences() {
-    VkFence fences[] = { fence };
-    vkWaitForFences(device, 1, fences, VK_TRUE, INT64_MAX);
-    vkResetFences(device, 1, &fence);
-    vkResetCommandPool(device, cmd_pool, 0);
-  }
-
-  void build_command_buffer(VkFramebuffer frame_buffer) {
-    VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {};
-    cmdBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    cmdBufferAllocateInfo.commandPool = cmd_pool;
-    cmdBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    cmdBufferAllocateInfo.commandBufferCount = 1;
-
-    VkResult r = vkAllocateCommandBuffers(device,
-                                          &cmdBufferAllocateInfo,
-                                          &cmd_buffer);
-    vik_log_e_if(r != VK_SUCCESS, "vkAllocateCommandBuffers: %s",
-                 Log::result_string(r).c_str());
-
+  void build_command_buffer(VkCommandBuffer cmd_buffer,
+                            VkFramebuffer frame_buffer) {
     VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
     cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     cmdBufferBeginInfo.flags = 0;
 
-    r = vkBeginCommandBuffer(cmd_buffer, &cmdBufferBeginInfo);
+    VkResult r = vkBeginCommandBuffer(cmd_buffer, &cmdBufferBeginInfo);
     vik_log_e_if(r != VK_SUCCESS, "vkBeginCommandBuffer: %s",
                  Log::result_string(r).c_str());
 
@@ -318,12 +323,15 @@ public:
   }
 
   void render(uint32_t index) {
-    build_command_buffer(frame_buffers[index]);
-    submit_queue();
-    wait_and_reset_fences();
+    submit_queue(cmd_buffers[index]);
+    VkFence fences[] = { fence };
+    vkWaitForFences(device, 1, fences, VK_TRUE, INT64_MAX);
+    vkResetFences(device, 1, &fence);
   }
 
   void create_frame_buffers() {
+    vik_log_e("create_frame_buffers: %d", window->get_swap_chain()->image_count);
+
     uint32_t count = window->get_swap_chain()->image_count;
     frame_buffers.resize(count);
     for (uint32_t i = 0; i < count; i++) {

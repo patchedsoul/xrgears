@@ -9,6 +9,7 @@
 #include "system/vikSettings.hpp"
 #include "vikDebug.hpp"
 #include "window/vikWindow.hpp"
+#include "vikInitializers.hpp"
 
 namespace vik {
 
@@ -19,6 +20,8 @@ public:
   VkPhysicalDevice physical_device;
 
   VkCommandPool cmd_pool;
+
+  std::vector<VkCommandBuffer> cmd_buffers;
 
   VkQueue queue;
   std::vector<VkFramebuffer> frame_buffers;
@@ -88,6 +91,22 @@ public:
                                       &frame_buffer_info,
                                       nullptr,
                                       frame_buffer));
+  }
+
+  void allocate_command_buffers() {
+    vik_log_e("Allocating Command Buffers. %d", window->get_swap_chain()->image_count);
+    // Create one command buffer for each swap chain image and reuse for rendering
+    cmd_buffers.resize(window->get_swap_chain()->image_count);
+
+    VkCommandBufferAllocateInfo cmd_buffer_info =
+        initializers::commandBufferAllocateInfo(
+          cmd_pool,
+          VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+          static_cast<uint32_t>(cmd_buffers.size()));
+
+    vik_log_check(vkAllocateCommandBuffers(device,
+                                           &cmd_buffer_info,
+                                           cmd_buffers.data()));
   }
 
 };

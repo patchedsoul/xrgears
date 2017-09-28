@@ -106,7 +106,7 @@ public:
 
     swap_chain.recreate(width, height);
 
-    recreate_frame_buffers_cb();
+    //recreate_frame_buffers_cb();
   }
 
   SwapChain* get_swap_chain() {

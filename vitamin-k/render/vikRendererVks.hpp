@@ -44,8 +44,6 @@ public:
     VkSemaphore render_complete;
   } semaphores;
 
-  std::vector<VkCommandBuffer> cmd_buffers;
-
   std::vector<const char*> enabledExtensions;
 
   uint32_t currentBuffer = 0;
@@ -160,20 +158,7 @@ public:
     return true;
   }
 
-  void allocate_command_buffers() {
-    // Create one command buffer for each swap chain image and reuse for rendering
-    cmd_buffers.resize(window->get_swap_chain()->image_count);
 
-    VkCommandBufferAllocateInfo cmd_buffer_info =
-        initializers::commandBufferAllocateInfo(
-          cmd_pool,
-          VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-          static_cast<uint32_t>(cmd_buffers.size()));
-
-    vik_log_check(vkAllocateCommandBuffers(device,
-                                           &cmd_buffer_info,
-                                           cmd_buffers.data()));
-  }
 
   void destroy_command_buffers() {
     vkFreeCommandBuffers(device, cmd_pool, static_cast<uint32_t>(cmd_buffers.size()), cmd_buffers.data());

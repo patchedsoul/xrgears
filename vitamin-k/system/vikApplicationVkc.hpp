@@ -21,6 +21,8 @@ public:
     init_window();
     renderer = new RendererVkc(&settings, window);
 
+    renderer->set_init_cb([this]() { init_cb(); });
+
     window->set_update_cb([this]() { update_scene(); });
     window->set_quit_cb([this]() { quit = true; });
 
@@ -41,7 +43,6 @@ public:
 
   void init() {
     renderer->init("vkcube");
-    init_cb();
   }
 
   void init_window_auto() {
