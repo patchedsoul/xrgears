@@ -252,12 +252,6 @@ public:
     passBeginInfo.renderPass = render_pass;
     passBeginInfo.framebuffer = frame_buffer;
     passBeginInfo.renderArea = { { 0, 0 }, { width, height } };
-    /*
-      passBeginInfo.renderArea.offset.x = 0;
-      passBeginInfo.renderArea.offset.y = 0;
-      passBeginInfo.renderArea.extent.width = width;
-      passBeginInfo.renderArea.extent.height = height;
-      */
     passBeginInfo.clearValueCount = 1;
     passBeginInfo.pClearValues = clearValues.data();
 

@@ -146,7 +146,7 @@ public:
       debugmarker::setup(device);
 
     create_command_pool();
-    create_command_buffers();
+    allocate_command_buffers();
     init_depth_stencil();
     create_render_pass();
     create_pipeline_cache();
@@ -168,7 +168,7 @@ public:
     return true;
   }
 
-  void create_command_buffers() {
+  void allocate_command_buffers() {
     // Create one command buffer for each swap chain image and reuse for rendering
     cmd_buffers.resize(window->get_swap_chain()->image_count);
 
@@ -384,7 +384,7 @@ public:
     // Command buffers need to be recreated as they may store
     // references to the recreated frame buffer
     destroy_command_buffers();
-    create_command_buffers();
+    allocate_command_buffers();
 
     window_resize_cb();
   }
