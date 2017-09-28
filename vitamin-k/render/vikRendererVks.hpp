@@ -43,7 +43,6 @@ public:
   struct {
     VkSemaphore present_complete;
     VkSemaphore render_complete;
-    VkSemaphore text_overlay_complete;
   } semaphores;
 
   std::vector<VkCommandBuffer> drawCmdBuffers;
@@ -100,7 +99,6 @@ public:
 
     vkDestroySemaphore(device, semaphores.present_complete, nullptr);
     vkDestroySemaphore(device, semaphores.render_complete, nullptr);
-    vkDestroySemaphore(device, semaphores.text_overlay_complete, nullptr);
 
     delete vksDevice;
 
@@ -111,7 +109,7 @@ public:
   }
 
   void init(const std::string &name, const std::string &title) {
-    init_vulkan(name, window->required_extensions());
+    init_vulkan(title, window->required_extensions());
     window->init(width, height);
 
     window->update_window_title(make_title_string(title));
@@ -361,7 +359,7 @@ public:
 
   }
 
-  void init_semaphores() {
+  virtual void init_semaphores() {
     // Create synchronization objects
     VkSemaphoreCreateInfo semaphoreCreateInfo = initializers::semaphoreCreateInfo();
     // Create a semaphore used to synchronize image presentation
@@ -370,10 +368,6 @@ public:
     // Create a semaphore used to synchronize command submission
     // Ensures that the image is not presented until all commands have been sumbitted and executed
     vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.render_complete));
-    // Create a semaphore used to synchronize command submission
-    // Ensures that the image is not presented until all commands for the text overlay have been sumbitted and executed
-    // Will be inserted after the render complete semaphore if the text overlay is enabled
-    vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.text_overlay_complete));
   }
 
   void create_command_pool() {
@@ -396,7 +390,7 @@ public:
     return (float)width / (float)height;
   }
 
-  void resize() {
+  virtual void resize() {
     // Ensure all operations on the device have been finished before destroying resources
     vkDeviceWaitIdle(device);
 

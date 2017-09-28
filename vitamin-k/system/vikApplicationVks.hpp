@@ -39,7 +39,7 @@ class Window;
 class ApplicationVks : public Application {
 
 public:
-  RendererVks *renderer;
+  RendererTextOverlay *renderer;
   CameraBase camera;
 
   bool viewUpdated = false;
@@ -63,7 +63,7 @@ public:
 
   ApplicationVks(int argc, char *argv[]) : Application(argc, argv) {
     init_window_from_settings();
-    renderer = new RendererVks(&settings, window);
+    renderer = new RendererTextOverlay(&settings, window);
 
     std::function<void()> set_window_resize_cb = [this]() { resize(); };
     renderer->set_window_resize_cb(set_window_resize_cb);
@@ -145,8 +145,8 @@ public:
             renderer->timer.toggle_animation_pause();
           break;
         case Input::Key::F1:
-          //if (state && settings.enable_text_overlay)
-          //  renderer->textOverlay->visible = !renderer->textOverlay->visible;
+          if (state && settings.enable_text_overlay)
+            renderer->textOverlay->visible = !renderer->textOverlay->visible;
           break;
         case Input::Key::ESCAPE:
           quit = true;
@@ -206,8 +206,7 @@ public:
 
       window->iterate(nullptr, nullptr);
 
-      //if (prepared)
-        render();
+      render();
       renderer->timer.increment();
       float frame_time = renderer->timer.update_frame_time();
       update_camera(frame_time);
@@ -227,16 +226,12 @@ public:
   void resize() {
     renderer->resize();
 
+
     build_command_buffers();
 
     vkDeviceWaitIdle(renderer->device);
 
-    /*
-    if (settings.enable_text_overlay) {
-      renderer->textOverlay->reallocateCommandBuffers();
-      renderer->update_text_overlay(title);
-    }
-    */
+
 
     camera.update_aspect_ratio(renderer->get_aspect_ratio());
 
