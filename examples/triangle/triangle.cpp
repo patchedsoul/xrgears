@@ -102,11 +102,6 @@ public:
   // Synchronization primitives
   // Synchronization is an important concept of Vulkan that OpenGL mostly hid away. Getting this right is crucial to using Vulkan.
 
-  // Semaphores
-  // Used to coordinate operations within the graphics queue and ensure correct command ordering
-  VkSemaphore presentCompleteSemaphore;
-  VkSemaphore renderCompleteSemaphore;
-
   // Fences
   // Used to check the completion of queue operations (e.g. command buffer execution)
   std::vector<VkFence> waitFences;
@@ -134,8 +129,8 @@ public:
     vkDestroyBuffer(renderer->device, uniformBufferVS.buffer, nullptr);
     vkFreeMemory(renderer->device, uniformBufferVS.memory, nullptr);
 
-    vkDestroySemaphore(renderer->device, presentCompleteSemaphore, nullptr);
-    vkDestroySemaphore(renderer->device, renderCompleteSemaphore, nullptr);
+    vkDestroySemaphore(renderer->device, renderer->semaphores.present_complete, nullptr);
+    vkDestroySemaphore(renderer->device, renderer->semaphores.render_complete, nullptr);
 
     for (auto& fence : waitFences)
     {
@@ -172,11 +167,14 @@ public:
     semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     semaphoreCreateInfo.pNext = nullptr;
 
+
+
+
     // Semaphore used to ensures that image presentation is complete before starting to submit again
-    vik_log_check(vkCreateSemaphore(renderer->device, &semaphoreCreateInfo, nullptr, &presentCompleteSemaphore));
+    vik_log_check(vkCreateSemaphore(renderer->device, &semaphoreCreateInfo, nullptr, &renderer->semaphores.present_complete));
 
     // Semaphore used to ensures that all commands submitted have been finished before submitting the image to the queue
-    vik_log_check(vkCreateSemaphore(renderer->device, &semaphoreCreateInfo, nullptr, &renderCompleteSemaphore));
+    vik_log_check(vkCreateSemaphore(renderer->device, &semaphoreCreateInfo, nullptr, &renderer->semaphores.render_complete));
 
     // Fences (Used to check draw command buffer completion)
     VkFenceCreateInfo fenceCreateInfo = {};
@@ -322,34 +320,20 @@ public:
   }
 
   void draw() {
-    // Get next image in the swap chain (back/front buffer)
-    vik::SwapChainVK *sc = (vik::SwapChainVK*) renderer->window->get_swap_chain();
-    vik_log_check(sc->acquire_next_image(presentCompleteSemaphore, &renderer->currentBuffer));
+
+
+    renderer->prepare_frame();
 
     // Use a fence to wait until the command buffer has finished execution before using it again
     vik_log_check(vkWaitForFences(renderer->device, 1, &waitFences[renderer->currentBuffer], VK_TRUE, UINT64_MAX));
     vik_log_check(vkResetFences(renderer->device, 1, &waitFences[renderer->currentBuffer]));
 
-    // Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-    VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    // The submit info structure specifices a command buffer queue submission batch
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.pWaitDstStageMask = &waitStageMask;									// Pointer to the list of pipeline stages that the semaphore waits will occur at
-    submitInfo.pWaitSemaphores = &presentCompleteSemaphore;							// Semaphore(s) to wait upon before the submitted command buffer starts executing
-    submitInfo.waitSemaphoreCount = 1;												// One wait semaphore
-    submitInfo.pSignalSemaphores = &renderCompleteSemaphore;						// Semaphore(s) to be signaled when command buffers have completed
-    submitInfo.signalSemaphoreCount = 1;											// One signal semaphore
-    submitInfo.pCommandBuffers = &renderer->drawCmdBuffers[renderer->currentBuffer];					// Command buffers(s) to execute in this batch (submission)
-    submitInfo.commandBufferCount = 1;												// One command buffer
+    VkSubmitInfo submit_info = renderer->init_render_submit_info();
+    submit_info.pCommandBuffers = renderer->get_current_command_buffer();
+   // Submit to the graphics queue passing a wait fence
+    vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, waitFences[renderer->currentBuffer]));
 
-    // Submit to the graphics queue passing a wait fence
-    vik_log_check(vkQueueSubmit(renderer->queue, 1, &submitInfo, waitFences[renderer->currentBuffer]));
-
-    // Present the current buffer to the swap chain
-    // Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
-    // This ensures that the image is not presented to the windowing system until all commands have been submitted
-    vik_log_check(sc->present(renderer->queue, renderer->currentBuffer, renderCompleteSemaphore));
+    renderer->submit_frame();
   }
 
   // Prepare vertex and index buffers for an indexed triangle

@@ -29,8 +29,6 @@ public:
 
   VkFormat depthFormat;
   VkCommandPool cmdPool;
-  VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  //VkSubmitInfo submitInfo;
   VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
   VkPipelineCache pipelineCache;
 
@@ -231,6 +229,11 @@ public:
       vik_log_check(err);
   }
 
+  // Present the current buffer to the swap chain
+  // Pass the semaphore signaled by the command buffer submission from
+  // the submit info as the wait semaphore for swap chain presentation
+  // This ensures that the image is not presented to the windowing system
+  // until all commands have been submitted
   virtual void submit_frame() {
     SwapChainVK *sc = (SwapChainVK*) window->get_swap_chain();
     vik_log_check(sc->present(queue, currentBuffer, semaphores.render_complete));
@@ -420,11 +423,22 @@ public:
   }
 
   VkSubmitInfo init_render_submit_info() {
+    // Pipeline stage at which the
+    // queue submission will wait (via pWaitSemaphores)
+    VkPipelineStageFlags stage_mask =
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+    // The submit info structure specifices a
+    // command buffer queue submission batch
     VkSubmitInfo submit_info = initializers::submitInfo();
-    submit_info.pWaitDstStageMask = &submitPipelineStages;
+
+    // Pointer to the list of pipeline stages that the semaphore waits will occur at
+    submit_info.pWaitDstStageMask = &stage_mask;
     submit_info.waitSemaphoreCount = 1;
+    // Semaphore(s) to wait upon before the submitted command buffer starts executing
     submit_info.pWaitSemaphores = &semaphores.present_complete;
     submit_info.signalSemaphoreCount = 1;
+    // Semaphore(s) to be signaled when command buffers have completed
     submit_info.pSignalSemaphores = &semaphores.render_complete;
     submit_info.commandBufferCount = 1;
     return submit_info;
