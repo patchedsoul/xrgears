@@ -823,12 +823,9 @@ public:
     setupDescriptorPool();
     setupDescriptorSet();
     build_command_buffers();
-    prepared = true;
   }
 
   virtual void render() {
-    if (!prepared)
-      return;
     draw();
   }
 

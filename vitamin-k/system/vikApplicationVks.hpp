@@ -42,7 +42,6 @@ public:
   RendererTextOverlay *renderer;
   CameraBase camera;
 
-  bool prepared = false;
   bool viewUpdated = false;
 
   float zoom = 0;
@@ -168,7 +167,7 @@ public:
 
     // TODO: move to renderer
     auto configure_cb = [this](uint32_t width, uint32_t height) {
-      if ((prepared) && ((width != renderer->width) || (height != renderer->height))) {
+      if (((width != renderer->width) || (height != renderer->height))) {
         renderer->destWidth = width;
         renderer->destHeight = height;
         if ((renderer->destWidth > 0) && (renderer->destHeight > 0))
@@ -207,7 +206,8 @@ public:
 
       window->iterate(nullptr, nullptr);
 
-      render();
+      //if (prepared)
+        render();
       renderer->timer.increment();
       float frame_time = renderer->timer.update_frame_time();
       update_camera(frame_time);
@@ -225,10 +225,6 @@ public:
   }
 
   void resize() {
-    if (!prepared)
-      return;
-    prepared = false;
-
     renderer->resize();
 
     build_command_buffers();
@@ -245,8 +241,6 @@ public:
     // Notify derived class
     //windowResized();
     view_changed_cb();
-
-    prepared = true;
   }
 
 

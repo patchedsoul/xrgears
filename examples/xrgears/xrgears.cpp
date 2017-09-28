@@ -704,15 +704,9 @@ public:
 
     if (enableDistortion)
       buildOffscreenCommandBuffer();
-
-
-    prepared = true;
   }
 
   virtual void render() {
-    if (!prepared)
-      return;
-
     vkDeviceWaitIdle(renderer->device);
     draw();
     vkDeviceWaitIdle(renderer->device);
