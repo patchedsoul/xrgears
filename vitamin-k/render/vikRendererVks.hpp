@@ -65,6 +65,22 @@ public:
     enabled_features_cb = cb;
   }
 
+  std::function<void()> frame_start_cb;
+  std::function<void()> render_cb;
+  std::function<void(float frame_time)> frame_end_cb;
+
+  void set_frame_start_cb(std::function<void()> cb) {
+    frame_start_cb = cb;
+  }
+
+  void set_frame_end_cb(std::function<void(float frame_time)> cb) {
+    frame_end_cb = cb;
+  }
+
+  void set_render_cb(std::function<void()> cb) {
+    render_cb = cb;
+  }
+
   RendererVks(Settings *s, Window *w) : Renderer(s, w) {
     width = s->width;
     height = s->height;
@@ -76,6 +92,17 @@ public:
     window->set_dimension_cb(dimension_cb);
 
     window->set_recreate_frame_buffers_cb([this]() { create_frame_buffers(); });
+
+    auto configure_cb = [this](uint32_t w, uint32_t h) {
+      if (((w != width) || (h != height))) {
+        destWidth = w;
+        destHeight = h;
+        if ((destWidth > 0) && (destHeight > 0))
+          window_resize_cb();
+      }
+    };
+    window->set_configure_cb(configure_cb);
+
   }
 
   ~RendererVks() {
@@ -595,6 +622,18 @@ public:
 
     depthStencilView.image = depthStencil.image;
     vik_log_check(vkCreateImageView(device, &depthStencilView, nullptr, &depthStencil.view));
+  }
+
+  void render() {
+    timer.start();
+    frame_start_cb();
+    window->iterate(nullptr, nullptr);
+    render_cb();
+    timer.increment();
+    float frame_time = timer.update_frame_time();
+    frame_end_cb(frame_time);
+    timer.update_animation_timer();
+    check_tick_finnished();
   }
 };
 }

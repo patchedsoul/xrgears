@@ -64,11 +64,26 @@ public:
     init_window_from_settings();
     renderer = new RendererTextOverlay(&settings, window);
 
-    std::function<void()> set_window_resize_cb = [this]() { resize(); };
+    auto set_window_resize_cb = [this]() { resize(); };
     renderer->set_window_resize_cb(set_window_resize_cb);
 
-    std::function<void()> enabled_features_cb = [this]() { get_enabled_features(); };
+    auto enabled_features_cb = [this]() { get_enabled_features(); };
     renderer->set_enabled_features_cb(enabled_features_cb);
+
+    auto frame_start_cb = [this]() {
+      check_view_update();
+    };
+    renderer->set_frame_start_cb(frame_start_cb);
+
+    auto frame_end_cb = [this](float frame_time) {
+      update_camera(frame_time);
+    };
+    renderer->set_frame_end_cb(frame_end_cb);
+
+    auto render_cb = [this]() {
+      render();
+    };
+    renderer->set_render_cb(render_cb);
 
     auto pointer_motion_cb = [this](double x, double y) {
       double dx = mousePos.x - x;
@@ -163,18 +178,6 @@ public:
 
     auto quit_cb = [this]() { quit = true; };
     window->set_quit_cb(quit_cb);
-
-    // TODO: move to renderer
-    auto configure_cb = [this](uint32_t width, uint32_t height) {
-      if (((width != renderer->width) || (height != renderer->height))) {
-        renderer->destWidth = width;
-        renderer->destHeight = height;
-        if ((renderer->destWidth > 0) && (renderer->destHeight > 0))
-          resize();
-      }
-    };
-    window->set_configure_cb(configure_cb);
-
   }
 
   ~ApplicationVks() {
@@ -199,20 +202,8 @@ public:
   }
 
   void loop() {
-    while (!quit) {
-      renderer->timer.start();
-      check_view_update();
-
-      window->iterate(nullptr, nullptr);
-
-      render();
-      renderer->timer.increment();
-      float frame_time = renderer->timer.update_frame_time();
-      update_camera(frame_time);
-      renderer->timer.update_animation_timer();
-      renderer->check_tick_finnished();
-    }
-
+    while (!quit)
+      renderer->render();
     renderer->wait_idle();
   }
 
