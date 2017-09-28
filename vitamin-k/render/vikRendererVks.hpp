@@ -31,7 +31,7 @@ public:
   VkFormat depthFormat;
   VkCommandPool cmdPool;
   VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  VkSubmitInfo submitInfo;
+  //VkSubmitInfo submitInfo;
   VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
   VkPipelineCache pipelineCache;
 
@@ -405,16 +405,6 @@ public:
     // Ensures that the image is not presented until all commands for the text overlay have been sumbitted and executed
     // Will be inserted after the render complete semaphore if the text overlay is enabled
     vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.textOverlayComplete));
-
-    // Set up submit info structure
-    // Semaphores will stay the same during application lifetime
-    // Command buffer submission info is set by each example
-    submitInfo = initializers::submitInfo();
-    submitInfo.pWaitDstStageMask = &submitPipelineStages;
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &semaphores.presentComplete;
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &semaphores.renderComplete;
   }
 
   void create_command_pool() {
@@ -478,33 +468,39 @@ public:
     create_command_buffers();
   }
 
-  void submit_text_overlay() {
+  VkSubmitInfo submit_text_overlay() {
+    VkSubmitInfo submit_info = init_text_submit_info();
+    submit_info.pCommandBuffers = &textOverlay->cmdBuffers[currentBuffer];
+    vik_log_check(vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE));
+  }
+
+  VkSubmitInfo init_text_submit_info() {
     // Wait for color attachment output to finish before rendering the text overlay
     VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    submitInfo.pWaitDstStageMask = &stageFlags;
 
-    // Set semaphores
-    // Wait for render complete semaphore
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &semaphores.renderComplete;
-    // Signal ready with text overlay complete semaphpre
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &semaphores.textOverlayComplete;
+    VkSubmitInfo submit_info = initializers::submitInfo();
+    submit_info.pWaitDstStageMask = &stageFlags;
+    submit_info.waitSemaphoreCount = 1;
+    submit_info.pWaitSemaphores = &semaphores.renderComplete;
+    submit_info.signalSemaphoreCount = 1;
+    submit_info.pSignalSemaphores = &semaphores.textOverlayComplete;
+    submit_info.commandBufferCount = 1;
+    return submit_info;
+  }
 
-    // Submit current text overlay command buffer
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &textOverlay->cmdBuffers[currentBuffer];
-    vik_log_check(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+  VkSubmitInfo init_render_submit_info() {
+    VkSubmitInfo submit_info = initializers::submitInfo();
+    submit_info.pWaitDstStageMask = &submitPipelineStages;
+    submit_info.waitSemaphoreCount = 1;
+    submit_info.pWaitSemaphores = &semaphores.presentComplete;
+    submit_info.signalSemaphoreCount = 1;
+    submit_info.pSignalSemaphores = &semaphores.renderComplete;
+    submit_info.commandBufferCount = 1;
+    return submit_info;
+  }
 
-    // Reset stage mask
-    submitInfo.pWaitDstStageMask = &submitPipelineStages;
-    // Reset wait and signal semaphores for rendering next frame
-    // Wait for swap chain presentation to finish
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &semaphores.presentComplete;
-    // Signal ready with offscreen semaphore
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &semaphores.renderComplete;
+  VkCommandBuffer* get_current_command_buffer() {
+    return &drawCmdBuffers[currentBuffer];
   }
 
   void create_frame_buffers() {

@@ -620,7 +620,7 @@ public:
   void draw() {
     renderer->prepare_frame();
 
-    renderer->submitInfo.commandBufferCount = 1;
+    VkSubmitInfo submit_info = renderer->init_render_submit_info();
 
     if (enableDistortion) {
       // The scene render command buffer has to wait for the offscreen
@@ -637,26 +637,26 @@ public:
       // Offscreen rendering
 
       // Wait for swap chain presentation to finish
-      renderer->submitInfo.pWaitSemaphores = &renderer->semaphores.presentComplete;
+      submit_info.pWaitSemaphores = &renderer->semaphores.presentComplete;
       // Signal ready with offscreen semaphore
-      renderer->submitInfo.pSignalSemaphores = &offscreenSemaphore;
+      submit_info.pSignalSemaphores = &offscreenSemaphore;
 
       // Submit work
 
-      renderer->submitInfo.pCommandBuffers = &offScreenCmdBuffer;
-      vik_log_check(vkQueueSubmit(renderer->queue, 1, &renderer->submitInfo, VK_NULL_HANDLE));
+      submit_info.pCommandBuffers = &offScreenCmdBuffer;
+      vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, VK_NULL_HANDLE));
 
       // Scene rendering
 
       // Wait for offscreen semaphore
-      renderer->submitInfo.pWaitSemaphores = &offscreenSemaphore;
+      submit_info.pWaitSemaphores = &offscreenSemaphore;
       // Signal ready with render complete semaphpre
-      renderer->submitInfo.pSignalSemaphores = &renderer->semaphores.renderComplete;
+      submit_info.pSignalSemaphores = &renderer->semaphores.renderComplete;
     }
 
     // Submit to queue
-    renderer->submitInfo.pCommandBuffers = &renderer->drawCmdBuffers[renderer->currentBuffer];
-    vik_log_check(vkQueueSubmit(renderer->queue, 1, &renderer->submitInfo, VK_NULL_HANDLE));
+    submit_info.pCommandBuffers = renderer->get_current_command_buffer();
+    vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, VK_NULL_HANDLE));
     renderer->submit_frame();
   }
 
