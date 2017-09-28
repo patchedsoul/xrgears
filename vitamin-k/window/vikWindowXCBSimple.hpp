@@ -11,9 +11,6 @@
 namespace vik {
 class WindowXCBSimple : public WindowXCB {
 
-  xcb_atom_t atom_wm_protocols;
-  xcb_atom_t atom_wm_delete_window;
-
   SwapChainVK swap_chain;
 
   bool repaint = false;
@@ -21,70 +18,13 @@ class WindowXCBSimple : public WindowXCB {
 public:
   WindowXCBSimple(Settings *s) : WindowXCB(s) {
     name = "xcb-simple";
+    window_values =
+          XCB_EVENT_MASK_EXPOSURE |
+          XCB_EVENT_MASK_STRUCTURE_NOTIFY |
+          XCB_EVENT_MASK_KEY_PRESS;
   }
 
   ~WindowXCBSimple() {}
-
-  int connect() {
-    connection = xcb_connect(0, 0);
-    return !xcb_connection_has_error(connection);
-  }
-
-  void create_window(uint32_t width, uint32_t height,
-                     const xcb_screen_iterator_t& iter) {
-    window = xcb_generate_id(connection);
-    uint32_t window_values[] = {
-      XCB_EVENT_MASK_EXPOSURE |
-      XCB_EVENT_MASK_STRUCTURE_NOTIFY |
-      XCB_EVENT_MASK_KEY_PRESS
-    };
-    xcb_create_window(connection,
-                      XCB_COPY_FROM_PARENT,
-                      window,
-                      iter.data->root,
-                      0, 0,
-                      width, height,
-                      0,
-                      XCB_WINDOW_CLASS_INPUT_OUTPUT,
-                      iter.data->root_visual,
-                      XCB_CW_EVENT_MASK,
-                      window_values);
-  }
-
-  // Return -1 on failure.
-  int init(uint32_t width, uint32_t height) {
-    if (!connect())
-      return -1;
-
-    xcb_screen_iterator_t iter =
-        xcb_setup_roots_iterator(xcb_get_setup(connection));
-
-    syms = xcb_key_symbols_alloc(connection);
-
-    create_window(width, height, iter);
-
-    atom_wm_protocols = get_atom("WM_PROTOCOLS");
-    atom_wm_delete_window = get_atom("WM_DELETE_WINDOW");
-    xcb_change_property(connection,
-                        XCB_PROP_MODE_REPLACE,
-                        window,
-                        atom_wm_protocols,
-                        XCB_ATOM_ATOM,
-                        32,
-                        1,
-                        &atom_wm_delete_window);
-
-    update_window_title("Vulkan Cube");
-
-    xcb_map_window(connection, window);
-
-    xcb_flush(connection);
-
-    root_visual = iter.data->root_visual;
-
-    return 0;
-  }
-
 
   void iterate(VkQueue queue, VkSemaphore semaphore) {
     poll_events();
@@ -133,60 +73,24 @@ public:
     xcb_send_event(connection, 0, window, 0, (char *) &client_message);
   }
 
-  void poll_events() {
-    xcb_generic_event_t *event;
-    event = xcb_wait_for_event(connection);
-    while (event) {
-      handle_event(event);
-      free(event);
-      event = xcb_poll_for_event(connection);
-    }
-  }
-
   void handle_client_message(const xcb_client_message_event_t *event) {
     if (event->window != window)
       return;
 
-    if (event->type == atom_wm_protocols &&
-        event->data.data32[0] == atom_wm_delete_window)
-      quit_cb();
+    WindowXCB::handle_client_message(event);
 
     if (event->type == XCB_ATOM_NOTICE)
       repaint = true;
   }
 
-  void handle_configure(const xcb_configure_notify_event_t *event) {
-    vik_log_d("XCB_CONFIGURE_NOTIFY %dx%d", event->width, event->height);
-    dimension_cb(event->width, event->height);
-  }
 
   void handle_expose(const xcb_expose_event_t *event) {
     vik_log_d("XCB_EXPOSE %dx%d", event->width, event->height);
     swap_chain.recreate(event->width, event->height);
-    recreate_frame_buffers_cb();
+    WindowXCB::handle_expose(event);
     schedule_repaint();
   }
 
-  void handle_event(const xcb_generic_event_t *event) {
-    switch (event->response_type & 0x7f) {
-      case XCB_CLIENT_MESSAGE:
-        handle_client_message((xcb_client_message_event_t*)event);
-        break;
-      case XCB_CONFIGURE_NOTIFY: {
-        handle_configure((xcb_configure_notify_event_t*) event);
-        const xcb_configure_notify_event_t *cfg_event =
-            (const xcb_configure_notify_event_t*) event;
-        //configure_cb(cfg_event->width, cfg_event->height);
-      }
-        break;
-      case XCB_EXPOSE:
-        handle_expose((xcb_expose_event_t*) event);
-        break;
-      case XCB_KEY_PRESS:
-        const xcb_key_release_event_t *key_event = (const xcb_key_release_event_t *)event;
-        keyboard_key_cb(xcb_to_vik_key(key_event->detail), true);
-        break;
-    }
-  }
+
 };
 }

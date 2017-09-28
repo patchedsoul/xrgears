@@ -22,7 +22,7 @@ public:
   std::function<void(Input::MouseScrollAxis axis, double value)> pointer_axis_cb;
   std::function<void(Input::Key key, bool state)> keyboard_key_cb;
 
-  std::function<void(uint32_t width, uint32_t height)> configure_cb;
+  std::function<void(uint32_t width, uint32_t height)> expose_cb;
   std::function<void(uint32_t width, uint32_t height)> dimension_cb;
 
   Settings *settings;
@@ -69,8 +69,8 @@ public:
     keyboard_key_cb = cb;
   }
 
-  void set_configure_cb(std::function<void(uint32_t width, uint32_t height)> cb) {
-    configure_cb = cb;
+  void set_expose_cb(std::function<void(uint32_t width, uint32_t height)> cb) {
+    expose_cb = cb;
   }
 
   void set_dimension_cb(std::function<void(uint32_t width, uint32_t height)> cb) {

@@ -42,6 +42,14 @@ public:
 
     window->set_dimension_cb(dimension_cb);
 
+    auto expose_cb = [this](uint32_t w, uint32_t h) {
+      width = w;
+      height = h;
+      create_frame_buffers();
+    };
+
+    window->set_expose_cb(expose_cb);
+
   }
 
   ~RendererVkc() {
@@ -50,6 +58,7 @@ public:
   void init(const std::string& name) {
     init_vulkan(name, window->required_extensions());
     window->init(width, height);
+    window->update_window_title(name);
     if (!window->check_support(physical_device))
       vik_log_f("Vulkan not supported on given surface");
     window->get_swap_chain()->set_context(instance, physical_device, device);

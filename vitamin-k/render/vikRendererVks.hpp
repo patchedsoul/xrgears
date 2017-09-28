@@ -101,7 +101,7 @@ public:
           resize();
       }
     };
-    window->set_configure_cb(configure_cb);
+    window->set_expose_cb(configure_cb);
 
   }
 

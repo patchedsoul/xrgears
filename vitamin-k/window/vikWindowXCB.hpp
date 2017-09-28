@@ -2,6 +2,8 @@
 
 #include "vikWindow.hpp"
 
+#include "render/vikSwapChainVK.hpp"
+
 #include <xcb/xcb.h>
 #include <X11/keysym.h>
 #include <xcb/xcb_keysyms.h>
@@ -13,8 +15,10 @@ class WindowXCB : public Window {
 protected:
   xcb_connection_t *connection;
   xcb_window_t window = XCB_NONE;
-  xcb_visualid_t root_visual;
   xcb_key_symbols_t *syms;
+  xcb_screen_t *screen;
+
+  uint32_t window_values;
 
   xcb_atom_t atom_wm_protocols;
   xcb_atom_t atom_wm_delete_window;
@@ -23,6 +27,91 @@ protected:
   }
 
   ~WindowXCB() {
+    xcb_destroy_window(connection, window);
+    xcb_disconnect(connection);
+    xcb_key_symbols_free(syms);
+  }
+
+  int init(uint32_t width, uint32_t height) {
+    if (!connect())
+      return -1;
+
+    xcb_screen_iterator_t iter =
+        xcb_setup_roots_iterator(xcb_get_setup(connection));
+    screen = iter.data;
+
+    syms = xcb_key_symbols_alloc(connection);
+
+    if (settings->fullscreen) {
+      width = screen->width_in_pixels;
+      height = screen->height_in_pixels;
+      dimension_cb(width, height);
+    }
+
+    create_window(width, height, iter, &window_values);
+
+    connect_delete_event();
+
+    if (settings->fullscreen)
+      set_full_screen();
+
+    xcb_map_window(connection, window);
+
+    return 0;
+  }
+
+  int connect() {
+    connection = xcb_connect(0, 0);
+    return !xcb_connection_has_error(connection);
+    /*
+    int scr;
+    connection = xcb_connect(NULL, &scr);
+    vik_log_d("Preferred screen %d", scr);
+    while (scr-- > 0)
+      xcb_screen_next(&iter);
+    */
+  }
+
+  void create_window(uint32_t width, uint32_t height,
+                     const xcb_screen_iterator_t& iter,
+                     uint32_t *window_values) {
+    window = xcb_generate_id(connection);
+    xcb_create_window(connection,
+                      XCB_COPY_FROM_PARENT,
+                      window,
+                      iter.data->root,
+                      0, 0,
+                      width, height,
+                      0,
+                      XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                      iter.data->root_visual,
+                      XCB_CW_EVENT_MASK,
+                      window_values);
+  }
+
+  void connect_delete_event() {
+    atom_wm_protocols = get_atom("WM_PROTOCOLS");
+    atom_wm_delete_window = get_atom("WM_DELETE_WINDOW");
+    xcb_change_property(connection,
+                        XCB_PROP_MODE_REPLACE,
+                        window,
+                        atom_wm_protocols,
+                        XCB_ATOM_ATOM,
+                        32,
+                        1,
+                        &atom_wm_delete_window);
+  }
+
+  void set_full_screen() {
+    xcb_atom_t atom_wm_state = get_atom("_NET_WM_STATE");
+    xcb_atom_t atom_wm_fullscreen = get_atom("_NET_WM_STATE_FULLSCREEN");
+    xcb_change_property(connection,
+                        XCB_PROP_MODE_REPLACE,
+                        window,
+                        atom_wm_state,
+                        XCB_ATOM_ATOM,
+                        32, 1,
+                        &atom_wm_fullscreen);
   }
 
   xcb_atom_t get_atom(const char *name) {
@@ -88,13 +177,76 @@ public:
 
   VkBool32 check_support(VkPhysicalDevice physical_device) {
     return vkGetPhysicalDeviceXcbPresentationSupportKHR(
-          physical_device, 0, connection, root_visual);
+          physical_device, 0, connection, screen->root_visual);
   }
 
   void update_window_title(const std::string& title) {
     xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
                         window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
                         title.size(), title.c_str());
+  }
+
+  virtual void handle_client_message(const xcb_client_message_event_t *event) {
+    if (event->window != window)
+      return;
+
+    if (event->type == atom_wm_protocols &&
+        event->data.data32[0] == atom_wm_delete_window)
+      quit_cb();
+  }
+
+  virtual void handle_expose(const xcb_expose_event_t *event) {
+    expose_cb(event->width, event->height);
+  }
+
+  void poll_events() {
+    xcb_generic_event_t *event;
+    while ((event = xcb_poll_for_event(connection))) {
+      handle_event(event);
+      free(event);
+    }
+  }
+
+  void handle_event(const xcb_generic_event_t *event) {
+    switch (event->response_type & 0x7f) {
+      case XCB_CLIENT_MESSAGE:
+        handle_client_message((const xcb_client_message_event_t *)event);
+        break;
+      case XCB_MOTION_NOTIFY: {
+        xcb_motion_notify_event_t *motion = (xcb_motion_notify_event_t *)event;
+        pointer_motion_cb((float)motion->event_x, (float)motion->event_y);
+      }
+        break;
+      case XCB_BUTTON_PRESS: {
+        xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
+        pointer_button_cb(xcb_to_vik_button(press->detail), true);
+      }
+        break;
+      case XCB_BUTTON_RELEASE: {
+        xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
+        pointer_button_cb(xcb_to_vik_button(press->detail), false);
+      }
+        break;
+      case XCB_KEY_PRESS: {
+        const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
+        keyboard_key_cb(xcb_to_vik_key(keyEvent->detail), true);
+      }
+        break;
+      case XCB_KEY_RELEASE: {
+        const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
+        keyboard_key_cb(xcb_to_vik_key(keyEvent->detail), false);
+      }
+        break;
+      case XCB_DESTROY_NOTIFY:
+        quit_cb();
+        break;
+      case XCB_EXPOSE: {
+        handle_expose((const xcb_expose_event_t *)event);
+      }
+        break;
+      default:
+        break;
+    }
   }
 
 };
