@@ -117,8 +117,8 @@ public:
     zxdg_toplevel_v6_set_title(xdg_toplevel, title.c_str());
   }
 
-  static void handle_xdg_surface_configure(void *data, zxdg_surface_v6 *surface,
-                                           uint32_t serial) {
+  static void _xdg_surface_configure_cb(void *data, zxdg_surface_v6 *surface,
+                                        uint32_t serial) {
     WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
     zxdg_surface_v6_ack_configure(surface, serial);
     if (self->wait_for_configure)
@@ -126,83 +126,60 @@ public:
       self->wait_for_configure = false;
   }
 
-  static void handle_wl_seat_capabilities(void *data, wl_seat *wl_seat,
-                                          uint32_t capabilities) {
-    WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
-
-    if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && (!self->keyboard)) {
-      self->keyboard = wl_seat_get_keyboard(wl_seat);
-      wl_keyboard_add_listener(self->keyboard, &self->wl_keyboard_listener, self);
-    } else if (!(capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && self->keyboard) {
-      wl_keyboard_destroy(self->keyboard);
-      self->keyboard = NULL;
+  void seat_capabilities(wl_seat *seat, uint32_t caps) {
+    if ((caps & WL_SEAT_CAPABILITY_KEYBOARD) && !keyboard) {
+      keyboard = wl_seat_get_keyboard(seat);
+      wl_keyboard_add_listener(keyboard, &keyboard_listener, this);
+    } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && keyboard) {
+      wl_keyboard_destroy(keyboard);
+      keyboard = NULL;
     }
   }
 
-  static void registry_handle_global(void *data, wl_registry *registry,
-                                     uint32_t name, const char *interface, uint32_t version) {
-    WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
-
+  void registry_global(wl_registry *registry, uint32_t name,
+                       const char *interface) {
     if (strcmp(interface, "wl_compositor") == 0) {
-      self->compositor = ( wl_compositor *) wl_registry_bind(registry, name,
-                                                             &wl_compositor_interface, 1);
+      compositor = ( wl_compositor*)
+          wl_registry_bind(registry, name, &wl_compositor_interface, 1);
     } else if (strcmp(interface, "zxdg_shell_v6") == 0) {
-      self->shell = (zxdg_shell_v6 *)  wl_registry_bind(registry, name, &zxdg_shell_v6_interface, 1);
-      zxdg_shell_v6_add_listener(self->shell, &self->xdg_shell_listener, self);
+      shell = (zxdg_shell_v6*)
+          wl_registry_bind(registry, name, &zxdg_shell_v6_interface, 1);
+      zxdg_shell_v6_add_listener(shell, &xdg_shell_listener, this);
     } else if (strcmp(interface, "wl_seat") == 0) {
-      self->seat = (wl_seat *) wl_registry_bind(registry, name, &wl_seat_interface, 1);
-      wl_seat_add_listener(self->seat, &self->wl_seat_listener, self);
+      seat = (wl_seat*)
+          wl_registry_bind(registry, name, &wl_seat_interface, 1);
+      wl_seat_add_listener(seat, &seat_listener, this);
     } else if (strcmp(interface, "wl_output") == 0) {
-      wl_output* the_output = (wl_output*) wl_registry_bind(registry, name, &wl_output_interface, 2);
+      wl_output* the_output = (wl_output*)
+          wl_registry_bind(registry, name, &wl_output_interface, 2);
       static const wl_output_listener _output_listener = {
-        outputGeometryCb,
-        outputModeCb,
-        outputDoneCb,
-        outputScaleCb
+        _output_geometry_cb,
+        _output_mode_cb,
+        _output_done_cb,
+        _output_scale_cb
       };
-      wl_output_add_listener(the_output, &_output_listener, self);
+      wl_output_add_listener(the_output, &_output_listener, this);
     }
   }
 
-  static void outputModeCb(void *data, wl_output *wl_output,
-                           unsigned int flags, int w, int h, int refresh) {
+  void output_mode(wl_output *wl_output, unsigned int flags,
+                   int w, int h, int refresh) {
     vik_log_i("outputModeCb: %dx%d@%d", w, h, refresh);
-
     if (w == 2560 && h == 1440) {
       //if (w == 1920 && h == 1200) {
-      WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
       vik_log_d("setting wl_output to %p", wl_output);
-      self->hmd_output = wl_output;
-      self->hmd_refresh = refresh;
-      zxdg_toplevel_v6_set_fullscreen(self->xdg_toplevel, self->hmd_output);
-      wl_surface_commit(self->surface);
+      hmd_output = wl_output;
+      hmd_refresh = refresh;
+      zxdg_toplevel_v6_set_fullscreen(xdg_toplevel, hmd_output);
+      wl_surface_commit(surface);
     } else {
       vik_log_d("ignoring wl_output %p", wl_output);
     }
   }
 
-  // debug callbacks
-  static void
-  outputDoneCb(void *data, wl_output *output) {
-    vik_log_d("output done %p", output);
-  }
-
-  static void
-  outputScaleCb(void *data, wl_output *output, int scale) {
-    vik_log_d("output scale: %d", scale);
-  }
-
-  static void outputGeometryCb(void *data, wl_output *wl_output, int x,
-                               int y, int w, int h, int subpixel, const char *make, const char *model,
-                               int transform) {
-    //VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
-    vik_log_i("%s: %s [%d, %d] %dx%d", make, model, x, y, w, h);
-  }
-
   // callback wrappers
-
   const zxdg_surface_v6_listener xdg_surface_listener = {
-    handle_xdg_surface_configure,
+    _xdg_surface_configure_cb,
   };
 
   const zxdg_toplevel_v6_listener xdg_toplevel_listener = {
@@ -211,19 +188,19 @@ public:
   };
 
   const zxdg_shell_v6_listener xdg_shell_listener = {
-    handle_xdg_shell_ping,
+    _xdg_shell_ping_cb,
   };
 
   const wl_registry_listener registry_listener = {
-    registry_handle_global,
+    _registry_global_cb,
     _registry_global_remove_cb
   };
 
-  const struct wl_seat_listener wl_seat_listener = {
-    handle_wl_seat_capabilities,
+  const struct wl_seat_listener seat_listener = {
+    _seat_capabilities_cb,
   };
 
-  const struct wl_keyboard_listener wl_keyboard_listener = {
+  const struct wl_keyboard_listener keyboard_listener = {
     .keymap = _keyboard_keymap_cb,
     .enter = _keyboard_enter_cb,
     .leave = _keyboard_leave_cb,
@@ -232,22 +209,22 @@ public:
     .repeat_info = _keyboard_repeat_cb,
   };
 
-  static void
-  handle_xdg_shell_ping(void *data, zxdg_shell_v6 *shell, uint32_t serial) {
+  static void _xdg_shell_ping_cb(void *data, zxdg_shell_v6 *shell,
+                                 uint32_t serial) {
     zxdg_shell_v6_pong(shell, serial);
   }
 
   // unused callbacks
   static void _keyboard_repeat_cb(void *data, wl_keyboard *wl_keyboard,
-                                             int32_t rate, int32_t delay) {}
+                                  int32_t rate, int32_t delay) {}
   static void _keyboard_enter_cb(void *data, wl_keyboard *wl_keyboard,
-                                       uint32_t serial, wl_surface *surface,
-                                       wl_array *keys) {}
+                                 uint32_t serial, wl_surface *surface,
+                                 wl_array *keys) {}
   static void _keyboard_leave_cb(void *data, wl_keyboard *wl_keyboard,
-                                       uint32_t serial, wl_surface *surface) {}
+                                 uint32_t serial, wl_surface *surface) {}
   static void _xdg_toplevel_configure_cb(void *data, zxdg_toplevel_v6 *toplevel,
-                                            int32_t width, int32_t height,
-                                            struct wl_array *states) {}
+                                         int32_t width, int32_t height,
+                                         struct wl_array *states) {}
   static void _xdg_toplevel_close_cb(void *data, zxdg_toplevel_v6 *toplevel) {}
 
 };

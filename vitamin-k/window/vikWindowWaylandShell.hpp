@@ -35,7 +35,7 @@ public:
     registry = wl_display_get_registry(display);
     vik_log_f_if(!registry, "Could not get Wayland registry!");
 
-    static const struct wl_registry_listener registry_listener =
+    static const wl_registry_listener registry_listener =
     { _registry_global_cb, _registry_global_remove_cb };
     wl_registry_add_listener(registry, &registry_listener, this);
     wl_display_dispatch(display);
@@ -103,22 +103,20 @@ public:
     wl_shell_surface_set_title(shell_surface, title.c_str());
   }
 
-  static void _output_mode_cb(void *data, wl_output *wl_output,
-                              unsigned int flags, int w, int h, int refresh) {
+  void output_mode(wl_output *wl_output, unsigned int flags,
+                   int w, int h, int refresh) {
     vik_log_i("outputModeCb: %dx%d@%d", w, h, refresh);
-
     //    if (w == 2560 && h == 1440) {
     if (w == 1920 && h == 1200) {
-      WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
       vik_log_d("setting wl_output to %p", wl_output);
-      self->hmd_output = wl_output;
-      self->hmd_refresh = refresh;
+      hmd_output = wl_output;
+      hmd_refresh = refresh;
     } else {
       vik_log_d("ignoring wl_output %p", wl_output);
     }
   }
 
-  void seatCapabilities(wl_seat *seat, uint32_t caps) {
+  void seat_capabilities(wl_seat *seat, uint32_t caps) {
     if ((caps & WL_SEAT_CAPABILITY_POINTER) && !pointer) {
       pointer = wl_seat_get_pointer(seat);
       static const wl_pointer_listener pointer_listener =
@@ -142,19 +140,22 @@ public:
     }
   }
 
-  void registryGlobal(wl_registry *registry, uint32_t name,
-                      const char *interface, uint32_t version) {
+  void registry_global(wl_registry *registry, uint32_t name,
+                       const char *interface) {
     if (strcmp(interface, "wl_compositor") == 0) {
-      compositor = (wl_compositor *) wl_registry_bind(registry, name, &wl_compositor_interface, 3);
+      compositor = (wl_compositor*)
+          wl_registry_bind(registry, name, &wl_compositor_interface, 3);
     } else if (strcmp(interface, "wl_shell") == 0) {
-      shell = (wl_shell *) wl_registry_bind(registry, name, &wl_shell_interface, 1);
+      shell = (wl_shell*)
+          wl_registry_bind(registry, name, &wl_shell_interface, 1);
     } else if (strcmp(interface, "wl_seat") == 0) {
-      seat = (wl_seat *) wl_registry_bind(registry, name, &wl_seat_interface, 1);
-      static const wl_seat_listener seat_listener =
-      { _seat_capabilities_cb, };
+      seat = (wl_seat*)
+          wl_registry_bind(registry, name, &wl_seat_interface, 1);
+      static const wl_seat_listener seat_listener = { _seat_capabilities_cb, };
       wl_seat_add_listener(seat, &seat_listener, this);
     } else if (strcmp(interface, "wl_output") == 0) {
-      wl_output* the_output = (wl_output*) wl_registry_bind(registry, name, &wl_output_interface, 2);
+      wl_output* the_output = (wl_output*)
+          wl_registry_bind(registry, name, &wl_output_interface, 2);
 
       static const wl_output_listener _output_listener = {
         _output_geometry_cb,
@@ -162,34 +163,8 @@ public:
         _output_done_cb,
         _output_scale_cb
       };
-
       wl_output_add_listener(the_output, &_output_listener, this);
-      
     }
-  }
-
-  // debug callbacks
-  static void _configure_cb(void *data, wl_shell_surface *shell_surface,
-                            uint32_t edges, int32_t width, int32_t height) {
-    vik_log_d("configure: %dx%d", width, height);
-  }
-
-  static void
-  _output_done_cb(void *data, wl_output *output) {
-    vik_log_d("output done %p", output);
-  }
-
-  static void
-  _output_scale_cb(void *data, wl_output *output, int scale) {
-    vik_log_d("output scale: %d", scale);
-  }
-
-  static void _output_geometry_cb(void *data, wl_output *wl_output, int x,
-                                  int y, int w, int h, int subpixel,
-                                  const char *make, const char *model,
-                                  int transform) {
-    //VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
-    vik_log_i("%s: %s [%d, %d] %dx%d", make, model, x, y, w, h);
   }
 
   // callback wrappers
@@ -198,15 +173,10 @@ public:
     wl_shell_surface_pong(shell_surface, serial);
   }
 
-  static void _registry_global_cb(void *data, wl_registry *registry, uint32_t name,
-                                  const char *interface, uint32_t version) {
-    WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
-    self->registryGlobal(registry, name, interface, version);
-  }
-
-  static void _seat_capabilities_cb(void *data, wl_seat *seat, uint32_t caps) {
-    WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
-    self->seatCapabilities(seat, caps);
+  // debug callbacks
+  static void _configure_cb(void *data, wl_shell_surface *shell_surface,
+                            uint32_t edges, int32_t width, int32_t height) {
+    vik_log_d("configure: %dx%d", width, height);
   }
 
   // Unused callbacks

@@ -81,6 +81,15 @@ class WindowWayland : public Window {
     return vkCreateWaylandSurfaceKHR(instance, &surface_info, NULL, vk_surface);
   }
 
+
+  virtual void output_mode(wl_output *wl_output, unsigned int flags,
+                           int w, int h, int refresh) = 0;
+
+  virtual void seat_capabilities(wl_seat *seat, uint32_t caps) = 0;
+
+  virtual void registry_global(wl_registry *registry, uint32_t name,
+                               const char *interface) = 0;
+
   // callback wrappers
   static void _keyboard_key_cb(void *data, wl_keyboard *keyboard,
                                uint32_t serial, uint32_t time, uint32_t key,
@@ -106,6 +115,39 @@ class WindowWayland : public Window {
                                uint32_t axis, wl_fixed_t value) {
     Window *self = reinterpret_cast<Window*>(data);
     self->pointer_axis_cb(wayland_to_vik_axis(axis), wl_fixed_to_double(value));
+  }
+
+  static void _registry_global_cb(void *data, wl_registry *registry, uint32_t name,
+                                  const char *interface, uint32_t version) {
+    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+    self->registry_global(registry, name, interface);
+  }
+
+  static void _seat_capabilities_cb(void *data, wl_seat *seat, uint32_t caps) {
+    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+    self->seat_capabilities(seat, caps);
+  }
+
+  static void _output_mode_cb(void *data, wl_output *wl_output,
+                              unsigned int flags, int w, int h, int refresh) {
+    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+    self->output_mode(wl_output, flags, w, h, refresh);
+  }
+
+  // debug callbacks
+  static void _output_done_cb(void *data, wl_output *output) {
+    vik_log_d("output done %p", output);
+  }
+
+  static void _output_scale_cb(void *data, wl_output *output, int scale) {
+    vik_log_d("output scale: %d", scale);
+  }
+
+  static void _output_geometry_cb(void *data, wl_output *wl_output, int x,
+                                  int y, int w, int h, int subpixel,
+                                  const char *make, const char *model,
+                                  int transform) {
+    vik_log_i("%s: %s [%d, %d] %dx%d", make, model, x, y, w, h);
   }
 
   // Unused callbacks
