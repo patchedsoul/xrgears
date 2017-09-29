@@ -98,7 +98,14 @@ public:
 
     };
     window->set_dimension_cb(dimension_cb);
+/*
+    auto format_cb = [this](VkSurfaceFormatKHR format) {
+      init_depth_stencil();
+      create_render_pass();
+    };
 
+    window->set_format_cb(format_cb);
+*/
   }
 
   void create_buffers(uint32_t count) {
@@ -152,13 +159,11 @@ public:
     create_command_pool(window->get_swap_chain()->get_queue_index());
 
     // need format
+    //window->format_cb();
     init_depth_stencil();
     create_render_pass();
 
-    allocate_command_buffers(window->get_swap_chain()->image_count);
-
-    // needs render pass
-    create_frame_buffers(window->get_swap_chain()->image_count);
+    create_buffers(window->get_swap_chain()->image_count);
   }
 
   void wait_idle() {
@@ -356,6 +361,9 @@ public:
   }
 
   virtual void resize() {
+
+    vik_log_e("Resize!");
+
     // Ensure all operations on the device have been finished before destroying resources
     wait_idle();
 

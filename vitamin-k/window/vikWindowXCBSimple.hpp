@@ -57,6 +57,8 @@ public:
     swap_chain.set_dimension_cb(dimension_cb);
     swap_chain.set_settings(settings);
     swap_chain.select_surface_format();
+        format_cb(swap_chain.surface_format);
+            init_cb();
   }
 
   void init_swap_chain_vks(uint32_t width, uint32_t height) {
@@ -95,8 +97,8 @@ public:
     vik_log_e("handle_expose");
     vik_log_d("XCB_EXPOSE %dx%d", event->width, event->height);
     //swap_chain.recreate(event->width, event->height);
-    swap_chain.create(event->width, event->height);
-    create_buffers_cb(swap_chain.image_count);
+
+
     WindowXCB::handle_expose(event);
     schedule_repaint();
   }

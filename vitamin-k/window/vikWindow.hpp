@@ -28,6 +28,8 @@ public:
 
   std::function<void(uint32_t width, uint32_t height)> dimension_cb;
 
+  std::function<void(VkSurfaceFormatKHR format)> format_cb;
+
   Settings *settings;
 
   Window(Settings *s) {
@@ -74,6 +76,10 @@ public:
 
   void set_dimension_cb(std::function<void(uint32_t width, uint32_t height)> cb) {
     dimension_cb = cb;
+  }
+
+  void set_format_cb(std::function<void(VkSurfaceFormatKHR format)> cb) {
+    format_cb = cb;
   }
 
   virtual SwapChain* get_swap_chain() = 0;

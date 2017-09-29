@@ -93,6 +93,10 @@ public:
     swap_chain.select_surface_format();
     swap_chain.create(width, height);
     //create_buffers_cb(swap_chain.image_count);
+
+    format_cb(swap_chain.surface_format);
+    init_cb();
+    create_buffers_cb(swap_chain.image_count);
   }
 
   SwapChain* get_swap_chain() {

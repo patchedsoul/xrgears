@@ -177,6 +177,10 @@ public:
     swap_chain.init(swap_chain.device, swap_chain.surface_format.format, gbm_dev, fd,
              width, height);
     swap_chain.set_mode_and_page_flip(fd, crtc, connector);
+
+    format_cb(swap_chain.surface_format);
+    init_cb();
+    create_buffers_cb(swap_chain.image_count);
   }
 
   void init_swap_chain_vks(uint32_t width, uint32_t height) {

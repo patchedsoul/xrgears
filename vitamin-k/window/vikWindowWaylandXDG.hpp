@@ -98,6 +98,10 @@ public:
     swap_chain.select_surface_format();
     swap_chain.create(width, height);
     //create_buffers_cb(swap_chain.image_count);
+
+    format_cb(swap_chain.surface_format);
+    init_cb();
+    create_buffers_cb(swap_chain.image_count);
   }
 
   void init_swap_chain_vks(uint32_t width, uint32_t height) {

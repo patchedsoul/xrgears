@@ -56,6 +56,13 @@ public:
     };
     window->set_dimension_cb(dimension_cb);
 
+    auto format_cb = [this](VkSurfaceFormatKHR format) {
+      init_render_pass(format.format);
+    };
+    window->set_format_cb(format_cb);
+
+    auto render_cb = [this](uint32_t index) { render(index); };
+    window->get_swap_chain()->set_render_cb(render_cb);
   }
 
   ~RendererVkc() {
@@ -72,21 +79,14 @@ public:
   void init(const std::string& name) {
     init_vulkan(name, window->required_extensions());
     init_vk_objects();
+    window->set_init_cb(init_cb);
+
     window->init(width, height);
     window->update_window_title(name);
     if (!window->check_support(physical_device))
       vik_log_f("Vulkan not supported on given surface");
     window->get_swap_chain()->set_context(instance, physical_device, device);
     window->init_swap_chain_vkc(width, height);
-
-    auto render_cb = [this](uint32_t index) { render(index); };
-    window->get_swap_chain()->set_render_cb(render_cb);
-
-    init_render_pass(window->get_swap_chain()->surface_format.format);
-
-    init_cb();
-
-    create_buffers(window->get_swap_chain()->image_count);
   }
 
   void init_vulkan(const std::string& name,
