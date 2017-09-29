@@ -31,15 +31,7 @@ public:
 
   ~WindowWaylandShell() {
     wl_shell_surface_destroy(shell_surface);
-    wl_surface_destroy(surface);
-    if (keyboard)
-      wl_keyboard_destroy(keyboard);
-    if (pointer)
-      wl_pointer_destroy(pointer);
-    wl_seat_destroy(seat);
     wl_shell_destroy(shell);
-    wl_compositor_destroy(compositor);
-    wl_display_disconnect(display);
   }
 
   int init(uint32_t width, uint32_t height) {
@@ -53,7 +45,8 @@ public:
     wl_display_dispatch(display);
     wl_display_roundtrip(display);
 
-    vik_log_f_if(!compositor || !shell || !seat, "Could not bind Wayland protocols!");
+    vik_log_f_if(!compositor || !shell || !seat,
+                 "Could not bind Wayland protocols!");
     wl_registry_destroy(registry);
 
     surface = wl_compositor_create_surface(compositor);
@@ -74,11 +67,7 @@ public:
   }
 
   void iterate(VkQueue queue, VkSemaphore semaphore) {
-    while (wl_display_prepare_read(display) != 0)
-      wl_display_dispatch_pending(display);
-    wl_display_flush(display);
-    wl_display_read_events(display);
-    wl_display_dispatch_pending(display);
+    flush();
   }
 
   void init_swap_chain(uint32_t width, uint32_t height) {

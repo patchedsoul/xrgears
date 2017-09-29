@@ -72,23 +72,6 @@ public:
     return 0;
   }
 
-  void flush() {
-    while (wl_display_prepare_read(display) != 0)
-      wl_display_dispatch_pending(display);
-    if (wl_display_flush(display) < 0 && errno != EAGAIN) {
-      wl_display_cancel_read(display);
-      return;
-    }
-
-    pollfd fds[] = {{ wl_display_get_fd(display), POLLIN },};
-    if (poll(fds, 1, 0) > 0) {
-      wl_display_read_events(display);
-      wl_display_dispatch_pending(display);
-    } else {
-      wl_display_cancel_read(display);
-    }
-  }
-
   void iterate(VkQueue queue, VkSemaphore semaphore) {
     flush();
     update_cb();
@@ -96,13 +79,9 @@ public:
   }
 
   void init_swap_chain(uint32_t width, uint32_t height) {
-
     create_surface(swap_chain.instance, &swap_chain.surface);
-
     swap_chain.choose_surface_format();
-
     swap_chain.recreate(width, height);
-
     //recreate_frame_buffers_cb();
   }
 

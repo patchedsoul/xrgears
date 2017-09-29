@@ -23,6 +23,15 @@ class WindowWayland : public Window {
   }
 
   ~WindowWayland() {
+    wl_surface_destroy(surface);
+    if (keyboard)
+      wl_keyboard_destroy(keyboard);
+    if (pointer)
+      wl_pointer_destroy(pointer);
+    wl_seat_destroy(seat);
+
+    wl_compositor_destroy(compositor);
+    wl_display_disconnect(display);
   }
 
   static Input::Key wayland_to_vik_key(uint32_t key) {
@@ -97,6 +106,23 @@ class WindowWayland : public Window {
     } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && keyboard) {
       wl_keyboard_destroy(keyboard);
       keyboard = nullptr;
+    }
+  }
+
+  void flush() {
+    while (wl_display_prepare_read(display) != 0)
+      wl_display_dispatch_pending(display);
+    if (wl_display_flush(display) < 0 && errno != EAGAIN) {
+      wl_display_cancel_read(display);
+      return;
+    }
+
+    pollfd fds[] = {{ wl_display_get_fd(display), POLLIN },};
+    if (poll(fds, 1, 0) > 0) {
+      wl_display_read_events(display);
+      wl_display_dispatch_pending(display);
+    } else {
+      wl_display_cancel_read(display);
     }
   }
 
