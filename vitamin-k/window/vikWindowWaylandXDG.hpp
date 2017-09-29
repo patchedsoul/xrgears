@@ -117,7 +117,7 @@ public:
     zxdg_toplevel_v6_set_title(xdg_toplevel, title.c_str());
   }
 
-  static void handle_xdg_surface_configure(void *data, struct zxdg_surface_v6 *surface,
+  static void handle_xdg_surface_configure(void *data, zxdg_surface_v6 *surface,
                                            uint32_t serial) {
     WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
     zxdg_surface_v6_ack_configure(surface, serial);
@@ -126,14 +126,7 @@ public:
       self->wait_for_configure = false;
   }
 
-  static void handle_wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
-                                     uint32_t serial, uint32_t time, uint32_t key,
-                                     uint32_t state) {
-    if (key == KEY_ESC && state == WL_KEYBOARD_KEY_STATE_PRESSED)
-      exit(0);
-  }
-
-  static void handle_wl_seat_capabilities(void *data, struct wl_seat *wl_seat,
+  static void handle_wl_seat_capabilities(void *data, wl_seat *wl_seat,
                                           uint32_t capabilities) {
     WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
 
@@ -146,7 +139,7 @@ public:
     }
   }
 
-  static void registry_handle_global(void *data, struct wl_registry *registry,
+  static void registry_handle_global(void *data, wl_registry *registry,
                                      uint32_t name, const char *interface, uint32_t version) {
     WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
 
@@ -161,17 +154,17 @@ public:
       wl_seat_add_listener(self->seat, &self->wl_seat_listener, self);
     } else if (strcmp(interface, "wl_output") == 0) {
       wl_output* the_output = (wl_output*) wl_registry_bind(registry, name, &wl_output_interface, 2);
-      static const struct wl_output_listener _output_listener = {
+      static const wl_output_listener _output_listener = {
         outputGeometryCb,
-            outputModeCb,
-            outputDoneCb,
-            outputScaleCb
+        outputModeCb,
+        outputDoneCb,
+        outputScaleCb
       };
       wl_output_add_listener(the_output, &_output_listener, self);
     }
   }
 
-  static void outputModeCb(void *data, struct wl_output *wl_output,
+  static void outputModeCb(void *data, wl_output *wl_output,
                            unsigned int flags, int w, int h, int refresh) {
     vik_log_i("outputModeCb: %dx%d@%d", w, h, refresh);
 
@@ -190,16 +183,16 @@ public:
 
   // debug callbacks
   static void
-  outputDoneCb(void *data, struct wl_output *output) {
+  outputDoneCb(void *data, wl_output *output) {
     vik_log_d("output done %p", output);
   }
 
   static void
-  outputScaleCb(void *data, struct wl_output *output, int scale) {
+  outputScaleCb(void *data, wl_output *output, int scale) {
     vik_log_d("output scale: %d", scale);
   }
 
-  static void outputGeometryCb(void *data, struct wl_output *wl_output, int x,
+  static void outputGeometryCb(void *data, wl_output *wl_output, int x,
                                int y, int w, int h, int subpixel, const char *make, const char *model,
                                int transform) {
     //VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
@@ -208,20 +201,20 @@ public:
 
   // callback wrappers
 
-  const struct zxdg_surface_v6_listener xdg_surface_listener = {
+  const zxdg_surface_v6_listener xdg_surface_listener = {
     handle_xdg_surface_configure,
   };
 
-  const struct zxdg_toplevel_v6_listener xdg_toplevel_listener = {
+  const zxdg_toplevel_v6_listener xdg_toplevel_listener = {
     handle_xdg_toplevel_configure,
     handle_xdg_toplevel_close,
   };
 
-  const struct zxdg_shell_v6_listener xdg_shell_listener = {
+  const zxdg_shell_v6_listener xdg_shell_listener = {
     handle_xdg_shell_ping,
   };
 
-  const struct wl_registry_listener registry_listener = {
+  const wl_registry_listener registry_listener = {
     registry_handle_global,
     registry_handle_global_remove
   };
@@ -234,36 +227,36 @@ public:
     .keymap = handle_wl_keyboard_keymap,
     .enter = handle_wl_keyboard_enter,
     .leave = handle_wl_keyboard_leave,
-    .key = handle_wl_keyboard_key,
+    .key = _keyboard_key_cb,
     .modifiers = handle_wl_keyboard_modifiers,
     .repeat_info = handle_wl_keyboard_repeat_info,
   };
 
   static void
-  handle_xdg_shell_ping(void *data, struct zxdg_shell_v6 *shell, uint32_t serial) {
+  handle_xdg_shell_ping(void *data, zxdg_shell_v6 *shell, uint32_t serial) {
     zxdg_shell_v6_pong(shell, serial);
   }
 
   // unused callbacks
-  static void handle_wl_keyboard_modifiers(void *data, struct wl_keyboard *wl_keyboard,
+  static void handle_wl_keyboard_modifiers(void *data, wl_keyboard *wl_keyboard,
                                            uint32_t serial, uint32_t mods_depressed,
                                            uint32_t mods_latched, uint32_t mods_locked,
                                            uint32_t group) {}
-  static void handle_wl_keyboard_repeat_info(void *data, struct wl_keyboard *wl_keyboard,
+  static void handle_wl_keyboard_repeat_info(void *data, wl_keyboard *wl_keyboard,
                                              int32_t rate, int32_t delay) {}
-  static void registry_handle_global_remove(void *data, struct wl_registry *registry,
+  static void registry_handle_global_remove(void *data, wl_registry *registry,
                                             uint32_t name) {}
-  static void handle_wl_keyboard_keymap(void *data, struct wl_keyboard *wl_keyboard,
+  static void handle_wl_keyboard_keymap(void *data, wl_keyboard *wl_keyboard,
                                         uint32_t format, int32_t fd, uint32_t size) {}
-  static void handle_wl_keyboard_enter(void *data, struct wl_keyboard *wl_keyboard,
-                                       uint32_t serial, struct wl_surface *surface,
-                                       struct wl_array *keys) {}
-  static void handle_wl_keyboard_leave(void *data, struct wl_keyboard *wl_keyboard,
-                                       uint32_t serial, struct wl_surface *surface) {}
-  static void handle_xdg_toplevel_configure(void *data, struct zxdg_toplevel_v6 *toplevel,
+  static void handle_wl_keyboard_enter(void *data, wl_keyboard *wl_keyboard,
+                                       uint32_t serial, wl_surface *surface,
+                                       wl_array *keys) {}
+  static void handle_wl_keyboard_leave(void *data, wl_keyboard *wl_keyboard,
+                                       uint32_t serial, wl_surface *surface) {}
+  static void handle_xdg_toplevel_configure(void *data, zxdg_toplevel_v6 *toplevel,
                                             int32_t width, int32_t height,
                                             struct wl_array *states) {}
-  static void handle_xdg_toplevel_close(void *data, struct zxdg_toplevel_v6 *toplevel) {}
+  static void handle_xdg_toplevel_close(void *data, zxdg_toplevel_v6 *toplevel) {}
 
 };
 }

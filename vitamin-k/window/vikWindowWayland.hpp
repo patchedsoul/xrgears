@@ -81,5 +81,18 @@ class WindowWayland : public Window {
     return vkCreateWaylandSurfaceKHR(instance, &surface_info, NULL, vk_surface);
   }
 
+  static void _keyboard_key_cb(void *data, wl_keyboard *keyboard,
+                               uint32_t serial, uint32_t time, uint32_t key,
+                               uint32_t state) {
+    Window *self = reinterpret_cast<Window *>(data);
+    self->keyboard_key_cb(wayland_to_vik_key(key), state);
+  }
+
+  static void _pointer_motion_cb(void *data, wl_pointer *pointer, uint32_t time,
+                                 wl_fixed_t x, wl_fixed_t y) {
+    Window *self = reinterpret_cast<Window *>(data);
+    self->pointer_motion_cb(wl_fixed_to_double(x), wl_fixed_to_double(y));
+  }
+
 };
 }

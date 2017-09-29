@@ -36,7 +36,7 @@ public:
     vik_log_f_if(!registry, "Could not get Wayland registry!");
 
     static const struct wl_registry_listener registry_listener =
-    { registryGlobalCb, registryGlobalRemoveCb };
+    { _registry_global_cb, _registry_global_remove_cb };
     wl_registry_add_listener(registry, &registry_listener, this);
     wl_display_dispatch(display);
     wl_display_roundtrip(display);
@@ -62,7 +62,7 @@ public:
     shell_surface = wl_shell_get_shell_surface(shell, surface);
 
     static const struct wl_shell_surface_listener shell_surface_listener =
-    { PingCb, ConfigureCb, PopupDoneCb };
+    { _ping_cb, _configure_cb, _popup_done_cb };
 
     wl_shell_surface_add_listener(shell_surface, &shell_surface_listener, this);
     //wl_shell_surface_set_toplevel(shell_surface);
@@ -103,8 +103,8 @@ public:
     wl_shell_surface_set_title(shell_surface, title.c_str());
   }
 
-  static void outputModeCb(void *data, struct wl_output *wl_output,
-                           unsigned int flags, int w, int h, int refresh) {
+  static void _output_mode_cb(void *data, wl_output *wl_output,
+                              unsigned int flags, int w, int h, int refresh) {
     vik_log_i("outputModeCb: %dx%d@%d", w, h, refresh);
 
     //    if (w == 2560 && h == 1440) {
@@ -121,9 +121,9 @@ public:
   void seatCapabilities(wl_seat *seat, uint32_t caps) {
     if ((caps & WL_SEAT_CAPABILITY_POINTER) && !pointer) {
       pointer = wl_seat_get_pointer(seat);
-      static const struct wl_pointer_listener pointer_listener =
-      { pointerEnterCb, pointerLeaveCb, pointerMotionCb, pointerButtonCb,
-            pointerAxisCb, };
+      static const wl_pointer_listener pointer_listener =
+      { _pointer_enter_cb, _pointer_leave_cb, _pointer_motion_cb, _pointer_button_cb,
+        _pointer_axis_cb, };
       wl_pointer_add_listener(pointer, &pointer_listener, this);
     } else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && pointer) {
       wl_pointer_destroy(pointer);
@@ -132,9 +132,9 @@ public:
 
     if ((caps & WL_SEAT_CAPABILITY_KEYBOARD) && !keyboard) {
       keyboard = wl_seat_get_keyboard(seat);
-      static const struct wl_keyboard_listener keyboard_listener =
-      { keyboardKeymapCb, keyboardEnterCb, keyboardLeaveCb, keyboardKeyCb,
-            keyboardModifiersCb, };
+      static const wl_keyboard_listener keyboard_listener =
+      { _keyboard_keymap_cb, _keyboard_enter_cb, _keyboard_leave_cb, _keyboard_key_cb,
+        _keyboard_modifiers_cb, };
       wl_keyboard_add_listener(keyboard, &keyboard_listener, this);
     } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && keyboard) {
       wl_keyboard_destroy(keyboard);
@@ -150,17 +150,17 @@ public:
       shell = (wl_shell *) wl_registry_bind(registry, name, &wl_shell_interface, 1);
     } else if (strcmp(interface, "wl_seat") == 0) {
       seat = (wl_seat *) wl_registry_bind(registry, name, &wl_seat_interface, 1);
-      static const struct wl_seat_listener seat_listener =
-      { seatCapabilitiesCb, };
+      static const wl_seat_listener seat_listener =
+      { _seat_capabilities_cb, };
       wl_seat_add_listener(seat, &seat_listener, this);
     } else if (strcmp(interface, "wl_output") == 0) {
       wl_output* the_output = (wl_output*) wl_registry_bind(registry, name, &wl_output_interface, 2);
 
-      static const struct wl_output_listener _output_listener = {
-        outputGeometryCb,
-            outputModeCb,
-            outputDoneCb,
-            outputScaleCb
+      static const wl_output_listener _output_listener = {
+        _output_geometry_cb,
+        _output_mode_cb,
+        _output_done_cb,
+        _output_scale_cb
       };
 
       wl_output_add_listener(the_output, &_output_listener, this);
@@ -169,106 +169,92 @@ public:
   }
 
   // debug callbacks
-  static void ConfigureCb(void *data, struct wl_shell_surface *shell_surface,
-                          uint32_t edges, int32_t width, int32_t height) {
+  static void _configure_cb(void *data, wl_shell_surface *shell_surface,
+                            uint32_t edges, int32_t width, int32_t height) {
     vik_log_d("configure: %dx%d", width, height);
   }
 
   static void
-  outputDoneCb(void *data, struct wl_output *output) {
+  _output_done_cb(void *data, wl_output *output) {
     vik_log_d("output done %p", output);
   }
 
   static void
-  outputScaleCb(void *data, struct wl_output *output, int scale) {
+  _output_scale_cb(void *data, wl_output *output, int scale) {
     vik_log_d("output scale: %d", scale);
   }
 
-  static void outputGeometryCb(void *data, struct wl_output *wl_output, int x,
-                               int y, int w, int h, int subpixel, const char *make, const char *model,
-                               int transform) {
+  static void _output_geometry_cb(void *data, wl_output *wl_output, int x,
+                                  int y, int w, int h, int subpixel, const char *make, const char *model,
+                                  int transform) {
     //VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
     vik_log_i("%s: %s [%d, %d] %dx%d", make, model, x, y, w, h);
   }
 
   // callback wrappers
 
-  static void PingCb(void *data, struct wl_shell_surface *shell_surface,
-                     uint32_t serial) {
+  static void _ping_cb(void *data, wl_shell_surface *shell_surface,
+                       uint32_t serial) {
     wl_shell_surface_pong(shell_surface, serial);
   }
 
-  static void registryGlobalCb(void *data, wl_registry *registry, uint32_t name,
-                               const char *interface, uint32_t version) {
+  static void _registry_global_cb(void *data, wl_registry *registry, uint32_t name,
+                                  const char *interface, uint32_t version) {
     WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
     self->registryGlobal(registry, name, interface, version);
   }
 
-  static void keyboardKeyCb(void *data,
-                            struct wl_keyboard *keyboard, uint32_t serial, uint32_t time,
-                            uint32_t key, uint32_t state) {
-    WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
-    self->keyboard_key_cb(wayland_to_vik_key(key), state);
-  }
-
-  static void seatCapabilitiesCb(void *data, wl_seat *seat, uint32_t caps) {
+  static void _seat_capabilities_cb(void *data, wl_seat *seat, uint32_t caps) {
     WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
     self->seatCapabilities(seat, caps);
   }
 
-  static void pointerMotionCb(void *data, wl_pointer *pointer, uint32_t time,
-                              wl_fixed_t x, wl_fixed_t y) {
-    WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
-    self->pointer_motion_cb(wl_fixed_to_double(x),
-                            wl_fixed_to_double(y));
-  }
-
-  static void pointerButtonCb(void *data,
-                              wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button,
-                              uint32_t state) {
+  static void _pointer_button_cb(void *data,
+                                 wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button,
+                                 uint32_t state) {
     WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
     self->pointer_button_cb(wayland_to_vik_button(button), state);
   }
 
-  static void pointerAxisCb(void *data,
-                            wl_pointer *pointer, uint32_t time, uint32_t axis,
-                            wl_fixed_t value) {
+  static void _pointer_axis_cb(void *data,
+                               wl_pointer *pointer, uint32_t time, uint32_t axis,
+                               wl_fixed_t value) {
     WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
     double d = wl_fixed_to_double(value);
     self->pointer_axis_cb(wayland_to_vik_axis(axis), d);
   }
 
   // Unused callbacks
-  static void registryGlobalRemoveCb(void *data, struct wl_registry *registry,
-                                     uint32_t name) {}
+  static void _registry_global_remove_cb(void *data, wl_registry *registry,
+                                         uint32_t name) {}
 
-  static void PopupDoneCb(void *data, struct wl_shell_surface *shell_surface) {}
+  static void _popup_done_cb(void *data, wl_shell_surface *shell_surface) {}
 
-  static void keyboardModifiersCb(void *data, struct wl_keyboard *keyboard,
-                                  uint32_t serial, uint32_t mods_depressed,
-                                  uint32_t mods_latched, uint32_t mods_locked,
-                                  uint32_t group) {}
+  static void _keyboard_modifiers_cb(void *data, wl_keyboard *keyboard,
+                                     uint32_t serial, uint32_t mods_depressed,
+                                     uint32_t mods_latched, uint32_t mods_locked,
+                                     uint32_t group) {}
 
-  static void keyboardKeymapCb(void *data,
-                               struct wl_keyboard *keyboard, uint32_t format, int fd, uint32_t size)
+  static void _keyboard_keymap_cb(void *data,
+                                  wl_keyboard *keyboard, uint32_t format, int fd, uint32_t size)
   {}
 
-  static void keyboardEnterCb(void *data,
-                              struct wl_keyboard *keyboard, uint32_t serial,
-                              struct wl_surface *surface, struct wl_array *keys)
+  static void _keyboard_enter_cb(void *data,
+                                 wl_keyboard *keyboard, uint32_t serial,
+                                 wl_surface *surface, wl_array *keys)
   {}
 
-  static void keyboardLeaveCb(void *data,
-                              struct wl_keyboard *keyboard, uint32_t serial,
-                              struct wl_surface *surface)
+  static void _keyboard_leave_cb(void *data,
+                                 wl_keyboard *keyboard, uint32_t serial,
+                                 wl_surface *surface)
   {}
 
-  static void pointerEnterCb(void *data, wl_pointer *pointer, uint32_t serial,
-                             wl_surface *surface, wl_fixed_t sx, wl_fixed_t sy)
+  static void _pointer_enter_cb(void *data, wl_pointer *pointer, uint32_t serial,
+                                wl_surface *surface, wl_fixed_t sx, wl_fixed_t sy)
   {}
 
-  static void pointerLeaveCb(void *data, wl_pointer *pointer, uint32_t serial,
-                             wl_surface *surface)
+  static void _pointer_leave_cb(void *data, wl_pointer *pointer, uint32_t serial,
+                                wl_surface *surface)
   {}
 
 
