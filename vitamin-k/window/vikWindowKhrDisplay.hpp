@@ -29,7 +29,7 @@ class WindowKhrDisplay  : public Window {
     return { VK_KHR_DISPLAY_EXTENSION_NAME };
   }
 
-  void init_swap_chain(uint32_t width, uint32_t height) {
+  void init_swap_chain_vks(uint32_t width, uint32_t height) {
 
     uint32_t displayPropertyCount;
 
@@ -142,7 +142,9 @@ class WindowKhrDisplay  : public Window {
   void update_window_title(const std::string& title) {}
 
   int init(uint32_t width, uint32_t height) {}
-  void iterate(VkQueue queue, VkSemaphore semaphore) {}
+  void iterate_vks(VkQueue queue, VkSemaphore semaphore) {}
+  void iterate_vkc(VkQueue queue, VkSemaphore semaphore) {}
+  void init_swap_chain_vkc(uint32_t width, uint32_t height) {}
 
   VkBool32 check_support(VkPhysicalDevice physical_device) {
     return true;

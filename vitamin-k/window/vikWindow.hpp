@@ -79,10 +79,16 @@ public:
 
   virtual SwapChain* get_swap_chain() = 0;
 
+  virtual void iterate_vkc(VkQueue queue, VkSemaphore semaphore) = 0;
+  virtual void init_swap_chain_vkc(uint32_t width, uint32_t height) = 0;
+
+  virtual void iterate_vks(VkQueue queue, VkSemaphore semaphore) = 0;
+  virtual void init_swap_chain_vks(uint32_t width, uint32_t height) = 0;
+
+
   virtual int init(uint32_t width, uint32_t height) = 0;
-  virtual void iterate(VkQueue queue, VkSemaphore semaphore) = 0;
+
   virtual const std::vector<const char*> required_extensions() = 0;
-  virtual void init_swap_chain(uint32_t width, uint32_t height) = 0;
   virtual void update_window_title(const std::string& title) = 0;
   virtual VkBool32 check_support(VkPhysicalDevice physical_device) = 0;
 };

@@ -171,12 +171,15 @@ public:
     return {};
   }
 
-  void init_swap_chain(uint32_t width, uint32_t height) {
+  void init_swap_chain_vkc(uint32_t width, uint32_t height) {
     swap_chain.surface_format.format = VK_FORMAT_R8G8B8A8_SRGB;
 
     swap_chain.init(swap_chain.device, swap_chain.surface_format.format, gbm_dev, fd,
              width, height);
     swap_chain.set_mode_and_page_flip(fd, crtc, connector);
+  }
+
+  void init_swap_chain_vks(uint32_t width, uint32_t height) {
   }
 
   SwapChain* get_swap_chain() {
@@ -204,13 +207,16 @@ public:
     swap_chain.render(fd, crtc->crtc_id);
   }
 
-  void iterate(VkQueue queue, VkSemaphore semaphore) {
+  void iterate_vkc(VkQueue queue, VkSemaphore semaphore) {
     int ret = poll(pfd, 2, -1);
     vik_log_f_if(ret == -1, "poll failed");
     if (pfd[0].revents & POLLIN)
       poll_events();
     if (pfd[1].revents & POLLIN)
       render();
+  }
+
+  void iterate_vks(VkQueue queue, VkSemaphore semaphore) {
   }
 
   VkBool32 check_support(VkPhysicalDevice physical_device) {

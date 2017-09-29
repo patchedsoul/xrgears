@@ -133,7 +133,7 @@ public:
 
     window->update_window_title(make_title_string(name));
     window->get_swap_chain()->set_context(instance, physical_device, device);
-    window->init_swap_chain(width, height);
+    window->init_swap_chain_vks(width, height);
 
     if (vksDevice->enableDebugMarkers)
       debugmarker::setup(device);
@@ -576,7 +576,7 @@ public:
   void render() {
     timer.start();
     frame_start_cb();
-    window->iterate(nullptr, nullptr);
+    window->iterate_vks(nullptr, nullptr);
     prepare_frame();
     render_cb();
     submit_frame();

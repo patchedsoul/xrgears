@@ -26,7 +26,7 @@ public:
 
   ~WindowXCBSimple() {}
 
-  void iterate(VkQueue queue, VkSemaphore semaphore) {
+  void iterate_vkc(VkQueue queue, VkSemaphore semaphore) {
     poll_events();
     if (repaint) {
       update_cb();
@@ -37,6 +37,9 @@ public:
     xcb_flush(connection);
   }
 
+  void iterate_vks(VkQueue queue, VkSemaphore semaphore) {
+  }
+
   /*
   void init_swap_chain(uint32_t width, uint32_t height) {
     create_surface(swap_chain.instance, &swap_chain.surface);
@@ -44,13 +47,16 @@ public:
   }*/
 
 
-  void init_swap_chain(uint32_t width, uint32_t height) {
+  void init_swap_chain_vkc(uint32_t width, uint32_t height) {
     create_surface(swap_chain.instance, &swap_chain.surface);
     swap_chain.set_dimension_cb(dimension_cb);
     swap_chain.set_settings(settings);
     swap_chain.select_surface_format();
   }
-/*
+
+  void init_swap_chain_vks(uint32_t width, uint32_t height) {
+  }
+  /*
   void init_swap_chain(uint32_t width, uint32_t height) {
     VkResult err = create_surface(swap_chain.instance, &swap_chain.surface);
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");

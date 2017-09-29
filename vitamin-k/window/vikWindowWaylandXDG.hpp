@@ -72,10 +72,13 @@ public:
     return 0;
   }
 
-  void iterate(VkQueue queue, VkSemaphore semaphore) {
+  void iterate_vkc(VkQueue queue, VkSemaphore semaphore) {
     flush();
     update_cb();
     swap_chain.render(queue, semaphore);
+  }
+
+  void iterate_vks(VkQueue queue, VkSemaphore semaphore) {
   }
 
   /*
@@ -87,12 +90,15 @@ public:
   }
   */
 
-  void init_swap_chain(uint32_t width, uint32_t height) {
+  void init_swap_chain_vkc(uint32_t width, uint32_t height) {
     create_surface(swap_chain.instance, &swap_chain.surface);
     swap_chain.set_dimension_cb(dimension_cb);
     swap_chain.set_settings(settings);
     swap_chain.select_surface_format();
     swap_chain.recreate(width, height);
+  }
+
+  void init_swap_chain_vks(uint32_t width, uint32_t height) {
   }
 
   SwapChain* get_swap_chain() {

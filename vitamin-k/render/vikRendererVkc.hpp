@@ -74,7 +74,7 @@ public:
     if (!window->check_support(physical_device))
       vik_log_f("Vulkan not supported on given surface");
     window->get_swap_chain()->set_context(instance, physical_device, device);
-    window->init_swap_chain(width, height);
+    window->init_swap_chain_vkc(width, height);
 
     auto render_cb = [this](uint32_t index) { render(index); };
     window->get_swap_chain()->set_render_cb(render_cb);
@@ -319,7 +319,7 @@ public:
   }
 
   void iterate() {
-    window->iterate(queue, semaphore);
+    window->iterate_vkc(queue, semaphore);
   }
 
   void render(uint32_t index) {
