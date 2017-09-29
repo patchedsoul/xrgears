@@ -50,7 +50,7 @@ public:
     if (init_window_from_settings() == -1) {
       vik_log_e("failed to initialize wayland, falling back to xcb");
       delete(window);
-      settings.type = Settings::XCB_SIMPLE;
+      settings.type = Settings::XCB;
       if (init_window_from_settings() == -1) {
         vik_log_e("failed to initialize xcb, falling back to kms");
         delete(window);

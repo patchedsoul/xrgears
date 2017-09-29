@@ -2,8 +2,7 @@
 
 #include "vikSettings.hpp"
 
-#include "window/vikWindowXCBSimple.hpp"
-#include "window/vikWindowXCBInput.hpp"
+#include "window/vikWindowXCB.hpp"
 #include "window/vikWindowWaylandXDG.hpp"
 #include "window/vikWindowWaylandShell.hpp"
 #include "window/vikWindowKMS.hpp"
@@ -28,17 +27,15 @@ public:
         case Settings::KMS:
           window = new WindowKMS(&settings);
           break;
-        case Settings::XCB_SIMPLE:
-          window = new WindowXCBSimple(&settings);
+        case Settings::XCB:
+          window = new WindowXCB(&settings);
           break;
         case Settings::WAYLAND_XDG:
           window = new WindowWaylandXDG(&settings);
           break;
-        case Settings::WAYLAND_LEGACY:
+        case Settings::WAYLAND_SHELL:
           window = new WindowWaylandShell(&settings);
           break;
-        case Settings::XCB_MOUSE:
-          window = new WindowXCBInput(&settings);
           break;
         case Settings::KHR_DISPLAY:
           window = new WindowKhrDisplay(&settings);

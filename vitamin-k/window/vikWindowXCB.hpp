@@ -1,29 +1,40 @@
 #pragma once
 
-#include "vikWindow.hpp"
-
-#include "render/vikSwapChainVK.hpp"
-
 #include <xcb/xcb.h>
 #include <X11/keysym.h>
 #include <xcb/xcb_keysyms.h>
 
 #include <string>
 
+#include "vikWindow.hpp"
+
+#include "render/vikSwapChainVK.hpp"
+#include "render/vikSwapChainVKComplex.hpp"
+
 namespace vik {
 class WindowXCB : public Window {
-protected:
   xcb_connection_t *connection;
   xcb_window_t window = XCB_NONE;
   xcb_key_symbols_t *syms;
   xcb_screen_t *screen;
 
-  uint32_t window_values;
+  uint32_t window_values =
+      XCB_EVENT_MASK_EXPOSURE |
+      XCB_EVENT_MASK_KEY_RELEASE |
+      XCB_EVENT_MASK_KEY_PRESS |
+      XCB_EVENT_MASK_STRUCTURE_NOTIFY |
+      XCB_EVENT_MASK_POINTER_MOTION |
+      XCB_EVENT_MASK_BUTTON_PRESS |
+      XCB_EVENT_MASK_BUTTON_RELEASE;
 
   xcb_atom_t atom_wm_protocols;
   xcb_atom_t atom_wm_delete_window;
 
+  SwapChainVkComplex swap_chain;
+
+public:
   WindowXCB(Settings *s) : Window(s) {
+    name = "xcb";
   }
 
   ~WindowXCB() {
@@ -58,6 +69,43 @@ protected:
     xcb_map_window(connection, window);
 
     return 0;
+  }
+
+  void iterate_vks(VkQueue queue, VkSemaphore semaphore) {
+    poll_events();
+  }
+
+  void iterate_vkc(VkQueue queue, VkSemaphore semaphore) {
+    poll_events();
+    update_cb();
+    swap_chain.render(queue, semaphore);
+    xcb_flush(connection);
+  }
+
+  void init_swap_chain_vks(uint32_t width, uint32_t height) {
+    VkResult err = create_surface(swap_chain.instance, &swap_chain.surface);
+    vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
+    swap_chain.set_dimension_cb(dimension_cb);
+    swap_chain.select_queue();
+    swap_chain.select_surface_format();
+    swap_chain.set_settings(settings);
+    swap_chain.create(width, height);
+  }
+
+  void init_swap_chain_vkc(uint32_t width, uint32_t height) {
+    create_surface(swap_chain.instance, &swap_chain.surface);
+    swap_chain.set_dimension_cb(dimension_cb);
+    swap_chain.set_settings(settings);
+    swap_chain.select_surface_format();
+    swap_chain.create(width, height);
+
+    format_cb(swap_chain.surface_format);
+    init_cb();
+    create_buffers_cb(swap_chain.image_count);
+  }
+
+  SwapChain* get_swap_chain() {
+    return (SwapChain*) &swap_chain;
   }
 
   int connect() {

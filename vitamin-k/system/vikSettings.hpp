@@ -15,10 +15,9 @@ public:
   enum window_type {
     AUTO = 0,
     KMS,
-    XCB_SIMPLE,
-    XCB_MOUSE,
+    XCB,
     WAYLAND_XDG,
-    WAYLAND_LEGACY,
+    WAYLAND_SHELL,
     KHR_DISPLAY,
     INVALID
   };
@@ -151,13 +150,11 @@ public:
     else if (streq(s, "kms"))
       return KMS;
     else if (streq(s, "xcb"))
-      return XCB_SIMPLE;
-    else if (streq(s, "wayland"))
+      return XCB;
+    else if (streq(s, "wayland") || streq(s, "wayland-xdg"))
       return WAYLAND_XDG;
-    else if (streq(s, "xcb-input"))
-      return XCB_MOUSE;
-    else if (streq(s, "wayland-legacy"))
-      return WAYLAND_LEGACY;
+    else if (streq(s, "wayland-shell"))
+      return WAYLAND_SHELL;
     else if (streq(s, "khr-display"))
       return KHR_DISPLAY;
     else
