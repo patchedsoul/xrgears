@@ -15,14 +15,17 @@ public:
   std::function<void()> update_cb;
   std::function<void()> quit_cb;
 
-  std::function<void()> recreate_frame_buffers_cb;
+  std::function<void(uint32_t count)> create_buffers_cb;
 
-  std::function<void(double x, double y)> pointer_motion_cb;
-  std::function<void(Input::MouseButton button, bool state)> pointer_button_cb;
-  std::function<void(Input::MouseScrollAxis axis, double value)> pointer_axis_cb;
-  std::function<void(Input::Key key, bool state)> keyboard_key_cb;
+  std::function<void(double x, double y)>
+    pointer_motion_cb = [](double x, double y) {};
+  std::function<void(Input::MouseButton button, bool state)>
+    pointer_button_cb = [](Input::MouseButton button, bool state) {};
+  std::function<void(Input::MouseScrollAxis axis, double value)>
+    pointer_axis_cb = [](Input::MouseScrollAxis axis, double value) {};
+  std::function<void(Input::Key key, bool state)>
+    keyboard_key_cb = [](Input::Key key, bool state) {};
 
-  std::function<void(uint32_t width, uint32_t height)> expose_cb;
   std::function<void(uint32_t width, uint32_t height)> dimension_cb;
 
   Settings *settings;
@@ -45,8 +48,8 @@ public:
     quit_cb = cb;
   }
 
-  void set_recreate_frame_buffers_cb(std::function<void()> cb) {
-    recreate_frame_buffers_cb = cb;
+  void set_create_buffers_cb(std::function<void(uint32_t count)> cb) {
+    create_buffers_cb = cb;
   }
 
   void set_pointer_motion_cb(std::function<void(double x, double y)> cb) {
@@ -67,10 +70,6 @@ public:
   void set_keyboard_key_cb(std::function<void(
                              Input::Key key, bool state)> cb) {
     keyboard_key_cb = cb;
-  }
-
-  void set_expose_cb(std::function<void(uint32_t width, uint32_t height)> cb) {
-    expose_cb = cb;
   }
 
   void set_dimension_cb(std::function<void(uint32_t width, uint32_t height)> cb) {

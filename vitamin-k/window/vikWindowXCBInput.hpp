@@ -64,10 +64,19 @@ class WindowXCBInput : public WindowXCB {
     swap_chain.set_dimension_cb(dimension_cb);
     swap_chain.set_settings(settings);
     swap_chain.select_surface_format();
+    swap_chain.create(width, height);
   }
 
   SwapChain* get_swap_chain() {
     return (SwapChain*) &swap_chain;
+  }
+
+  void handle_expose(const xcb_expose_event_t *event) {
+    vik_log_e("handle_expose");
+    vik_log_d("XCB_EXPOSE %dx%d", event->width, event->height);
+    //swap_chain.recreate(event->width, event->height);
+    //swap_chain.create(event->width, event->height);
+    WindowXCB::handle_expose(event);
   }
 
 };

@@ -137,20 +137,24 @@ class SwapChainVkComplex : public vik::SwapChainVK {
     }
   }
 
-  VkExtent2D select_extent(const VkSurfaceCapabilitiesKHR &surfCaps, uint32_t width, uint32_t height) {
-    VkExtent2D swapchainExtent = {};
-    // If width (and height) equals the special value 0xFFFFFFFF, the size of the surface will be set by the swapchain
-    if (surfCaps.currentExtent.width == (uint32_t)-1) {
+  VkExtent2D select_extent(const VkSurfaceCapabilitiesKHR &caps,
+                           uint32_t width, uint32_t height) {
+    VkExtent2D extent = {};
+    // If width (and height) equals the special value 0xFFFFFFFF,
+    // the size of the surface will be set by the swapchain
+    if (caps.currentExtent.width == (uint32_t)-1) {
       // If the surface size is undefined, the size is set to
       // the size of the images requested.
-      swapchainExtent.width = width;
-      swapchainExtent.height = height;
+      extent.width = width;
+      extent.height = height;
     } else {
       // If the surface size is defined, the swap chain size must match
-      swapchainExtent = surfCaps.currentExtent;
-      dimension_cb(surfCaps.currentExtent.width, surfCaps.currentExtent.height);
+      vik_log_d("select_extent: %dx%d",
+                caps.currentExtent.width, caps.currentExtent.height);
+      extent = caps.currentExtent;
+      dimension_cb(caps.currentExtent.width, caps.currentExtent.height);
     }
-    return swapchainExtent;
+    return extent;
   }
 
   // Determine the number of swapchain images

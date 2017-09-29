@@ -193,7 +193,7 @@ public:
   }
 
   virtual void handle_expose(const xcb_expose_event_t *event) {
-    expose_cb(event->width, event->height);
+    dimension_cb(event->width, event->height);
   }
 
   void poll_events() {

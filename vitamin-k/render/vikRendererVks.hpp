@@ -79,22 +79,31 @@ public:
     width = s->width;
     height = s->height;
 
+    window->set_create_buffers_cb([this](uint32_t count) {
+      vik_log_f_if(count == 0, "Creating buffers before swap chain.");
+      if (count == cmd_buffers.size())
+        return;
+      //if (!cmd_buffers.empty())
+        // todo clean up
+      create_buffers(count);
+    });
+
     auto dimension_cb = [this](uint32_t w, uint32_t h) {
-      width = w;
-      height = h;
+      if (((w != width) || (h != height))
+          && (width > 0) && (width > 0)) {
+        width = w;
+        height = h;
+        resize();
+      }
+
     };
     window->set_dimension_cb(dimension_cb);
 
-    window->set_recreate_frame_buffers_cb([this]() { create_frame_buffers(); });
+  }
 
-    auto configure_cb = [this](uint32_t w, uint32_t h) {
-      if (((w != width) || (h != height))
-          && (width > 0) && (width > 0))
-          resize();
-
-    };
-    window->set_expose_cb(configure_cb);
-
+  void create_buffers(uint32_t count) {
+    create_frame_buffers(count);
+    allocate_command_buffers(count);
   }
 
   ~RendererVks() {
@@ -139,11 +148,11 @@ public:
       debugmarker::setup(device);
 
     create_command_pool();
-    allocate_command_buffers();
+    allocate_command_buffers(window->get_swap_chain()->image_count);
     init_depth_stencil();
     create_render_pass();
     create_pipeline_cache();
-    create_frame_buffers();
+    create_frame_buffers(window->get_swap_chain()->image_count);
   }
 
   void wait_idle() {
@@ -352,12 +361,12 @@ public:
 
     for (uint32_t i = 0; i < frame_buffers.size(); i++)
       vkDestroyFramebuffer(device, frame_buffers[i], nullptr);
-    create_frame_buffers();
+    create_frame_buffers(window->get_swap_chain()->image_count);
 
     // Command buffers need to be recreated as they may store
     // references to the recreated frame buffer
     destroy_command_buffers();
-    allocate_command_buffers();
+    allocate_command_buffers(window->get_swap_chain()->image_count);
 
     window_resize_cb();
   }
@@ -388,9 +397,7 @@ public:
     return &cmd_buffers[currentBuffer];
   }
 
-  void create_frame_buffers() {
-    uint32_t count = window->get_swap_chain()->image_count;
-
+  void create_frame_buffers(uint32_t count) {
     // Create frame buffers for every swap chain image
     frame_buffers.resize(count);
 

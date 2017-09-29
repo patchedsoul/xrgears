@@ -93,16 +93,18 @@ public:
                                       frame_buffer));
   }
 
-  void allocate_command_buffers() {
-    vik_log_e("Allocating Command Buffers. %d", window->get_swap_chain()->image_count);
+  virtual void create_frame_buffers(uint32_t count) = 0;
+
+  void allocate_command_buffers(uint32_t count) {
+    vik_log_e("Allocating Command Buffers. %d", count);
     // Create one command buffer for each swap chain image and reuse for rendering
-    cmd_buffers.resize(window->get_swap_chain()->image_count);
+    cmd_buffers.resize(count);
 
     VkCommandBufferAllocateInfo cmd_buffer_info =
         initializers::commandBufferAllocateInfo(
           cmd_pool,
           VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-          static_cast<uint32_t>(cmd_buffers.size()));
+          count);
 
     vik_log_check(vkAllocateCommandBuffers(device,
                                            &cmd_buffer_info,

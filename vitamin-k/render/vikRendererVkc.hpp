@@ -36,34 +36,37 @@ public:
     height = s->height;
     gettimeofday(&start_tv, NULL);
 
-    window->set_recreate_frame_buffers_cb([this]() {
-      create_frame_buffers();
-      allocate_command_buffers();
-      for (int i = 0; i < window->get_swap_chain()->image_count; i++)
-        build_command_buffer(cmd_buffers[i], frame_buffers[i]);
+    window->set_create_buffers_cb([this](uint32_t count) {
+      vik_log_f_if(count == 0, "Creating buffers before swap chain.");
+      //if (count != cmd_buffers.size())
+        create_buffers(count);
     });
 
     auto dimension_cb = [this](uint32_t w, uint32_t h) {
-      width = w;
-      height = h;
+      if (((w != width) || (h != height))
+          && (width > 0) && (width > 0)) {
+        width = w;
+        height = h;
+      }
+/*
+      if (cmd_buffers.size() != window->get_swap_chain()->image_count) {
+        create_buffers(window->get_swap_chain()->image_count);
+      }
+*/
     };
-
     window->set_dimension_cb(dimension_cb);
-
-    auto expose_cb = [this](uint32_t w, uint32_t h) {
-      width = w;
-      height = h;
-      create_frame_buffers();
-      allocate_command_buffers();
-      for (int i = 0; i < window->get_swap_chain()->image_count; i++)
-        build_command_buffer(cmd_buffers[i], frame_buffers[i]);
-    };
-
-    window->set_expose_cb(expose_cb);
 
   }
 
   ~RendererVkc() {
+  }
+
+  void create_buffers(uint32_t count) {
+    vik_log_e("Creating buffers!");
+    create_frame_buffers(count);
+    allocate_command_buffers(count);
+    for (int i = 0; i < count; i++)
+      build_command_buffer(cmd_buffers[i], frame_buffers[i]);
   }
 
   void init(const std::string& name) {
@@ -83,10 +86,7 @@ public:
 
     init_cb();
 
-    create_frame_buffers();
-    allocate_command_buffers();
-    for (int i = 0; i < window->get_swap_chain()->image_count; i++)
-      build_command_buffer(cmd_buffers[i], frame_buffers[i]);
+    create_buffers(window->get_swap_chain()->image_count);
   }
 
   void init_vulkan(const std::string& name,
@@ -329,10 +329,8 @@ public:
     vkResetFences(device, 1, &fence);
   }
 
-  void create_frame_buffers() {
-    vik_log_e("create_frame_buffers: %d", window->get_swap_chain()->image_count);
-
-    uint32_t count = window->get_swap_chain()->image_count;
+  void create_frame_buffers(uint32_t count) {
+    vik_log_e("create_frame_buffers: %d", count);
     frame_buffers.resize(count);
     for (uint32_t i = 0; i < count; i++) {
       std::vector<VkImageView> attachments = {
