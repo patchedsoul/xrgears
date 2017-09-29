@@ -96,7 +96,8 @@ public:
     swap_chain.set_dimension_cb(dimension_cb);
     swap_chain.set_settings(settings);
     swap_chain.select_surface_format();
-    swap_chain.recreate(width, height);
+    swap_chain.create(width, height);
+    //create_buffers_cb(swap_chain.image_count);
   }
 
   void init_swap_chain_vks(uint32_t width, uint32_t height) {

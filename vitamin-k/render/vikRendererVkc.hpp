@@ -111,13 +111,13 @@ public:
     vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &count, props);
     assert(props[0].queueFlags & VK_QUEUE_GRAPHICS_BIT);
 
-    float prois[] = { 1.0f };
+    float prios[] = { 1.0f };
 
     VkDeviceQueueCreateInfo queueinfo = {};
     queueinfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
     queueinfo.queueFamilyIndex = 0;
     queueinfo.queueCount = 1;
-    queueinfo.pQueuePriorities = prois;
+    queueinfo.pQueuePriorities = prios;
 
     const char * const extnames[] = {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME,

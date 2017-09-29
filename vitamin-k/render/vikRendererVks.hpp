@@ -138,6 +138,8 @@ public:
 
   void init(const std::string &name) {
     init_vulkan(name, window->required_extensions());
+    create_pipeline_cache();
+
     window->init(width, height);
 
     window->update_window_title(make_title_string(name));
@@ -147,11 +149,15 @@ public:
     if (vksDevice->enableDebugMarkers)
       debugmarker::setup(device);
 
-    create_command_pool();
-    allocate_command_buffers(window->get_swap_chain()->image_count);
+    create_command_pool(window->get_swap_chain()->get_queue_index());
+
+    // need format
     init_depth_stencil();
     create_render_pass();
-    create_pipeline_cache();
+
+    allocate_command_buffers(window->get_swap_chain()->image_count);
+
+    // needs render pass
     create_frame_buffers(window->get_swap_chain()->image_count);
   }
 
@@ -190,9 +196,10 @@ public:
   }
 
   void create_pipeline_cache() {
-    VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
-    pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-    vik_log_check(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
+    VkPipelineCacheCreateInfo pipeline_cache_info = {};
+    pipeline_cache_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+    vik_log_check(vkCreatePipelineCache(device, &pipeline_cache_info,
+                                        nullptr, &pipelineCache));
   }
 
   void init_physical_device() {
@@ -327,12 +334,13 @@ public:
     vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.render_complete));
   }
 
-  void create_command_pool() {
-    VkCommandPoolCreateInfo cmdPoolInfo = {};
-    cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    cmdPoolInfo.queueFamilyIndex = window->get_swap_chain()->get_queue_index();
-    cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    vik_log_check(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmd_pool));
+  void create_command_pool(uint32_t index) {
+    VkCommandPoolCreateInfo cmd_pool_info = {};
+    cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    cmd_pool_info.queueFamilyIndex = index;
+    cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    vik_log_check(vkCreateCommandPool(device, &cmd_pool_info,
+                                      nullptr, &cmd_pool));
   }
 
   std::string make_title_string(const std::string& title) {
