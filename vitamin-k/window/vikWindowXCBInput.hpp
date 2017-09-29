@@ -43,6 +43,10 @@ class WindowXCBInput : public WindowXCB {
   }
 
   void iterate_vkc(VkQueue queue, VkSemaphore semaphore) {
+    poll_events();
+    update_cb();
+    swap_chain.render(queue, semaphore);
+    xcb_flush(connection);
   }
 
   void init_swap_chain_vks(uint32_t width, uint32_t height) {
@@ -56,6 +60,10 @@ class WindowXCBInput : public WindowXCB {
   }
 
   void init_swap_chain_vkc(uint32_t width, uint32_t height) {
+    create_surface(swap_chain.instance, &swap_chain.surface);
+    swap_chain.set_dimension_cb(dimension_cb);
+    swap_chain.set_settings(settings);
+    swap_chain.select_surface_format();
   }
 
   SwapChain* get_swap_chain() {

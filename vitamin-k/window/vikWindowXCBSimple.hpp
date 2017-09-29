@@ -20,8 +20,12 @@ public:
     name = "xcb-simple";
     window_values =
           XCB_EVENT_MASK_EXPOSURE |
+          XCB_EVENT_MASK_KEY_RELEASE |
+          XCB_EVENT_MASK_KEY_PRESS |
           XCB_EVENT_MASK_STRUCTURE_NOTIFY |
-          XCB_EVENT_MASK_KEY_PRESS;
+          XCB_EVENT_MASK_POINTER_MOTION |
+          XCB_EVENT_MASK_BUTTON_PRESS |
+          XCB_EVENT_MASK_BUTTON_RELEASE;
   }
 
   ~WindowXCBSimple() {}
@@ -38,6 +42,7 @@ public:
   }
 
   void iterate_vks(VkQueue queue, VkSemaphore semaphore) {
+    poll_events();
   }
 
   /*
@@ -55,6 +60,13 @@ public:
   }
 
   void init_swap_chain_vks(uint32_t width, uint32_t height) {
+    VkResult err = create_surface(swap_chain.instance, &swap_chain.surface);
+    vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
+    swap_chain.set_dimension_cb(dimension_cb);
+    swap_chain.select_queue();
+    swap_chain.select_surface_format();
+    swap_chain.set_settings(settings);
+    swap_chain.create(width, height);
   }
   /*
   void init_swap_chain(uint32_t width, uint32_t height) {
