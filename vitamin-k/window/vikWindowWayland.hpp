@@ -81,6 +81,7 @@ class WindowWayland : public Window {
     return vkCreateWaylandSurfaceKHR(instance, &surface_info, NULL, vk_surface);
   }
 
+  // callback wrappers
   static void _keyboard_key_cb(void *data, wl_keyboard *keyboard,
                                uint32_t serial, uint32_t time, uint32_t key,
                                uint32_t state) {
@@ -94,5 +95,33 @@ class WindowWayland : public Window {
     self->pointer_motion_cb(wl_fixed_to_double(x), wl_fixed_to_double(y));
   }
 
+  static void _pointer_button_cb(void *data, wl_pointer *pointer,
+                                 uint32_t serial, uint32_t time,
+                                 uint32_t button, uint32_t state) {
+    Window *self = reinterpret_cast<Window*>(data);
+    self->pointer_button_cb(wayland_to_vik_button(button), state);
+  }
+
+  static void _pointer_axis_cb(void *data, wl_pointer *pointer, uint32_t time,
+                               uint32_t axis, wl_fixed_t value) {
+    Window *self = reinterpret_cast<Window*>(data);
+    self->pointer_axis_cb(wayland_to_vik_axis(axis), wl_fixed_to_double(value));
+  }
+
+  // Unused callbacks
+  static void _keyboard_keymap_cb(void *data, wl_keyboard *keyboard,
+                                  uint32_t format, int fd, uint32_t size) {}
+  static void _keyboard_modifiers_cb(void *data, wl_keyboard *keyboard,
+                                     uint32_t serial, uint32_t mods_depressed,
+                                     uint32_t mods_latched, uint32_t mods_locked,
+                                     uint32_t group) {}
+  static void _registry_global_remove_cb(void *data, wl_registry *registry,
+                                         uint32_t name) {}
+  static void _keyboard_enter_cb(void *data,
+                                 wl_keyboard *keyboard, uint32_t serial,
+                                 wl_surface *surface, wl_array *keys) {}
+  static void _keyboard_leave_cb(void *data,
+                                 wl_keyboard *keyboard, uint32_t serial,
+                                 wl_surface *surface) {}
 };
 }

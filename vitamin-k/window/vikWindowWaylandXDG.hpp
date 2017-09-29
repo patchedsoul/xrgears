@@ -206,8 +206,8 @@ public:
   };
 
   const zxdg_toplevel_v6_listener xdg_toplevel_listener = {
-    handle_xdg_toplevel_configure,
-    handle_xdg_toplevel_close,
+    _xdg_toplevel_configure_cb,
+    _xdg_toplevel_close_cb,
   };
 
   const zxdg_shell_v6_listener xdg_shell_listener = {
@@ -216,7 +216,7 @@ public:
 
   const wl_registry_listener registry_listener = {
     registry_handle_global,
-    registry_handle_global_remove
+    _registry_global_remove_cb
   };
 
   const struct wl_seat_listener wl_seat_listener = {
@@ -224,12 +224,12 @@ public:
   };
 
   const struct wl_keyboard_listener wl_keyboard_listener = {
-    .keymap = handle_wl_keyboard_keymap,
-    .enter = handle_wl_keyboard_enter,
-    .leave = handle_wl_keyboard_leave,
+    .keymap = _keyboard_keymap_cb,
+    .enter = _keyboard_enter_cb,
+    .leave = _keyboard_leave_cb,
     .key = _keyboard_key_cb,
-    .modifiers = handle_wl_keyboard_modifiers,
-    .repeat_info = handle_wl_keyboard_repeat_info,
+    .modifiers = _keyboard_modifiers_cb,
+    .repeat_info = _keyboard_repeat_cb,
   };
 
   static void
@@ -238,25 +238,17 @@ public:
   }
 
   // unused callbacks
-  static void handle_wl_keyboard_modifiers(void *data, wl_keyboard *wl_keyboard,
-                                           uint32_t serial, uint32_t mods_depressed,
-                                           uint32_t mods_latched, uint32_t mods_locked,
-                                           uint32_t group) {}
-  static void handle_wl_keyboard_repeat_info(void *data, wl_keyboard *wl_keyboard,
+  static void _keyboard_repeat_cb(void *data, wl_keyboard *wl_keyboard,
                                              int32_t rate, int32_t delay) {}
-  static void registry_handle_global_remove(void *data, wl_registry *registry,
-                                            uint32_t name) {}
-  static void handle_wl_keyboard_keymap(void *data, wl_keyboard *wl_keyboard,
-                                        uint32_t format, int32_t fd, uint32_t size) {}
-  static void handle_wl_keyboard_enter(void *data, wl_keyboard *wl_keyboard,
+  static void _keyboard_enter_cb(void *data, wl_keyboard *wl_keyboard,
                                        uint32_t serial, wl_surface *surface,
                                        wl_array *keys) {}
-  static void handle_wl_keyboard_leave(void *data, wl_keyboard *wl_keyboard,
+  static void _keyboard_leave_cb(void *data, wl_keyboard *wl_keyboard,
                                        uint32_t serial, wl_surface *surface) {}
-  static void handle_xdg_toplevel_configure(void *data, zxdg_toplevel_v6 *toplevel,
+  static void _xdg_toplevel_configure_cb(void *data, zxdg_toplevel_v6 *toplevel,
                                             int32_t width, int32_t height,
                                             struct wl_array *states) {}
-  static void handle_xdg_toplevel_close(void *data, zxdg_toplevel_v6 *toplevel) {}
+  static void _xdg_toplevel_close_cb(void *data, zxdg_toplevel_v6 *toplevel) {}
 
 };
 }

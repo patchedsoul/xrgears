@@ -185,14 +185,14 @@ public:
   }
 
   static void _output_geometry_cb(void *data, wl_output *wl_output, int x,
-                                  int y, int w, int h, int subpixel, const char *make, const char *model,
+                                  int y, int w, int h, int subpixel,
+                                  const char *make, const char *model,
                                   int transform) {
     //VikWindowWayland *self = reinterpret_cast<VikWindowWayland *>(data);
     vik_log_i("%s: %s [%d, %d] %dx%d", make, model, x, y, w, h);
   }
 
   // callback wrappers
-
   static void _ping_cb(void *data, wl_shell_surface *shell_surface,
                        uint32_t serial) {
     wl_shell_surface_pong(shell_surface, serial);
@@ -209,54 +209,13 @@ public:
     self->seatCapabilities(seat, caps);
   }
 
-  static void _pointer_button_cb(void *data,
-                                 wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button,
-                                 uint32_t state) {
-    WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
-    self->pointer_button_cb(wayland_to_vik_button(button), state);
-  }
-
-  static void _pointer_axis_cb(void *data,
-                               wl_pointer *pointer, uint32_t time, uint32_t axis,
-                               wl_fixed_t value) {
-    WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
-    double d = wl_fixed_to_double(value);
-    self->pointer_axis_cb(wayland_to_vik_axis(axis), d);
-  }
-
   // Unused callbacks
-  static void _registry_global_remove_cb(void *data, wl_registry *registry,
-                                         uint32_t name) {}
-
   static void _popup_done_cb(void *data, wl_shell_surface *shell_surface) {}
-
-  static void _keyboard_modifiers_cb(void *data, wl_keyboard *keyboard,
-                                     uint32_t serial, uint32_t mods_depressed,
-                                     uint32_t mods_latched, uint32_t mods_locked,
-                                     uint32_t group) {}
-
-  static void _keyboard_keymap_cb(void *data,
-                                  wl_keyboard *keyboard, uint32_t format, int fd, uint32_t size)
-  {}
-
-  static void _keyboard_enter_cb(void *data,
-                                 wl_keyboard *keyboard, uint32_t serial,
-                                 wl_surface *surface, wl_array *keys)
-  {}
-
-  static void _keyboard_leave_cb(void *data,
-                                 wl_keyboard *keyboard, uint32_t serial,
-                                 wl_surface *surface)
-  {}
-
-  static void _pointer_enter_cb(void *data, wl_pointer *pointer, uint32_t serial,
-                                wl_surface *surface, wl_fixed_t sx, wl_fixed_t sy)
-  {}
-
-  static void _pointer_leave_cb(void *data, wl_pointer *pointer, uint32_t serial,
-                                wl_surface *surface)
-  {}
-
+  static void _pointer_enter_cb(void *data, wl_pointer *pointer,
+                                uint32_t serial, wl_surface *surface,
+                                wl_fixed_t sx, wl_fixed_t sy) {}
+  static void _pointer_leave_cb(void *data, wl_pointer *pointer,
+                                uint32_t serial, wl_surface *surface) {}
 
 };
 }
