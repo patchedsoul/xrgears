@@ -131,7 +131,8 @@ class WindowKhrDisplay  : public Window {
     delete[] pDisplayProperties;
     delete[] pPlaneProperties;
 
-    swap_chain.select_queue_and_format();
+    swap_chain.select_queue();
+    swap_chain.select_surface_format();
   }
 
   SwapChain* get_swap_chain() {

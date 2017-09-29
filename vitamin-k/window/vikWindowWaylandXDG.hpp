@@ -18,7 +18,7 @@ class WindowWaylandXDG : public WindowWayland {
   struct zxdg_surface_v6 *xdg_surface = nullptr;
   struct zxdg_toplevel_v6 *xdg_toplevel = nullptr;
   bool wait_for_configure;
-  SwapChainVK swap_chain;
+  SwapChainVkComplex swap_chain;
 
 public:
   WindowWaylandXDG(Settings *s) : WindowWayland(s) {
@@ -78,11 +78,21 @@ public:
     swap_chain.render(queue, semaphore);
   }
 
+  /*
+   * simple swap chain
   void init_swap_chain(uint32_t width, uint32_t height) {
     create_surface(swap_chain.instance, &swap_chain.surface);
-    swap_chain.choose_surface_format();
+    swap_chain.select_surface_format();
     swap_chain.recreate(width, height);
-    //recreate_frame_buffers_cb();
+  }
+  */
+
+  void init_swap_chain(uint32_t width, uint32_t height) {
+    create_surface(swap_chain.instance, &swap_chain.surface);
+    swap_chain.set_dimension_cb(dimension_cb);
+    swap_chain.set_settings(settings);
+    swap_chain.select_surface_format();
+    swap_chain.recreate(width, height);
   }
 
   SwapChain* get_swap_chain() {

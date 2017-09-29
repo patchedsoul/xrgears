@@ -104,7 +104,7 @@ public:
     return vkQueuePresentKHR(queue, &presentInfo);
   }
 
-  void choose_surface_format() {
+  virtual void select_surface_format() {
     uint32_t num_formats = 0;
 
     vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface,

@@ -43,7 +43,7 @@ class SwapChainVkComplex : public vik::SwapChainVK {
     return queueNodeIndex;
   }
 
-  uint32_t select_queue() {
+  void select_queue() {
     // Get available queue family properties
     uint32_t queueCount;
     vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queueCount, NULL);
@@ -94,10 +94,10 @@ class SwapChainVkComplex : public vik::SwapChainVK {
     if (graphicsQueueNodeIndex != presentQueueNodeIndex)
       vik_log_f("Separate graphics and presenting queues are not supported yet!");
 
-    return graphicsQueueNodeIndex;
+    queueNodeIndex = graphicsQueueNodeIndex;
   }
 
-  void select_format() {
+  void select_surface_format() {
     // Get list of supported surface formats
     uint32_t count;
     vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &count, NULL));
@@ -135,11 +135,6 @@ class SwapChainVkComplex : public vik::SwapChainVK {
         surface_format.colorSpace = formats[0].colorSpace;
       }
     }
-  }
-
-  void select_queue_and_format() {
-    queueNodeIndex = select_queue();
-    select_format();
   }
 
   VkExtent2D select_extent(const VkSurfaceCapabilitiesKHR &surfCaps, uint32_t width, uint32_t height) {

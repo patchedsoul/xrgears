@@ -11,7 +11,7 @@
 namespace vik {
 class WindowXCBSimple : public WindowXCB {
 
-  SwapChainVK swap_chain;
+  SwapChainVkComplex swap_chain;
 
   bool repaint = false;
 
@@ -37,19 +37,19 @@ public:
     xcb_flush(connection);
   }
 
+  /*
   void init_swap_chain(uint32_t width, uint32_t height) {
     create_surface(swap_chain.instance, &swap_chain.surface);
-    swap_chain.choose_surface_format();
-  }
+    swap_chain.select_surface_format();
+  }*/
 
-  /*
+
   void init_swap_chain(uint32_t width, uint32_t height) {
     create_surface(swap_chain.instance, &swap_chain.surface);
     swap_chain.set_dimension_cb(dimension_cb);
     swap_chain.set_settings(settings);
-    swap_chain.select_queue_and_format();
+    swap_chain.select_surface_format();
   }
-*/
 /*
   void init_swap_chain(uint32_t width, uint32_t height) {
     VkResult err = create_surface(swap_chain.instance, &swap_chain.surface);
