@@ -14,18 +14,15 @@
 namespace vik {
 class WindowWaylandXDG : public WindowWayland {
 
-  struct zxdg_shell_v6 *shell;
-  struct zxdg_surface_v6 *xdg_surface;
-  struct zxdg_toplevel_v6 *xdg_toplevel;
+  struct zxdg_shell_v6 *shell = nullptr;
+  struct zxdg_surface_v6 *xdg_surface = nullptr;
+  struct zxdg_toplevel_v6 *xdg_toplevel = nullptr;
   bool wait_for_configure;
   SwapChainVK swap_chain;
 
 public:
   WindowWaylandXDG(Settings *s) : WindowWayland(s) {
     name = "wayland-xdg";
-    seat = NULL;
-    keyboard = NULL;
-    shell = NULL;
   }
 
   ~WindowWaylandXDG() {}
@@ -36,7 +33,7 @@ public:
     if (!display)
       return -1;
 
-    struct wl_registry *registry = wl_display_get_registry(display);
+    wl_registry *registry = wl_display_get_registry(display);
     wl_registry_add_listener(registry, &registry_listener, this);
 
     /* Round-trip to get globals */
@@ -117,25 +114,6 @@ public:
     zxdg_toplevel_v6_set_title(xdg_toplevel, title.c_str());
   }
 
-  static void _xdg_surface_configure_cb(void *data, zxdg_surface_v6 *surface,
-                                        uint32_t serial) {
-    WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
-    zxdg_surface_v6_ack_configure(surface, serial);
-    if (self->wait_for_configure)
-      // redraw
-      self->wait_for_configure = false;
-  }
-
-  void seat_capabilities(wl_seat *seat, uint32_t caps) {
-    if ((caps & WL_SEAT_CAPABILITY_KEYBOARD) && !keyboard) {
-      keyboard = wl_seat_get_keyboard(seat);
-      wl_keyboard_add_listener(keyboard, &keyboard_listener, this);
-    } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && keyboard) {
-      wl_keyboard_destroy(keyboard);
-      keyboard = NULL;
-    }
-  }
-
   void registry_global(wl_registry *registry, uint32_t name,
                        const char *interface) {
     if (strcmp(interface, "wl_compositor") == 0) {
@@ -150,15 +128,9 @@ public:
           wl_registry_bind(registry, name, &wl_seat_interface, 1);
       wl_seat_add_listener(seat, &seat_listener, this);
     } else if (strcmp(interface, "wl_output") == 0) {
-      wl_output* the_output = (wl_output*)
+      wl_output* _output = (wl_output*)
           wl_registry_bind(registry, name, &wl_output_interface, 2);
-      static const wl_output_listener _output_listener = {
-        _output_geometry_cb,
-        _output_mode_cb,
-        _output_done_cb,
-        _output_scale_cb
-      };
-      wl_output_add_listener(the_output, &_output_listener, this);
+      wl_output_add_listener(_output, &output_listener, this);
     }
   }
 
@@ -177,7 +149,15 @@ public:
     }
   }
 
-  // callback wrappers
+  static void _xdg_surface_configure_cb(void *data, zxdg_surface_v6 *surface,
+                                        uint32_t serial) {
+    WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
+    zxdg_surface_v6_ack_configure(surface, serial);
+    if (self->wait_for_configure)
+      // redraw
+      self->wait_for_configure = false;
+  }
+
   const zxdg_surface_v6_listener xdg_surface_listener = {
     _xdg_surface_configure_cb,
   };
@@ -191,37 +171,12 @@ public:
     _xdg_shell_ping_cb,
   };
 
-  const wl_registry_listener registry_listener = {
-    _registry_global_cb,
-    _registry_global_remove_cb
-  };
-
-  const struct wl_seat_listener seat_listener = {
-    _seat_capabilities_cb,
-  };
-
-  const struct wl_keyboard_listener keyboard_listener = {
-    .keymap = _keyboard_keymap_cb,
-    .enter = _keyboard_enter_cb,
-    .leave = _keyboard_leave_cb,
-    .key = _keyboard_key_cb,
-    .modifiers = _keyboard_modifiers_cb,
-    .repeat_info = _keyboard_repeat_cb,
-  };
-
   static void _xdg_shell_ping_cb(void *data, zxdg_shell_v6 *shell,
                                  uint32_t serial) {
     zxdg_shell_v6_pong(shell, serial);
   }
 
   // unused callbacks
-  static void _keyboard_repeat_cb(void *data, wl_keyboard *wl_keyboard,
-                                  int32_t rate, int32_t delay) {}
-  static void _keyboard_enter_cb(void *data, wl_keyboard *wl_keyboard,
-                                 uint32_t serial, wl_surface *surface,
-                                 wl_array *keys) {}
-  static void _keyboard_leave_cb(void *data, wl_keyboard *wl_keyboard,
-                                 uint32_t serial, wl_surface *surface) {}
   static void _xdg_toplevel_configure_cb(void *data, zxdg_toplevel_v6 *toplevel,
                                          int32_t width, int32_t height,
                                          struct wl_array *states) {}

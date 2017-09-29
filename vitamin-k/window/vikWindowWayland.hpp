@@ -11,6 +11,7 @@ class WindowWayland : public Window {
   wl_display *display = nullptr;
   wl_compositor *compositor = nullptr;
   wl_keyboard *keyboard = nullptr;
+  wl_pointer *pointer = nullptr;
   wl_seat *seat = nullptr;
   wl_surface *surface = nullptr;
 
@@ -81,14 +82,63 @@ class WindowWayland : public Window {
     return vkCreateWaylandSurfaceKHR(instance, &surface_info, NULL, vk_surface);
   }
 
+  void seat_capabilities(wl_seat *seat, uint32_t caps) {
+    if ((caps & WL_SEAT_CAPABILITY_POINTER) && !pointer) {
+      pointer = wl_seat_get_pointer(seat);
+      wl_pointer_add_listener(pointer, &pointer_listener, this);
+    } else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && pointer) {
+      wl_pointer_destroy(pointer);
+      pointer = nullptr;
+    }
+
+    if ((caps & WL_SEAT_CAPABILITY_KEYBOARD) && !keyboard) {
+      keyboard = wl_seat_get_keyboard(seat);
+      wl_keyboard_add_listener(keyboard, &keyboard_listener, this);
+    } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && keyboard) {
+      wl_keyboard_destroy(keyboard);
+      keyboard = nullptr;
+    }
+  }
 
   virtual void output_mode(wl_output *wl_output, unsigned int flags,
                            int w, int h, int refresh) = 0;
 
-  virtual void seat_capabilities(wl_seat *seat, uint32_t caps) = 0;
-
   virtual void registry_global(wl_registry *registry, uint32_t name,
                                const char *interface) = 0;
+
+  // listeners
+  const wl_registry_listener registry_listener = {
+    _registry_global_cb,
+    _registry_global_remove_cb
+  };
+
+  const wl_seat_listener seat_listener = {
+    _seat_capabilities_cb,
+  };
+
+  const wl_output_listener output_listener = {
+    _output_geometry_cb,
+    _output_mode_cb,
+    _output_done_cb,
+    _output_scale_cb
+  };
+
+  const wl_pointer_listener pointer_listener = {
+    _pointer_enter_cb,
+    _pointer_leave_cb,
+    _pointer_motion_cb,
+    _pointer_button_cb,
+    _pointer_axis_cb,
+  };
+
+  const struct wl_keyboard_listener keyboard_listener = {
+    .keymap = _keyboard_keymap_cb,
+    .enter = _keyboard_enter_cb,
+    .leave = _keyboard_leave_cb,
+    .key = _keyboard_key_cb,
+    .modifiers = _keyboard_modifiers_cb,
+    .repeat_info = _keyboard_repeat_cb,
+  };
 
   // callback wrappers
   static void _keyboard_key_cb(void *data, wl_keyboard *keyboard,
@@ -151,19 +201,27 @@ class WindowWayland : public Window {
   }
 
   // Unused callbacks
+  static void _registry_global_remove_cb(void *data, wl_registry *registry,
+                                         uint32_t name) {}
   static void _keyboard_keymap_cb(void *data, wl_keyboard *keyboard,
                                   uint32_t format, int fd, uint32_t size) {}
   static void _keyboard_modifiers_cb(void *data, wl_keyboard *keyboard,
                                      uint32_t serial, uint32_t mods_depressed,
                                      uint32_t mods_latched, uint32_t mods_locked,
                                      uint32_t group) {}
-  static void _registry_global_remove_cb(void *data, wl_registry *registry,
-                                         uint32_t name) {}
+  static void _keyboard_repeat_cb(void *data, wl_keyboard *wl_keyboard,
+                                  int32_t rate, int32_t delay) {}
+
   static void _keyboard_enter_cb(void *data,
                                  wl_keyboard *keyboard, uint32_t serial,
                                  wl_surface *surface, wl_array *keys) {}
   static void _keyboard_leave_cb(void *data,
                                  wl_keyboard *keyboard, uint32_t serial,
                                  wl_surface *surface) {}
+  static void _pointer_enter_cb(void *data, wl_pointer *pointer,
+                                uint32_t serial, wl_surface *surface,
+                                wl_fixed_t sx, wl_fixed_t sy) {}
+  static void _pointer_leave_cb(void *data, wl_pointer *pointer,
+                                uint32_t serial, wl_surface *surface) {}
 };
 }
