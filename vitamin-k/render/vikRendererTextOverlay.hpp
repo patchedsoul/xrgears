@@ -2,11 +2,11 @@
 
 #include <string>
 
-#include "vikRendererVks.hpp"
+#include "vikRenderer.hpp"
 
 namespace vik {
 
-class RendererTextOverlay : public RendererVks {
+class RendererTextOverlay : public Renderer {
 public:
 
   TextOverlay *textOverlay;
@@ -15,7 +15,7 @@ public:
 
   std::string name;
 
-  RendererTextOverlay(Settings *s, Window *w) : RendererVks(s, w) {}
+  RendererTextOverlay(Settings *s, Window *w) : Renderer(s, w) {}
   ~RendererTextOverlay() {
     vkDestroySemaphore(device, text_overlay_complete, nullptr);
     if (settings->enable_text_overlay)
@@ -23,7 +23,7 @@ public:
   }
 
   void init(const std::string &n) {
-    RendererVks::init(n);
+    Renderer::init(n);
     name = n;
     if (settings->enable_text_overlay) {
       init_text_overlay();
@@ -93,7 +93,7 @@ public:
   }
 
   void resize() {
-    RendererVks::resize();
+    Renderer::resize();
     if (settings->enable_text_overlay) {
       textOverlay->reallocateCommandBuffers();
       update_text_overlay();
@@ -115,7 +115,7 @@ public:
   }
 
   void init_semaphores() {
-    RendererVks::init_semaphores();
+    Renderer::init_semaphores();
      VkSemaphoreCreateInfo semaphore_info = initializers::semaphoreCreateInfo();
     // Create a semaphore used to synchronize command submission
     // Ensures that the image is not presented until all commands for the text overlay have been sumbitted and executed
