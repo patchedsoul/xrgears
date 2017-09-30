@@ -1,4 +1,16 @@
-
+/*
+ * xrcube
+ *
+ * Copyright 2012 Arvin Schnell <arvin.schnell@gmail.com>
+ * Copyright 2012 Rob Clark <rob@ti.com>
+ * Copyright 2015 Intel Corporation
+ * Copyright 2017-2018 Collabora Ltd.
+ *
+ * Authors: Lubosz Sarnecki <lubosz.sarnecki@collabora.com>
+ * SPDX-License-Identifier: MIT
+ *
+ * Based on vkcube example.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>

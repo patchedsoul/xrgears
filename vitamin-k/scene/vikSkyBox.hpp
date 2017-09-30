@@ -1,12 +1,11 @@
 /*
- * XRGears
+ * vitamin-k
  *
- * Copyright (C) 2016 Sascha Willems - www.saschawillems.de
- * Copyright (C) 2017 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
+ * Copyright 2016 Sascha Willems - www.saschawillems.de
+ * Copyright 2017-2018 Collabora Ltd.
  *
- * This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
- *
- * Based on Vulkan Examples written by Sascha Willems
+ * Authors: Lubosz Sarnecki <lubosz.sarnecki@collabora.com>
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

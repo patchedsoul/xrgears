@@ -1,11 +1,11 @@
 /*
  * vitamin-k
  *
- * Copyright (C) 2016 Sascha Willems - www.saschawillems.de
- * Copyright (C) 2017 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
+ * Copyright 2016 Sascha Willems - www.saschawillems.de
+ * Copyright 2017-2018 Collabora Ltd.
  *
- * This code is licensed under the GNU General Public License Version 3 (GPLv3)
- * https://www.gnu.org/licenses/gpl-3.0.en.html
+ * Authors: Lubosz Sarnecki <lubosz.sarnecki@collabora.com>
+ * SPDX-License-Identifier: MIT
  *
  * Based on Vulkan Examples written by Sascha Willems
  */

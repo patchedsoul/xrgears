@@ -1,3 +1,12 @@
+/*
+ * vitamin-k
+ *
+ * Copyright 2017-2018 Collabora Ltd.
+ *
+ * Authors: Lubosz Sarnecki <lubosz.sarnecki@collabora.com>
+ * SPDX-License-Identifier: MIT
+ */
+
 #pragma once
 
 #include <linux/input.h>
