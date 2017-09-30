@@ -22,7 +22,7 @@ class WindowWaylandShell : public WindowWayland {
   wl_shell_surface *shell_surface = nullptr;
 
  public:
-  WindowWaylandShell(Settings *s) : WindowWayland(s) {
+  explicit WindowWaylandShell(Settings *s) : WindowWayland(s) {
     name = "wayland-shell";
   }
 

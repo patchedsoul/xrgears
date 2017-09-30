@@ -8,7 +8,6 @@
 
 #include "vikWindow.hpp"
 
-#include "../render/vikSwapChainVK.hpp"
 #include "../render/vikSwapChainVKComplex.hpp"
 
 namespace vik {
@@ -33,7 +32,7 @@ class WindowXCB : public Window {
   SwapChainVkComplex swap_chain;
 
  public:
-  WindowXCB(Settings *s) : Window(s) {
+  explicit WindowXCB(Settings *s) : Window(s) {
     name = "xcb";
   }
 

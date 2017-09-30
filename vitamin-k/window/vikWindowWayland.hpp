@@ -5,7 +5,7 @@
 
 #include "vikWindow.hpp"
 
-#include "render/vikSwapChainVKComplex.hpp"
+#include "../render/vikSwapChainVKComplex.hpp"
 
 namespace vik {
 class WindowWayland : public Window {
@@ -23,8 +23,7 @@ class WindowWayland : public Window {
 
   wl_output *hmd_output = nullptr;
 
-  WindowWayland(Settings *s) : Window(s) {
-  }
+  explicit WindowWayland(Settings *s) : Window(s) {}
 
   ~WindowWayland() {
     wl_surface_destroy(surface);

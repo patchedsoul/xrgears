@@ -19,7 +19,7 @@ class WindowWaylandXDG : public WindowWayland {
   SwapChainVkComplex swap_chain;
 
  public:
-  WindowWaylandXDG(Settings *s) : WindowWayland(s) {
+  explicit WindowWaylandXDG(Settings *s) : WindowWayland(s) {
     name = "wayland-xdg";
   }
 
