@@ -43,5 +43,27 @@ public:
           return -1;
       }
     }
+
+    void init_window_auto() {
+      settings.type = Settings::WAYLAND_XDG;
+      if (init_window_from_settings() == -1) {
+        vik_log_e("failed to initialize wayland, falling back to xcb");
+        delete(window);
+        settings.type = Settings::XCB;
+        if (init_window_from_settings() == -1) {
+          vik_log_e("failed to initialize xcb, falling back to kms");
+          delete(window);
+          settings.type = Settings::KMS;
+          init_window_from_settings();
+        }
+      }
+    }
+
+    void init_window() {
+      if (settings.type == Settings::AUTO)
+        init_window_auto();
+      else if (init_window_from_settings() == -1)
+        vik_log_f("failed to initialize %s", window->name.c_str());
+    }
 };
 }

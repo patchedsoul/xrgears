@@ -61,7 +61,7 @@ public:
   } mouseButtons;
 
   ApplicationVks(int argc, char *argv[]) : Application(argc, argv) {
-    init_window_from_settings();
+    init_window();
     renderer = new RendererTextOverlay(&settings, window);
 
     auto set_window_resize_cb = [this]() { resize(); };
