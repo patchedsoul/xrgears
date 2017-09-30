@@ -95,6 +95,8 @@ class Log {
         return "e";
       case FATAL:
         return "fatal";
+      default:
+        return "?";
     }
   }
 
@@ -109,6 +111,8 @@ class Log {
       case ERROR:
       case FATAL:
         return 31;
+      default:
+        return 36;
     }
   }
 

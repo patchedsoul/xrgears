@@ -177,6 +177,8 @@ class WindowXCB : public Window {
         return Input::MouseButton::Middle;
       case XCB_BUTTON_INDEX_3:
         return Input::MouseButton::Right;
+      default:
+        return Input::MouseButton::Left;
     }
   }
 
@@ -196,6 +198,8 @@ class WindowXCB : public Window {
       case XK_F1:
         return Input::Key::F1;
       case XK_Escape:
+        return Input::Key::ESCAPE;
+      default:
         return Input::Key::ESCAPE;
     }
   }

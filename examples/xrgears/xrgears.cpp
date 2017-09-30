@@ -144,10 +144,10 @@ class XRGears : public vik::Application {
     vik_log_d("Draw command buffers size: %ld", renderer->cmd_buffers.size());
 
     if (enableDistortion) {
-      for (int32_t i = 0; i < renderer->cmd_buffers.size(); ++i)
+      for (uint32_t i = 0; i < renderer->cmd_buffers.size(); ++i)
         buildWarpCommandBuffer(renderer->cmd_buffers[i], renderer->frame_buffers[i]);
     } else {
-      for (int32_t i = 0; i < renderer->cmd_buffers.size(); ++i)
+      for (uint32_t i = 0; i < renderer->cmd_buffers.size(); ++i)
         buildPbrCommandBuffer(renderer->cmd_buffers[i], renderer->frame_buffers[i], false);
     }
   }
@@ -312,7 +312,7 @@ class XRGears : public vik::Application {
     std::vector<float> rotationOffsets = { 0.0f, -9.0f, -30.0f };
 
     nodes.resize(positions.size());
-    for (int32_t i = 0; i < nodes.size(); ++i) {
+    for (uint32_t i = 0; i < nodes.size(); ++i) {
       vik::Node::NodeInfo gearNodeInfo = {};
       vik::GearInfo gearInfo = {};
       gearInfo.innerRadius = innerRadiuses[i];

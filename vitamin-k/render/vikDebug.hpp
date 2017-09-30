@@ -150,6 +150,7 @@ static void setup(VkDevice device) {
 // Sets the debug name of an object
 // All Objects in Vulkan are represented by their 64-bit handles which are passed into this function
 // along with the object type
+/*
 static void setObjectName(VkDevice device, uint64_t object, VkDebugReportObjectTypeEXT objectType, const char *name) {
   // Check for valid function pointer (may not be present if not running in a debugging application)
   if (pfnDebugMarkerSetObjectName) {
@@ -175,6 +176,7 @@ static void setObjectTag(VkDevice device, uint64_t object, VkDebugReportObjectTy
     pfnDebugMarkerSetObjectTag(device, &tagInfo);
   }
 }
+*/
 
 // Start a new debug marker region
 static void beginRegion(VkCommandBuffer cmdbuffer, const char* pMarkerName, glm::vec4 color) {
@@ -187,6 +189,7 @@ static void beginRegion(VkCommandBuffer cmdbuffer, const char* pMarkerName, glm:
     pfnCmdDebugMarkerBegin(cmdbuffer, &markerInfo);
   }
 }
+/*
 // Insert a new debug marker into the command buffer
 static void insert(VkCommandBuffer cmdbuffer, std::string markerName, glm::vec4 color) {
   // Check for valid function pointer (may not be present if not running in a debugging application)
@@ -198,6 +201,7 @@ static void insert(VkCommandBuffer cmdbuffer, std::string markerName, glm::vec4 
     pfnCmdDebugMarkerInsert(cmdbuffer, &markerInfo);
   }
 }
+*/
 // End the current debug marker region
 static void endRegion(VkCommandBuffer cmdBuffer) {
   // Check for valid function (may not be present if not runnin in a debugging application)
@@ -206,6 +210,7 @@ static void endRegion(VkCommandBuffer cmdBuffer) {
 }
 
 // Object specific naming functions
+/*
 static void setCommandBufferName(VkDevice device, VkCommandBuffer cmdBuffer, const char * name) {
   setObjectName(device, (uint64_t)cmdBuffer, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT, name);
 }
@@ -269,5 +274,6 @@ static void setFenceName(VkDevice device, VkFence fence, const char * name) {
 static void setEventName(VkDevice device, VkEvent _event, const char * name) {
   setObjectName(device, (uint64_t)_event, VK_DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT, name);
 }
+*/
 }  // namespace debugmarker
 }  // namespace vik

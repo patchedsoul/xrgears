@@ -210,8 +210,6 @@ class Distortion {
   }
 
   void drawQuad(const VkCommandBuffer& commandBuffer) {
-    VkDeviceSize offsets[1] = { 0 };
-
     vkCmdBindDescriptorSets(commandBuffer,
                             VK_PIPELINE_BIND_POINT_GRAPHICS,
                             pipelineLayout, 0, 1,

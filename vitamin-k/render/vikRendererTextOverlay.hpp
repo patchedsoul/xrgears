@@ -28,7 +28,7 @@ class RendererTextOverlay : public Renderer {
   std::string name;
 
   RendererTextOverlay(Settings *s, Window *w) : Renderer(s, w) {}
-  ~RendererTextOverlay() {
+  virtual ~RendererTextOverlay() {
     vkDestroySemaphore(device, text_overlay_complete, nullptr);
     if (settings->enable_text_overlay)
       delete textOverlay;
@@ -89,7 +89,7 @@ class RendererTextOverlay : public Renderer {
     textOverlay->update(name, ss.str(), deviceName);
   }
 
-  VkSubmitInfo submit_text_overlay() {
+  void submit_text_overlay() {
     VkSubmitInfo submit_info = init_text_submit_info();
     submit_info.pCommandBuffers = &textOverlay->cmdBuffers[currentBuffer];
     vik_log_check(vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE));

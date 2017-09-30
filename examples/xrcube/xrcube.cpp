@@ -63,7 +63,7 @@ class XrCube : public vik::Application {
   }
 
   void build_command_buffers() {
-    for (int32_t i = 0; i < renderer->cmd_buffers.size(); ++i) {
+    for (uint32_t i = 0; i < renderer->cmd_buffers.size(); ++i) {
       build_command_buffer(renderer->cmd_buffers[i], renderer->frame_buffers[i]);
     }
   }

@@ -92,6 +92,8 @@ class WindowWayland : public Window {
         return Input::Key::F1;
       case KEY_ESC:
         return Input::Key::ESCAPE;
+      default:
+        return Input::Key::UNKNOWN;
     }
   }
 
@@ -101,6 +103,8 @@ class WindowWayland : public Window {
         return Input::MouseScrollAxis::X;
       case REL_Y:
         return Input::MouseScrollAxis::Y;
+      default:
+        return Input::MouseScrollAxis::X;
     }
   }
 
@@ -112,6 +116,8 @@ class WindowWayland : public Window {
         return Input::MouseButton::Middle;
       case BTN_RIGHT:
         return Input::MouseButton::Right;
+      default:
+        return Input::MouseButton::Left;
     }
   }
 

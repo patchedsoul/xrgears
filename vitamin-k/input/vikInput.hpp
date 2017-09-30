@@ -24,6 +24,7 @@ class Input {
   };
 
   enum Key {
+    UNKNOWN,
     ESCAPE,
     SPACE,
     F1,

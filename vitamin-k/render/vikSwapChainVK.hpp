@@ -128,7 +128,7 @@ class SwapChainVK : public SwapChain {
                     physical_device, surface, &count, formats.data()));
 
     surface_format.format = VK_FORMAT_UNDEFINED;
-    for (int i = 0; i < count; i++) {
+    for (uint32_t i = 0; i < count; i++) {
       switch (formats[i].format) {
         case VK_FORMAT_R8G8B8A8_SRGB:
         case VK_FORMAT_B8G8R8A8_SRGB:

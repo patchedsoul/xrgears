@@ -177,6 +177,8 @@ class Application {
         case Input::Key::ESCAPE:
           quit = true;
           break;
+        default:
+          break;
       }
 
       if (state)
@@ -210,12 +212,12 @@ class Application {
       case Settings::WAYLAND_SHELL:
         window = new WindowWaylandShell(&settings);
         break;
-        break;
       case Settings::KHR_DISPLAY:
         window = new WindowKhrDisplay(&settings);
-      case Settings::AUTO:
+      default:
         return -1;
     }
+    return 0;
   }
 
   void init_window_auto() {

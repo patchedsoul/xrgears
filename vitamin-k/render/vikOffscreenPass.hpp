@@ -100,6 +100,7 @@ class OffscreenPass {
     image.samples = VK_SAMPLE_COUNT_1_BIT;
     image.tiling = VK_IMAGE_TILING_OPTIMAL;
     image.usage = usage | VK_IMAGE_USAGE_SAMPLED_BIT;
+    image.initialLayout = imageLayout;
 
     VkMemoryAllocateInfo memAlloc = initializers::memoryAllocateInfo();
     VkMemoryRequirements memReqs;

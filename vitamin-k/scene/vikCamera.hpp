@@ -32,7 +32,7 @@ class Camera {
     glm::vec3 position;
   } uboCamera;
 
-  ~Camera() {
+  virtual ~Camera() {
     uniformBuffer.destroy();
   }
 

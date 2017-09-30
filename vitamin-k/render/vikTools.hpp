@@ -224,35 +224,6 @@ static void setImageLayout(
   setImageLayout(cmdbuffer, image, oldImageLayout, newImageLayout, subresourceRange, srcStageMask, dstStageMask);
 }
 
-/** @brief Inser an image memory barrier into the command buffer */
-static void insertImageMemoryBarrier(
-    VkCommandBuffer cmdbuffer,
-    VkImage image,
-    VkAccessFlags srcAccessMask,
-    VkAccessFlags dstAccessMask,
-    VkImageLayout oldImageLayout,
-    VkImageLayout newImageLayout,
-    VkPipelineStageFlags srcStageMask,
-    VkPipelineStageFlags dstStageMask,
-    VkImageSubresourceRange subresourceRange) {
-  VkImageMemoryBarrier imageMemoryBarrier = initializers::imageMemoryBarrier();
-  imageMemoryBarrier.srcAccessMask = srcAccessMask;
-  imageMemoryBarrier.dstAccessMask = dstAccessMask;
-  imageMemoryBarrier.oldLayout = oldImageLayout;
-  imageMemoryBarrier.newLayout = newImageLayout;
-  imageMemoryBarrier.image = image;
-  imageMemoryBarrier.subresourceRange = subresourceRange;
-
-  vkCmdPipelineBarrier(
-        cmdbuffer,
-        srcStageMask,
-        dstStageMask,
-        0,
-        0, nullptr,
-        0, nullptr,
-        1, &imageMemoryBarrier);
-}
-
 // Display error message and exit on fatal error
 // void exitFatal(std::string message, std::string caption);
 
@@ -286,6 +257,7 @@ static VkShaderModule loadShader(const char *fileName, VkDevice device) {
 }
 
 /** @brief Checks if a file exists */
+#pragma GCC diagnostic ignored "-Wunused-function"
 static bool fileExists(const std::string &filename) {
   std::ifstream f(filename.c_str());
   return !f.fail();

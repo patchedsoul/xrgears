@@ -44,7 +44,7 @@ class Window {
     settings = s;
   }
 
-  ~Window() {}
+  virtual ~Window() {}
 
 
   void set_render_frame_cb(std::function<void()> cb) {

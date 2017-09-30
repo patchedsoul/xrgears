@@ -167,7 +167,7 @@ class Triangle : public vik::Application {
 
     vik_log_d("we will process %ld draw buffers", renderer->cmd_buffers.size());
 
-    for (int32_t i = 0; i < renderer->cmd_buffers.size(); ++i) {
+    for (uint32_t i = 0; i < renderer->cmd_buffers.size(); ++i) {
       renderPassBeginInfo.framebuffer = renderer->frame_buffers[i];
 
       vik_log_check(vkBeginCommandBuffer(renderer->cmd_buffers[i], &cmdBufInfo));
@@ -309,10 +309,6 @@ class Triangle : public vik::Application {
       memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
       vik_log_check(vkAllocateMemory(renderer->device, &memAlloc, nullptr, &indices.memory));
       vik_log_check(vkBindBufferMemory(renderer->device, indices.buffer, indices.memory, 0));
-
-      VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
-      cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-      cmdBufferBeginInfo.pNext = nullptr;
 
       // Buffer copies have to be submitted to a queue, so we need a command buffer for them
       // Note: Some devices offer a dedicated transfer queue (with only the transfer bit set) that may be faster when doing lots of copies
