@@ -131,11 +131,9 @@ endforeach(EXAMPLE)
 set(IGNORE
     "-build/c++11,"
     "-build/header_guard,"
-    "-readability/streams,"
     "-readability/casting,"
     "-whitespace/line_length,"
     "-whitespace/parens")
 
-add_custom_target(style
-    COMMAND python2 ${CMAKE_SOURCE_DIR}/scripts/cpplint.py --headers=hpp --filter="${IGNORE}" ${LINT_SOURCES}
-    )
+add_custom_target(style COMMAND
+    python2 ${CMAKE_SOURCE_DIR}/scripts/cpplint.py --headers=hpp --filter="${IGNORE}" ${LINT_SOURCES})
