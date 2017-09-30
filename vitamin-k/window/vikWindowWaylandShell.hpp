@@ -50,7 +50,7 @@ class WindowWaylandShell : public WindowWayland {
     shell_surface = wl_shell_get_shell_surface(shell, surface);
 
     wl_shell_surface_add_listener(shell_surface, &shell_surface_listener, this);
-    //wl_shell_surface_set_toplevel(shell_surface);
+    // wl_shell_surface_set_toplevel(shell_surface);
 
     vik_log_d("setting hmd refresh to %d", hmd_refresh);
     vik_log_d("setting hmd output to %p", hmd_output);

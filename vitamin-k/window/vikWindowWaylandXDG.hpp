@@ -50,9 +50,8 @@ class WindowWaylandXDG : public WindowWayland {
 
     xdg_toplevel = zxdg_surface_v6_get_toplevel(xdg_surface);
 
-    //zxdg_surface_v6_get_popup()
-
-    //zxdg_positioner_v6_set_size();
+    // zxdg_surface_v6_get_popup()
+    // zxdg_positioner_v6_set_size();
 
     vik_log_d("the hmd output is %p", hmd_output);
 
@@ -60,9 +59,8 @@ class WindowWaylandXDG : public WindowWayland {
 
     update_window_title("vkcube");
 
-    //zxdg_surface_v6_set_window_geometry(xdg_surface, 2560, 0, 1920, 1200);
-
-    //zxdg_toplevel_v6_set_maximized(xdg_toplevel);
+    // zxdg_surface_v6_set_window_geometry(xdg_surface, 2560, 0, 1920, 1200);
+    // zxdg_toplevel_v6_set_maximized(xdg_toplevel);
 
     wait_for_configure = true;
     wl_surface_commit(surface);
@@ -98,7 +96,6 @@ class WindowWaylandXDG : public WindowWayland {
                    int w, int h, int refresh) {
     vik_log_i("outputModeCb: %dx%d@%d", w, h, refresh);
     if (w == 2560 && h == 1440) {
-      //if (w == 1920 && h == 1200) {
       vik_log_d("setting wl_output to %p", wl_output);
       hmd_output = wl_output;
       hmd_refresh = refresh;
