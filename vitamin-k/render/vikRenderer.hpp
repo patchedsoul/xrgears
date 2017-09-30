@@ -83,16 +83,6 @@ public:
     width = s->width;
     height = s->height;
 
-    window->set_create_buffers_cb([this](uint32_t count) {
-      vik_log_f_if(count == 0, "Creating buffers before swap chain.");
-      if (count == cmd_buffers.size())
-        return;
-      //if (!cmd_buffers.empty())
-      // todo clean up
-      create_buffers(count);
-    });
-
-
     auto dimension_cb = [this](uint32_t w, uint32_t h) {
       if (((w != width) || (h != height))
           && (width > 0) && (width > 0)) {
@@ -102,7 +92,6 @@ public:
       }
     };
     window->set_dimension_cb(dimension_cb);
-    window->set_update_cb([this]() {});
 
     auto size_only_cb = [this](uint32_t w, uint32_t h) {
       if (((w != width) || (h != height))

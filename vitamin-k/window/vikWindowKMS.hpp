@@ -203,7 +203,6 @@ public:
 
   void render() {
     drmHandleEvent(fd, &evctx);
-    update_cb();
     swap_chain.render(fd, crtc->crtc_id);
   }
 
