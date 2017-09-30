@@ -87,25 +87,36 @@ foreach(SHADER ${SHADER_GLOB})
 	)
 endforeach(SHADER)
 
-set(LINT_SOURCES ${VITAMINK_SRC} ${VKS_SRC})
+file(GLOB_RECURSE VITAMINK_SRC vitamin-k/*.hpp)
+add_library(vitamin-k ${VITAMINK_SRC})
+SET_TARGET_PROPERTIES(vitamin-k  PROPERTIES LINKER_LANGUAGE CXX)
+set(LINT_SOURCES ${VITAMINK_SRC})
+
+set(EXAMPLE_LIBS
+    ${Vulkan_LIBRARY}
+    ${ASSIMP_LIBRARIES}
+    ${WAYLAND_CLIENT_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+    ${XCB_LIBRARIES}
+    dl
+    openhmd
+    vulkan
+    xcb
+    xcb-keysyms
+    assimp
+    wayland-client
+    gbm
+    drm
+    m
+    stdc++
+    xdg-shell)
 
 # Function for building single example
 function(buildExample EXAMPLE_NAME)
-
     file(GLOB EXAMPLE_SRC examples/${EXAMPLE_NAME}/*.cpp)
     add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
-
-    if (EXAMPLE_NAME STREQUAL "vkcube")
-	target_link_libraries(${EXAMPLE_NAME} vulkan m wayland-client png drm
-	    gbm xcb vulkan xcb xcb-keysyms assimp wayland-client gbm drm m stdc++ xdg-shell)
-    else()
-	set(LINT_SOURCES ${LINT_SOURCES} ${EXAMPLE_SRC})
-	target_link_libraries(${EXAMPLE_NAME}
-	    ${Vulkan_LIBRARY} ${ASSIMP_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES}
-	    ${CMAKE_THREAD_LIBS_INIT} ${XCB_LIBRARIES} dl glfw openhmd
-	    vulkan xcb xcb-keysyms assimp wayland-client gbm drm m stdc++ xdg-shell)
-    endif()
-
+    set(LINT_SOURCES "${LINT_SOURCES} ${EXAMPLE_SRC}" PARENT_SCOPE)
+    target_link_libraries(${EXAMPLE_NAME} ${EXAMPLE_LIBS})
 endfunction(buildExample)
 
 # build examples
@@ -121,12 +132,6 @@ foreach(EXAMPLE ${EXAMPLE_DIRS})
 	buildExample(${EXAMPLE})
     endif()
 endforeach(EXAMPLE)
-
-#add_custom_target(shaders
-#        #clean and compile with 1 thread per core
-#	COMMAND glslc -o gears.vert.spv gears.vert
-#)
-
 
 #set(IGNORE "-build/header_guard,-readability/streams,-readability/casting,-whitespace/line_length")
 set(IGNORE "-build/header_guard,-build/c++11,-readability/casting")
