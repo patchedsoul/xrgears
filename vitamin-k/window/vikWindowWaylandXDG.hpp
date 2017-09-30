@@ -18,7 +18,7 @@ class WindowWaylandXDG : public WindowWayland {
   bool wait_for_configure;
   SwapChainVkComplex swap_chain;
 
-public:
+ public:
   WindowWaylandXDG(Settings *s) : WindowWayland(s) {
     name = "wayland-xdg";
   }

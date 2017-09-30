@@ -35,7 +35,7 @@
 #define USE_STAGING true
 
 class Triangle : public vik::Application {
-public:
+ public:
   // Vertex layout used in this example
   struct Vertex {
     float position[3];

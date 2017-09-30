@@ -21,7 +21,7 @@ class WindowWaylandShell : public WindowWayland {
   wl_shell *shell = nullptr;
   wl_shell_surface *shell_surface = nullptr;
 
-public:
+ public:
   WindowWaylandShell(Settings *s) : WindowWayland(s) {
     name = "wayland-shell";
   }

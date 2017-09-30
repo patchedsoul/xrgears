@@ -40,7 +40,7 @@
 #define VERTEX_BUFFER_BIND_ID 0
 
 class XRGears : public vik::Application {
-public:
+ public:
   // Vertex layout for the models
   vik::VertexLayout vertexLayout = vik::VertexLayout({
     vik::VERTEX_COMPONENT_POSITION,

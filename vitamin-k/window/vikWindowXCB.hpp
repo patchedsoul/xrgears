@@ -8,8 +8,8 @@
 
 #include "vikWindow.hpp"
 
-#include "render/vikSwapChainVK.hpp"
-#include "render/vikSwapChainVKComplex.hpp"
+#include "../render/vikSwapChainVK.hpp"
+#include "../render/vikSwapChainVKComplex.hpp"
 
 namespace vik {
 class WindowXCB : public Window {
@@ -32,7 +32,7 @@ class WindowXCB : public Window {
 
   SwapChainVkComplex swap_chain;
 
-public:
+ public:
   WindowXCB(Settings *s) : Window(s) {
     name = "xcb";
   }
@@ -199,7 +199,7 @@ public:
     return vkCreateXcbSurfaceKHR(instance, &surface_info, NULL, surface);
   }
 
-public:
+ public:
   const std::vector<const char*> required_extensions() {
     return { VK_KHR_XCB_SURFACE_EXTENSION_NAME };
   }
