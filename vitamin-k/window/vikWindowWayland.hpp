@@ -40,6 +40,7 @@ class WindowWayland : public Window {
 
   void iterate_vks(VkQueue queue, VkSemaphore semaphore) {
     flush();
+    render_frame_cb();
   }
 
   void iterate_vkc(VkQueue queue, VkSemaphore semaphore) {

@@ -160,7 +160,7 @@ public:
     vik_log_i("mode info: hdisplay %d, vdisplay %d",
               crtc->mode.hdisplay, crtc->mode.vdisplay);
 
-    dimension_cb(crtc->mode.hdisplay, crtc->mode.vdisplay);
+    size_only_cb(crtc->mode.hdisplay, crtc->mode.vdisplay);
 
     gbm_dev = gbm_create_device(fd);
 
@@ -184,6 +184,10 @@ public:
   }
 
   void init_swap_chain_vks(uint32_t width, uint32_t height) {
+    swap_chain.surface_format.format = VK_FORMAT_B8G8R8A8_SRGB;
+    swap_chain.init(swap_chain.device, swap_chain.surface_format.format, gbm_dev, fd,
+             width, height);
+    swap_chain.set_mode_and_page_flip(fd, crtc, connector);
   }
 
   SwapChain* get_swap_chain() {
@@ -199,6 +203,10 @@ public:
     switch (buf[0]) {
       case 'q':
         quit_cb();
+        break;
+      case 'w':
+        keyboard_key_cb(Input::W, true);
+        break;
       case '\e':
         if (len == 1)
           quit_cb();
@@ -211,6 +219,7 @@ public:
     swap_chain.render(fd, crtc->crtc_id);
   }
 
+
   void iterate_vkc(VkQueue queue, VkSemaphore semaphore) {
     int ret = poll(pfd, 2, -1);
     vik_log_f_if(ret == -1, "poll failed");
@@ -221,6 +230,7 @@ public:
   }
 
   void iterate_vks(VkQueue queue, VkSemaphore semaphore) {
+    iterate_vkc(queue, semaphore);
   }
 
   VkBool32 check_support(VkPhysicalDevice physical_device) {

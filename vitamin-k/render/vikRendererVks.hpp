@@ -88,6 +88,7 @@ public:
       create_buffers(count);
     });
 
+
     auto dimension_cb = [this](uint32_t w, uint32_t h) {
       if (((w != width) || (h != height))
           && (width > 0) && (width > 0)) {
@@ -95,17 +96,25 @@ public:
         height = h;
         resize();
       }
-
     };
     window->set_dimension_cb(dimension_cb);
-/*
-    auto format_cb = [this](VkSurfaceFormatKHR format) {
-      init_depth_stencil();
-      create_render_pass();
-    };
+    window->set_update_cb([this]() {});
 
-    window->set_format_cb(format_cb);
-*/
+    auto size_only_cb = [this](uint32_t w, uint32_t h) {
+      if (((w != width) || (h != height))
+          && (width > 0) && (width > 0)) {
+        width = w;
+        height = h;
+      }
+    };
+    window->set_size_only_cb(size_only_cb);
+
+    window->set_render_frame_cb([this](){
+      prepare_frame();
+      render_cb();
+      submit_frame();
+    });
+
   }
 
   void create_buffers(uint32_t count) {
@@ -149,9 +158,17 @@ public:
 
     window->init(width, height);
 
+
+
     window->update_window_title(make_title_string(name));
     window->get_swap_chain()->set_context(instance, physical_device, device);
     window->init_swap_chain_vks(width, height);
+
+    auto _render_cb = [this](uint32_t index) {
+      currentBuffer = index;
+      render_cb();
+    };
+    window->get_swap_chain()->set_render_cb(_render_cb);
 
     if (vksDevice->enableDebugMarkers)
       debugmarker::setup(device);
@@ -159,7 +176,6 @@ public:
     create_command_pool(window->get_swap_chain()->get_queue_index());
 
     // need format
-    //window->format_cb();
     init_depth_stencil();
     create_render_pass();
 
@@ -600,9 +616,6 @@ public:
     timer.start();
     frame_start_cb();
     window->iterate_vks(nullptr, nullptr);
-    prepare_frame();
-    render_cb();
-    submit_frame();
     timer.increment();
     float frame_time = timer.update_frame_time();
     frame_end_cb(frame_time);

@@ -15,6 +15,8 @@ public:
   std::function<void()> update_cb;
   std::function<void()> quit_cb;
 
+  std::function<void()> render_frame_cb;
+
   std::function<void(uint32_t count)> create_buffers_cb;
 
   std::function<void(double x, double y)>
@@ -28,6 +30,8 @@ public:
 
   std::function<void(uint32_t width, uint32_t height)> dimension_cb;
 
+  std::function<void(uint32_t width, uint32_t height)> size_only_cb;
+
   std::function<void(VkSurfaceFormatKHR format)> format_cb;
 
   Settings *settings;
@@ -40,6 +44,10 @@ public:
 
   void set_init_cb(std::function<void()> cb) {
     init_cb = cb;
+  }
+
+  void set_render_frame_cb(std::function<void()> cb) {
+    render_frame_cb = cb;
   }
 
   void set_update_cb(std::function<void()> cb) {
@@ -76,6 +84,10 @@ public:
 
   void set_dimension_cb(std::function<void(uint32_t width, uint32_t height)> cb) {
     dimension_cb = cb;
+  }
+
+  void set_size_only_cb(std::function<void(uint32_t width, uint32_t height)> cb) {
+    size_only_cb = cb;
   }
 
   void set_format_cb(std::function<void(VkSurfaceFormatKHR format)> cb) {
