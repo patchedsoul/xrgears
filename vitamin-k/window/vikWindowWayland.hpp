@@ -149,7 +149,7 @@ class WindowWayland : public Window {
       return;
     }
 
-    pollfd fds[] = {{ wl_display_get_fd(display), POLLIN },};
+    pollfd fds[] = {{ wl_display_get_fd(display), POLLIN }, };
     if (poll(fds, 1, 0) > 0) {
       wl_display_read_events(display);
       wl_display_dispatch_pending(display);

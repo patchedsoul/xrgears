@@ -199,7 +199,7 @@ class XrCube : public vik::Application {
     sencilinfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 
 
-    std::array<VkPipelineColorBlendAttachmentState,1> attachments = {};
+    std::array<VkPipelineColorBlendAttachmentState, 1> attachments = {};
     attachments[0].colorWriteMask =
         VK_COLOR_COMPONENT_A_BIT |
         VK_COLOR_COMPONENT_R_BIT |
@@ -288,7 +288,7 @@ class XrCube : public vik::Application {
   }
 
   VkDescriptorPool init_descriptor_pool() {
-    std::array<VkDescriptorPoolSize,1> poolsizes = {};
+    std::array<VkDescriptorPoolSize, 1> poolsizes = {};
     poolsizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolsizes[0].descriptorCount = 1;
 
@@ -323,7 +323,7 @@ class XrCube : public vik::Application {
     descriptorBufferInfo.offset = 0;
     descriptorBufferInfo.range = sizeof(struct ubo);
 
-    std::array<VkWriteDescriptorSet,1> writeDescriptorSet = {};
+    std::array<VkWriteDescriptorSet, 1> writeDescriptorSet = {};
     writeDescriptorSet[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writeDescriptorSet[0].dstSet = descriptor_set;
     writeDescriptorSet[0].dstBinding = 0;
@@ -504,7 +504,7 @@ class XrCube : public vik::Application {
     vik_log_e_if(r != VK_SUCCESS, "vkBeginCommandBuffer: %s",
                  vik::Log::result_string(r).c_str());
 
-    std::array<VkClearValue,1> clearValues = {};
+    std::array<VkClearValue, 1> clearValues = {};
     clearValues[0].color = { { 0.2f, 0.2f, 0.2f, 1.0f } };
 
     VkRenderPassBeginInfo passBeginInfo = {};
