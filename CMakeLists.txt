@@ -10,6 +10,8 @@ function(add_cxxflag FLAG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}" PARENT_SCOPE)
 endfunction(add_cxxflag)
 
+add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
+
 #add_cxxflag("-Wconversion")
 #add_cxxflag("-Wsign-conversion")
 #add_cxxflag("-Winline")
@@ -21,8 +23,6 @@ endfunction(add_cxxflag)
 #add_cxxflag("-pedantic")
 
 add_cxxflag("-std=c++14")
-
-add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
 
 function(add_verbose_warnings)
     add_cxxflag("-Werror")
@@ -93,18 +93,16 @@ set(EXAMPLE_LIBS
     ${WAYLAND_CLIENT_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${XCB_LIBRARIES}
-    dl
-    openhmd
     vulkan
+    openhmd
+    assimp
     xcb
     xcb-keysyms
-    assimp
     wayland-client
+    xdg-shell
     gbm
     drm
-    m
-    stdc++
-    xdg-shell)
+)
 
 # Function for building single example
 function(buildExample EXAMPLE_NAME)
