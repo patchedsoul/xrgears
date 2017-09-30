@@ -6,9 +6,12 @@
 #include <poll.h>
 
 #include <vulkan/vulkan.h>
+#include <string>
+
 #include "../../xdg-shell/xdg-shell-unstable-v6-client-protocol.h"
-#include "../system/vikLog.hpp"
+
 #include "vikWindowWayland.hpp"
+#include "../system/vikLog.hpp"
 
 namespace vik {
 class WindowWaylandXDG : public WindowWayland {

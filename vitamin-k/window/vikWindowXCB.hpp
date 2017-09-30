@@ -5,6 +5,7 @@
 #include <xcb/xcb_keysyms.h>
 
 #include <string>
+#include <vector>
 
 #include "vikWindow.hpp"
 

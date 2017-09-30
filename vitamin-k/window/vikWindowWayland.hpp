@@ -3,6 +3,8 @@
 #include <linux/input.h>
 #include <wayland-client.h>
 
+#include <vector>
+
 #include "vikWindow.hpp"
 
 #include "../render/vikSwapChainVKComplex.hpp"

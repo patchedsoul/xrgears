@@ -13,8 +13,9 @@
 
 #include <vulkan/vulkan.h>
 
-#include "vikWindowWayland.hpp"
+#include <string>
 
+#include "vikWindowWayland.hpp"
 
 namespace vik {
 class WindowWaylandShell : public WindowWayland {

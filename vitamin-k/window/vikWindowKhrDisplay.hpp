@@ -13,6 +13,9 @@
 
 #include <vulkan/vulkan.h>
 
+#include <string>
+#include <vector>
+
 #include "vikWindow.hpp"
 #include "../render/vikSwapChainVKComplex.hpp"
 
