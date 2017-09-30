@@ -16,13 +16,13 @@
 
 #include <vulkan/vulkan.h>
 
-#include "system/vikApplicationVks.hpp"
+#include "system/vikApplication.hpp"
 #include "render/vikShader.hpp"
 
 #include "system/vikLog.hpp"
 #include "render/vikTools.hpp"
 
-class XrCube : public vik::ApplicationVks
+class XrCube : public vik::Application
 {
 public:
 
@@ -45,7 +45,7 @@ public:
 
   uint32_t vertex_offset, colors_offset, normals_offset;
 
-  XrCube(int argc, char *argv[]) : ApplicationVks(argc, argv) {
+  XrCube(int argc, char *argv[]) : Application(argc, argv) {
     name = "Cube";
   }
 
@@ -59,7 +59,7 @@ public:
   }
 
   void init() {
-    ApplicationVks::init();
+    Application::init();
     VkDescriptorSetLayout set_layout = init_descriptor_set_layout();
     init_pipeline_layout(set_layout);
     init_pipeline();

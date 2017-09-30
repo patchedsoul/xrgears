@@ -26,14 +26,14 @@
 
 #include <vulkan/vulkan.h>
 
-#include "system/vikApplicationVks.hpp"
+#include "system/vikApplication.hpp"
 #include "render/vikShader.hpp"
 
 // Set to "true" to use staging buffers for uploading vertex and index data to device local memory
 // See "prepareVertices" for details on what's staging and on why to use it
 #define USE_STAGING true
 
-class Triangle : public vik::ApplicationVks
+class Triangle : public vik::Application
 {
 public:
   // Vertex layout used in this example
@@ -106,7 +106,7 @@ public:
   // Used to check the completion of queue operations (e.g. command buffer execution)
   std::vector<VkFence> waitFences;
 
-  Triangle(int argc, char *argv[]) : ApplicationVks(argc, argv) {
+  Triangle(int argc, char *argv[]) : Application(argc, argv) {
     zoom = -2.5f;
     name = "Triangle";
     // Values not set here are initialized in the base class constructor
@@ -771,7 +771,7 @@ public:
   }
 
   void init() {
-    ApplicationVks::init();
+    Application::init();
     prepareSynchronizationPrimitives();
     prepareVertices(USE_STAGING);
     prepareUniformBuffers();

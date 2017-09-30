@@ -24,7 +24,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "system/vikApplicationVks.hpp"
+#include "system/vikApplication.hpp"
 #include "render/vikModel.hpp"
 
 #include "scene/vikNodeGear.hpp"
@@ -40,7 +40,7 @@
 
 #define VERTEX_BUFFER_BIND_ID 0
 
-class XRGears : public vik::ApplicationVks {
+class XRGears : public vik::Application {
 public:
   // Vertex layout for the models
   vik::VertexLayout vertexLayout = vik::VertexLayout({
@@ -91,7 +91,7 @@ public:
   // Semaphore used to synchronize between offscreen and final scene rendering
   VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
-  XRGears(int argc, char *argv[]) : ApplicationVks(argc, argv) {
+  XRGears(int argc, char *argv[]) : Application(argc, argv) {
     name = "XR Gears";
     camera.type = vik::CameraBase::CameraType::firstperson;
     camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -658,7 +658,7 @@ public:
   }
 
   void init() {
-    ApplicationVks::init();
+    Application::init();
 
     hmd = new vik::HMD();
 
