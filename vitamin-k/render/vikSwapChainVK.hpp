@@ -14,6 +14,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <vector>
+
 #include "vikSwapChain.hpp"
 
 namespace vik {
@@ -117,19 +119,16 @@ class SwapChainVK : public SwapChain {
   }
 
   virtual void select_surface_format() {
-    uint32_t num_formats = 0;
+    uint32_t count = 0;
+    vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &count, NULL);
+    assert(count > 0);
 
-    vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface,
-                                         &num_formats, NULL);
-    assert(num_formats > 0);
-
-    VkSurfaceFormatKHR formats[num_formats];
-
-    vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface,
-                                         &num_formats, formats);
+    std::vector<VkSurfaceFormatKHR> formats(count);
+    vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(
+                    physical_device, surface, &count, formats.data()));
 
     surface_format.format = VK_FORMAT_UNDEFINED;
-    for (int i = 0; i < num_formats; i++) {
+    for (int i = 0; i < count; i++) {
       switch (formats[i].format) {
         case VK_FORMAT_R8G8B8A8_SRGB:
         case VK_FORMAT_B8G8R8A8_SRGB:
@@ -153,8 +152,9 @@ class SwapChainVK : public SwapChain {
     vkGetSwapchainImagesKHR(device, swap_chain, &image_count, NULL);
     assert(image_count > 0);
     vik_log_d("Creating swap chain with %d images.", image_count);
-    VkImage images[image_count];
-    vkGetSwapchainImagesKHR(device, swap_chain, &image_count, images);
+
+    std::vector<VkImage> images(image_count);
+    vkGetSwapchainImagesKHR(device, swap_chain, &image_count, images.data());
 
     buffers.resize(image_count);
 
@@ -181,9 +181,10 @@ class SwapChainVK : public SwapChain {
                                               &count, NULL);
     assert(count > 0);
 
-    VkPresentModeKHR present_modes[count];
+    std::vector<VkPresentModeKHR> present_modes(count);
+
     vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface,
-                                              &count, present_modes);
+                                              &count, present_modes.data());
 
     VkPresentModeKHR mode = VK_PRESENT_MODE_FIFO_KHR;
 
