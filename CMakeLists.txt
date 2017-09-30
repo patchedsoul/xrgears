@@ -24,8 +24,6 @@ add_cxxflag("-std=c++14")
 
 add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
 
-INCLUDE_DIRECTORIES(/usr/include/libdrm/)
-
 function(add_verbose_warnings)
     add_cxxflag("-Werror")
     add_cxxflag("-Wall")
@@ -56,20 +54,17 @@ add_cxxflag("-fPIC")
 # find_package(XCB REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_XCB_KHR")
 
-file(GLOB VKS_SRC vks/*.cpp vks/*.h vks/*.hpp)
 file(GLOB VITAMINK_SRC vitamin-k/*.hpp)
-file(GLOB VKC_SRC vkc/*.cpp vkc/*.h vkc/*.hpp)
-
 file(GLOB XDG_SRC xdg-shell/*.c)
 
 add_library(xdg-shell ${XDG_SRC})
 
-include_directories(vks)
-include_directories(vkc)
-include_directories(vitamin-k)
-include_directories(xdg-shell)
-
-INCLUDE_DIRECTORIES(/usr/include/openhmd/)
+include_directories(
+    vitamin-k
+    xdg-shell
+    /usr/include/openhmd
+    /usr/include/libdrm/
+)
 
 # glslc -o gears.vert.spv gears.vert
 
@@ -115,7 +110,7 @@ set(EXAMPLE_LIBS
 function(buildExample EXAMPLE_NAME)
     file(GLOB EXAMPLE_SRC examples/${EXAMPLE_NAME}/*.cpp)
     add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
-    set(LINT_SOURCES "${LINT_SOURCES} ${EXAMPLE_SRC}" PARENT_SCOPE)
+    set(LINT_SOURCES ${LINT_SOURCES} ${EXAMPLE_SRC} PARENT_SCOPE)
     target_link_libraries(${EXAMPLE_NAME} ${EXAMPLE_LIBS})
 endfunction(buildExample)
 
@@ -133,8 +128,8 @@ foreach(EXAMPLE ${EXAMPLE_DIRS})
     endif()
 endforeach(EXAMPLE)
 
-#set(IGNORE "-build/header_guard,-readability/streams,-readability/casting,-whitespace/line_length")
-set(IGNORE "-build/header_guard,-build/c++11,-readability/casting")
+set(IGNORE "-build/header_guard,-readability/streams,-readability/casting,-whitespace/line_length,-runtime/arrays,-readability/namespace,-build/c++11,-build/include_what_you_use,-legal/copyright,-runtime/explicit,-whitespace/comma,-whitespace/comments,-whitespace/indent,-whitespace/tab,-whitespace/parens")
+#set(IGNORE "-build/header_guard,-build/c++11,-readability/casting")
 add_custom_target(style
     COMMAND python2 ${CMAKE_SOURCE_DIR}/scripts/cpplint.py --headers=hpp --filter=${IGNORE} ${LINT_SOURCES}
     )
