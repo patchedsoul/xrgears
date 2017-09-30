@@ -38,18 +38,12 @@ class WindowWayland : public Window {
     wl_display_disconnect(display);
   }
 
-  void iterate_vks() {
+  void iterate() {
     flush();
     render_frame_cb();
   }
 
-  void iterate_vkc(VkQueue queue, VkSemaphore semaphore) {
-    flush();
-    update_cb();
-    swap_chain.render(queue, semaphore);
-  }
-
-  void init_swap_chain_vks(uint32_t width, uint32_t height) {
+  void init_swap_chain(uint32_t width, uint32_t height) {
     VkResult err = create_surface(swap_chain.instance, &swap_chain.surface);
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
     swap_chain.set_dimension_cb(dimension_cb);
@@ -67,19 +61,6 @@ class WindowWayland : public Window {
     swap_chain.recreate(width, height);
   }
   */
-
-  void init_swap_chain_vkc(uint32_t width, uint32_t height) {
-    create_surface(swap_chain.instance, &swap_chain.surface);
-    swap_chain.set_dimension_cb(dimension_cb);
-    swap_chain.set_settings(settings);
-    swap_chain.select_surface_format();
-    swap_chain.create(width, height);
-    //create_buffers_cb(swap_chain.image_count);
-
-    format_cb(swap_chain.surface_format);
-    init_cb();
-    create_buffers_cb(swap_chain.image_count);
-  }
 
   SwapChain* get_swap_chain() {
     return (SwapChain*) &swap_chain;

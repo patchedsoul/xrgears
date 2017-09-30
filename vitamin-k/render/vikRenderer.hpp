@@ -258,7 +258,7 @@ public:
 
     window->update_window_title(make_title_string(name));
     window->get_swap_chain()->set_context(instance, physical_device, device);
-    window->init_swap_chain_vks(width, height);
+    window->init_swap_chain(width, height);
 
     auto _render_cb = [this](uint32_t index) {
       currentBuffer = index;
@@ -711,7 +711,7 @@ public:
   void render() {
     timer.start();
     frame_start_cb();
-    window->iterate_vks();
+    window->iterate();
     timer.increment();
     float frame_time = timer.update_frame_time();
     frame_end_cb(frame_time);

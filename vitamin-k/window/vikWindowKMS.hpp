@@ -171,19 +171,7 @@ public:
     return {};
   }
 
-  void init_swap_chain_vkc(uint32_t width, uint32_t height) {
-    swap_chain.surface_format.format = VK_FORMAT_R8G8B8A8_SRGB;
-
-    swap_chain.init(swap_chain.device, swap_chain.surface_format.format, gbm_dev, fd,
-             width, height);
-    swap_chain.set_mode_and_page_flip(fd, crtc, connector);
-
-    format_cb(swap_chain.surface_format);
-    init_cb();
-    create_buffers_cb(swap_chain.image_count);
-  }
-
-  void init_swap_chain_vks(uint32_t width, uint32_t height) {
+  void init_swap_chain(uint32_t width, uint32_t height) {
     swap_chain.surface_format.format = VK_FORMAT_B8G8R8A8_SRGB;
     swap_chain.init(swap_chain.device, swap_chain.surface_format.format, gbm_dev, fd,
              width, height);
@@ -219,12 +207,7 @@ public:
     swap_chain.render(fd, crtc->crtc_id);
   }
 
-
-  void iterate_vkc(VkQueue queue, VkSemaphore semaphore) {
-    iterate_vks();
-  }
-
-  void iterate_vks() {
+  void iterate() {
     int ret = poll(pfd, 2, -1);
     vik_log_f_if(ret == -1, "poll failed");
     if (pfd[0].revents & POLLIN)
