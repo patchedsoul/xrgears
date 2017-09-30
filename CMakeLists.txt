@@ -87,12 +87,16 @@ add_library(vitamin-k ${VITAMINK_SRC})
 SET_TARGET_PROPERTIES(vitamin-k  PROPERTIES LINKER_LANGUAGE CXX)
 set(LINT_SOURCES ${VITAMINK_SRC})
 
+# needed only by clang
+set(CLANG_EXTRA_FLAGS m stdc++)
+
 set(EXAMPLE_LIBS
     ${Vulkan_LIBRARY}
     ${ASSIMP_LIBRARIES}
     ${WAYLAND_CLIENT_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${XCB_LIBRARIES}
+    ${CLANG_EXTRA_FLAGS}
     vulkan
     openhmd
     assimp
