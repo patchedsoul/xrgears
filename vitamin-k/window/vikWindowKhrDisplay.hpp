@@ -142,7 +142,7 @@ class WindowKhrDisplay  : public Window {
   void update_window_title(const std::string& title) {}
 
   int init(uint32_t width, uint32_t height) {}
-  void iterate_vks(VkQueue queue, VkSemaphore semaphore) {}
+  void iterate_vks() {}
   void iterate_vkc(VkQueue queue, VkSemaphore semaphore) {}
   void init_swap_chain_vkc(uint32_t width, uint32_t height) {}
 

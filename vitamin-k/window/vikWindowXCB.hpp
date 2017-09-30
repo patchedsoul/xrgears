@@ -71,7 +71,7 @@ public:
     return 0;
   }
 
-  void iterate_vks(VkQueue queue, VkSemaphore semaphore) {
+  void iterate_vks() {
     poll_events();
     render_frame_cb();
   }

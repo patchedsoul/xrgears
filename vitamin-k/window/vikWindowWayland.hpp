@@ -38,7 +38,7 @@ class WindowWayland : public Window {
     wl_display_disconnect(display);
   }
 
-  void iterate_vks(VkQueue queue, VkSemaphore semaphore) {
+  void iterate_vks() {
     flush();
     render_frame_cb();
   }

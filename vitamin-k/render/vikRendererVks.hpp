@@ -615,7 +615,7 @@ public:
   void render() {
     timer.start();
     frame_start_cb();
-    window->iterate_vks(nullptr, nullptr);
+    window->iterate_vks();
     timer.increment();
     float frame_time = timer.update_frame_time();
     frame_end_cb(frame_time);

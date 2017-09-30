@@ -99,7 +99,7 @@ public:
   virtual void iterate_vkc(VkQueue queue, VkSemaphore semaphore) = 0;
   virtual void init_swap_chain_vkc(uint32_t width, uint32_t height) = 0;
 
-  virtual void iterate_vks(VkQueue queue, VkSemaphore semaphore) = 0;
+  virtual void iterate_vks() = 0;
   virtual void init_swap_chain_vks(uint32_t width, uint32_t height) = 0;
 
 

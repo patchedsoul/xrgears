@@ -221,16 +221,16 @@ public:
 
 
   void iterate_vkc(VkQueue queue, VkSemaphore semaphore) {
+    iterate_vks();
+  }
+
+  void iterate_vks() {
     int ret = poll(pfd, 2, -1);
     vik_log_f_if(ret == -1, "poll failed");
     if (pfd[0].revents & POLLIN)
       poll_events();
     if (pfd[1].revents & POLLIN)
       render();
-  }
-
-  void iterate_vks(VkQueue queue, VkSemaphore semaphore) {
-    iterate_vkc(queue, semaphore);
   }
 
   VkBool32 check_support(VkPhysicalDevice physical_device) {
