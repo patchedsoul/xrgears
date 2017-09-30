@@ -99,7 +99,6 @@ class XRGears : public vik::Application {
 
     camera.movementSpeed = 5.0f;
     renderer->timer.animation_timer_speed *= 0.25f;
-    //paused = true;
   }
 
   ~XRGears() {
@@ -115,7 +114,7 @@ class XRGears : public vik::Application {
 
     delete hmdDistortion;
 
-    //uniformBuffers.camera.destroy();
+    // uniformBuffers.camera.destroy();
     uniformBuffers.lights.destroy();
 
     for (auto& node : nodes)
@@ -322,7 +321,6 @@ class XRGears : public vik::Application {
       gearInfo.width = widths[i];
       gearInfo.numTeeth = toothCount[i];
       gearInfo.toothDepth = toothDepth[i];
-      //gearNodeInfo.color = colors[i];
       gearNodeInfo.pos = positions[i];
       gearNodeInfo.rotSpeed = rotationSpeeds[i];
       gearNodeInfo.rotOffset = rotationOffsets[i];
@@ -410,7 +408,7 @@ class XRGears : public vik::Application {
       // ubo model
       vik::initializers::descriptorSetLayoutBinding(
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      VK_SHADER_STAGE_GEOMETRY_BIT, //VK_SHADER_STAGE_VERTEX_BIT,
+      VK_SHADER_STAGE_GEOMETRY_BIT,  // VK_SHADER_STAGE_VERTEX_BIT,
       0),
       // ubo lights
       vik::initializers::descriptorSetLayoutBinding(
@@ -425,7 +423,7 @@ class XRGears : public vik::Application {
     };
 
     // cube map sampler
-    //if (enableSky)
+    // if (enableSky)
       setLayoutBindings.push_back(vik::initializers::descriptorSetLayoutBinding(
                                     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                     VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -532,9 +530,12 @@ class XRGears : public vik::Application {
       vik::initializers::vertexInputBindingDescription(0, vertexLayout.stride(), VK_VERTEX_INPUT_RATE_VERTEX),
     };
     std::vector<VkVertexInputAttributeDescription> vertexInputAttributes = {
-      vik::initializers::vertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0),					// Location 0: Position
-      vik::initializers::vertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 3),	// Location 1: Normals
-      vik::initializers::vertexInputAttributeDescription(0, 2, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 6),	// Location 2: Color
+      // Location 0: Position
+      vik::initializers::vertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0),
+      // Location 1: Normals
+      vik::initializers::vertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 3),
+      // Location 2: Color
+      vik::initializers::vertexInputAttributeDescription(0, 2, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 6),
     };
     VkPipelineVertexInputStateCreateInfo vertexInputState = vik::initializers::pipelineVertexInputStateCreateInfo();
     vertexInputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertexInputBindings.size());
