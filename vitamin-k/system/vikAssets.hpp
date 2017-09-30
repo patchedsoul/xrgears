@@ -26,4 +26,4 @@ class Assets {
     return getAssetPath() + "textures/";
   }
 };
-}
+}  // namespace vik

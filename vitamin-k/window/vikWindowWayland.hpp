@@ -292,4 +292,4 @@ class WindowWayland : public Window {
   static void _pointer_leave_cb(void *data, wl_pointer *pointer,
                                 uint32_t serial, wl_surface *surface) {}
 };
-}
+}  // namespace vik

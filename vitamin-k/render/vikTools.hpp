@@ -291,4 +291,4 @@ static bool fileExists(const std::string &filename) {
   return !f.fail();
 }
 }  // namespace tools
-}  // namespace vks
+}  // namespace vik

@@ -148,4 +148,4 @@ class WindowKhrDisplay  : public Window {
     return true;
   }
 };
-}
+}  // namespace vik

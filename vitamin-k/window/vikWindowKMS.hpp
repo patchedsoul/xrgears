@@ -236,4 +236,4 @@ class WindowKMS : public Window {
     return true;
   }
 };
-}
+}  // namespace vik

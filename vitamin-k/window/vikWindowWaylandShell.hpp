@@ -118,4 +118,4 @@ class WindowWaylandShell : public WindowWayland {
   // Unused callbacks
   static void _popup_done_cb(void *data, wl_shell_surface *shell_surface) {}
 };
-}
+}  // namespace vik

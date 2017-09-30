@@ -885,4 +885,4 @@ class TextureCubeMap : public Texture {
     updateDescriptor();
   }
 };
-}  // namespace vks
+}  // namespace vik

@@ -279,4 +279,4 @@ class Application {
     view_changed_cb();
   }
 };
-}
+}  // namespace vik

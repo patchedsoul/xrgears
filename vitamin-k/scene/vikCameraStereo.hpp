@@ -85,4 +85,4 @@ class CameraStereo : public Camera {
     memcpy(uniformBuffer.mapped, &uboCamera, sizeof(uboCamera));
   }
 };
-}
+}  // namespace vik

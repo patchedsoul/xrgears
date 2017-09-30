@@ -170,5 +170,5 @@ class Log {
     va_end(args);
   }
 };
-}
+}  // namespace vik
 

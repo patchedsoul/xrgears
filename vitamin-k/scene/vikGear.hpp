@@ -274,4 +274,4 @@ class Gear {
     indexCount = iBuffer.size();
   }
 };
-}
+}  // namespace vik

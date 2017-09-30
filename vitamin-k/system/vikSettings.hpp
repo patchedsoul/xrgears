@@ -170,4 +170,4 @@ class Settings {
       return INVALID;
   }
 };
-}
+}  // namespace vik

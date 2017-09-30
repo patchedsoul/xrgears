@@ -128,7 +128,7 @@ foreach(EXAMPLE ${EXAMPLE_DIRS})
     endif()
 endforeach(EXAMPLE)
 
-set(IGNORE "-build/header_guard,-readability/streams,-readability/casting,-whitespace/line_length,-runtime/arrays,-readability/namespace,-build/c++11,-whitespace/tab,-whitespace/parens")
+set(IGNORE "-build/header_guard,-readability/streams,-readability/casting,-whitespace/line_length,-runtime/arrays,-build/c++11,-whitespace/tab,-whitespace/parens")
 #set(IGNORE "-build/header_guard,-build/c++11,-readability/casting")
 add_custom_target(style
     COMMAND python2 ${CMAKE_SOURCE_DIR}/scripts/cpplint.py --headers=hpp --filter=${IGNORE} ${LINT_SOURCES}

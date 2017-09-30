@@ -284,4 +284,4 @@ class WindowXCB : public Window {
     }
   }
 };
-}
+}  // namespace vik

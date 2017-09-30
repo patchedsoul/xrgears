@@ -45,4 +45,4 @@ class NodeModel : public Node {
     vkCmdDrawIndexed(cmdbuffer, model.indexCount, 1, 0, 0, 0);
   }
 };
-}
+}  // namespace vik

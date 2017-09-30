@@ -56,4 +56,4 @@ class NodeGear : public Node {
     vkCmdDrawIndexed(cmdbuffer, gear.indexCount, 1, 0, 0, 1);
   }
 };
-}
+}  // namespace vik

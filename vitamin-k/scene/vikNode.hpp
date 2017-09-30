@@ -120,4 +120,4 @@ class Node {
 
   virtual void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout) {}
 };
-}
+}  // namespace vik

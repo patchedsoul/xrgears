@@ -30,4 +30,4 @@ struct Material {
     params.b = c.b;
   }
 };
-}
+}  // namespace vik

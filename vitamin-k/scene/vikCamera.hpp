@@ -48,4 +48,4 @@ class Camera {
     vulkanDevice->create_and_map(&uniformBuffer, sizeof(uboCamera));
   }
 };
-}
+}  // namespace vik

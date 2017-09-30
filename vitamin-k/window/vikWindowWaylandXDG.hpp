@@ -151,4 +151,4 @@ class WindowWaylandXDG : public WindowWayland {
                                          struct wl_array *states) {}
   static void _xdg_toplevel_close_cb(void *data, zxdg_toplevel_v6 *toplevel) {}
 };
-}
+}  // namespace vik

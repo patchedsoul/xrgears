@@ -82,4 +82,4 @@ class Timer {
     return frame_time_seconds;
   }
 };
-}
+}  // namespace vik

@@ -127,4 +127,4 @@ class SkyBox {
     vkDestroyShaderModule(device, shaderStagesSky[2].module, nullptr);
   }
 };
-}
+}  // namespace vik

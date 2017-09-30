@@ -182,4 +182,4 @@ class CameraBase {
     return retVal;
   }
 };
-}
+}  // namespace vik

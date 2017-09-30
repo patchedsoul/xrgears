@@ -94,4 +94,4 @@ class Window {
   virtual void update_window_title(const std::string& title) = 0;
   virtual VkBool32 check_support(VkPhysicalDevice physical_device) = 0;
 };
-}
+}  // namespace vik
