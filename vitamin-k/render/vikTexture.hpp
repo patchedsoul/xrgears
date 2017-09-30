@@ -20,7 +20,8 @@
 #include "vikTools.hpp"
 #include "vikDevice.hpp"
 #include "vikBuffer.hpp"
-#include "system/vikLog.hpp"
+
+#include "../system/vikLog.hpp"
 
 namespace vik {
 /** @brief Vulkan texture base class */
@@ -719,6 +720,7 @@ class TextureCubeMap : public Texture {
                  "File not found: Could not load texture from %s",
                  filename.c_str());
 
+    // TODO: clang freezes here.
     gli::texture_cube texCube(gli::load(filename));
 
     assert(!texCube.empty());
