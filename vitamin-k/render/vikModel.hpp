@@ -340,4 +340,4 @@ struct Model {
     return loadFromFile(filename, layout, &modelCreateInfo, device, copyQueue, flags);
   }
 };
-}  // namespace vks
+}  // namespace vik

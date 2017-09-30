@@ -172,7 +172,6 @@ public:
   }
 
   Input::Key xcb_to_vik_key(xcb_keycode_t key) {
-
     xcb_keysym_t xcb_keyp = xcb_key_symbols_get_keysym(syms, key, 0);
     switch (xcb_keyp) {
       case XK_w:
@@ -275,6 +274,5 @@ public:
         break;
     }
   }
-
 };
 }

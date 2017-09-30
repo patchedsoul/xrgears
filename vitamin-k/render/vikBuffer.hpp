@@ -144,4 +144,4 @@ struct Buffer {
       vkFreeMemory(device, memory, nullptr);
   }
 };
-}  // namespace vks
+}  // namespace vik

@@ -708,6 +708,5 @@ class TextOverlay {
     addText(device, 5.0f, 45.0f, TextOverlay::alignLeft);
     endTextUpdate();
   }
-
 };
-}
+}  // namespace vik

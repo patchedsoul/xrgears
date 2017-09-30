@@ -436,4 +436,4 @@ inline VkPushConstantRange pushConstantRange(
   return pushConstantRange;
 }
 }  // namespace initializers
-}  // namespace vks
+}  // namespace vik

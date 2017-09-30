@@ -1,3 +1,15 @@
+/*
+ * vitamin-k
+ *
+ * Copyright (C) 2016 Sascha Willems - www.saschawillems.de
+ * Copyright (C) 2017 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
+ *
+ * This code is licensed under the GNU General Public License Version 3 (GPLv3)
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * Based on Vulkan Examples written by Sascha Willems
+ */
+
 #pragma once
 
 #include <sys/stat.h>
@@ -17,25 +29,24 @@
 
 #include "vikSettings.hpp"
 
-#include "window/vikWindowXCB.hpp"
-#include "window/vikWindowWaylandXDG.hpp"
-#include "window/vikWindowWaylandShell.hpp"
-#include "window/vikWindowKMS.hpp"
-#include "window/vikWindowKhrDisplay.hpp"
+#include "../window/vikWindowXCB.hpp"
+#include "../window/vikWindowWaylandXDG.hpp"
+#include "../window/vikWindowWaylandShell.hpp"
+#include "../window/vikWindowKMS.hpp"
+#include "../window/vikWindowKhrDisplay.hpp"
 
-#include "render/vikTools.hpp"
-#include "render/vikInitializers.hpp"
+#include "../render/vikTools.hpp"
+#include "../render/vikInitializers.hpp"
 
-#include "scene/vikCameraBase.hpp"
-#include "render/vikRendererTextOverlay.hpp"
+#include "../scene/vikCameraBase.hpp"
+#include "../render/vikRendererTextOverlay.hpp"
 
-#include "render/vikTimer.hpp"
+#include "../render/vikTimer.hpp"
 
-#include "vikApplication.hpp"
 
 namespace vik {
 class Application {
-public:
+ public:
   Settings settings;
   Window *window;
   bool quit = false;
@@ -267,10 +278,7 @@ public:
 
     camera.update_aspect_ratio(renderer->get_aspect_ratio());
 
-    // Notify derived class
-    //windowResized();
     view_changed_cb();
   }
-
 };
 }

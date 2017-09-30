@@ -6,13 +6,12 @@
 #include <poll.h>
 
 #include <vulkan/vulkan.h>
-#include "../xdg-shell/xdg-shell-unstable-v6-client-protocol.h"
-#include "system/vikLog.hpp"
+#include "../../xdg-shell/xdg-shell-unstable-v6-client-protocol.h"
+#include "../system/vikLog.hpp"
 #include "vikWindowWayland.hpp"
 
 namespace vik {
 class WindowWaylandXDG : public WindowWayland {
-
   struct zxdg_shell_v6 *shell = nullptr;
   struct zxdg_surface_v6 *xdg_surface = nullptr;
   struct zxdg_toplevel_v6 *xdg_toplevel = nullptr;
@@ -78,7 +77,7 @@ public:
   void registry_global(wl_registry *registry, uint32_t name,
                        const char *interface) {
     if (strcmp(interface, "wl_compositor") == 0) {
-      compositor = ( wl_compositor*)
+      compositor = (wl_compositor*)
           wl_registry_bind(registry, name, &wl_compositor_interface, 1);
     } else if (strcmp(interface, "zxdg_shell_v6") == 0) {
       shell = (zxdg_shell_v6*)
@@ -142,6 +141,5 @@ public:
                                          int32_t width, int32_t height,
                                          struct wl_array *states) {}
   static void _xdg_toplevel_close_cb(void *data, zxdg_toplevel_v6 *toplevel) {}
-
 };
 }

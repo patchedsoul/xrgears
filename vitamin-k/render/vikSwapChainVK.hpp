@@ -1,3 +1,15 @@
+/*
+ * vitamin-k
+ *
+ * Copyright (C) 2016 Sascha Willems - www.saschawillems.de
+ * Copyright (C) 2017 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
+ *
+ * This code is licensed under the GNU General Public License Version 3 (GPLv3)
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * Based on Vulkan Examples written by Sascha Willems
+ */
+
 #pragma once
 
 #include <vulkan/vulkan.h>
@@ -6,7 +18,7 @@
 
 namespace vik {
 class SwapChainVK : public SwapChain {
-public:
+ public:
   /** @brief Handle to the current swap chain, required for recreation */
   VkSwapchainKHR swap_chain = VK_NULL_HANDLE;
 
@@ -184,24 +196,6 @@ public:
     return mode;
   }
 
-  void render(VkQueue queue, VkSemaphore semaphore) {
-    uint32_t present_index = 0;
-    VkResult result = acquire_next_image(semaphore, &present_index);
-    switch (result) {
-      case VK_SUCCESS:
-        render_cb(present_index);
-        vik_log_check(present(queue, present_index));
-        break;
-      case VK_TIMEOUT:
-        // TODO: XCB times out
-        break;
-      default:
-        vik_log_e("vkAcquireNextImageKHR failed: %s",
-                   Log::result_string(result).c_str());
-        break;
-    }
-  }
-
   /**
   * Destroy and free Vulkan resources used for the swapchain
   */
@@ -218,6 +212,5 @@ public:
     surface = VK_NULL_HANDLE;
     swap_chain = VK_NULL_HANDLE;
   }
-
 };
-}
+}  // namespace vik

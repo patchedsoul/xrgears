@@ -1,3 +1,15 @@
+/*
+ * vitamin-k
+ *
+ * Copyright (C) 2016 Sascha Willems - www.saschawillems.de
+ * Copyright (C) 2017 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
+ *
+ * This code is licensed under the GNU General Public License Version 3 (GPLv3)
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * Based on Vulkan Examples written by Sascha Willems
+ */
+
 #pragma once
 
 #include <vulkan/vulkan.h>
@@ -5,8 +17,8 @@
 #include <vector>
 #include <functional>
 
-#include "system/vikLog.hpp"
-#include "system/vikSettings.hpp"
+#include "../system/vikLog.hpp"
+#include "../system/vikSettings.hpp"
 
 namespace vik {
 
@@ -16,7 +28,7 @@ struct SwapChainBuffer {
 };
 
 class SwapChain {
-public:
+ public:
   VkPhysicalDevice physical_device;
   VkDevice device;
   VkInstance instance;
@@ -85,6 +97,5 @@ public:
 
     vik_log_check(vkCreateImageView(device, &view_create_info, nullptr, view));
   }
-
 };
-}
+}  // namespace vik

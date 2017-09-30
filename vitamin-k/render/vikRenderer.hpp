@@ -1,3 +1,15 @@
+/*
+ * vitamin-k
+ *
+ * Copyright (C) 2016 Sascha Willems - www.saschawillems.de
+ * Copyright (C) 2017 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
+ *
+ * This code is licensed under the GNU General Public License Version 3 (GPLv3)
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * Based on Vulkan Examples written by Sascha Willems
+ */
+
 #pragma once
 
 #define VK_PROTOTYPES
@@ -8,23 +20,21 @@
 #include <functional>
 
 #include "vikSwapChain.hpp"
-#include "system/vikSettings.hpp"
 #include "vikDebug.hpp"
-#include "window/vikWindow.hpp"
 #include "vikInitializers.hpp"
-#include "vikRenderer.hpp"
-
 #include "vikDevice.hpp"
 #include "vikSwapChainVK.hpp"
 #include "vikTimer.hpp"
 #include "vikTextOverlay.hpp"
-#include "system/vikSettings.hpp"
 #include "vikShader.hpp"
+
+#include "../system/vikSettings.hpp"
+#include "../window/vikWindow.hpp"
 
 namespace vik {
 
 class Renderer {
-public:
+ public:
   VkInstance instance;
   VkDevice device;
   VkPhysicalDevice physical_device;
@@ -107,7 +117,6 @@ public:
       render_cb();
       submit_frame();
     });
-
   }
 
   ~Renderer() {
@@ -416,7 +425,7 @@ public:
 
     device = vksDevice->logicalDevice;
 
-    //vksDevice->printMultiviewProperties();
+    // vksDevice->printMultiviewProperties();
 
     // Get a graphics queue from the device
     vkGetDeviceQueue(device, vksDevice->queueFamilyIndices.graphics, 0, &queue);
@@ -426,7 +435,6 @@ public:
     assert(validDepthFormat);
 
     init_semaphores();
-
   }
 
   virtual void init_semaphores() {
@@ -462,8 +470,7 @@ public:
   }
 
   virtual void resize() {
-
-    vik_log_e("Resize!");
+    vik_log_d("Resize!");
 
     // Ensure all operations on the device have been finished before destroying resources
     wait_idle();
@@ -708,4 +715,4 @@ public:
     check_tick_finnished();
   }
 };
-}
+}  // namespace vik

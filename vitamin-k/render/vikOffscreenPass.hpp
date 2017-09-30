@@ -319,4 +319,4 @@ class OffscreenPass {
     return offScreenFrameBuf.renderPass;
   }
 };
-}
+}  // namespace vik

@@ -249,6 +249,5 @@ class SwapChainVkComplex : public vik::SwapChainVK {
 
     update_images();
   }
-
 };
-}
+}  // namespace vik

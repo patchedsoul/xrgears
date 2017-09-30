@@ -1,3 +1,19 @@
+/*
+ * vitamin-k
+ *
+ * Copyright (C) 2012 Arvin Schnell <arvin.schnell@gmail.com>
+ * Copyright (C) 2012 Rob Clark <rob@ti.com>
+ * Copyright (C) 2015 Intel Corporation
+ * Copyright (C) 2017 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
+ *
+ * This code is licensed under the GNU General Public License Version 3 (GPLv3)
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * Based on kmscube example written by Rob Clark, based on test app originally
+ * written by Arvin Schnell.
+ * Based on vkcube example.
+ */
+
 #pragma once
 
 #include <gbm.h>
@@ -9,8 +25,6 @@
 #include <termios.h>
 #include <poll.h>
 #include <signal.h>
-
-#include <gbm.h>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -24,6 +38,8 @@
 #include <linux/vt.h>
 #include <linux/major.h>
 
+#include <vector>
+
 #include "vikSwapChain.hpp"
 
 namespace vik {
@@ -36,9 +52,7 @@ struct KMSBuffer {
 };
 
 class SwapChainDRM : public SwapChain {
-
-public:
-
+ public:
   std::vector<KMSBuffer> kms_buffers;
   int current;
 
@@ -48,15 +62,11 @@ public:
     kms_buffers.resize(image_count);
   }
 
-  ~SwapChainDRM() {
-  }
+  ~SwapChainDRM() {}
 
-  void cleanup() {
+  void cleanup() {}
 
-  }
-
-  void create(uint32_t width, uint32_t height) {
-  }
+  void create(uint32_t width, uint32_t height) {}
 
   void init(VkDevice device, VkFormat image_format, gbm_device *gbm_dev, int fd,
             uint32_t width, uint32_t height) {
@@ -129,6 +139,5 @@ public:
     vik_log_f_if(ret < 0, "pageflip failed: %m");
     current++;
   }
-
 };
-}
+}  // namespace vik

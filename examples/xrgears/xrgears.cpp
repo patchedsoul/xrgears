@@ -13,20 +13,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <vector>
+
+#include <vulkan/vulkan.h>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <gli/gli.hpp>
 
-#include <vulkan/vulkan.h>
+#include <vector>
 
 #include "system/vikApplication.hpp"
 #include "render/vikModel.hpp"
-
 #include "scene/vikNodeGear.hpp"
 #include "scene/vikSkyBox.hpp"
 #include "render/vikDistortion.hpp"
@@ -103,8 +102,7 @@ public:
     //paused = true;
   }
 
-  ~XRGears()
-  {
+  ~XRGears() {
     delete offscreenPass;
 
     vkDestroyPipeline(renderer->device, pipelines.pbr, nullptr);
@@ -147,12 +145,13 @@ public:
   void build_command_buffers() {
     vik_log_d("Draw command buffers size: %ld", renderer->cmd_buffers.size());
 
-    if (enableDistortion)
+    if (enableDistortion) {
       for (int32_t i = 0; i < renderer->cmd_buffers.size(); ++i)
         buildWarpCommandBuffer(renderer->cmd_buffers[i], renderer->frame_buffers[i]);
-    else
+    } else {
       for (int32_t i = 0; i < renderer->cmd_buffers.size(); ++i)
         buildPbrCommandBuffer(renderer->cmd_buffers[i], renderer->frame_buffers[i], false);
+    }
   }
 
   inline VkRenderPassBeginInfo defaultRenderPassBeginInfo() {
@@ -212,8 +211,8 @@ public:
     buildPbrCommandBuffer(offScreenCmdBuffer, unused, true);
   }
 
-  void buildPbrCommandBuffer(VkCommandBuffer& cmdBuffer, VkFramebuffer& framebuffer, bool offScreen) {
-
+  void buildPbrCommandBuffer(const VkCommandBuffer& cmdBuffer,
+                             const VkFramebuffer& framebuffer, bool offScreen) {
     VkCommandBufferBeginInfo cmdBufInfo = vik::initializers::commandBufferBeginInfo();
     vik_log_check(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 
@@ -315,8 +314,7 @@ public:
     std::vector<float> rotationOffsets = { 0.0f, -9.0f, -30.0f };
 
     nodes.resize(positions.size());
-    for (int32_t i = 0; i < nodes.size(); ++i)
-    {
+    for (int32_t i = 0; i < nodes.size(); ++i) {
       vik::Node::NodeInfo gearNodeInfo = {};
       vik::GearInfo gearInfo = {};
       gearInfo.innerRadius = innerRadiuses[i];
@@ -348,11 +346,9 @@ public:
 
     glm::vec3 teapotPosition = glm::vec3(-15.0, -5.0, -5.0);
     teapotNode->setPosition(teapotPosition);
-
   }
 
-  void prepareVertices()
-  {
+  void prepareVertices() {
     // Binding and attribute descriptions are shared across all gears
     vertices.bindingDescriptions.resize(1);
     vertices.bindingDescriptions[0] =
@@ -393,8 +389,7 @@ public:
     vertices.inputState.pVertexAttributeDescriptions = vertices.attributeDescriptions.data();
   }
 
-  void setupDescriptorPool()
-  {
+  void setupDescriptorPool() {
     // Example uses two ubos
     std::vector<VkDescriptorPoolSize> poolSizes = {
       vik::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16),
@@ -410,10 +405,8 @@ public:
     vik_log_check(vkCreateDescriptorPool(renderer->device, &descriptorPoolInfo, nullptr, &renderer->descriptorPool));
   }
 
-  void setupDescriptorSetLayout()
-  {
-    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
-    {
+  void setupDescriptorSetLayout() {
+    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
       // ubo model
       vik::initializers::descriptorSetLayoutBinding(
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -530,7 +523,7 @@ public:
     if (enableDistortion)
       usedPass = offscreenPass->getRenderPass();
     else
-      usedPass =renderer->render_pass;
+      usedPass = renderer->render_pass;
 
     pipelineCreateInfo = vik::initializers::pipelineCreateInfo(pipelineLayout, usedPass);
 
@@ -542,7 +535,6 @@ public:
       vik::initializers::vertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0),					// Location 0: Position
       vik::initializers::vertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 3),	// Location 1: Normals
       vik::initializers::vertexInputAttributeDescription(0, 2, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 6),	// Location 2: Color
-
     };
     VkPipelineVertexInputStateCreateInfo vertexInputState = vik::initializers::pipelineVertexInputStateCreateInfo();
     vertexInputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertexInputBindings.size());
@@ -572,8 +564,7 @@ public:
   }
 
   // Prepare and initialize uniform buffer containing shader uniforms
-  void prepareUniformBuffers()
-  {
+  void prepareUniformBuffers() {
     renderer->vksDevice->create_and_map(&uniformBuffers.lights, sizeof(uboLights));
 
     vikCamera->prepareUniformBuffers(renderer->vksDevice);
@@ -584,8 +575,7 @@ public:
     updateUniformBuffers();
   }
 
-  void updateUniformBuffers()
-  {
+  void updateUniformBuffers() {
     vikCamera->update(camera);
 
     vik::StereoView sv = {};
@@ -598,16 +588,14 @@ public:
     updateLights();
   }
 
-  void updateLights()
-  {
+  void updateLights() {
     const float p = 15.0f;
     uboLights.lights[0] = glm::vec4(-p, -p*0.5f, -p, 1.0f);
     uboLights.lights[1] = glm::vec4(-p, -p*0.5f,  p, 1.0f);
     uboLights.lights[2] = glm::vec4( p, -p*0.5f,  p, 1.0f);
     uboLights.lights[3] = glm::vec4( p, -p*0.5f, -p, 1.0f);
 
-    if (!renderer->timer.animation_paused)
-    {
+    if (!renderer->timer.animation_paused) {
       uboLights.lights[0].x = sin(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
       uboLights.lights[0].z = cos(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
       uboLights.lights[1].x = cos(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;

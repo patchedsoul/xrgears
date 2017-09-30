@@ -569,6 +569,5 @@ class Device {
       printf("perViewPositionAllComponents %d\n", extProps2.perViewPositionAllComponents);
     }
   }
-
 };
-}  // namespace vks
+}  // namespace vik

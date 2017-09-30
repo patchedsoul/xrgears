@@ -1,8 +1,18 @@
+/*
+ * vitamin-k
+ *
+ * Copyright (C) 2017 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
+ *
+ * This code is licensed under the GNU General Public License Version 3 (GPLv3)
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ */
+
 #pragma once
 
 namespace vik {
 class Input {
-public:
+ public:
   enum MouseButton {
     Left,
     Middle,
@@ -24,6 +34,5 @@ public:
     D,
     P
   };
-
 };
-}
+}  // namespace vik

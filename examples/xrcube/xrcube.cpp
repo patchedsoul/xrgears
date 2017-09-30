@@ -4,9 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <fstream>
-#include <vector>
-#include <exception>
+
+#include <vulkan/vulkan.h>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -14,18 +13,17 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-#include <vulkan/vulkan.h>
+#include <fstream>
+#include <vector>
+#include <exception>
 
 #include "system/vikApplication.hpp"
-#include "render/vikShader.hpp"
-
 #include "system/vikLog.hpp"
+#include "render/vikShader.hpp"
 #include "render/vikTools.hpp"
 
-class XrCube : public vik::Application
-{
-public:
-
+class XrCube : public vik::Application {
+ public:
   void *map;
 
   struct ubo {
@@ -214,7 +212,7 @@ public:
     colorinfo.attachmentCount = 1;
     colorinfo.pAttachments = attachments.data();
 
-    VkDynamicState dynamicStates []  = {
+    VkDynamicState dynamicStates[] = {
       VK_DYNAMIC_STATE_VIEWPORT,
       VK_DYNAMIC_STATE_SCISSOR,
     };
@@ -256,7 +254,6 @@ public:
   }
 
   VkDescriptorSetLayout init_descriptor_set_layout() {
-
     VkDescriptorSetLayoutBinding bindings = {};
     bindings.binding = 0;
     bindings.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -576,7 +573,6 @@ public:
     vik_log_e_if(r != VK_SUCCESS,
                  "vkEndCommandBuffer: %s", vik::Log::result_string(r).c_str());
   }
-
 };
 
 int main(int argc, char *argv[]) {

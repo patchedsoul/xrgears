@@ -1,3 +1,13 @@
+/*
+ * vitamin-k
+ *
+ * Copyright (C) 2017 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
+ *
+ * This code is licensed under the GNU General Public License Version 3 (GPLv3)
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ */
+
 #pragma once
 
 #include <stdio.h>
@@ -29,10 +39,9 @@
 
 namespace vik {
 class Log {
-
   static const bool use_color = true;
 
-public:
+ public:
   enum type {
     DEBUG = 0,
     INFO,
@@ -76,7 +85,7 @@ public:
   }
 
   static const char* type_str(type t) {
-    switch(t) {
+    switch (t) {
       case DEBUG:
         return "d";
       case INFO:
@@ -91,7 +100,7 @@ public:
   }
 
   static int type_color(type t) {
-    switch(t) {
+    switch (t) {
       case DEBUG:
         return 36;
       case INFO:
@@ -108,7 +117,7 @@ public:
 #ifdef LOG_TO_STD_ERR
     return stderr;
 #endif
-    switch(t) {
+    switch (t) {
       case DEBUG:
       case INFO:
       case WARNING:
@@ -161,7 +170,6 @@ public:
     log_values(file, line, t, format, args);
     va_end(args);
   }
-
 };
 }
 

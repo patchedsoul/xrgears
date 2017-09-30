@@ -15,16 +15,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <fstream>
-#include <vector>
-#include <exception>
+
+#include <vulkan/vulkan.h>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <vulkan/vulkan.h>
+#include <fstream>
+#include <vector>
+#include <exception>
 
 #include "system/vikApplication.hpp"
 #include "render/vikShader.hpp"
@@ -33,8 +34,7 @@
 // See "prepareVertices" for details on what's staging and on why to use it
 #define USE_STAGING true
 
-class Triangle : public vik::Application
-{
+class Triangle : public vik::Application {
 public:
   // Vertex layout used in this example
   struct Vertex {
@@ -133,9 +133,7 @@ public:
     vkDestroySemaphore(renderer->device, renderer->semaphores.render_complete, nullptr);
 
     for (auto& fence : waitFences)
-    {
       vkDestroyFence(renderer->device, fence, nullptr);
-    }
   }
 
   // This function is used to request a device memory type that supports all the property flags we request (e.g. device local, host visibile)
@@ -145,15 +143,10 @@ public:
   // You can check http://vulkan.gpuinfo.org/ for details on different memory configurations
   uint32_t getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties) {
     // Iterate over all memory types available for the device used in this example
-    for (uint32_t i = 0; i < renderer->deviceMemoryProperties.memoryTypeCount; i++)
-    {
-      if ((typeBits & 1) == 1)
-      {
-        if ((renderer->deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
-        {
+    for (uint32_t i = 0; i < renderer->deviceMemoryProperties.memoryTypeCount; i++) {
+      if ((typeBits & 1) == 1
+          && (renderer->deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
           return i;
-        }
-      }
       typeBits >>= 1;
     }
 
@@ -183,9 +176,7 @@ public:
     fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
     waitFences.resize(renderer->cmd_buffers.size());
     for (auto& fence : waitFences)
-    {
       vik_log_check(vkCreateFence(renderer->device, &fenceCreateInfo, nullptr, &fence));
-    }
   }
 
   // End the command buffer and submit it to the queue
@@ -303,7 +294,7 @@ public:
 
     VkSubmitInfo submit_info = renderer->init_render_submit_info();
     submit_info.pCommandBuffers = renderer->get_current_command_buffer();
-   // Submit to the graphics queue passing a wait fence
+    // Submit to the graphics queue passing a wait fence
     vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, waitFences[renderer->currentBuffer]));
   }
 
@@ -315,8 +306,7 @@ public:
     //	what should be done a real-world application, where you should allocate large chunkgs of memory at once isntead.
 
     // Setup vertices
-    std::vector<Vertex> vertexBuffer =
-    {
+    std::vector<Vertex> vertexBuffer = {
       { {  1.0f,  1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
       { { -1.0f,  1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
       { {  0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } }

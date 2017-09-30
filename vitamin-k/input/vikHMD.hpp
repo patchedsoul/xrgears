@@ -20,12 +20,10 @@
 
 #include <openhmd/openhmd.h>
 
-#include "scene/vikCameraBase.hpp"
-#include "render/vikBuffer.hpp"
-#include "system/vikLog.hpp"
-
-
-#include "scene/vikCamera.hpp"
+#include "../scene/vikCameraBase.hpp"
+#include "../render/vikBuffer.hpp"
+#include "../system/vikLog.hpp"
+#include "../scene/vikCamera.hpp"
 
 namespace vik {
 class HMD {
@@ -121,4 +119,4 @@ class HMD {
     *hmdViewRight = glm::make_mat4(mat);
   }
 };
-}
+}  // namespace vik

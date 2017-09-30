@@ -79,7 +79,6 @@ class Texture2D : public Texture {
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
       VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
       bool forceLinear = false) {
-
     vik_log_f_if(!tools::fileExists(filename), "File not found: Could not load texture from %s", filename.c_str());
 
     gli::texture2d tex2D(gli::load(filename.c_str()));
@@ -527,7 +526,6 @@ class Texture2DArray : public Texture {
       VkQueue copyQueue,
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
       VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-
     vik_log_f_if(!tools::fileExists(filename),
                  "File not found: Could not load texture from %s",
                  filename.c_str());
@@ -717,7 +715,6 @@ class TextureCubeMap : public Texture {
       VkQueue copyQueue,
       VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
       VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-
     vik_log_f_if(!tools::fileExists(filename),
                  "File not found: Could not load texture from %s",
                  filename.c_str());

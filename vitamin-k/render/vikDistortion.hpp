@@ -316,4 +316,4 @@ class Distortion {
     vik_log_check(uboHandle.map());
   }
 };
-}
+}  // namespace vik

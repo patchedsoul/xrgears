@@ -1,11 +1,22 @@
+/*
+ * vitamin-k
+ *
+ * Copyright (C) 2016 Sascha Willems - www.saschawillems.de
+ * Copyright (C) 2017 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
+ *
+ * This code is licensed under the GNU General Public License Version 3 (GPLv3)
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * Based on Vulkan Examples written by Sascha Willems
+ */
+
 #pragma once
 
 #include <chrono>
 
 namespace vik {
 class Timer {
-public:
-
+ public:
   const double SECOND_IN_MILLI = 1000.0;
 
   double time_since_tick = 0.0;
@@ -24,12 +35,8 @@ public:
 
   bool animation_paused = false;
 
-  Timer() {
-
-  }
-  ~Timer() {
-
-  }
+  Timer() {}
+  ~Timer() {}
 
   bool tick_finnished() {
     return time_since_tick > SECOND_IN_MILLI;
@@ -70,9 +77,7 @@ public:
     auto frame_time_end = std::chrono::high_resolution_clock::now();
     auto frame_time_milli = std::chrono::duration<double, std::milli>(frame_time_end - frame_time_start).count();
 
-    //printf("diff: %f frame: %f tick: %f\n", frame_time_milli, frame_time_micro, time_since_tick);
-
-    frame_time_seconds = frame_time_milli / 1000.0f; // to second
+    frame_time_seconds = frame_time_milli / 1000.0f;  // to second
     time_since_tick += frame_time_milli;
     return frame_time_seconds;
   }

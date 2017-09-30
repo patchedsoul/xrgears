@@ -18,7 +18,6 @@
 
 namespace vik {
 class WindowWaylandShell : public WindowWayland {
-
   wl_shell *shell = nullptr;
   wl_shell_surface *shell_surface = nullptr;
 
@@ -118,6 +117,5 @@ public:
 
   // Unused callbacks
   static void _popup_done_cb(void *data, wl_shell_surface *shell_surface) {}
-
 };
 }

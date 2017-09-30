@@ -254,9 +254,8 @@ static void insertImageMemoryBarrier(
 }
 
 // Display error message and exit on fatal error
-//void exitFatal(std::string message, std::string caption);
+// void exitFatal(std::string message, std::string caption);
 
-// Load a SPIR-V shader (binary)
 static VkShaderModule loadShader(const char *fileName, VkDevice device) {
   std::ifstream is(fileName, std::ios::binary | std::ios::in | std::ios::ate);
 

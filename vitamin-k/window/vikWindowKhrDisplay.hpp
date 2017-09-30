@@ -14,15 +14,14 @@
 #include <vulkan/vulkan.h>
 
 #include "vikWindow.hpp"
-#include "render/vikSwapChainVKComplex.hpp"
+#include "../render/vikSwapChainVKComplex.hpp"
 
 namespace vik {
 class WindowKhrDisplay  : public Window {
-
   SwapChainVkComplex swap_chain;
 
  public:
-  WindowKhrDisplay(Settings *s) : Window(s) {}
+  explicit WindowKhrDisplay(Settings *s) : Window(s) {}
   ~WindowKhrDisplay() {}
 
   const std::vector<const char*> required_extensions() {
@@ -30,7 +29,6 @@ class WindowKhrDisplay  : public Window {
   }
 
   void init_swap_chain(uint32_t width, uint32_t height) {
-
     uint32_t displayPropertyCount;
 
     VkPhysicalDevice physical_device = swap_chain.physical_device;

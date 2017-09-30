@@ -1,3 +1,19 @@
+/*
+ * vitamin-k
+ *
+ * Copyright (C) 2012 Arvin Schnell <arvin.schnell@gmail.com>
+ * Copyright (C) 2012 Rob Clark <rob@ti.com>
+ * Copyright (C) 2015 Intel Corporation
+ * Copyright (C) 2017 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
+ *
+ * This code is licensed under the GNU General Public License Version 3 (GPLv3)
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * Based on kmscube example written by Rob Clark, based on test app originally
+ * written by Arvin Schnell.
+ * Based on vkcube example.
+ */
+
 #pragma once
 
 #include <fcntl.h>
@@ -21,9 +37,13 @@
 #include <linux/vt.h>
 #include <linux/major.h>
 
+#include <string>
+#include <vector>
+
 #include "vikWindow.hpp"
-#include "system/vikLog.hpp"
-#include "render/vikSwapChainDRM.hpp"
+
+#include "../system/vikLog.hpp"
+#include "../render/vikSwapChainDRM.hpp"
 
 static void
 page_flip_handler(int fd, unsigned int frame,
@@ -34,7 +54,6 @@ static struct termios save_tio;
 
 namespace vik {
 class WindowKMS : public Window {
-
   drmModeCrtc *crtc;
   drmModeConnector *connector;
 
@@ -48,8 +67,8 @@ class WindowKMS : public Window {
 
   SwapChainDRM swap_chain;
 
-public:
-  WindowKMS(Settings *s) : Window(s) {
+ public:
+  explicit WindowKMS(Settings *s) : Window(s) {
     gbm_dev = NULL;
     name = "kms";
 
@@ -218,6 +237,5 @@ public:
   VkBool32 check_support(VkPhysicalDevice physical_device) {
     return true;
   }
-
 };
 }

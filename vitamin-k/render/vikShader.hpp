@@ -17,7 +17,7 @@
 
 #include "vikTools.hpp"
 
-#include "system/vikAssets.hpp"
+#include "../system/vikAssets.hpp"
 
 namespace vik {
 class Shader {
@@ -34,5 +34,4 @@ class Shader {
     return shaderStage;
   }
 };
-}
-
+}  // namespace vik

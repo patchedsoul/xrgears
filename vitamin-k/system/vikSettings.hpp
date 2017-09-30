@@ -1,3 +1,13 @@
+/*
+ * vitamin-k
+ *
+ * Copyright (C) 2017 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
+ *
+ * This code is licensed under the GNU General Public License Version 3 (GPLv3)
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ */
+
 #pragma once
 
 #include <stdint.h>
@@ -10,8 +20,7 @@
 
 namespace vik {
 class Settings {
-public:
-
+ public:
   enum window_type {
     AUTO = 0,
     KMS,
@@ -51,7 +60,7 @@ public:
         "                              [xcb, wayland, kms]\n"
         "  -h, --help                  Display help\n";
 
-    //for (auto const& wsh : window_system_help)
+    // for (auto const& wsh : window_system_help)
     //    help += wsh;
 
     return help;
@@ -130,8 +139,9 @@ public:
         type = window_type_from_string(optarg);
         if (type == INVALID)
           vik_log_f("option -m given bad display mode");
-      } else
+      } else {
         vik_log_f("Unknown option %s", optname.c_str());
+      }
     }
 
     if (optind != argc)
@@ -160,6 +170,5 @@ public:
     else
       return INVALID;
   }
-
 };
 }

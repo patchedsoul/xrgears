@@ -1,14 +1,26 @@
+/*
+ * vitamin-k
+ *
+ * Copyright (C) 2016 Sascha Willems - www.saschawillems.de
+ * Copyright (C) 2017 Lubosz Sarnecki <lubosz.sarnecki@collabora.co.uk>
+ *
+ * This code is licensed under the GNU General Public License Version 3 (GPLv3)
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * Based on Vulkan Examples written by Sascha Willems
+ */
+
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "vikRenderer.hpp"
 
 namespace vik {
 
 class RendererTextOverlay : public Renderer {
-public:
-
+ public:
   TextOverlay *textOverlay;
 
   VkSemaphore text_overlay_complete;
@@ -123,4 +135,4 @@ public:
     vik_log_check(vkCreateSemaphore(device, &semaphore_info, nullptr, &text_overlay_complete));
   }
 };
-}
+}  // namespace vik
