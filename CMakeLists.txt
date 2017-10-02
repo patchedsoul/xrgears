@@ -52,7 +52,8 @@ find_package(PkgConfig REQUIRED)
 pkg_search_module(VULKAN REQUIRED vulkan)
 pkg_search_module(OPENHMD REQUIRED openhmd)
 pkg_search_module(ASSIMP REQUIRED assimp)
-pkg_search_module(XCB REQUIRED xcb-keysyms)
+pkg_search_module(XCB REQUIRED xcb)
+pkg_search_module(XCB_KEY REQUIRED xcb-keysyms)
 pkg_search_module(WAYLAND REQUIRED wayland-client)
 pkg_search_module(GBM REQUIRED gbm)
 pkg_search_module(DRM REQUIRED libdrm)
@@ -106,6 +107,7 @@ set(EXAMPLE_LIBS
     ${OPENHMD_LIBRARIES}
     ${ASSIMP_LIBRARIES}
     ${XCB_LIBRARIES}
+    ${XCB_KEY_LIBRARIES}
     ${WAYLAND_LIBRARIES}
     xdg-shell
     ${GBM_LIBRARIES}
