@@ -148,11 +148,13 @@ class SwapChainVkComplex : public vik::SwapChainVK {
       extent.width = width;
       extent.height = height;
     } else {
-      // If the surface size is defined, the swap chain size must match
-      vik_log_d("select_extent: %dx%d",
-                caps.currentExtent.width, caps.currentExtent.height);
       extent = caps.currentExtent;
-      dimension_cb(caps.currentExtent.width, caps.currentExtent.height);
+      if (caps.currentExtent.width != width || caps.currentExtent.height != height) {
+        dimension_cb(caps.currentExtent.width, caps.currentExtent.height);
+        vik_log_w("Swap chain extent dimensions differ from requested: %dx%d vs %dx%d",
+                  caps.currentExtent.width, caps.currentExtent.height,
+                  width, height);
+      }
     }
     return extent;
   }
