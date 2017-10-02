@@ -79,7 +79,34 @@ class Log {
       STR(ERROR_INVALID_SHADER_NV);
   #undef STR
       default:
-        return "UNKNOWN_ERROR";
+        return "UNKNOWN RESULT";
+    }
+  }
+
+  static std::string color_format_string(VkFormat code) {
+    switch(code) {
+#define STR(r) case VK_ ##r: return #r
+    STR(FORMAT_B8G8R8A8_UNORM);
+    STR(FORMAT_UNDEFINED);
+    STR(FORMAT_R8G8B8A8_SRGB);
+    STR(FORMAT_B8G8R8A8_SRGB);
+    STR(FORMAT_R8G8B8_SRGB);
+    STR(FORMAT_B8G8R8_SRGB);
+    STR(FORMAT_R5G6B5_UNORM_PACK16);
+    STR(FORMAT_B5G6R5_UNORM_PACK16);
+#undef STR
+      default:
+        return "UNKNOWN FORMAT";
+    }
+  }
+
+  static std::string color_space_string(VkColorSpaceKHR code) {
+    switch(code) {
+#define STR(r) case VK_ ##r: return #r
+      STR(COLORSPACE_SRGB_NONLINEAR_KHR);
+#undef STR
+      default:
+        return "UNKNOWN COLOR SPACE";
     }
   }
 

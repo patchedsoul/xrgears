@@ -232,7 +232,9 @@ class Renderer {
   }
 
   void allocate_command_buffers(uint32_t count) {
-    vik_log_e("Allocating Command Buffers. %d", count);
+    vik_log_f_if(count == 0, "Requested 0 command buffers.");
+    vik_log_d("Allocating %d Command Buffers.", count);
+
     // Create one command buffer for each swap chain image and reuse for rendering
     cmd_buffers.resize(count);
 
@@ -273,6 +275,7 @@ class Renderer {
     init_depth_stencil();
     create_render_pass();
 
+    assert(window->get_swap_chain()->image_count > 0);
     create_buffers(window->get_swap_chain()->image_count);
   }
 
@@ -538,6 +541,9 @@ class Renderer {
   void create_render_pass() {
     std::array<VkAttachmentDescription, 2> attachments = {};
     // Color attachment
+    vik_log_e("Creating renderpass with format %s",
+              Log::color_format_string(window->get_swap_chain()->surface_format.format).c_str());
+
     attachments[0].format = window->get_swap_chain()->surface_format.format;
     attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
     attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;

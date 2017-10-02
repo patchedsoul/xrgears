@@ -40,22 +40,24 @@ class SwapChainVK : public SwapChain {
     vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, 0, surface, &supported);
     assert(supported);
 
-    VkSwapchainCreateInfoKHR swapchainfo = {};
-    swapchainfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchainfo.surface = surface;
-    swapchainfo.minImageCount = 2;
-    swapchainfo.imageFormat = surface_format.format;
-    swapchainfo.imageColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
-    swapchainfo.imageExtent = { width, height };
-    swapchainfo.imageArrayLayers = 1;
-    swapchainfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    swapchainfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    swapchainfo.queueFamilyIndexCount = 1;
-    swapchainfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-    swapchainfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    swapchainfo.presentMode = select_present_mode();
+    VkSwapchainCreateInfoKHR swap_chain_info = {};
+    swap_chain_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    swap_chain_info.surface = surface;
+    swap_chain_info.minImageCount = 2;
+    swap_chain_info.imageFormat = surface_format.format;
+    swap_chain_info.imageColorSpace = surface_format.colorSpace;
+    swap_chain_info.imageExtent = { width, height };
+    swap_chain_info.imageArrayLayers = 1;
+    swap_chain_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    swap_chain_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    swap_chain_info.queueFamilyIndexCount = 1;
+    swap_chain_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    swap_chain_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    swap_chain_info.presentMode = select_present_mode();
 
-    vkCreateSwapchainKHR(device, &swapchainfo, NULL, &swap_chain);
+    vkCreateSwapchainKHR(device, &swap_chain_info, NULL, &swap_chain);
+
+    update_images();
   }
 
   void recreate(uint32_t width, uint32_t height) {
@@ -118,6 +120,14 @@ class SwapChainVK : public SwapChain {
     return vkQueuePresentKHR(queue, &presentInfo);
   }
 
+  void print_available_formats(const std::vector<VkSurfaceFormatKHR>& formats) {
+    vik_log_d("Available formats:");
+    for (VkSurfaceFormatKHR format : formats)
+        vik_log_d("(%s, %s)",
+                  Log::color_format_string(format.format).c_str(),
+                  Log::color_space_string(format.colorSpace).c_str());
+  }
+
   virtual void select_surface_format() {
     uint32_t count = 0;
     vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &count, NULL);
@@ -127,19 +137,16 @@ class SwapChainVK : public SwapChain {
     vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(
                     physical_device, surface, &count, formats.data()));
 
-    surface_format.format = VK_FORMAT_UNDEFINED;
+    print_available_formats(formats);
+
     for (uint32_t i = 0; i < count; i++) {
       switch (formats[i].format) {
-        case VK_FORMAT_R8G8B8A8_SRGB:
-        case VK_FORMAT_B8G8R8A8_SRGB:
-          /* These formats are all fine */
-          surface_format.format = formats[i].format;
+        case VK_FORMAT_B8G8R8A8_UNORM:
+          surface_format = formats[i];
+          vik_log_d("Using color format %s, %s",
+                    Log::color_format_string(surface_format.format).c_str(),
+                    Log::color_space_string(surface_format.colorSpace).c_str());
           break;
-        case VK_FORMAT_R8G8B8_SRGB:
-        case VK_FORMAT_B8G8R8_SRGB:
-        case VK_FORMAT_R5G6B5_UNORM_PACK16:
-        case VK_FORMAT_B5G6R5_UNORM_PACK16:
-          /* We would like to support these but they don't seem to work. */
         default:
           continue;
       }

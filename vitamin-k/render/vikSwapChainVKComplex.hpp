@@ -100,11 +100,15 @@ class SwapChainVkComplex : public vik::SwapChainVK {
   void select_surface_format() {
     // Get list of supported surface formats
     uint32_t count;
-    vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &count, NULL));
+    vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(
+                  physical_device, surface, &count, NULL));
     assert(count > 0);
 
     std::vector<VkSurfaceFormatKHR> formats(count);
-    vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &count, formats.data()));
+    vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(
+                    physical_device, surface, &count, formats.data()));
+
+    print_available_formats(formats);
 
     // If the surface format list only includes one entry with VK_FORMAT_UNDEFINED,
     // there is no preferered format, so we assume VK_FORMAT_B8G8R8A8_UNORM
@@ -116,12 +120,13 @@ class SwapChainVkComplex : public vik::SwapChainVK {
       // iterate over the list of available surface format and
       // check for the presence of VK_FORMAT_B8G8R8A8_UNORM
       bool found_B8G8R8A8_UNORM = false;
-      vik_log_d("Iterating surface formats");
-      for (auto&& surfaceFormat : formats) {
-        if (surfaceFormat.format == VK_FORMAT_B8G8R8A8_UNORM) {
-          vik_log_d("Using color format %d", surfaceFormat.format);
-          surface_format.format = surfaceFormat.format;
-          surface_format.colorSpace = surfaceFormat.colorSpace;
+      for (VkSurfaceFormatKHR format : formats) {
+        if (format.format == VK_FORMAT_B8G8R8A8_UNORM) {
+          vik_log_d("Using color format %s",
+                    Log::color_format_string(format.format).c_str());
+          vik_log_d("Using color space %s",
+                    Log::color_space_string(format.colorSpace).c_str());
+          surface_format = format;
           found_B8G8R8A8_UNORM = true;
           break;
         }

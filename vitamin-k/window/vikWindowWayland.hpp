@@ -28,7 +28,7 @@ class WindowWayland : public Window {
   wl_seat *seat = nullptr;
   wl_surface *surface = nullptr;
 
-  SwapChainVkComplex swap_chain;
+  SwapChainVK swap_chain;
 
   int hmd_refresh = 0;
 
@@ -56,8 +56,8 @@ class WindowWayland : public Window {
   void init_swap_chain(uint32_t width, uint32_t height) {
     VkResult err = create_surface(swap_chain.instance, &swap_chain.surface);
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
-    swap_chain.set_dimension_cb(dimension_cb);
-    swap_chain.select_queue();
+    //swap_chain.set_dimension_cb(dimension_cb);
+    //swap_chain.select_queue();
     swap_chain.select_surface_format();
     swap_chain.set_settings(settings);
     swap_chain.create(width, height);

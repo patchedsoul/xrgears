@@ -189,7 +189,7 @@ class WindowKMS : public Window {
   }
 
   void init_swap_chain(uint32_t width, uint32_t height) {
-    swap_chain.surface_format.format = VK_FORMAT_B8G8R8A8_SRGB;
+    swap_chain.surface_format.format = VK_FORMAT_B8G8R8A8_UNORM;
     swap_chain.init(swap_chain.device, swap_chain.surface_format.format, gbm_dev, fd,
              width, height);
     swap_chain.set_mode_and_page_flip(fd, crtc, connector);
