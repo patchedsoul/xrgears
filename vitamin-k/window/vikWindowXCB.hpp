@@ -200,7 +200,7 @@ class WindowXCB : public Window {
       case XK_Escape:
         return Input::Key::ESCAPE;
       default:
-        return Input::Key::ESCAPE;
+        return Input::Key::UNKNOWN;
     }
   }
 
