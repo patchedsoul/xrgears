@@ -26,6 +26,7 @@
 
 #include "system/vikApplication.hpp"
 #include "render/vikShader.hpp"
+#include "scene/vikCameraArcBall.hpp"
 
 #define USE_STAGING true
 

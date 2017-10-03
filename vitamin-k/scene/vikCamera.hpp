@@ -19,6 +19,7 @@
 #include <gli/gli.hpp>
 
 #include "vikCameraBase.hpp"
+#include "../render/vikBuffer.hpp"
 
 namespace vik {
 class Camera {

@@ -10,9 +10,6 @@
 
 #pragma once
 
-#include "render/vikBuffer.hpp"
-#include "vikCameraBase.hpp"
-
 #include "vikCamera.hpp"
 
 namespace vik {
