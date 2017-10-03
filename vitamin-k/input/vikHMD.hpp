@@ -83,6 +83,9 @@ class HMD {
       return;
     }
 
+    vik_log_i("vendor:  %s", ohmd_list_gets(openHmdContext, 0, OHMD_VENDOR));
+    vik_log_i("product: %s", ohmd_list_gets(openHmdContext, 0, OHMD_PRODUCT));
+    vik_log_i("path:    %s", ohmd_list_gets(openHmdContext, 0, OHMD_PATH));
     vik_log_i("hmdWarpParam     %.4f %.4f %.4f %.4f", distortion_coeffs[0], distortion_coeffs[1], distortion_coeffs[2], distortion_coeffs[3]);
     vik_log_i("warpScale        %.4f", warp_scale);
     vik_log_i("aberr            %.4f %.4f %.4f %.4f", aberr_scale[0], aberr_scale[1], aberr_scale[2]);
