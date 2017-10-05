@@ -16,6 +16,7 @@
 #include <vulkan/vulkan.h>
 
 #include <string>
+#include <sstream>
 #include <cstring>
 #include <fstream>
 #include <vector>
@@ -46,6 +47,35 @@
 
 namespace vik {
 namespace tools {
+
+
+static std::vector<std::string> split(std::string const& src, char delim) {
+    std::vector<std::string> elements;
+    std::stringstream ss {
+      src,
+      std::ios_base::ate | std::ios_base::in | std::ios_base::out
+    };
+
+    // std::getline() doesn't deal with trailing delimiters in the
+    // way we want it to (i.e. "a:b:" => {"a","b",""}), so fix this
+    // by appending an extra delimiter in such cases.
+    if (!src.empty() && src.back() == delim)
+        ss.put(delim);
+
+    std::string item;
+    while(std::getline(ss, item, delim))
+        elements.push_back(item);
+
+    return elements;
+}
+
+template<typename T>
+T from_string(std::string const& str) {
+    std::stringstream ss{str};
+    T ret{};
+    ss >> ret;
+    return ret;
+}
 
 /** @brief Returns the device type as a string */
 static std::string physicalDeviceTypeString(VkPhysicalDeviceType type) {

@@ -16,6 +16,7 @@
 #include <string>
 
 #include "vikLog.hpp"
+#include "../render/vikTools.hpp"
 
 namespace vik {
 class Settings {
@@ -45,24 +46,45 @@ class Settings {
 
   enum window_type type = AUTO;
 
-  uint32_t width = 1280;
-  uint32_t height = 720;
+  std::pair<uint32_t,uint32_t> size = {1280, 720};
 
   std::string help_string() {
     std::string help =
         "A XR demo for Vulkan and OpenHMD\n"
         "\n"
         "Options:\n"
-        "  -s, --size WxH              Size of the output window (default: 800x600)\n"
-        "      --fullscreen            Run fullscreen (equivalent to --size -1x-1)\n"
-        "  -w  --window WS             Window system plugin to use (default: choose best)\n"
+        "  -s, --size WxH              Size of the output window (default: 1280x720)\n"
+        "  -f, --fullscreen            Run fullscreen\n"
+        "  -w, --window WS             Window system to use (default: choose best)\n"
         "                              [xcb, wayland, kms]\n"
+
+        "      --listgpus              List available GPUs\n"
+
         "  -h, --help                  Display help\n";
 
     // for (auto const& wsh : window_system_help)
     //    help += wsh;
 
     return help;
+  }
+
+  std::pair<uint32_t,uint32_t> parse_size(std::string const& str)
+  {
+      std::pair<uint32_t,uint32_t> size;
+      auto const dimensions = tools::split(str, 'x');
+
+      size.first = tools::from_string<uint32_t>(dimensions[0]);
+
+      /*
+       * Parse the second element (height). If there is none, use the value
+       * of the first element for the second (width = height)
+       */
+      if (dimensions.size() > 1)
+          size.second = tools::from_string<uint32_t>(dimensions[1]);
+      else
+          size.second = size.first;
+
+      return size;
   }
 
   bool parse_args(int argc, char *argv[]) {
@@ -76,7 +98,7 @@ class Settings {
      */
 
     int option_index = -1;
-    static const char *optstring = "m:hs:w:vfg";
+    static const char *optstring = "hs:w:vfg";
 
 
     struct option long_options[] = {
@@ -112,18 +134,7 @@ class Settings {
       } else if (optname == "listgpus") {
         list_gpus_and_exit = true;
       } else if (opt == 's' || optname == "size") {
-        /*
-        if ((args[i] == std::string("-w")) || (args[i] == std::string("-width"))) {
-          char* endptr;
-          uint32_t w = strtol(args[i + 1], &endptr, 10);
-          if (endptr != args[i + 1]) renderer->width = w;
-        }
-        if ((args[i] == std::string("-h")) || (args[i] == std::string("-height"))) {
-          char* endptr;
-          uint32_t h = strtol(args[i + 1], &endptr, 10);
-          if (endptr != args[i + 1]) renderer->height = h;
-        }
-        */
+        size = parse_size(optarg);
       } else if (opt == 'f' || optname == "fullscreen") {
         fullscreen = true;
       } else if (opt == 'g' || optname == "gpu") {
@@ -137,7 +148,7 @@ class Settings {
       } else if (opt == 'w' || optname == "window") {
         type = window_type_from_string(optarg);
         if (type == INVALID)
-          vik_log_f("option -m given bad display mode");
+          vik_log_f("option -w given bad display mode");
       } else {
         vik_log_f("Unknown option %s", optname.c_str());
       }

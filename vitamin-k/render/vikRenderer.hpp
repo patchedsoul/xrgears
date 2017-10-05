@@ -90,8 +90,8 @@ class Renderer {
   Renderer(Settings *s, Window *w) {
     settings = s;
     window = w;
-    width = s->width;
-    height = s->height;
+    width = s->size.first;
+    height = s->size.second;
 
     auto dimension_cb = [this](uint32_t w, uint32_t h) {
       if (((w != width) || (h != height))
