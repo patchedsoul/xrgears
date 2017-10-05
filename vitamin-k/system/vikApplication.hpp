@@ -247,6 +247,7 @@ class Application {
   virtual void key_pressed(Input::Key) {}
   virtual void build_command_buffers() {}
   virtual void get_enabled_features() {}
+  virtual void update_text_overlay(vik::TextOverlay *overlay) {}
 
   void check_view_update() {
     if (viewUpdated) {
@@ -257,6 +258,14 @@ class Application {
 
   virtual void init() {
     renderer->init(name);
+
+    std::function<void(vik::TextOverlay *overlay)>
+      text_overlay_update_cb = [this](vik::TextOverlay *overlay) {
+      update_text_overlay(overlay);
+    };
+
+    renderer->textOverlay->update_cb = text_overlay_update_cb;
+
   }
 
   void loop() {

@@ -87,6 +87,9 @@ class TextOverlay {
 
   float scale = 1.0f;
 
+  std::function<void(vik::TextOverlay *overlay)>
+    update_cb = [](vik::TextOverlay *overlay) {};
+
   std::vector<VkCommandBuffer> cmdBuffers;
 
   /**
@@ -706,6 +709,7 @@ class TextOverlay {
     addText(title, 5.0f, 5.0f, TextOverlay::alignLeft);
     addText(fps, 5.0f, 25.0f, TextOverlay::alignLeft);
     addText(device, 5.0f, 45.0f, TextOverlay::alignLeft);
+    update_cb(this);
     endTextUpdate();
   }
 };
