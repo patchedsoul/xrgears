@@ -709,7 +709,7 @@ class XRGears : public vik::Application {
     updateUniformBuffers();
   }
 
-  virtual void key_pressed(uint32_t keyCode) {
+  virtual void key_pressed(vik::Input::Key keyCode) {
     /*
     switch (keyCode) {
       case KEY_KPADD:

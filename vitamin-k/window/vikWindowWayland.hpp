@@ -92,6 +92,12 @@ class WindowWayland : public Window {
         return Input::Key::F1;
       case KEY_ESC:
         return Input::Key::ESCAPE;
+      case KEY_SPACE:
+        return Input::Key::SPACE;
+      case KEY_KPPLUS:
+        return Input::Key::KPPLUS;
+      case KEY_KPMINUS:
+        return Input::Key::KPMINUS;
       default:
         return Input::Key::UNKNOWN;
     }

@@ -27,6 +27,8 @@ class Input {
     UNKNOWN,
     ESCAPE,
     SPACE,
+    KPPLUS,
+    KPMINUS,
     F1,
     W,
     A,

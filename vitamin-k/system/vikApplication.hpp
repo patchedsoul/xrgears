@@ -244,7 +244,7 @@ class Application {
 
   virtual void render() = 0;
   virtual void view_changed_cb() {}
-  virtual void key_pressed(uint32_t) {}
+  virtual void key_pressed(Input::Key) {}
   virtual void build_command_buffers() {}
   virtual void get_enabled_features() {}
 

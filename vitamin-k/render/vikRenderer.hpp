@@ -291,8 +291,6 @@ class Renderer {
     return true;
   }
 
-
-
   void destroy_command_buffers() {
     vkFreeCommandBuffers(device, cmd_pool, static_cast<uint32_t>(cmd_buffers.size()), cmd_buffers.data());
   }
