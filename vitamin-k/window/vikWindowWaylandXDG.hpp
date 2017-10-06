@@ -53,7 +53,8 @@ class WindowWaylandXDG : public WindowWayland {
 
     surface = wl_compositor_create_surface(compositor);
 
-    vik_log_f_if(!shell, "Compositor is missing unstable zxdg_shell_v6 protocol support");
+    vik_log_f_if(!shell,
+                 "Compositor is missing unstable zxdg_shell_v6 support");
 
     xdg_surface = zxdg_shell_v6_get_xdg_surface(shell, surface);
 
@@ -61,15 +62,9 @@ class WindowWaylandXDG : public WindowWayland {
 
     xdg_toplevel = zxdg_surface_v6_get_toplevel(xdg_surface);
 
-    // zxdg_surface_v6_get_popup()
-    // zxdg_positioner_v6_set_size();
-
     zxdg_toplevel_v6_add_listener(xdg_toplevel, &xdg_toplevel_listener, this);
 
     update_window_title("vkcube");
-
-    // zxdg_surface_v6_set_window_geometry(xdg_surface, 2560, 0, 1920, 1200);
-    // zxdg_toplevel_v6_set_maximized(xdg_toplevel);
 
     wl_surface_commit(surface);
 

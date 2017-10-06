@@ -377,7 +377,6 @@ class WindowWayland : public Window {
 
   bool first_configure = true;
   bool fullscreen_requested = false;
-  bool correct_mode_found = false;
 
   void configure(int32_t width, int32_t height) {
     if (settings->list_screens_and_exit) {
@@ -386,10 +385,7 @@ class WindowWayland : public Window {
       return;
     }
 
-    //if (correct_mode_found && fullscreen_requested)
-    //  return;
-
-    vik_log_d("configure: %dx%d", width, height);
+    // vik_log_d("configure: %dx%d", width, height);
 
     if (first_configure) {
       validate_display();
@@ -398,21 +394,21 @@ class WindowWayland : public Window {
     }
 
     Mode *m = current_mode();
-    if (m->size.first == width && m->size.second == height)
-      correct_mode_found = true;
-    else
-      vik_log_w("Received mode %dx%d does not match requested Mode %dx%d . Compositor bug?",
+    if (fullscreen_requested &&
+        (m->size.first != width || m->size.second != height)) {
+      vik_log_w("Received mode %dx%d does not match requested Mode %dx%d. Compositor bug? Requesting again.",
                 width, height,
                 m->size.first, m->size.second);
+      fullscreen_requested = false;
+    }
 
     m = current_mode();
-    if (settings->fullscreen) {
-      //if (!fullscreen_requested) {
-        vik_log_i("Setting full screen on Display %d Mode %s",
-                  settings->display, mode_to_string(*m).c_str());
-        fullscreen();
-        fullscreen_requested = true;
-        dimension_cb(m->size.first, m->size.second);
+    if (settings->fullscreen && !fullscreen_requested) {
+      vik_log_i("Setting full screen on Display %d Mode %s",
+                settings->display, mode_to_string(*m).c_str());
+      fullscreen();
+      fullscreen_requested = true;
+      dimension_cb(m->size.first, m->size.second);
     }
   }
 
