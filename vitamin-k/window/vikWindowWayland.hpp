@@ -13,6 +13,8 @@
 #include <wayland-client.h>
 
 #include <vector>
+#include <string>
+#include <map>
 
 #include "vikWindow.hpp"
 
@@ -30,11 +32,24 @@ class WindowWayland : public Window {
 
   SwapChainVK swap_chain;
 
-  int hmd_refresh = 0;
-
-  wl_output *hmd_output = nullptr;
-
   explicit WindowWayland(Settings *s) : Window(s) {}
+
+  struct Mode {
+    std::pair<int,int> size;
+    int refresh;
+  };
+
+  struct Display {
+    wl_output* output;
+    std::string make;
+    std::string model;
+    std::vector<Mode> modes;
+    std::pair<int,int> physical_size_mm;
+    std::pair<int,int> position;
+  };
+
+  std::vector<Display> displays;
+
 
   ~WindowWayland() {
     wl_surface_destroy(surface);
@@ -62,15 +77,6 @@ class WindowWayland : public Window {
     swap_chain.set_settings(settings);
     swap_chain.create(width, height);
   }
-
-  /*
-   * simple swap chain
-  void init_swap_chain(uint32_t width, uint32_t height) {
-    create_surface(swap_chain.instance, &swap_chain.surface);
-    swap_chain.select_surface_format();
-    swap_chain.recreate(width, height);
-  }
-  */
 
   SwapChain* get_swap_chain() {
     return (SwapChain*) &swap_chain;
@@ -180,8 +186,17 @@ class WindowWayland : public Window {
     }
   }
 
-  virtual void output_mode(wl_output *wl_output, unsigned int flags,
-                           int w, int h, int refresh) = 0;
+  void output_mode(wl_output *output, unsigned int flags,
+                   int w, int h, int refresh) {
+    Mode m = {};
+    m.size = {w, h};
+    m.refresh = refresh;
+
+    Display *d = get_display_from_output(output);
+    vik_log_f_if(d == nullptr, "Output mode callback before geomentry!");
+
+    d->modes.push_back(m);
+  }
 
   virtual void registry_global(wl_registry *registry, uint32_t name,
                                const char *interface) = 0;
@@ -258,29 +273,74 @@ class WindowWayland : public Window {
     self->seat_capabilities(seat, caps);
   }
 
-  static void _output_mode_cb(void *data, wl_output *wl_output,
+  static void _output_mode_cb(void *data, wl_output *output,
                               unsigned int flags, int w, int h, int refresh) {
     WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
-    self->output_mode(wl_output, flags, w, h, refresh);
+    self->output_mode(output, flags, w, h, refresh);
   }
 
-  // debug callbacks
-  static void _output_done_cb(void *data, wl_output *output) {
-    vik_log_d("output done %p", output);
-  }
-
-  static void _output_scale_cb(void *data, wl_output *output, int scale) {
-    vik_log_d("output scale: %d", scale);
-  }
-
-  static void _output_geometry_cb(void *data, wl_output *wl_output, int x,
-                                  int y, int w, int h, int subpixel,
+  static void _output_geometry_cb(void *data, wl_output *output,
+                                  int x, int y, int w, int h,
+                                  int subpixel,
                                   const char *make, const char *model,
                                   int transform) {
-    vik_log_i("%s: %s [%d, %d] %dx%d", make, model, x, y, w, h);
+    Display d = {};
+    d.output = output;
+    d.make = std::string(make);
+    d.model = std::string(model);
+    d.physical_size_mm = {w, h};
+    d.position = {x, y};
+
+    WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+    self->displays.push_back(d);
+  }
+
+  Display* get_display_from_output(wl_output* output) {
+    for (int i = 0; i < displays.size();  i++) {
+      if (displays[i].output == output)
+        return &displays[i];
+    }
+    return nullptr;
+  }
+
+  void print_displays() {
+    int i_d = 0;
+    for (auto d : displays) {
+      vik_log_i("%d: %s %s [%d, %d] %dx%dmm (%d Modes)",
+                i_d,
+                d.make.c_str(),
+                d.model.c_str(),
+                d.position.first, d.position.second,
+                d.physical_size_mm.first, d.physical_size_mm.second,
+                d.modes.size());
+
+      int i_m = 0;
+      for (auto m : d.modes) {
+        vik_log_i("\t%d: %s", i_m, mode_to_string(m).c_str());
+        i_m++;
+      }
+      i_d++;
+    }
+  }
+
+  static std::string mode_to_string(const Mode& m) {
+    auto size = std::snprintf(nullptr, 0, "%d x %d @ %.2fHz",
+                              m.size.first,
+                              m.size.second,
+                              (float) m.refresh/1000.0);
+    std::string output(size + 1, '\0');
+    std::sprintf(&output[0], "%d x %d @ %.2fHz", m.size.first,
+        m.size.second,
+        (float) m.refresh/1000.0);
+    return std::string(output);
   }
 
   // Unused callbacks
+
+  static void _output_done_cb(void *data, wl_output *output) {}
+
+  static void _output_scale_cb(void *data, wl_output *output, int scale) {}
+
   static void _registry_global_remove_cb(void *data, wl_registry *registry,
                                          uint32_t name) {}
   static void _keyboard_keymap_cb(void *data, wl_keyboard *keyboard,
@@ -289,7 +349,7 @@ class WindowWayland : public Window {
                                      uint32_t serial, uint32_t mods_depressed,
                                      uint32_t mods_latched, uint32_t mods_locked,
                                      uint32_t group) {}
-  static void _keyboard_repeat_cb(void *data, wl_keyboard *wl_keyboard,
+  static void _keyboard_repeat_cb(void *data, wl_keyboard *keyboard,
                                   int32_t rate, int32_t delay) {}
 
   static void _keyboard_enter_cb(void *data,

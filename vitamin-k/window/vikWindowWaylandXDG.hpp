@@ -27,7 +27,6 @@ class WindowWaylandXDG : public WindowWayland {
   struct zxdg_shell_v6 *shell = nullptr;
   struct zxdg_surface_v6 *xdg_surface = nullptr;
   struct zxdg_toplevel_v6 *xdg_toplevel = nullptr;
-  bool wait_for_configure;
   SwapChainVkComplex swap_chain;
 
  public:
@@ -65,8 +64,6 @@ class WindowWaylandXDG : public WindowWayland {
     // zxdg_surface_v6_get_popup()
     // zxdg_positioner_v6_set_size();
 
-    vik_log_d("the hmd output is %p", hmd_output);
-
     zxdg_toplevel_v6_add_listener(xdg_toplevel, &xdg_toplevel_listener, this);
 
     update_window_title("vkcube");
@@ -74,7 +71,6 @@ class WindowWaylandXDG : public WindowWayland {
     // zxdg_surface_v6_set_window_geometry(xdg_surface, 2560, 0, 1920, 1200);
     // zxdg_toplevel_v6_set_maximized(xdg_toplevel);
 
-    wait_for_configure = true;
     wl_surface_commit(surface);
 
     return 0;
@@ -104,27 +100,62 @@ class WindowWaylandXDG : public WindowWayland {
     }
   }
 
-  void output_mode(wl_output *wl_output, unsigned int flags,
-                   int w, int h, int refresh) {
-    vik_log_i("outputModeCb: %dx%d@%d", w, h, refresh);
-    if (w == 2560 && h == 1440) {
-      vik_log_d("setting wl_output to %p", wl_output);
-      hmd_output = wl_output;
-      hmd_refresh = refresh;
-      zxdg_toplevel_v6_set_fullscreen(xdg_toplevel, hmd_output);
-      wl_surface_commit(surface);
-    } else {
-      vik_log_d("ignoring wl_output %p", wl_output);
+  void fullscreen(wl_output *output) {
+    zxdg_toplevel_v6_set_fullscreen(xdg_toplevel, output);
+    // wl_surface_commit(surface);
+  }
+
+  bool is_configured = false;
+
+  void configure() {
+
+    if (is_configured)
+      return;
+
+    if (settings->list_screens_and_exit) {
+      print_displays();
+      quit_cb();
+      return;
     }
+
+    Display *d;
+
+    if (settings->display > displays.size()) {
+      vik_log_e("Requested display %d, but only %d displays are available.",
+                settings->display, displays.size());
+
+      settings->display = 0;
+      d = &displays[settings->display];
+      vik_log_e("Selecting '%s %s' instead.",
+                d->make.c_str(),
+                d->model.c_str());
+    } else {
+      d = &displays[settings->display];
+    }
+
+    if (settings->mode > d->modes.size()) {
+      vik_log_e("Requested mode %d, but only %d modes are available on display %d.",
+                settings->mode,
+                d->modes.size(),
+                settings->display);
+      settings->mode = 0;
+      vik_log_e("Selecting '%s' instead",
+                mode_to_string(d->modes[settings->mode]).c_str());
+    }
+    vik_log_d("Requested Display %d Mode %d",
+              settings->display, settings->mode);
+
+    if (settings->fullscreen)
+      fullscreen(d->output);
+
+    is_configured = true;
   }
 
   static void _xdg_surface_configure_cb(void *data, zxdg_surface_v6 *surface,
                                         uint32_t serial) {
-    WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
     zxdg_surface_v6_ack_configure(surface, serial);
-    if (self->wait_for_configure)
-      // redraw
-      self->wait_for_configure = false;
+    WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
+    self->configure();
   }
 
   const zxdg_surface_v6_listener xdg_surface_listener = {

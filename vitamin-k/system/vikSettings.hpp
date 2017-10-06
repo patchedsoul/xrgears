@@ -13,7 +13,9 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
+
 #include <string>
+#include <algorithm>
 
 #include "vikLog.hpp"
 #include "../render/vikTools.hpp"
@@ -41,8 +43,12 @@ class Settings {
   uint32_t gpu_index = 0;
 
   bool list_gpus_and_exit = false;
+  bool list_screens_and_exit = false;
 
   bool enable_text_overlay = true;
+
+  uint32_t display = 0;
+  uint32_t mode = 0;
 
   enum window_type type = AUTO;
 
@@ -54,22 +60,23 @@ class Settings {
         "\n"
         "Options:\n"
         "  -s, --size WxH              Size of the output window (default: 1280x720)\n"
-        "  -f, --fullscreen            Run fullscreen\n"
+        "  -f, --fullscreen            Run fullscreen. Optinally specify display and mode.\n"
+        "  -d, --display D             Display to fullscreen on. (default: 0)\n"
+        "  -m, --mode M                Mode for fullscreen. (default: 0)\n"
         "  -w, --window WS             Window system to use (default: choose best)\n"
         "                              [xcb, wayland, kms]\n"
 
         "      --listgpus              List available GPUs\n"
-
+        "      --listdisplays          List available displays\n"
         "  -h, --help                  Display help\n";
 
     // for (auto const& wsh : window_system_help)
     //    help += wsh;
-
+ // VK_PRESENT_MODE_FIFO_KHR for vsync
     return help;
   }
 
-  std::pair<uint32_t,uint32_t> parse_size(std::string const& str)
-  {
+  std::pair<uint32_t,uint32_t> parse_size(std::string const& str) {
       std::pair<uint32_t,uint32_t> size;
       auto const dimensions = tools::split(str, 'x');
 
@@ -98,7 +105,7 @@ class Settings {
      */
 
     int option_index = -1;
-    static const char *optstring = "hs:w:vfg";
+    static const char *optstring = "hs:w:vfgd:m:";
 
 
     struct option long_options[] = {
@@ -108,8 +115,17 @@ class Settings {
       {"validation", 0, 0, 0},
       {"vsync", 0, 0, 0},
       {"fullscreen", 0, 0, 0},
-      {"gpu", 0, 0, 0},
+      {"display", 1, 0, 0},
+      {"mode", 1, 0, 0},
+      {"gpu", 1, 0, 0},
+      {"hmd", 1, 0, 0},
+      {"format", 1, 0, 0},
+      {"presentmode", 1, 0, 0},
       {"listgpus", 0, 0, 0},
+      {"listdisplays", 0, 0, 0},
+      {"listhmds", 0, 0, 0},
+      {"listformats", 0, 0, 0},
+      {"listpresentmodes", 0, 0, 0},
       {0, 0, 0, 0}
     };
 
@@ -133,9 +149,17 @@ class Settings {
         vsync = true;
       } else if (optname == "listgpus") {
         list_gpus_and_exit = true;
+      } else if (optname == "listdisplays") {
+        list_screens_and_exit = true;
       } else if (opt == 's' || optname == "size") {
         size = parse_size(optarg);
       } else if (opt == 'f' || optname == "fullscreen") {
+        fullscreen = true;
+      } else if (opt == 'd' || optname == "display") {
+        display = parse_id(optarg);
+        fullscreen = true;
+      } else if (opt == 'm' || optname == "mode") {
+        mode = parse_id(optarg);
         fullscreen = true;
       } else if (opt == 'g' || optname == "gpu") {
         /*
@@ -158,6 +182,20 @@ class Settings {
       vik_log_w("trailing args");
 
     return true;
+  }
+
+  bool is_number(const std::string& str) {
+    auto is_not_digit = [](char c) { return !std::isdigit(c); };
+    return !str.empty() &&
+        std::find_if(str.begin(), str.end(), is_not_digit) == str.end();
+  }
+
+  int parse_id(std::string const& str) {
+    if (!is_number(str)) {
+      vik_log_e("%s is not a valid number", str.c_str());
+      return 0;
+    }
+    return std::stoi(str, nullptr);
   }
 
   static inline bool streq(const char *a, const char *b) {

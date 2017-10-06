@@ -52,32 +52,20 @@ class WindowWaylandShell : public WindowWayland {
     wl_shell_surface_add_listener(shell_surface, &shell_surface_listener, this);
     // wl_shell_surface_set_toplevel(shell_surface);
 
-    vik_log_d("setting hmd refresh to %d", hmd_refresh);
-    vik_log_d("setting hmd output to %p", hmd_output);
+    //if (settings->fullscreen)
 
-    if (settings->fullscreen)
-      wl_shell_surface_set_fullscreen(shell_surface,
-                                      WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-                                      hmd_refresh,
-                                      hmd_output);
     return 0;
+  }
+
+  void fullscreen(wl_output *output, int refresh) {
+    wl_shell_surface_set_fullscreen(shell_surface,
+                                    WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
+                                    refresh,
+                                    output);
   }
 
   void update_window_title(const std::string& title) {
     wl_shell_surface_set_title(shell_surface, title.c_str());
-  }
-
-  void output_mode(wl_output *wl_output, unsigned int flags,
-                   int w, int h, int refresh) {
-    vik_log_i("outputModeCb: %dx%d@%d", w, h, refresh);
-    //    if (w == 2560 && h == 1440) {
-    if (w == 1920 && h == 1200) {
-      vik_log_d("setting wl_output to %p", wl_output);
-      hmd_output = wl_output;
-      hmd_refresh = refresh;
-    } else {
-      vik_log_d("ignoring wl_output %p", wl_output);
-    }
   }
 
   void registry_global(wl_registry *registry, uint32_t name,
