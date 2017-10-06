@@ -100,62 +100,25 @@ class WindowWaylandXDG : public WindowWayland {
     }
   }
 
-  void fullscreen(wl_output *output) {
-    zxdg_toplevel_v6_set_fullscreen(xdg_toplevel, output);
-    // wl_surface_commit(surface);
+  void fullscreen() {
+    fullscreen(current_display()->output);
   }
 
-  bool is_configured = false;
-
-  void configure() {
-
-    if (is_configured)
-      return;
-
-    if (settings->list_screens_and_exit) {
-      print_displays();
-      quit_cb();
-      return;
-    }
-
-    Display *d;
-
-    if (settings->display > displays.size()) {
-      vik_log_e("Requested display %d, but only %d displays are available.",
-                settings->display, displays.size());
-
-      settings->display = 0;
-      d = &displays[settings->display];
-      vik_log_e("Selecting '%s %s' instead.",
-                d->make.c_str(),
-                d->model.c_str());
-    } else {
-      d = &displays[settings->display];
-    }
-
-    if (settings->mode > d->modes.size()) {
-      vik_log_e("Requested mode %d, but only %d modes are available on display %d.",
-                settings->mode,
-                d->modes.size(),
-                settings->display);
-      settings->mode = 0;
-      vik_log_e("Selecting '%s' instead",
-                mode_to_string(d->modes[settings->mode]).c_str());
-    }
-    vik_log_d("Requested Display %d Mode %d",
-              settings->display, settings->mode);
-
-    if (settings->fullscreen)
-      fullscreen(d->output);
-
-    is_configured = true;
+  void fullscreen(wl_output *output) {
+    zxdg_toplevel_v6_set_fullscreen(xdg_toplevel, output);
+    wl_surface_commit(surface);
   }
 
   static void _xdg_surface_configure_cb(void *data, zxdg_surface_v6 *surface,
                                         uint32_t serial) {
     zxdg_surface_v6_ack_configure(surface, serial);
+  }
+
+  static void _xdg_toplevel_configure_cb(void *data, zxdg_toplevel_v6 *toplevel,
+                                         int32_t width, int32_t height,
+                                         struct wl_array *states) {
     WindowWaylandXDG *self = reinterpret_cast<WindowWaylandXDG *>(data);
-    self->configure();
+    self->configure(width, height);
   }
 
   const zxdg_surface_v6_listener xdg_surface_listener = {
@@ -177,9 +140,7 @@ class WindowWaylandXDG : public WindowWayland {
   }
 
   // unused callbacks
-  static void _xdg_toplevel_configure_cb(void *data, zxdg_toplevel_v6 *toplevel,
-                                         int32_t width, int32_t height,
-                                         struct wl_array *states) {}
+
   static void _xdg_toplevel_close_cb(void *data, zxdg_toplevel_v6 *toplevel) {}
 };
 }  // namespace vik

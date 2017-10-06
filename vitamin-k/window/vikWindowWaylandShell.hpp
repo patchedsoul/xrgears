@@ -52,9 +52,11 @@ class WindowWaylandShell : public WindowWayland {
     wl_shell_surface_add_listener(shell_surface, &shell_surface_listener, this);
     // wl_shell_surface_set_toplevel(shell_surface);
 
-    //if (settings->fullscreen)
-
     return 0;
+  }
+
+  void fullscreen() {
+    fullscreen(current_display()->output, current_mode()->refresh);
   }
 
   void fullscreen(wl_output *output, int refresh) {
@@ -89,7 +91,8 @@ class WindowWaylandShell : public WindowWayland {
 
   static void _configure_cb(void *data, wl_shell_surface *shell_surface,
                             uint32_t edges, int32_t width, int32_t height) {
-    vik_log_d("configure: %dx%d", width, height);
+    WindowWaylandShell *self = reinterpret_cast<WindowWaylandShell *>(data);
+    self->configure(width, height);
   }
 
   const wl_shell_surface_listener shell_surface_listener = {
