@@ -24,9 +24,9 @@
 
 namespace vik {
 class WindowWaylandXDG : public WindowWayland {
-  struct zxdg_shell_v6 *shell = nullptr;
-  struct zxdg_surface_v6 *xdg_surface = nullptr;
-  struct zxdg_toplevel_v6 *xdg_toplevel = nullptr;
+  zxdg_shell_v6 *shell = nullptr;
+  zxdg_surface_v6 *xdg_surface = nullptr;
+  zxdg_toplevel_v6 *xdg_toplevel = nullptr;
   SwapChainVkComplex swap_chain;
 
  public:
