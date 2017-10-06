@@ -12,6 +12,7 @@
 #include <xcb/xcb.h>
 #include <X11/keysym.h>
 #include <xcb/xcb_keysyms.h>
+#include <xcb/randr.h>
 
 #include <string>
 #include <vector>
@@ -41,6 +42,14 @@ class WindowXCB : public Window {
 
   SwapChainVkComplex swap_chain;
 
+  struct Display {
+    std::string name;
+    std::pair<int16_t, int16_t> position;
+    std::pair<uint16_t, uint16_t> size;
+  };
+
+  std::vector<Display> displays;
+
  public:
   explicit WindowXCB(Settings *s) : Window(s) {
     name = "xcb";
@@ -58,17 +67,50 @@ class WindowXCB : public Window {
 
     xcb_screen_iterator_t iter =
         xcb_setup_roots_iterator(xcb_get_setup(connection));
+
     screen = iter.data;
+
+    if (settings->list_screens_and_exit) {
+      vik_log_i("Screen 0 %dx%d",
+                iter.data->width_in_pixels,
+                iter.data->height_in_pixels);
+      get_randr_outputs();
+
+      int display_i = 0;
+      for (Display d : displays) {
+        vik_log_i("%d: %s %dx%d [%d, %d]",
+                  display_i,
+                  d.name.c_str(),
+                  d.size.first, d.size.second,
+                  d.position.first, d.position.second);
+        display_i++;
+      }
+      exit(0);
+    }
 
     syms = xcb_key_symbols_alloc(connection);
 
     if (settings->fullscreen) {
-      width = screen->width_in_pixels;
-      height = screen->height_in_pixels;
-      dimension_cb(width, height);
+
+      get_randr_outputs();
+
+      if (settings->display > displays.size()) {
+        vik_log_e("Requested display %d, but only %d displays are available.",
+                  settings->display, displays.size());
+
+        settings->display = 0;
+        Display *d = current_display();
+        vik_log_e("Selecting '%s' instead.",
+                  d->name.c_str());
+      }
+
+      Display *d = current_display();
+      width = d->size.first;
+      height = d->size.second;
+      size_only_cb(width, height);
     }
 
-    create_window(width, height, iter, &window_values);
+    create_window(width, height, &window_values);
 
     connect_delete_event();
 
@@ -80,6 +122,10 @@ class WindowXCB : public Window {
     return 0;
   }
 
+  Display* current_display() {
+    return &displays[settings->display];
+  }
+
   void iterate() {
     poll_events();
     render_frame_cb();
@@ -88,7 +134,7 @@ class WindowXCB : public Window {
   void init_swap_chain(uint32_t width, uint32_t height) {
     VkResult err = create_surface(swap_chain.instance, &swap_chain.surface);
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
-    //swap_chain.set_dimension_cb(dimension_cb);
+    swap_chain.set_dimension_cb(dimension_cb);
     //swap_chain.select_queue();
     swap_chain.select_surface_format();
     swap_chain.set_settings(settings);
@@ -102,30 +148,75 @@ class WindowXCB : public Window {
   int connect() {
     connection = xcb_connect(0, 0);
     return !xcb_connection_has_error(connection);
-    /*
-    int scr;
-    connection = xcb_connect(NULL, &scr);
-    vik_log_d("Preferred screen %d", scr);
-    while (scr-- > 0)
-      xcb_screen_next(&iter);
-    */
   }
 
   void create_window(uint32_t width, uint32_t height,
-                     const xcb_screen_iterator_t& iter,
                      uint32_t *window_values) {
     window = xcb_generate_id(connection);
+
+    int x = 0;
+    int y = 0;
+
+    if (settings->fullscreen) {
+      x = current_display()->position.first;
+      y = current_display()->position.second;
+    }
+
     xcb_create_window(connection,
                       XCB_COPY_FROM_PARENT,
                       window,
-                      iter.data->root,
-                      0, 0,
+                      screen->root,
+                      x, y,
                       width, height,
                       0,
                       XCB_WINDOW_CLASS_INPUT_OUTPUT,
-                      iter.data->root_visual,
+                      screen->root_visual,
                       XCB_CW_EVENT_MASK,
                       window_values);
+  }
+
+  void get_randr_outputs() {
+    xcb_randr_get_screen_resources_cookie_t resources_cookie =
+        xcb_randr_get_screen_resources(connection, screen->root);
+    xcb_randr_get_screen_resources_reply_t *resources_reply =
+        xcb_randr_get_screen_resources_reply(connection, resources_cookie, nullptr);
+    xcb_randr_output_t *xcb_outputs =
+        xcb_randr_get_screen_resources_outputs(resources_reply);
+
+    int count = xcb_randr_get_screen_resources_outputs_length(resources_reply);
+    if (count < 1)
+      vik_log_f("failed to retrieve randr outputs");
+
+    for (int i = 0; i < count; i++) {
+      xcb_randr_get_output_info_cookie_t output_cookie =
+          xcb_randr_get_output_info(connection, xcb_outputs[i], XCB_CURRENT_TIME);
+      xcb_randr_get_output_info_reply_t *output_reply =
+          xcb_randr_get_output_info_reply(connection, output_cookie, nullptr);
+
+      if (output_reply->connection != XCB_RANDR_CONNECTION_CONNECTED ||
+          output_reply->crtc == XCB_NONE)
+        continue;
+
+      xcb_randr_get_crtc_info_cookie_t crtc_cookie =
+          xcb_randr_get_crtc_info(connection, output_reply->crtc, XCB_CURRENT_TIME);
+      xcb_randr_get_crtc_info_reply_t *crtc_reply =
+          xcb_randr_get_crtc_info_reply(connection, crtc_cookie, nullptr);
+
+      uint8_t *name = xcb_randr_get_output_info_name(output_reply);
+      int name_len = xcb_randr_get_output_info_name_length(output_reply);
+
+      char* name_str = (char*) malloc(name_len + 1);
+      memcpy(name_str, name, name_len);
+      name_str[name_len] = '\0';
+
+      Display d = {};
+      d.name = std::string(name_str);
+      d.position = {crtc_reply->x, crtc_reply->y};
+      d.size = {crtc_reply->width, crtc_reply->height};
+      displays.push_back(d);
+
+      free(name_str);
+    }
   }
 
   void connect_delete_event() {

@@ -155,10 +155,10 @@ class SwapChainVkComplex : public vik::SwapChainVK {
     } else {
       extent = caps.currentExtent;
       if (caps.currentExtent.width != width || caps.currentExtent.height != height) {
-        dimension_cb(caps.currentExtent.width, caps.currentExtent.height);
         vik_log_w("Swap chain extent dimensions differ from requested: %dx%d vs %dx%d",
                   caps.currentExtent.width, caps.currentExtent.height,
                   width, height);
+        dimension_cb(caps.currentExtent.width, caps.currentExtent.height);
       }
     }
     return extent;

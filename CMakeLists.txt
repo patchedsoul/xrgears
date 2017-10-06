@@ -54,6 +54,7 @@ pkg_search_module(OPENHMD REQUIRED openhmd)
 pkg_search_module(ASSIMP REQUIRED assimp)
 pkg_search_module(XCB REQUIRED xcb)
 pkg_search_module(XCB_KEY REQUIRED xcb-keysyms)
+pkg_search_module(XCB_RANDR REQUIRED xcb-randr)
 pkg_search_module(WAYLAND REQUIRED wayland-client)
 pkg_search_module(GBM REQUIRED gbm)
 pkg_search_module(DRM REQUIRED libdrm)
@@ -111,6 +112,7 @@ set(EXAMPLE_LIBS
     ${WAYLAND_LIBRARIES}
     xdg-shell
     ${GBM_LIBRARIES}
+    ${XCB_RANDR_LIBRARIES}
     ${DRM_LIBRARIES})
 
 # Function for building single example
