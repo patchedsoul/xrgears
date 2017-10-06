@@ -501,7 +501,7 @@ class Device {
     submitInfo.pCommandBuffers = &commandBuffer;
 
     // Create fence to ensure that the command buffer has finished executing
-    VkFenceCreateInfo fenceInfo = initializers::fenceCreateInfo(VK_FLAGS_NONE);
+    VkFenceCreateInfo fenceInfo = initializers::fenceCreateInfo(0);
     VkFence fence;
     vik_log_check(vkCreateFence(logicalDevice, &fenceInfo, nullptr, &fence));
 

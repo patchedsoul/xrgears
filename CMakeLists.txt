@@ -14,7 +14,7 @@ add_definitions(-DVK_USE_PLATFORM_XCB_KHR)
 add_cxxflag("-std=c++14")
 
 # warnings
-add_cxxflag("-Werror")
+# add_cxxflag("-Werror")
 
 add_cxxflag("-Wall")
 add_cxxflag("-Wcast-qual")
