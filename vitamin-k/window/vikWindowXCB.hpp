@@ -61,7 +61,7 @@ class WindowXCB : public Window {
     xcb_key_symbols_free(syms);
   }
 
-  int init(uint32_t width, uint32_t height) {
+  int init() {
     if (!connect())
       return -1;
 
@@ -105,12 +105,12 @@ class WindowXCB : public Window {
       }
 
       Display *d = current_display();
-      width = d->size.first;
-      height = d->size.second;
-      size_only_cb(width, height);
+      settings->size.first = d->size.first;
+      settings->size.second = d->size.second;
+      size_only_cb(settings->size.first, settings->size.second);
     }
 
-    create_window(width, height, &window_values);
+    create_window(settings->size.first, settings->size.second, &window_values);
 
     connect_delete_event();
 
@@ -358,7 +358,7 @@ class WindowXCB : public Window {
       }
         break;
       case XCB_KEY_PRESS: {
-        const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
+        const xcb_key_press_event_t *keyEvent = (const xcb_key_press_event_t *)event;
         keyboard_key_cb(xcb_to_vik_key(keyEvent->detail), true);
       }
         break;

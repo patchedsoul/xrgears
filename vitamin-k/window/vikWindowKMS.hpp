@@ -143,7 +143,7 @@ class WindowKMS : public Window {
   }
 
   // Return -1 on failure.
-  int init(uint32_t width, uint32_t height) {
+  int init() {
     drmModeRes *resources;
     drmModeEncoder *encoder;
     int i;

@@ -141,7 +141,7 @@ class WindowKhrDisplay  : public Window {
 
   void update_window_title(const std::string& title) {}
 
-  int init(uint32_t width, uint32_t height) {
+  int init() {
     return 0;
   }
 

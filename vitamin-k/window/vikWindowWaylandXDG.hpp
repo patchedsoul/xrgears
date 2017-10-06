@@ -37,7 +37,7 @@ class WindowWaylandXDG : public WindowWayland {
   ~WindowWaylandXDG() {}
 
   // Return -1 on failure.
-  int init(uint32_t width, uint32_t height) {
+  int init() {
     display = wl_display_connect(NULL);
     if (!display)
       return -1;

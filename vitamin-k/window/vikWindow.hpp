@@ -88,7 +88,7 @@ class Window {
   virtual void iterate() = 0;
   virtual void init_swap_chain(uint32_t width, uint32_t height) = 0;
 
-  virtual int init(uint32_t width, uint32_t height) = 0;
+  virtual int init() = 0;
 
   virtual const std::vector<const char*> required_extensions() = 0;
   virtual void update_window_title(const std::string& title) = 0;

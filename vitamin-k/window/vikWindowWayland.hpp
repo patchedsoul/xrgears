@@ -296,7 +296,7 @@ class WindowWayland : public Window {
   }
 
   Display* get_display_from_output(wl_output* output) {
-    for (int i = 0; i < displays.size();  i++) {
+    for (int i = 0; i < displays.size(); i++) {
       if (displays[i].output == output)
         return &displays[i];
     }

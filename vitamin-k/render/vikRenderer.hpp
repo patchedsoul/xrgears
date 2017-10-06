@@ -252,9 +252,7 @@ class Renderer {
     init_vulkan(name, window->required_extensions());
     create_pipeline_cache();
 
-    window->init(width, height);
-
-
+    window->init();
 
     window->update_window_title(make_title_string(name));
     window->get_swap_chain()->set_context(instance, physical_device, device);
@@ -539,7 +537,7 @@ class Renderer {
   void create_render_pass() {
     std::array<VkAttachmentDescription, 2> attachments = {};
     // Color attachment
-    vik_log_e("Creating renderpass with format %s",
+    vik_log_d("Creating renderpass with format %s",
               Log::color_format_string(window->get_swap_chain()->surface_format.format).c_str());
 
     attachments[0].format = window->get_swap_chain()->surface_format.format;
