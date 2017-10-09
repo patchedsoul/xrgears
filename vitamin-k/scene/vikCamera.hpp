@@ -61,7 +61,7 @@ public:
    device->create_and_map(&uniformBuffer, sizeof(ubo));
  }
 
- private:
+ protected:
   float fov;
   float znear, zfar;
 

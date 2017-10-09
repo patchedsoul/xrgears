@@ -18,13 +18,14 @@ class CameraStereo : public CameraFirstPerson {
   // Camera and view properties
   float eyeSeparation = 0.08f;
   const float focalLength = 0.5f;
-  const float fov = 90.0f;
-  const float zNear = 0.1f;
-  const float zFar = 256.0f;
 
   int width, height;
 
-  CameraStereo(int w, int h) : width(w), height(h) {}
+  CameraStereo(int w, int h) : width(w), height(h) {
+    fov = 90.0f;
+    znear = 0.1f;
+    zfar = 256.0f;
+  }
 
   void changeEyeSeparation(float delta) {
     eyeSeparation += delta;
@@ -36,8 +37,8 @@ class CameraStereo : public CameraFirstPerson {
 
     // Calculate some variables
     float aspectRatio = (float)(width * 0.5f) / (float)height;
-    float wd2 = zNear * tan(glm::radians(fov / 2.0f));
-    float ndfl = zNear / focalLength;
+    float wd2 = znear * tan(glm::radians(fov / 2.0f));
+    float ndfl = znear / focalLength;
     float left, right;
     float top = wd2;
     float bottom = -wd2;
@@ -62,7 +63,7 @@ class CameraStereo : public CameraFirstPerson {
 
     transM = glm::translate(glm::mat4(), position - camRight * (eyeSeparation / 2.0f));
 
-    ubo.projection[0] = glm::frustum(left, right, bottom, top, zNear, zFar);
+    ubo.projection[0] = glm::frustum(left, right, bottom, top, znear, zfar);
     ubo.view[0] = rotM * transM;
     ubo.skyView[0] = rotM * glm::translate(glm::mat4(), -camRight * (eyeSeparation / 2.0f));
 
@@ -72,7 +73,7 @@ class CameraStereo : public CameraFirstPerson {
 
     transM = glm::translate(glm::mat4(), position + camRight * (eyeSeparation / 2.0f));
 
-    ubo.projection[1] = glm::frustum(left, right, bottom, top, zNear, zFar);
+    ubo.projection[1] = glm::frustum(left, right, bottom, top, znear, zfar);
     ubo.view[1] = rotM * transM;
     ubo.skyView[1] = rotM * glm::translate(glm::mat4(), camRight * (eyeSeparation / 2.0f));
 
