@@ -10,10 +10,10 @@
 
 #pragma once
 
-#include "vikCamera.hpp"
+#include "vikCameraFirstPerson.hpp"
 
 namespace vik {
-class CameraStereo : public Camera {
+class CameraStereo : public CameraFirstPerson {
  public:
   // Camera and view properties
   float eyeSeparation = 0.08f;

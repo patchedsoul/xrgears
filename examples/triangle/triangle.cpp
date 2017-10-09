@@ -68,8 +68,9 @@ class Triangle : public vik::Application {
   std::vector<VkFence> waitFences;
 
   Triangle(int argc, char *argv[]) : Application(argc, argv) {
-    zoom = -2.5f;
     name = "Triangle";
+    camera = new vik::CameraArcBall();
+    camera->zoom = -2.5f;
   }
 
   ~Triangle() {
@@ -575,12 +576,12 @@ class Triangle : public vik::Application {
   void updateUniformBuffers() {
     uboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), (float)renderer->width / (float)renderer->height, 0.1f, 256.0f);
 
-    uboVS.viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+    uboVS.viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, camera->zoom));
 
     uboVS.modelMatrix = glm::mat4();
-    uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::radians(camera->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::radians(camera->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::radians(camera->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
     uint8_t *pData;
     vik_log_check(vkMapMemory(renderer->device, uniformBufferVS.memory, 0, sizeof(uboVS), 0, (void **)&pData));

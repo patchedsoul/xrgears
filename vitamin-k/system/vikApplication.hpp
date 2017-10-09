@@ -51,25 +51,12 @@ class Application {
   bool quit = false;
 
   RendererTextOverlay *renderer;
-  Camera *camera;
+  Camera *camera = nullptr;
 
   bool viewUpdated = false;
 
-  float zoom = 0;
-  float rotationSpeed = 1.0f;
-  float zoomSpeed = 1.0f;
-
-  glm::vec3 rotation = glm::vec3();
-  glm::vec3 cameraPos = glm::vec3();
-  glm::vec2 mousePos;
-
   std::string name = "vitamin-k Example";
 
-  struct {
-    bool left = false;
-    bool right = false;
-    bool middle = false;
-  } mouseButtons;
 
   Application(int argc, char *argv[]) {
     if (!settings.parse_args(argc, argv))
@@ -98,76 +85,11 @@ class Application {
     };
     renderer->set_render_cb(render_cb);
 
-    auto pointer_motion_cb = [this](double x, double y) {
-      double dx = mousePos.x - x;
-      double dy = mousePos.y - y;
-
-      if (mouseButtons.left) {
-        rotation.x += dy * 1.25f * rotationSpeed;
-        rotation.y -= dx * 1.25f * rotationSpeed;
-        camera->rotate(glm::vec3(
-                        dy * camera->rotationSpeed,
-                        -dx * camera->rotationSpeed,
-                        0.0f));
-        viewUpdated = true;
-      }
-
-      if (mouseButtons.right) {
-        zoom += dy * .005f * zoomSpeed;
-        camera->translate(glm::vec3(-0.0f, 0.0f, dy * .005f * zoomSpeed));
-        viewUpdated = true;
-      }
-
-      if (mouseButtons.middle) {
-        cameraPos.x -= dx * 0.01f;
-        cameraPos.y -= dy * 0.01f;
-        camera->translate(glm::vec3(-dx * 0.01f, -dy * 0.01f, 0.0f));
-        viewUpdated = true;
-      }
-      mousePos = glm::vec2(x, y);
-    };
-
-    auto pointer_button_cb = [this](Input::MouseButton button, bool state) {
-      switch (button) {
-        case Input::MouseButton::Left:
-          mouseButtons.left = state;
-          break;
-        case Input::MouseButton::Middle:
-          mouseButtons.middle = state;
-          break;
-        case Input::MouseButton::Right:
-          mouseButtons.right = state;
-          break;
-      }
-    };
-
-    auto pointer_axis_cb = [this](Input::MouseScrollAxis axis, double value) {
-      switch (axis) {
-        case Input::MouseScrollAxis::X:
-          zoom += value * 0.005f * zoomSpeed;
-          camera->translate(glm::vec3(0.0f, 0.0f, value * 0.005f * zoomSpeed));
-          viewUpdated = true;
-          break;
-        default:
-          break;
-      }
-    };
+    if (camera != nullptr)
+      camera->set_view_updated_cb([this]() { viewUpdated = true; });
 
     auto keyboard_key_cb = [this](Input::Key key, bool state) {
       switch (key) {
-        case Input::Key::W:
-          camera->keys.up = state;
-          break;
-        case Input::Key::S:
-          camera->keys.down = state;
-          break;
-        case Input::Key::A:
-          vik_log_d("Setting A state");
-          camera->keys.left = state;
-          break;
-        case Input::Key::D:
-          camera->keys.right = state;
-          break;
         case Input::Key::P:
           if (state)
             renderer->timer.toggle_animation_pause();
@@ -185,11 +107,22 @@ class Application {
 
       if (state)
         key_pressed(key);
+
+      camera->keyboard_key_cb(key, state);
     };
 
-    window->set_pointer_motion_cb(pointer_motion_cb);
-    window->set_pointer_button_cb(pointer_button_cb);
-    window->set_pointer_axis_cb(pointer_axis_cb);
+    window->set_pointer_motion_cb(
+          [this](double x, double y) {
+      camera->pointer_motion_cb(x,y);
+    });
+    window->set_pointer_button_cb(
+          [this](Input::MouseButton button, bool state) {
+      camera->pointer_button_cb(button, state);
+    });
+    window->set_pointer_axis_cb(
+          [this](Input::MouseScrollAxis axis, double value) {
+      camera->pointer_axis_cb(axis, value);
+    });
     window->set_keyboard_key_cb(keyboard_key_cb);
 
     auto quit_cb = [this]() { quit = true; };

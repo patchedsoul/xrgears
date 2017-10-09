@@ -10,11 +10,11 @@
 
 #pragma once
 
-#include "vikCamera.hpp"
+#include "vikCameraFirstPerson.hpp"
 #include "../input/vikHMD.hpp"
 
 namespace vik {
-class CameraHMD : public Camera {
+class CameraHMD : public CameraFirstPerson {
  public:
   HMD* hmd;
 

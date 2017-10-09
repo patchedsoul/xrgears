@@ -19,6 +19,8 @@
 #include "../render/vikBuffer.hpp"
 #include "../render/vikDevice.hpp"
 
+#include "../input/vikInput.hpp"
+
 namespace vik {
 
 struct StereoView {
@@ -29,6 +31,12 @@ class Camera {
 
 public:
  Buffer uniformBuffer;
+
+ std::function<void()> view_updated_cb = [](){};
+
+ void set_view_updated_cb(std::function<void()> cb) {
+   view_updated_cb = cb;
+ }
 
  struct UBOCamera {
    glm::mat4 projection[2];
@@ -67,9 +75,9 @@ public:
 
     transM = glm::translate(glm::mat4(), position);
 
-    if (type == CameraType::firstperson)
-      matrices.view = rotM * transM;
-    else
+    //if (type == CameraType::firstperson)
+    //  matrices.view = rotM * transM;
+    //else
       matrices.view = transM * rotM;
   }
 
@@ -77,10 +85,25 @@ public:
   enum CameraType { lookat, firstperson };
   CameraType type = CameraType::lookat;
 
+  float zoom = 0;
+  float rotationSpeed = 1.0f;
+  float zoomSpeed = 1.0f;
+
+  //glm::vec3 rotation = glm::vec3();
+  glm::vec3 cameraPos = glm::vec3();
+  glm::vec2 mousePos;
+
+  struct {
+    bool left = false;
+    bool right = false;
+    bool middle = false;
+  } mouseButtons;
+
+
   glm::vec3 rotation = glm::vec3();
   glm::vec3 position = glm::vec3();
 
-  float rotationSpeed = 1.0f;
+  //float rotationSpeed = 1.0f;
   float movementSpeed = 1.0f;
 
   struct {
@@ -132,7 +155,7 @@ public:
   }
 
   void update_movement(float deltaTime) {
-    //if (type == CameraType::firstperson) {
+    if (type == CameraType::firstperson) {
       if (moving()) {
         glm::vec3 camFront;
         camFront.x = -cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
@@ -153,7 +176,85 @@ public:
 
         updateViewMatrix();
       }
-    //}
+    }
   }
+
+  void keyboard_key_cb(Input::Key key, bool state) {
+    switch (key) {
+      case Input::Key::W:
+        keys.up = state;
+        break;
+      case Input::Key::S:
+        keys.down = state;
+        break;
+      case Input::Key::A:
+        keys.left = state;
+        break;
+      case Input::Key::D:
+        keys.right = state;
+        break;
+      default:
+        break;
+    }
+  }
+
+  void pointer_axis_cb(Input::MouseScrollAxis axis, double value) {
+    switch (axis) {
+      case Input::MouseScrollAxis::X:
+        zoom += value * 0.005f * zoomSpeed;
+        translate(glm::vec3(0.0f, 0.0f, value * 0.005f * zoomSpeed));
+        view_updated_cb();
+        break;
+      default:
+        break;
+    }
+  }
+
+  void pointer_motion_cb(double x, double y) {
+    double dx = mousePos.x - x;
+    double dy = mousePos.y - y;
+
+    if (mouseButtons.left) {
+      rotation.x += dy * 1.25f * rotationSpeed;
+      rotation.y -= dx * 1.25f * rotationSpeed;
+
+      /*
+      rotate(glm::vec3(
+                      dy * rotationSpeed,
+                      -dx * rotationSpeed,
+                      0.0f));
+      */
+      view_updated_cb();
+    }
+
+    if (mouseButtons.right) {
+      zoom += dy * .005f * zoomSpeed;
+      //translate(glm::vec3(-0.0f, 0.0f, dy * .005f * zoomSpeed));
+      view_updated_cb();
+    }
+
+    if (mouseButtons.middle) {
+      cameraPos.x -= dx * 0.01f;
+      cameraPos.y -= dy * 0.01f;
+      //translate(glm::vec3(-dx * 0.01f, -dy * 0.01f, 0.0f));
+      view_updated_cb();
+    }
+    mousePos = glm::vec2(x, y);
+  }
+
+  void pointer_button_cb(Input::MouseButton button, bool state) {
+    switch (button) {
+      case Input::MouseButton::Left:
+        mouseButtons.left = state;
+        break;
+      case Input::MouseButton::Middle:
+        mouseButtons.middle = state;
+        break;
+      case Input::MouseButton::Right:
+        mouseButtons.right = state;
+        break;
+    }
+  }
+
 };
 }  // namespace vik

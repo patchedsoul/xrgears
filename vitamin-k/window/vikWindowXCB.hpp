@@ -290,6 +290,8 @@ class WindowXCB : public Window {
         return Input::Key::F1;
       case XK_Escape:
         return Input::Key::ESCAPE;
+      case XK_space:
+        return Input::Key::SPACE;
       default:
         return Input::Key::UNKNOWN;
     }

@@ -548,8 +548,6 @@ class XRGears : public vik::Application {
 
     pipelineCreateInfo.renderPass = usedPass;
 
-
-
     vik_log_check(vkCreateGraphicsPipelines(renderer->device, renderer->pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.pbr));
 
     if (enableSky)
@@ -656,6 +654,8 @@ class XRGears : public vik::Application {
     camera->setPosition(glm::vec3(2.2f, 3.2f, -7.6));
     camera->setPerspective(60.0f, (float)renderer->width / (float)renderer->height, 0.1f, 256.0f);
     camera->movementSpeed = 5.0f;
+
+    camera->set_view_updated_cb([this]() { viewUpdated = true; });
 
     if (enableSky)
       skyBox = new vik::SkyBox(renderer->device);

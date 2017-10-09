@@ -23,6 +23,7 @@
 #include "system/vikApplication.hpp"
 #include "render/vikModel.hpp"
 #include "render/vikTexture.hpp"
+#include "scene/vikCameraArcBall.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -78,12 +79,13 @@ public:
 	VkDescriptorSetLayout descriptorSetLayout;
 
   XRCubeMap(int argc, char *argv[]) : vik::Application(argc, argv) {
-		zoom = -4.0f;
-		rotationSpeed = 0.25f;
-		rotation = { -7.25f, -120.0f, 0.0f };
     settings.enable_text_overlay = true;
     name = "Cube map viewer";
-    camera = new vik::Camera();
+    camera = new vik::CameraArcBall();
+    camera->zoom = -4.0f;
+    camera->rotationSpeed = 0.25f;
+    camera->rotation = { -7.25f, -120.0f, 0.0f };
+    camera->set_view_updated_cb([this]() { viewUpdated = true; });
 	}
 
   ~XRCubeMap()
@@ -477,13 +479,19 @@ public:
 		// 3D object
 		glm::mat4 viewMatrix = glm::mat4();
     uboVS.projection = glm::perspective(glm::radians(60.0f), (float)renderer->width / (float)renderer->height, 0.001f, 256.0f);
-		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, zoom));
+    viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, camera->zoom));
+
+    vik_log_d("%.2f [%.2f, %.2f, %.2f]",
+              camera->cameraPos,
+              camera->rotation.x,
+              camera->rotation.y,
+              camera->rotation.z);
 
 		uboVS.model = glm::mat4();
-		uboVS.model = viewMatrix * glm::translate(uboVS.model, cameraPos);
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    uboVS.model = viewMatrix * glm::translate(uboVS.model, camera->cameraPos);
+    uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		memcpy(uniformBuffers.object.mapped, &uboVS, sizeof(uboVS));
 
@@ -493,9 +501,9 @@ public:
 
 		uboVS.model = glm::mat4();
 		uboVS.model = viewMatrix * glm::translate(uboVS.model, glm::vec3(0, 0, 0));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		memcpy(uniformBuffers.skybox.mapped, &uboVS, sizeof(uboVS));
 	}
@@ -567,25 +575,22 @@ public:
     //renderer->updateTextOverlay();
 	}
 
-  void key_pressed(vik::Input::Key key)
-	{
-    switch (key)
-		{
-
-    case vik::Input::Key::S:
-			toggleSkyBox();
-			break;
-    case vik::Input::Key::SPACE:
-			toggleObject();
-			break;
-    case vik::Input::Key::KPPLUS:
-			changeLodBias(0.1f);
-			break;
-    case vik::Input::Key::KPMINUS:
-			changeLodBias(-0.1f);
-			break;
-		}
-	}
+  void key_pressed(vik::Input::Key key) {
+    switch (key) {
+      case vik::Input::Key::S:
+        toggleSkyBox();
+        break;
+      case vik::Input::Key::SPACE:
+        toggleObject();
+        break;
+      case vik::Input::Key::KPPLUS:
+        changeLodBias(0.1f);
+        break;
+      case vik::Input::Key::KPMINUS:
+        changeLodBias(-0.1f);
+        break;
+    }
+  }
 
   virtual void update_text_overlay(vik::TextOverlay *overlay)
 	{
