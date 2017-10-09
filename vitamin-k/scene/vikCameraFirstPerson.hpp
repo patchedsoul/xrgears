@@ -17,7 +17,7 @@ class CameraFirstPerson : public Camera {
  public:
   explicit CameraFirstPerson() {}
 
-  void updateViewMatrix() {
+  void update_view() {
     glm::mat4 rotM = glm::mat4();
     glm::mat4 transM;
 
@@ -42,7 +42,7 @@ class CameraFirstPerson : public Camera {
       camFront.z = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
       camFront = glm::normalize(camFront);
 
-      float moveSpeed = deltaTime * movementSpeed;
+      float moveSpeed = deltaTime * movement_speed;
 
       if (keys.up)
         position += camFront * moveSpeed;
@@ -53,7 +53,7 @@ class CameraFirstPerson : public Camera {
       if (keys.right)
         position += glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
 
-      updateViewMatrix();
+      update_view();
     }
   }
 
@@ -80,14 +80,14 @@ class CameraFirstPerson : public Camera {
     double dx = last_mouse_position.x - x;
     double dy = last_mouse_position.y - y;
 
-    if (mouseButtons.left) {
+    if (mouse_buttons.left) {
       //rotation.x += dy * 1.25f * rotationSpeed;
       //rotation.y -= dx * 1.25f * rotationSpeed;
 
 
       rotate(glm::vec3(
-                      dy * rotationSpeed,
-                      -dx * rotationSpeed,
+                      dy * rotation_speed,
+                      -dx * rotation_speed,
                       0.0f));
       view_updated_cb();
     }

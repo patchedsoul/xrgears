@@ -83,7 +83,7 @@ public:
     name = "Cube map viewer";
     camera = new vik::CameraArcBall();
     ((vik::CameraArcBall*)camera)->zoom = -4.0f;
-    camera->rotationSpeed = 0.25f;
+    camera->rotation_speed = 0.25f;
     camera->rotation = { -7.25f, -120.0f, 0.0f };
     camera->set_view_updated_cb([this]() { viewUpdated = true; });
 	}
@@ -481,14 +481,8 @@ public:
     uboVS.projection = glm::perspective(glm::radians(60.0f), (float)renderer->width / (float)renderer->height, 0.001f, 256.0f);
     viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, ((vik::CameraArcBall*)camera)->zoom));
 
-    vik_log_d("%.2f [%.2f, %.2f, %.2f]",
-              camera->cameraPos,
-              camera->rotation.x,
-              camera->rotation.y,
-              camera->rotation.z);
-
 		uboVS.model = glm::mat4();
-    uboVS.model = viewMatrix * glm::translate(uboVS.model, camera->cameraPos);
+    uboVS.model = viewMatrix * glm::translate(uboVS.model, camera->position);
     uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
     uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
     uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -500,7 +494,7 @@ public:
     uboVS.projection = glm::perspective(glm::radians(60.0f), (float)renderer->width / (float)renderer->height, 0.001f, 256.0f);
 
 		uboVS.model = glm::mat4();
-		uboVS.model = viewMatrix * glm::translate(uboVS.model, glm::vec3(0, 0, 0));
+    //uboVS.model = viewMatrix * glm::translate(uboVS.model, glm::vec3(0, 0, 0));
     uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
     uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
     uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));

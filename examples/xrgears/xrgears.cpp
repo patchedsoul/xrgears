@@ -650,10 +650,10 @@ class XRGears : public vik::Application {
       camera = new vik::CameraFirstPerson();
     }
 
-    camera->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-    camera->setPosition(glm::vec3(2.2f, 3.2f, -7.6));
-    camera->setPerspective(60.0f, (float)renderer->width / (float)renderer->height, 0.1f, 256.0f);
-    camera->movementSpeed = 5.0f;
+    camera->set_rotation(glm::vec3(0.0f, 0.0f, 0.0f));
+    camera->set_position(glm::vec3(2.2f, 3.2f, -7.6));
+    camera->set_perspective(60.0f, (float)renderer->width / (float)renderer->height, 0.1f, 256.0f);
+    camera->movement_speed = 5.0f;
 
     camera->set_view_updated_cb([this]() { viewUpdated = true; });
 

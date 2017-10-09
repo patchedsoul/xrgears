@@ -57,36 +57,31 @@ public:
    memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
  }
 
- void init_ubo(Device *vulkanDevice) {
-   vulkanDevice->create_and_map(&uniformBuffer, sizeof(ubo));
+ void init_ubo(Device *device) {
+   device->create_and_map(&uniformBuffer, sizeof(ubo));
  }
 
  private:
   float fov;
   float znear, zfar;
 
-  virtual void updateViewMatrix() = 0;
+  virtual void update_view() = 0;
  public:
   enum CameraType { lookat, firstperson };
   CameraType type = CameraType::lookat;
 
+  float rotation_speed = 1.0f;
+  float movement_speed = 1.0f;
 
-  float rotationSpeed = 1.0f;
-
-  glm::vec3 cameraPos = glm::vec3();
   glm::vec2 last_mouse_position;
+  glm::vec3 rotation = glm::vec3();
+  glm::vec3 position = glm::vec3();
 
   struct {
     bool left = false;
     bool right = false;
     bool middle = false;
-  } mouseButtons;
-
-
-  glm::vec3 rotation = glm::vec3();
-  glm::vec3 position = glm::vec3();
-
-  float movementSpeed = 1.0f;
+  } mouse_buttons;
 
   struct {
     glm::mat4 perspective;
@@ -104,7 +99,7 @@ public:
     return false;
   }
 
-  void setPerspective(float fov, float aspect, float znear, float zfar) {
+  void set_perspective(float fov, float aspect, float znear, float zfar) {
     this->fov = fov;
     this->znear = znear;
     this->zfar = zfar;
@@ -115,25 +110,24 @@ public:
     matrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
   }
 
-  void setPosition(glm::vec3 position) {
+  void set_position(glm::vec3 position) {
     this->position = position;
-    updateViewMatrix();
+    update_view();
   }
 
-  void setRotation(glm::vec3 rotation) {
+  void set_rotation(glm::vec3 rotation) {
     this->rotation = rotation;
-    updateViewMatrix();
+    update_view();
   }
 
   void rotate(glm::vec3 delta) {
     this->rotation += delta;
-    updateViewMatrix();
+    update_view();
   }
 
   void translate(glm::vec3 delta) {
     this->position += delta;
-    vik_log_d("Translating");
-    updateViewMatrix();
+    update_view();
   }
 
   virtual void update_movement(float deltaTime) {}
@@ -144,13 +138,13 @@ public:
   void pointer_button_cb(Input::MouseButton button, bool state) {
     switch (button) {
       case Input::MouseButton::Left:
-        mouseButtons.left = state;
+        mouse_buttons.left = state;
         break;
       case Input::MouseButton::Middle:
-        mouseButtons.middle = state;
+        mouse_buttons.middle = state;
         break;
       case Input::MouseButton::Right:
-        mouseButtons.right = state;
+        mouse_buttons.right = state;
         break;
     }
   }

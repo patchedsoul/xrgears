@@ -71,6 +71,7 @@ class Triangle : public vik::Application {
     name = "Triangle";
     camera = new vik::CameraArcBall();
     ((vik::CameraArcBall*)camera)->zoom = -2.5f;
+    camera->set_view_updated_cb([this]() { viewUpdated = true; });
   }
 
   ~Triangle() {
