@@ -70,7 +70,7 @@ class Triangle : public vik::Application {
   Triangle(int argc, char *argv[]) : Application(argc, argv) {
     name = "Triangle";
     camera = new vik::CameraArcBall();
-    camera->zoom = -2.5f;
+    ((vik::CameraArcBall*)camera)->zoom = -2.5f;
   }
 
   ~Triangle() {
@@ -576,7 +576,7 @@ class Triangle : public vik::Application {
   void updateUniformBuffers() {
     uboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), (float)renderer->width / (float)renderer->height, 0.1f, 256.0f);
 
-    uboVS.viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, camera->zoom));
+    uboVS.viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, ((vik::CameraArcBall*)camera)->zoom));
 
     uboVS.modelMatrix = glm::mat4();
     uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::radians(camera->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));

@@ -558,7 +558,7 @@ class XRGears : public vik::Application {
   void prepareUniformBuffers() {
     renderer->vksDevice->create_and_map(&uniformBuffers.lights, sizeof(uboLights));
 
-    ((vik::Camera*)camera)->prepareUniformBuffers(renderer->vksDevice);
+    ((vik::Camera*)camera)->init_ubo(renderer->vksDevice);
 
     for (auto& node : nodes)
       node->prepareUniformBuffer(renderer->vksDevice);
@@ -647,7 +647,7 @@ class XRGears : public vik::Application {
       else
         camera = new vik::CameraStereo(renderer->width, renderer->height);
     } else {
-      camera = new vik::Camera();
+      camera = new vik::CameraFirstPerson();
     }
 
     camera->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));

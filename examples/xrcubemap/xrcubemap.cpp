@@ -82,7 +82,7 @@ public:
     settings.enable_text_overlay = true;
     name = "Cube map viewer";
     camera = new vik::CameraArcBall();
-    camera->zoom = -4.0f;
+    ((vik::CameraArcBall*)camera)->zoom = -4.0f;
     camera->rotationSpeed = 0.25f;
     camera->rotation = { -7.25f, -120.0f, 0.0f };
     camera->set_view_updated_cb([this]() { viewUpdated = true; });
@@ -479,7 +479,7 @@ public:
 		// 3D object
 		glm::mat4 viewMatrix = glm::mat4();
     uboVS.projection = glm::perspective(glm::radians(60.0f), (float)renderer->width / (float)renderer->height, 0.001f, 256.0f);
-    viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, camera->zoom));
+    viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, ((vik::CameraArcBall*)camera)->zoom));
 
     vik_log_d("%.2f [%.2f, %.2f, %.2f]",
               camera->cameraPos,

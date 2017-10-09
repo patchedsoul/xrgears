@@ -57,7 +57,7 @@ public:
    memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
  }
 
- void prepareUniformBuffers(Device *vulkanDevice) {
+ void init_ubo(Device *vulkanDevice) {
    vulkanDevice->create_and_map(&uniformBuffer, sizeof(ubo));
  }
 
@@ -65,33 +65,16 @@ public:
   float fov;
   float znear, zfar;
 
-  void updateViewMatrix() {
-    glm::mat4 rotM = glm::mat4();
-    glm::mat4 transM;
-
-    rotM = glm::rotate(rotM, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    rotM = glm::rotate(rotM, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    rotM = glm::rotate(rotM, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    transM = glm::translate(glm::mat4(), position);
-
-    //if (type == CameraType::firstperson)
-    //  matrices.view = rotM * transM;
-    //else
-      matrices.view = transM * rotM;
-  }
-
+  virtual void updateViewMatrix() = 0;
  public:
   enum CameraType { lookat, firstperson };
   CameraType type = CameraType::lookat;
 
-  float zoom = 0;
-  float rotationSpeed = 1.0f;
-  float zoomSpeed = 1.0f;
 
-  //glm::vec3 rotation = glm::vec3();
+  float rotationSpeed = 1.0f;
+
   glm::vec3 cameraPos = glm::vec3();
-  glm::vec2 mousePos;
+  glm::vec2 last_mouse_position;
 
   struct {
     bool left = false;
@@ -103,7 +86,6 @@ public:
   glm::vec3 rotation = glm::vec3();
   glm::vec3 position = glm::vec3();
 
-  //float rotationSpeed = 1.0f;
   float movementSpeed = 1.0f;
 
   struct {
@@ -118,8 +100,8 @@ public:
     bool down = false;
   } keys;
 
-  bool moving() {
-    return keys.left || keys.right || keys.up || keys.down;
+  virtual bool moving() {
+    return false;
   }
 
   void setPerspective(float fov, float aspect, float znear, float zfar) {
@@ -154,93 +136,10 @@ public:
     updateViewMatrix();
   }
 
-  void update_movement(float deltaTime) {
-    if (type == CameraType::firstperson) {
-      if (moving()) {
-        glm::vec3 camFront;
-        camFront.x = -cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
-        camFront.y = sin(glm::radians(rotation.x));
-        camFront.z = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
-        camFront = glm::normalize(camFront);
-
-        float moveSpeed = deltaTime * movementSpeed;
-
-        if (keys.up)
-          position += camFront * moveSpeed;
-        if (keys.down)
-          position -= camFront * moveSpeed;
-        if (keys.left)
-          position -= glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
-        if (keys.right)
-          position += glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
-
-        updateViewMatrix();
-      }
-    }
-  }
-
-  void keyboard_key_cb(Input::Key key, bool state) {
-    switch (key) {
-      case Input::Key::W:
-        keys.up = state;
-        break;
-      case Input::Key::S:
-        keys.down = state;
-        break;
-      case Input::Key::A:
-        keys.left = state;
-        break;
-      case Input::Key::D:
-        keys.right = state;
-        break;
-      default:
-        break;
-    }
-  }
-
-  void pointer_axis_cb(Input::MouseScrollAxis axis, double value) {
-    switch (axis) {
-      case Input::MouseScrollAxis::X:
-        zoom += value * 0.005f * zoomSpeed;
-        translate(glm::vec3(0.0f, 0.0f, value * 0.005f * zoomSpeed));
-        view_updated_cb();
-        break;
-      default:
-        break;
-    }
-  }
-
-  void pointer_motion_cb(double x, double y) {
-    double dx = mousePos.x - x;
-    double dy = mousePos.y - y;
-
-    if (mouseButtons.left) {
-      rotation.x += dy * 1.25f * rotationSpeed;
-      rotation.y -= dx * 1.25f * rotationSpeed;
-
-      /*
-      rotate(glm::vec3(
-                      dy * rotationSpeed,
-                      -dx * rotationSpeed,
-                      0.0f));
-      */
-      view_updated_cb();
-    }
-
-    if (mouseButtons.right) {
-      zoom += dy * .005f * zoomSpeed;
-      //translate(glm::vec3(-0.0f, 0.0f, dy * .005f * zoomSpeed));
-      view_updated_cb();
-    }
-
-    if (mouseButtons.middle) {
-      cameraPos.x -= dx * 0.01f;
-      cameraPos.y -= dy * 0.01f;
-      //translate(glm::vec3(-dx * 0.01f, -dy * 0.01f, 0.0f));
-      view_updated_cb();
-    }
-    mousePos = glm::vec2(x, y);
-  }
+  virtual void update_movement(float deltaTime) {}
+  virtual void keyboard_key_cb(Input::Key key, bool state) {}
+  virtual void pointer_axis_cb(Input::MouseScrollAxis axis, double value) {}
+  virtual void pointer_motion_cb(double x, double y) {}
 
   void pointer_button_cb(Input::MouseButton button, bool state) {
     switch (button) {
