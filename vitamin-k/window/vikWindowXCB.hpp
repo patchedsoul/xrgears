@@ -352,6 +352,12 @@ class WindowXCB : public Window {
       case XCB_BUTTON_PRESS: {
         xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
         pointer_button_cb(xcb_to_vik_button(press->detail), true);
+
+        if (press->detail == XCB_BUTTON_INDEX_4)
+          pointer_axis_cb(Input::MouseScrollAxis::X, -10.0f);
+
+        if (press->detail == XCB_BUTTON_INDEX_5)
+          pointer_axis_cb(Input::MouseScrollAxis::X, 10.0f);
       }
         break;
       case XCB_BUTTON_RELEASE: {
