@@ -30,7 +30,7 @@ class CameraStereo : public Camera {
     eyeSeparation += delta;
   }
 
-  void update(CameraBase camera) {
+  void update_ubo() {
     // Geometry shader matrices for the two viewports
     // See http://paulbourke.net/stereographics/stereorender/
 
@@ -43,7 +43,6 @@ class CameraStereo : public Camera {
     float bottom = -wd2;
 
     glm::vec3 camFront;
-    glm::vec3 rotation = glm::vec3();
     camFront.x = -cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
     camFront.y = sin(glm::radians(rotation.x));
     camFront.z = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
@@ -53,33 +52,33 @@ class CameraStereo : public Camera {
     glm::mat4 rotM = glm::mat4();
     glm::mat4 transM;
 
-    rotM = glm::rotate(rotM, glm::radians(camera.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    rotM = glm::rotate(rotM, glm::radians(camera.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    rotM = glm::rotate(rotM, glm::radians(camera.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    rotM = glm::rotate(rotM, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    rotM = glm::rotate(rotM, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    rotM = glm::rotate(rotM, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
     // Left eye
     left = -aspectRatio * wd2 + 0.5f * eyeSeparation * ndfl;
     right = aspectRatio * wd2 + 0.5f * eyeSeparation * ndfl;
 
-    transM = glm::translate(glm::mat4(), camera.position - camRight * (eyeSeparation / 2.0f));
+    transM = glm::translate(glm::mat4(), position - camRight * (eyeSeparation / 2.0f));
 
-    uboCamera.projection[0] = glm::frustum(left, right, bottom, top, zNear, zFar);
-    uboCamera.view[0] = rotM * transM;
-    uboCamera.skyView[0] = rotM * glm::translate(glm::mat4(), -camRight * (eyeSeparation / 2.0f));
+    ubo.projection[0] = glm::frustum(left, right, bottom, top, zNear, zFar);
+    ubo.view[0] = rotM * transM;
+    ubo.skyView[0] = rotM * glm::translate(glm::mat4(), -camRight * (eyeSeparation / 2.0f));
 
     // Right eye
     left = -aspectRatio * wd2 - 0.5f * eyeSeparation * ndfl;
     right = aspectRatio * wd2 - 0.5f * eyeSeparation * ndfl;
 
-    transM = glm::translate(glm::mat4(), camera.position + camRight * (eyeSeparation / 2.0f));
+    transM = glm::translate(glm::mat4(), position + camRight * (eyeSeparation / 2.0f));
 
-    uboCamera.projection[1] = glm::frustum(left, right, bottom, top, zNear, zFar);
-    uboCamera.view[1] = rotM * transM;
-    uboCamera.skyView[1] = rotM * glm::translate(glm::mat4(), camRight * (eyeSeparation / 2.0f));
+    ubo.projection[1] = glm::frustum(left, right, bottom, top, zNear, zFar);
+    ubo.view[1] = rotM * transM;
+    ubo.skyView[1] = rotM * glm::translate(glm::mat4(), camRight * (eyeSeparation / 2.0f));
 
-    uboCamera.position = camera.position * -1.0f;
+    ubo.position = position * -1.0f;
 
-    memcpy(uniformBuffer.mapped, &uboCamera, sizeof(uboCamera));
+    memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
   }
 };
 }  // namespace vik

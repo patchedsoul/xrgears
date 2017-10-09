@@ -18,7 +18,7 @@
 
 #include <openhmd/openhmd.h>
 
-#include "../scene/vikCameraBase.hpp"
+#include "../scene/vikCamera.hpp"
 #include "../render/vikBuffer.hpp"
 #include "../system/vikLog.hpp"
 #include "../scene/vikCamera.hpp"

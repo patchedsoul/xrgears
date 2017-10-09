@@ -47,7 +47,6 @@ class XRGears : public vik::Application {
   });
 
   vik::HMD* hmd;
-  vik::Camera* vikCamera;
 
   bool enableSky = true;
   bool enableHMDCam = false;
@@ -91,12 +90,7 @@ class XRGears : public vik::Application {
 
   XRGears(int argc, char *argv[]) : Application(argc, argv) {
     name = "XR Gears";
-    camera.type = vik::CameraBase::CameraType::firstperson;
-    camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-    camera.setTranslation(glm::vec3(2.2f, 3.2f, -7.6));
-    camera.setPerspective(60.0f, (float)renderer->width / (float)renderer->height, 0.1f, 256.0f);
 
-    camera.movementSpeed = 5.0f;
     renderer->timer.animation_timer_speed *= 0.25f;
   }
 
@@ -121,7 +115,6 @@ class XRGears : public vik::Application {
 
     vkDestroySemaphore(renderer->device, offscreenSemaphore, nullptr);
 
-    delete vikCamera;
     delete hmd;
   }
 
@@ -458,13 +451,13 @@ class XRGears : public vik::Application {
             &descriptorSetLayout,
             1);
 
-      skyBox->createDescriptorSet(allocInfo, &vikCamera->uniformBuffer.descriptor);
+      skyBox->createDescriptorSet(allocInfo, &((vik::Camera*)camera)->uniformBuffer.descriptor);
     }
 
     for (auto& node : nodes)
       node->createDescriptorSet(renderer->device, renderer->descriptorPool, descriptorSetLayout,
                                 &uniformBuffers.lights.descriptor,
-                                &vikCamera->uniformBuffer.descriptor,
+                                &((vik::Camera*)camera)->uniformBuffer.descriptor,
                                 skyBox);
 }
 
@@ -567,7 +560,7 @@ class XRGears : public vik::Application {
   void prepareUniformBuffers() {
     renderer->vksDevice->create_and_map(&uniformBuffers.lights, sizeof(uboLights));
 
-    vikCamera->prepareUniformBuffers(renderer->vksDevice);
+    ((vik::Camera*)camera)->prepareUniformBuffers(renderer->vksDevice);
 
     for (auto& node : nodes)
       node->prepareUniformBuffer(renderer->vksDevice);
@@ -576,11 +569,11 @@ class XRGears : public vik::Application {
   }
 
   void updateUniformBuffers() {
-    vikCamera->update(camera);
+    ((vik::Camera*)camera)->update_ubo();
 
     vik::StereoView sv = {};
-    sv.view[0] = vikCamera->uboCamera.view[0];
-    sv.view[1] = vikCamera->uboCamera.view[1];
+    sv.view[0] = ((vik::Camera*)camera)->ubo.view[0];
+    sv.view[1] = ((vik::Camera*)camera)->ubo.view[1];
 
     for (auto& node : nodes)
       node->updateUniformBuffer(sv, renderer->timer.animation_timer);
@@ -652,12 +645,17 @@ class XRGears : public vik::Application {
 
     if (enableStereo) {
       if (enableHMDCam)
-        vikCamera = new vik::CameraHMD(hmd);
+        camera = new vik::CameraHMD(hmd);
       else
-        vikCamera = new vik::CameraStereo(renderer->width, renderer->height);
+        camera = new vik::CameraStereo(renderer->width, renderer->height);
     } else {
-      vikCamera = new vik::Camera();
+      camera = new vik::Camera();
     }
+
+    camera->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+    camera->setPosition(glm::vec3(2.2f, 3.2f, -7.6));
+    camera->setPerspective(60.0f, (float)renderer->width / (float)renderer->height, 0.1f, 256.0f);
+    camera->movementSpeed = 5.0f;
 
     if (enableSky)
       skyBox = new vik::SkyBox(renderer->device);
@@ -705,7 +703,7 @@ class XRGears : public vik::Application {
 
   void changeEyeSeparation(float delta) {
     if (!enableHMDCam)
-      ((vik::CameraStereo*)vikCamera)->changeEyeSeparation(delta);
+      ((vik::CameraStereo*)camera)->changeEyeSeparation(delta);
     updateUniformBuffers();
   }
 

@@ -36,7 +36,8 @@
 #include "../render/vikTools.hpp"
 #include "../render/vikInitializers.hpp"
 
-#include "../scene/vikCameraBase.hpp"
+#include "../scene/vikCamera.hpp"
+
 #include "../render/vikRendererTextOverlay.hpp"
 
 #include "../render/vikTimer.hpp"
@@ -50,7 +51,7 @@ class Application {
   bool quit = false;
 
   RendererTextOverlay *renderer;
-  CameraBase camera;
+  Camera *camera;
 
   bool viewUpdated = false;
 
@@ -104,23 +105,23 @@ class Application {
       if (mouseButtons.left) {
         rotation.x += dy * 1.25f * rotationSpeed;
         rotation.y -= dx * 1.25f * rotationSpeed;
-        camera.rotate(glm::vec3(
-                        dy * camera.rotationSpeed,
-                        -dx * camera.rotationSpeed,
+        camera->rotate(glm::vec3(
+                        dy * camera->rotationSpeed,
+                        -dx * camera->rotationSpeed,
                         0.0f));
         viewUpdated = true;
       }
 
       if (mouseButtons.right) {
         zoom += dy * .005f * zoomSpeed;
-        camera.translate(glm::vec3(-0.0f, 0.0f, dy * .005f * zoomSpeed));
+        camera->translate(glm::vec3(-0.0f, 0.0f, dy * .005f * zoomSpeed));
         viewUpdated = true;
       }
 
       if (mouseButtons.middle) {
         cameraPos.x -= dx * 0.01f;
         cameraPos.y -= dy * 0.01f;
-        camera.translate(glm::vec3(-dx * 0.01f, -dy * 0.01f, 0.0f));
+        camera->translate(glm::vec3(-dx * 0.01f, -dy * 0.01f, 0.0f));
         viewUpdated = true;
       }
       mousePos = glm::vec2(x, y);
@@ -144,7 +145,7 @@ class Application {
       switch (axis) {
         case Input::MouseScrollAxis::X:
           zoom += value * 0.005f * zoomSpeed;
-          camera.translate(glm::vec3(0.0f, 0.0f, value * 0.005f * zoomSpeed));
+          camera->translate(glm::vec3(0.0f, 0.0f, value * 0.005f * zoomSpeed));
           viewUpdated = true;
           break;
         default:
@@ -155,16 +156,17 @@ class Application {
     auto keyboard_key_cb = [this](Input::Key key, bool state) {
       switch (key) {
         case Input::Key::W:
-          camera.keys.up = state;
+          camera->keys.up = state;
           break;
         case Input::Key::S:
-          camera.keys.down = state;
+          camera->keys.down = state;
           break;
         case Input::Key::A:
-          camera.keys.left = state;
+          vik_log_d("Setting A state");
+          camera->keys.left = state;
           break;
         case Input::Key::D:
-          camera.keys.right = state;
+          camera->keys.right = state;
           break;
         case Input::Key::P:
           if (state)
@@ -275,8 +277,8 @@ class Application {
   }
 
   void update_camera(float frame_time) {
-    camera.update(frame_time);
-    if (camera.moving())
+    camera->update_movement(frame_time);
+    if (camera->moving())
       viewUpdated = true;
   }
 
@@ -285,7 +287,7 @@ class Application {
 
     renderer->wait_idle();
 
-    camera.update_aspect_ratio(renderer->get_aspect_ratio());
+    camera->update_aspect_ratio(renderer->get_aspect_ratio());
 
     view_changed_cb();
   }

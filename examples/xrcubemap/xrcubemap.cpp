@@ -83,6 +83,7 @@ public:
 		rotation = { -7.25f, -120.0f, 0.0f };
     settings.enable_text_overlay = true;
     name = "Cube map viewer";
+    camera = new vik::Camera();
 	}
 
   ~XRCubeMap()

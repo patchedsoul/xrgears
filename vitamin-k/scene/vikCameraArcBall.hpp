@@ -16,7 +16,7 @@ class CameraArcBall : public Camera {
  public:
   explicit CameraArcBall() {}
 
-  void update(CameraBase camera) {
+  void update_ubo() {
 
 
   }

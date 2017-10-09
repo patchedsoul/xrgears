@@ -15,7 +15,7 @@
 #include "vulkan/vulkan.h"
 
 #include "vikTools.hpp"
-#include "vikDevice.hpp"
+//#include "vikDevice.hpp"
 
 namespace vik {
 /**
