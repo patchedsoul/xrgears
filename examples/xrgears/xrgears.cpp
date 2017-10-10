@@ -414,7 +414,7 @@ class XRGears : public vik::Application {
     };
 
     // cube map sampler
-    // if (enableSky)
+    if (enableSky)
       setLayoutBindings.push_back(vik::initializers::descriptorSetLayoutBinding(
                                     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                     VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -503,7 +503,12 @@ class XRGears : public vik::Application {
     // Load shaders
     std::array<VkPipelineShaderStageCreateInfo, 3> shaderStages;
     shaderStages[0] = vik::Shader::load(renderer->device, "xrgears/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    shaderStages[1] = vik::Shader::load(renderer->device, "xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    if (enableSky)
+      shaderStages[1] = vik::Shader::load(renderer->device, "xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+    else
+      shaderStages[1] = vik::Shader::load(renderer->device, "xrgears/scene_no_sky.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+
     shaderStages[2] = vik::Shader::load(renderer->device, "xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 
     VkGraphicsPipelineCreateInfo pipelineCreateInfo;
