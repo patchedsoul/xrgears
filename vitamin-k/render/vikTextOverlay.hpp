@@ -149,6 +149,9 @@ class TextOverlay {
     vkFreeCommandBuffers(vulkanDevice->logicalDevice, commandPool, static_cast<uint32_t>(cmdBuffers.size()), cmdBuffers.data());
     vkDestroyCommandPool(vulkanDevice->logicalDevice, commandPool, nullptr);
     vkDestroyFence(vulkanDevice->logicalDevice, fence, nullptr);
+
+    vkDestroyShaderModule(vulkanDevice->logicalDevice, shaderStages[0].module, nullptr);
+    vkDestroyShaderModule(vulkanDevice->logicalDevice, shaderStages[1].module, nullptr);
   }
 
   /**

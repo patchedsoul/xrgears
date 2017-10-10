@@ -28,10 +28,9 @@ class RendererTextOverlay : public Renderer {
   std::string name;
 
   RendererTextOverlay(Settings *s) : Renderer(s) {}
-  virtual ~RendererTextOverlay() {
+  ~RendererTextOverlay() {
     vkDestroySemaphore(device, text_overlay_complete, nullptr);
-    if (settings->enable_text_overlay)
-      delete text_overlay;
+    delete text_overlay;
   }
 
   void init(const std::string &n,
@@ -64,10 +63,10 @@ class RendererTextOverlay : public Renderer {
 
   VkSubmitInfo init_text_submit_info() {
     // Wait for color attachment output to finish before rendering the text overlay
-    VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    //VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
     VkSubmitInfo submit_info = initializers::submitInfo();
-    submit_info.pWaitDstStageMask = &stageFlags;
+    //submit_info.pWaitDstStageMask = &stageFlags;
     submit_info.waitSemaphoreCount = 1;
     submit_info.pWaitSemaphores = &semaphores.render_complete;
     submit_info.signalSemaphoreCount = 1;
@@ -94,6 +93,10 @@ class RendererTextOverlay : public Renderer {
   void submit_text_overlay() {
     VkSubmitInfo submit_info = init_text_submit_info();
     submit_info.pCommandBuffers = &text_overlay->cmdBuffers[currentBuffer];
+
+    VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    submit_info.pWaitDstStageMask = &stageFlags;
+
     vik_log_check(vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE));
   }
 

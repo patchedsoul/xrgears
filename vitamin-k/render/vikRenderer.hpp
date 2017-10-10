@@ -93,7 +93,7 @@ class Renderer {
     height = s->size.second;
   }
 
-  ~Renderer() {
+  virtual ~Renderer() {
     window->get_swap_chain()->cleanup();
     if (descriptorPool != VK_NULL_HANDLE)
       vkDestroyDescriptorPool(device, descriptorPool, nullptr);
