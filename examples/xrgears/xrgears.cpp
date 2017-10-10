@@ -49,14 +49,14 @@ class XRGears : public vik::Application {
 
   vik::HMD* hmd;
 
-  bool enableSky = true;
-  bool enableHMDCam = true;
-  bool enableDistortion = true;
+  bool enableSky = false;
+  bool enableHMDCam = false;
+  bool enableDistortion = false;
   bool enableStereo = true;
 
   vik::SkyBox *skyBox = nullptr;
-  vik::Distortion *hmdDistortion;
-  vik::OffscreenPass *offscreenPass;
+  vik::Distortion *hmdDistortion = nullptr;
+  vik::OffscreenPass *offscreenPass = nullptr;
 
   struct {
     VkDescriptorSet object;
@@ -96,7 +96,8 @@ class XRGears : public vik::Application {
   }
 
   ~XRGears() {
-    delete offscreenPass;
+    if (offscreenPass)
+      delete offscreenPass;
 
     vkDestroyPipeline(renderer->device, pipelines.pbr, nullptr);
 
@@ -106,7 +107,8 @@ class XRGears : public vik::Application {
     vkDestroyPipelineLayout(renderer->device, pipelineLayout, nullptr);
     vkDestroyDescriptorSetLayout(renderer->device, descriptorSetLayout, nullptr);
 
-    delete hmdDistortion;
+    if (hmdDistortion)
+      delete hmdDistortion;
 
     // uniformBuffers.camera.destroy();
     uniformBuffers.lights.destroy();

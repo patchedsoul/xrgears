@@ -93,6 +93,8 @@ class Application {
   }
 
   ~Application()  {
+    if (camera)
+      delete camera;
     if (renderer)
       delete renderer;
   }
