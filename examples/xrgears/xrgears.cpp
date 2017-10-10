@@ -54,7 +54,7 @@ class XRGears : public vik::Application {
   bool enableDistortion = true;
   bool enableStereo = true;
 
-  vik::SkyBox *skyBox;
+  vik::SkyBox *skyBox = nullptr;
   vik::Distortion *hmdDistortion;
   vik::OffscreenPass *offscreenPass;
 
@@ -551,6 +551,10 @@ class XRGears : public vik::Application {
 
     if (enableSky)
       skyBox->createPipeline(&pipelineCreateInfo, renderer->pipelineCache);
+
+    vkDestroyShaderModule(renderer->device, shaderStages[0].module, nullptr);
+    vkDestroyShaderModule(renderer->device, shaderStages[1].module, nullptr);
+    vkDestroyShaderModule(renderer->device, shaderStages[2].module, nullptr);
   }
 
   // Prepare and initialize uniform buffer containing shader uniforms
