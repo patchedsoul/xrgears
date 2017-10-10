@@ -40,10 +40,13 @@ class Settings {
   /** @brief Set to true if v-sync will be forced for the swapchain */
   bool vsync = false;
 
-  uint32_t gpu_index = 0;
+  uint32_t gpu = 0;
+
+  uint32_t hmd = 0;
 
   bool list_gpus_and_exit = false;
   bool list_screens_and_exit = false;
+  bool list_hmds_and_exit = false;
 
   bool enable_text_overlay = true;
 
@@ -63,11 +66,12 @@ class Settings {
         "  -f, --fullscreen            Run fullscreen. Optinally specify display and mode.\n"
         "  -d, --display D             Display to fullscreen on. (default: 0)\n"
         "  -m, --mode M                Mode for fullscreen. (default: 0)\n"
-        "  -w, --window WS             Window system to use (default: choose best)\n"
+        "  -w, --window WS             Window system to use (default: auto)\n"
         "                              [xcb, wayland, kms]\n"
-
+        "      --hmd HMD               HMD to use (default: 0)\n"
         "      --listgpus              List available GPUs\n"
         "      --listdisplays          List available displays\n"
+        "      --listhmds              List available HMDs\n"
         "  -h, --help                  Display help\n";
 
     // for (auto const& wsh : window_system_help)
@@ -151,6 +155,8 @@ class Settings {
         list_gpus_and_exit = true;
       } else if (optname == "listdisplays") {
         list_screens_and_exit = true;
+      } else if (optname == "listhmds") {
+        list_hmds_and_exit = true;
       } else if (opt == 's' || optname == "size") {
         size = parse_size(optarg);
       } else if (opt == 'f' || optname == "fullscreen") {
@@ -161,6 +167,8 @@ class Settings {
       } else if (opt == 'm' || optname == "mode") {
         mode = parse_id(optarg);
         fullscreen = true;
+      } else if (optname == "hmd") {
+        hmd = parse_id(optarg);
       } else if (opt == 'g' || optname == "gpu") {
         /*
         if ((args[i] == std::string("-g")) || (args[i] == std::string("-gpu"))) {

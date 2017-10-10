@@ -339,13 +339,13 @@ class Renderer {
     // Select physical device to be used for the Vulkan example
     // Defaults to the first device unless specified by command line
     uint32_t selectedDevice = 0;
-    if (settings->gpu_index > gpuCount - 1) {
-      std::cerr << "Selected device index " << settings->gpu_index
+    if (settings->gpu > gpuCount - 1) {
+      std::cerr << "Selected device index " << settings->gpu
                 << " is out of range, reverting to device 0 (use -listgpus to show available Vulkan devices)"
                 << std::endl;
-    } else if (settings->gpu_index != 0) {
-      vik_log_i("Selected Vulkan device %d", settings->gpu_index);
-      selectedDevice = settings->gpu_index;
+    } else if (settings->gpu != 0) {
+      vik_log_i("Selected Vulkan device %d", settings->gpu);
+      selectedDevice = settings->gpu;
     }
 
     physical_device = physicalDevices[selectedDevice];

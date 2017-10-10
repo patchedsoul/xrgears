@@ -14,11 +14,6 @@
 
 #include <vulkan/vulkan.h>
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/glm.hpp>
-
 #include <iostream>
 #include <chrono>
 #include <string>
@@ -35,12 +30,10 @@
 
 #include "../render/vikTools.hpp"
 #include "../render/vikInitializers.hpp"
-
 #include "../scene/vikCamera.hpp"
-
 #include "../render/vikRendererTextOverlay.hpp"
-
 #include "../render/vikTimer.hpp"
+#include "../input/vikHMD.hpp"
 
 
 namespace vik {
@@ -50,7 +43,7 @@ class Application {
   Window *window;
   bool quit = false;
 
-  RendererTextOverlay *renderer;
+  RendererTextOverlay *renderer = nullptr;
   Camera *camera = nullptr;
 
   bool viewUpdated = false;
@@ -61,6 +54,12 @@ class Application {
   Application(int argc, char *argv[]) {
     if (!settings.parse_args(argc, argv))
       vik_log_f("Invalid arguments.");
+
+    if (settings.list_hmds_and_exit) {
+       HMD::enumerate_hmds();
+       exit(0);
+    }
+
     renderer = new RendererTextOverlay(&settings);
 
     init_window();
@@ -91,7 +90,8 @@ class Application {
   }
 
   ~Application()  {
-    delete renderer;
+    if (renderer)
+      delete renderer;
   }
 
   void set_window_callbacks() {

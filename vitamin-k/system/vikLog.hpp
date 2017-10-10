@@ -29,6 +29,7 @@
 #define vik_log_if(...) vik::Log::log_if(__FILE__, __LINE__, __VA_ARGS__)
 #define vik_log_f_if(...) vik_log_if(vik::Log::FATAL, __VA_ARGS__)
 #define vik_log_e_if(...) vik_log_if(vik::Log::ERROR, __VA_ARGS__)
+#define vik_log_i_short(...) vik::Log::log_short(vik::Log::INFO, __VA_ARGS__)
 
 // Macro to check and display Vulkan return results
 #define vik_log_check(f) {\
@@ -179,6 +180,13 @@ class Log {
     va_end(args);
   }
 
+  static void log_short(type t, const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    log_short_values(t, format, args);
+    va_end(args);
+  }
+
   static void log_values(const char* file, int line, type t, const char *format, va_list args) {
     FILE *stream = type_stream(t);
     fprintf(stream, "%s[%s]%s ",
@@ -190,6 +198,16 @@ class Log {
     fprintf(stream, "\n");
     if (t == FATAL)
       exit(1);
+  }
+
+  static void log_short_values(type t, const char *format, va_list args) {
+    FILE *stream = type_stream(t);
+    fprintf(stream, "%s[%s]%s ",
+            color_code(type_color(t)).c_str(),
+            type_str(t),
+            color_code(0).c_str());
+    vfprintf(stream, format, args);
+    fprintf(stream, "\n");
   }
 
   static void log_if(const char* file, int line, type t, bool cond, const char *format, ...) {

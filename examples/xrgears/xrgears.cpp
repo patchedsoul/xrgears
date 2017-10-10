@@ -17,6 +17,7 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <gli/gli.hpp>
@@ -49,7 +50,7 @@ class XRGears : public vik::Application {
   vik::HMD* hmd;
 
   bool enableSky = true;
-  bool enableHMDCam = false;
+  bool enableHMDCam = true;
   bool enableDistortion = true;
   bool enableStereo = true;
 
@@ -639,7 +640,7 @@ class XRGears : public vik::Application {
   void init() {
     Application::init();
 
-    hmd = new vik::HMD();
+    hmd = new vik::HMD(&settings);
 
     if (enableStereo) {
       if (enableHMDCam)
@@ -674,7 +675,7 @@ class XRGears : public vik::Application {
       hmdDistortion = new vik::Distortion(renderer->device);
       hmdDistortion->generateQuads(renderer->vksDevice);
       hmdDistortion->prepareUniformBuffer(renderer->vksDevice);
-      hmdDistortion->updateUniformBufferWarp(hmd->openHmdDevice);
+      hmdDistortion->updateUniformBufferWarp(hmd->device);
       hmdDistortion->createDescriptorSetLayout();
       hmdDistortion->createPipeLineLayout();
       hmdDistortion->createPipeLine(renderer->render_pass, renderer->pipelineCache);
