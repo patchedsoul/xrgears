@@ -36,10 +36,11 @@
 #include "../input/vikHMD.hpp"
 
 #define check_feature(f) {\
-  if (renderer->deviceFeatures.f) \
+  if (renderer->deviceFeatures.f) {\
     renderer->enabledFeatures.f = VK_TRUE; \
-  else \
+  } else { \
     vik_log_f("Feature not supported: %s", #f);\
+  } \
 }
 
 namespace vik {
@@ -108,7 +109,7 @@ class Application {
   void set_window_callbacks() {
     window->set_pointer_motion_cb(
           [this](double x, double y) {
-      camera->pointer_motion_cb(x,y);
+      camera->pointer_motion_cb(x, y);
     });
     window->set_pointer_button_cb(
           [this](Input::MouseButton button, bool state) {

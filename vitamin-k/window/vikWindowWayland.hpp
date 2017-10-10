@@ -35,7 +35,7 @@ class WindowWayland : public Window {
   explicit WindowWayland(Settings *s) : Window(s) {}
 
   struct Mode {
-    std::pair<int,int> size;
+    std::pair<int, int> size;
     int refresh;
   };
 
@@ -44,8 +44,8 @@ class WindowWayland : public Window {
     std::string make;
     std::string model;
     std::vector<Mode> modes;
-    std::pair<int,int> physical_size_mm;
-    std::pair<int,int> position;
+    std::pair<int, int> physical_size_mm;
+    std::pair<int, int> position;
   };
 
   std::vector<Display> displays;
@@ -74,8 +74,6 @@ class WindowWayland : public Window {
   void init_swap_chain(uint32_t width, uint32_t height) {
     VkResult err = create_surface(swap_chain.instance, &swap_chain.surface);
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
-    //swap_chain.set_dimension_cb(dimension_cb);
-    //swap_chain.select_queue();
     swap_chain.select_surface_format();
     swap_chain.set_settings(settings);
     swap_chain.create(width, height);
@@ -340,7 +338,8 @@ class WindowWayland : public Window {
                               m.size.second,
                               (float) m.refresh/1000.0);
     std::string output(size + 1, '\0');
-    std::sprintf(&output[0], "%d x %d @ %.2fHz", m.size.first,
+    std::snprintf(&output[0], size, "%d x %d @ %.2fHz",
+        m.size.first,
         m.size.second,
         (float) m.refresh/1000.0);
     return std::string(output);

@@ -16,6 +16,7 @@
 
 #include <string>
 #include <algorithm>
+#include <utility>
 
 #include "vikLog.hpp"
 #include "../render/vikTools.hpp"
@@ -55,10 +56,10 @@ class Settings {
 
   bool enable_text_overlay = true;
 
-  std::pair<uint32_t,uint32_t> size = {1280, 720};
+  std::pair<uint32_t, uint32_t> size = {1280, 720};
 
   std::string help_string() {
-    std::string help =
+    return
         "A XR demo for Vulkan and OpenHMD\n"
         "\n"
         "Options:\n"
@@ -81,13 +82,10 @@ class Settings {
         "\n"
         "      --disable-overlay    Disable text overlay\n"
         "  -h, --help               Show this help\n";
-
- // VK_PRESENT_MODE_FIFO_KHR for vsync
-    return help;
   }
 
-  std::pair<uint32_t,uint32_t> parse_size(std::string const& str) {
-      std::pair<uint32_t,uint32_t> size;
+  std::pair<uint32_t, uint32_t> parse_size(std::string const& str) {
+      std::pair<uint32_t, uint32_t> size;
       auto const dimensions = tools::split(str, 'x');
 
       if (dimensions.size() != 2

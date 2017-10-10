@@ -72,8 +72,6 @@ class OffscreenPass {
       VkFormat format,
       VkImageUsageFlagBits usage,
       FrameBufferAttachment *attachment) {
-
-
     attachment->format = format;
 
     VkImageCreateInfo image = initializers::imageCreateInfo();

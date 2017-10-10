@@ -24,94 +24,93 @@
 namespace vik {
 
 class Camera {
+ protected:
+  float fov = 60.f;
+  float znear = .001f;
+  float zfar = 256.f;
 
-protected:
- float fov = 60.f;
- float znear = .001f;
- float zfar = 256.f;
+ public:
+  enum CameraType { lookat, firstperson };
+  CameraType type = CameraType::lookat;
 
-public:
- enum CameraType { lookat, firstperson };
- CameraType type = CameraType::lookat;
+  float rotation_speed = 1.0f;
+  float movement_speed = 1.0f;
 
- float rotation_speed = 1.0f;
- float movement_speed = 1.0f;
+  glm::vec2 last_mouse_position;
+  glm::vec3 rotation = glm::vec3();
+  glm::vec3 position = glm::vec3();
 
- glm::vec2 last_mouse_position;
- glm::vec3 rotation = glm::vec3();
- glm::vec3 position = glm::vec3();
+  struct {
+    bool left = false;
+    bool right = false;
+    bool middle = false;
+  } mouse_buttons;
 
- struct {
-   bool left = false;
-   bool right = false;
-   bool middle = false;
- } mouse_buttons;
+  struct {
+    glm::mat4 projection;
+    glm::mat4 view;
+  } matrices;
 
- struct {
-   glm::mat4 projection;
-   glm::mat4 view;
- } matrices;
+  struct {
+    bool left = false;
+    bool right = false;
+    bool up = false;
+    bool down = false;
+  } keys;
 
- struct {
-   bool left = false;
-   bool right = false;
-   bool up = false;
-   bool down = false;
- } keys;
+ public:
+  Buffer uniformBuffer;
 
-public:
- Buffer uniformBuffer;
+  struct StereoView {
+    glm::mat4 view[2];
+  };
 
- struct StereoView {
-   glm::mat4 view[2];
- };
+  struct UBOCamera {
+    glm::mat4 projection[2];
+    glm::mat4 view[2];
+    glm::mat4 skyView[2];
+    glm::vec3 position;
+  } ubo;
 
- struct UBOCamera {
-   glm::mat4 projection[2];
-   glm::mat4 view[2];
-   glm::mat4 skyView[2];
-   glm::vec3 position;
- } ubo;
+  virtual ~Camera() {
+    uniformBuffer.destroy();
+  }
 
- virtual ~Camera() {
-   uniformBuffer.destroy();
- }
+  virtual void update_movement(float deltaTime) {}
+  virtual void keyboard_key_cb(Input::Key key, bool state) {}
+  virtual void pointer_axis_cb(Input::MouseScrollAxis axis, double value) {}
+  virtual void pointer_motion_cb(double x, double y) {}
+  virtual void update_view() {}
 
- virtual void update_movement(float deltaTime) {}
- virtual void keyboard_key_cb(Input::Key key, bool state) {}
- virtual void pointer_axis_cb(Input::MouseScrollAxis axis, double value) {}
- virtual void pointer_motion_cb(double x, double y) {}
- virtual void update_view() {}
+  virtual glm::mat4 get_view_matrix() {
+    return glm::mat4();
+  }
 
- virtual glm::mat4 get_view_matrix() {
-   return glm::mat4();
- }
+  virtual glm::mat4 get_rotation_matrix() {
+    return glm::mat4();
+  }
 
- virtual glm::mat4 get_rotation_matrix() {
-   return glm::mat4();
- }
+  virtual glm::mat4 get_view_matrix_no_position() {
+    return glm::mat4();
+  }
 
- virtual glm::mat4 get_view_matrix_no_position() {
-   return glm::mat4();
- }
+  virtual void update_ubo() {
+    ubo.projection[0] = matrices.projection;
+    ubo.view[0] = matrices.view;
+    ubo.skyView[0] = glm::mat4(glm::mat3(matrices.view));
+    ubo.position = position * -1.0f;
+    memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
+  }
 
- virtual void update_ubo() {
-   ubo.projection[0] = matrices.projection;
-   ubo.view[0] = matrices.view;
-   ubo.skyView[0] = glm::mat4(glm::mat3(matrices.view));
-   ubo.position = position * -1.0f;
-   memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
- }
+  void init_ubo(Device *device) {
+    device->create_and_map(&uniformBuffer, sizeof(ubo));
+  }
 
- void init_ubo(Device *device) {
-   device->create_and_map(&uniformBuffer, sizeof(ubo));
- }
+  std::function<void()> view_updated_cb = [](){};
 
- std::function<void()> view_updated_cb = [](){};
-
- void set_view_updated_cb(std::function<void()> cb) {
-   view_updated_cb = cb;
- }
+  void set_view_updated_cb(std::function<void()> cb) {
+    view_updated_cb = cb;
+  }
 
   virtual bool moving() {
     return false;
@@ -165,6 +164,5 @@ public:
         break;
     }
   }
-
 };
 }  // namespace vik

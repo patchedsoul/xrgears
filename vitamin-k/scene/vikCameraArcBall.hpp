@@ -14,7 +14,7 @@
 namespace vik {
 class CameraArcBall : public Camera {
  public:
-  explicit CameraArcBall() {
+  CameraArcBall() {
     rotation_speed = 1.25f;
   }
 
@@ -74,9 +74,6 @@ class CameraArcBall : public Camera {
     return matrix;
   }
 
-  void update_ubo() {
-
-
-  }
+  void update_ubo() {}
 };
 }  // namespace vik

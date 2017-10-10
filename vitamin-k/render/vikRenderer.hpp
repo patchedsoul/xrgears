@@ -87,7 +87,7 @@ class Renderer {
   std::function<void()> window_resize_cb;
   std::function<void()> enabled_features_cb;
 
-  Renderer(Settings *s) {
+  explicit Renderer(Settings *s) {
     settings = s;
     width = s->size.first;
     height = s->size.second;
@@ -251,8 +251,6 @@ class Renderer {
   void init(const std::string &name) {
     init_vulkan(name, window->required_extensions());
     create_pipeline_cache();
-
-    //window->init();
 
     window->update_window_title(make_title_string(name));
     window->get_swap_chain()->set_context(instance, physical_device, device);
@@ -497,17 +495,17 @@ class Renderer {
   VkSubmitInfo init_render_submit_info() {
     // Pipeline stage at which the
     // queue submission will wait (via pWaitSemaphores)
-    // TODO: stage_flags deallocate at end of function
-    //std::array<VkPipelineStageFlags,1> stage_flags = {
-    //  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-    //};
+    // TODO(lubosz): stage_flags deallocate at end of function
+    // std::array<VkPipelineStageFlags,1> stage_flags = {
+    //   VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+    // };
 
     // The submit info structure specifices a
     // command buffer queue submission batch
     VkSubmitInfo submit_info = initializers::submitInfo();
 
     // Pointer to the list of pipeline stages that the semaphore waits will occur at
-    //submit_info.pWaitDstStageMask = stage_flags.data();
+    // submit_info.pWaitDstStageMask = stage_flags.data();
     submit_info.waitSemaphoreCount = 1;
     // Semaphore(s) to wait upon before the submitted command buffer starts executing
     submit_info.pWaitSemaphores = &semaphores.present_complete;

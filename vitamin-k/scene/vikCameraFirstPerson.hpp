@@ -15,7 +15,7 @@
 namespace vik {
 class CameraFirstPerson : public Camera {
  public:
-  explicit CameraFirstPerson() {}
+  CameraFirstPerson() {}
 
   void update_view() {
     glm::mat4 rotM = glm::mat4();
@@ -41,7 +41,6 @@ class CameraFirstPerson : public Camera {
 
   void update_movement(float time) {
     if (moving()) {
-
       float rad_x = glm::radians(rotation.x);
       float rad_y = glm::radians(rotation.y);
 
@@ -99,9 +98,6 @@ class CameraFirstPerson : public Camera {
     last_mouse_position = glm::vec2(x, y);
   }
 
-  void update_ubo() {
-
-
-  }
+  void update_ubo() {}
 };
 }  // namespace vik

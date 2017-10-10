@@ -27,7 +27,7 @@ class RendererTextOverlay : public Renderer {
 
   std::string name;
 
-  RendererTextOverlay(Settings *s) : Renderer(s) {}
+  explicit RendererTextOverlay(Settings *s) : Renderer(s) {}
   ~RendererTextOverlay() {
     vkDestroySemaphore(device, text_overlay_complete, nullptr);
     delete text_overlay;
@@ -63,10 +63,10 @@ class RendererTextOverlay : public Renderer {
 
   VkSubmitInfo init_text_submit_info() {
     // Wait for color attachment output to finish before rendering the text overlay
-    //VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    // VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
     VkSubmitInfo submit_info = initializers::submitInfo();
-    //submit_info.pWaitDstStageMask = &stageFlags;
+    // submit_info.pWaitDstStageMask = &stageFlags;
     submit_info.waitSemaphoreCount = 1;
     submit_info.pWaitSemaphores = &semaphores.render_complete;
     submit_info.signalSemaphoreCount = 1;

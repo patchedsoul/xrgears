@@ -23,7 +23,6 @@
 #include "../scene/vikCamera.hpp"
 #include "../render/vikBuffer.hpp"
 #include "../system/vikLog.hpp"
-#include "../scene/vikCamera.hpp"
 #include "../system/vikSettings.hpp"
 
 namespace vik {
@@ -34,7 +33,7 @@ class HMD {
  public:
   ohmd_device* device = nullptr;
 
-  HMD(Settings *s) {
+  explicit HMD(Settings *s) {
     context = ohmd_ctx_create();
     int num_devices = ohmd_ctx_probe(context);
 
@@ -60,8 +59,6 @@ class HMD {
               ohmd_list_gets(context, s->hmd, OHMD_PATH));
 
     ohmd_device_settings_destroy(settings);
-
-    //print_info(device, s->hmd);
   }
 
   ~HMD() {
