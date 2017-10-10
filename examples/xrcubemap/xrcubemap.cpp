@@ -114,6 +114,11 @@ public:
 		uniformBuffers.skybox.destroy();
 	}
 
+  virtual void enable_required_features() {
+    check_feature(textureCompressionBC);
+    check_feature(samplerAnisotropy);
+  }
+
 	void loadTextures()
 	{
 		// Vulkan core supports three different compressed texture formats
@@ -439,6 +444,9 @@ public:
 
     vik_log_check(vkCreateGraphicsPipelines(renderer->device, renderer->pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.skybox));
 
+    vkDestroyShaderModule(renderer->device, shaderStages[0].module, nullptr);
+    vkDestroyShaderModule(renderer->device, shaderStages[1].module, nullptr);
+
 		// Cube map reflect pipeline
     shaderStages[0] = vik::Shader::load(renderer->device, "cubemap/reflect.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = vik::Shader::load(renderer->device, "cubemap/reflect.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -448,7 +456,10 @@ public:
 		// Flip cull mode
 		rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;
     vik_log_check(vkCreateGraphicsPipelines(renderer->device, renderer->pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.reflect));
-	}
+
+    vkDestroyShaderModule(renderer->device, shaderStages[0].module, nullptr);
+    vkDestroyShaderModule(renderer->device, shaderStages[1].module, nullptr);
+  }
 
 	// Prepare and initialize uniform buffer containing shader uniforms
 	void prepareUniformBuffers()
@@ -490,6 +501,10 @@ public:
 	{
 
     VkSubmitInfo submit_info = renderer->init_render_submit_info();
+    std::array<VkPipelineStageFlags,1> stage_flags = {
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+    };
+    submit_info.pWaitDstStageMask = stage_flags.data();
 
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &renderer->cmd_buffers[renderer->currentBuffer];

@@ -120,13 +120,6 @@ class XRGears : public vik::Application {
     delete hmd;
   }
 
-#define check_feature(f) {\
-  if (renderer->deviceFeatures.f) \
-    renderer->enabledFeatures.f = VK_TRUE; \
-  else \
-    vik_log_f("Feature not supported: %s", #f);\
-}
-
   // Enable physical device features required for this example
   virtual void enable_required_features() {
     check_feature(geometryShader);
