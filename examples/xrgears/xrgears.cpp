@@ -49,9 +49,9 @@ class XRGears : public vik::Application {
 
   vik::HMD* hmd;
 
-  bool enableSky = false;
-  bool enableHMDCam = false;
-  bool enableDistortion = false;
+  bool enableSky = true;
+  bool enableHMDCam = true;
+  bool enableDistortion = true;
   bool enableStereo = true;
 
   vik::SkyBox *skyBox = nullptr;
@@ -110,7 +110,6 @@ class XRGears : public vik::Application {
     if (hmdDistortion)
       delete hmdDistortion;
 
-    // uniformBuffers.camera.destroy();
     uniformBuffers.lights.destroy();
 
     for (auto& node : nodes)

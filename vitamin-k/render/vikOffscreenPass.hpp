@@ -72,22 +72,9 @@ class OffscreenPass {
       VkFormat format,
       VkImageUsageFlagBits usage,
       FrameBufferAttachment *attachment) {
-    VkImageAspectFlags aspectMask = 0;
-    VkImageLayout imageLayout;
+
 
     attachment->format = format;
-
-    if (usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) {
-      aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-      imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    }
-
-    if (usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-      aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-      imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    }
-
-    assert(aspectMask > 0);
 
     VkImageCreateInfo image = initializers::imageCreateInfo();
     image.imageType = VK_IMAGE_TYPE_2D;
@@ -100,7 +87,6 @@ class OffscreenPass {
     image.samples = VK_SAMPLE_COUNT_1_BIT;
     image.tiling = VK_IMAGE_TILING_OPTIMAL;
     image.usage = usage | VK_IMAGE_USAGE_SAMPLED_BIT;
-    image.initialLayout = imageLayout;
 
     VkMemoryAllocateInfo memAlloc = initializers::memoryAllocateInfo();
     VkMemoryRequirements memReqs;
@@ -111,6 +97,14 @@ class OffscreenPass {
     memAlloc.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vik_log_check(vkAllocateMemory(device, &memAlloc, nullptr, &attachment->mem));
     vik_log_check(vkBindImageMemory(device, attachment->image, attachment->mem, 0));
+
+    VkImageAspectFlags aspectMask = 0;
+    if (usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) {
+      aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    } else if (usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+      aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+    }
+    assert(aspectMask > 0);
 
     VkImageViewCreateInfo imageView = initializers::imageViewCreateInfo();
     imageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
