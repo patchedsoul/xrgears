@@ -104,13 +104,6 @@ class Triangle : public vik::Application {
   }
 
   void prepareSynchronizationPrimitives() {
-    VkSemaphoreCreateInfo semaphoreCreateInfo = {};
-    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    semaphoreCreateInfo.pNext = nullptr;
-
-    vik_log_check(vkCreateSemaphore(renderer->device, &semaphoreCreateInfo, nullptr, &renderer->semaphores.present_complete));
-    vik_log_check(vkCreateSemaphore(renderer->device, &semaphoreCreateInfo, nullptr, &renderer->semaphores.render_complete));
-
     VkFenceCreateInfo fenceCreateInfo = {};
     fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     // Create in signaled state so we don't wait on first render of each command buffer
