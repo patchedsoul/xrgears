@@ -497,15 +497,17 @@ class Renderer {
   VkSubmitInfo init_render_submit_info() {
     // Pipeline stage at which the
     // queue submission will wait (via pWaitSemaphores)
-    VkPipelineStageFlags stage_mask =
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    // TODO: stage_flags deallocate at end of function
+    //std::array<VkPipelineStageFlags,1> stage_flags = {
+    //  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+    //};
 
     // The submit info structure specifices a
     // command buffer queue submission batch
     VkSubmitInfo submit_info = initializers::submitInfo();
 
     // Pointer to the list of pipeline stages that the semaphore waits will occur at
-    submit_info.pWaitDstStageMask = &stage_mask;
+    //submit_info.pWaitDstStageMask = stage_flags.data();
     submit_info.waitSemaphoreCount = 1;
     // Semaphore(s) to wait upon before the submitted command buffer starts executing
     submit_info.pWaitSemaphores = &semaphores.present_complete;

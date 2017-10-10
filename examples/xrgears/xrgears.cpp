@@ -598,6 +598,11 @@ class XRGears : public vik::Application {
   void draw() {
     VkSubmitInfo submit_info = renderer->init_render_submit_info();
 
+    std::array<VkPipelineStageFlags,1> stage_flags = {
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+    };
+    submit_info.pWaitDstStageMask = stage_flags.data();
+
     if (enableDistortion) {
       // The scene render command buffer has to wait for the offscreen
       // rendering to be finished before we can use the framebuffer
@@ -618,7 +623,6 @@ class XRGears : public vik::Application {
       submit_info.pSignalSemaphores = &offscreenSemaphore;
 
       // Submit work
-
       submit_info.pCommandBuffers = &offScreenCmdBuffer;
       vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, VK_NULL_HANDLE));
 
