@@ -50,6 +50,8 @@ class XrCube : public vik::Application {
   VkBuffer buffer;
   VkDescriptorSet descriptor_set;
   VkFence fence;
+  VkDescriptorSetLayout descriptor_set_layout;
+  VkDescriptorPool descriptor_pool;
 
   timeval start_tv;
 
@@ -61,6 +63,13 @@ class XrCube : public vik::Application {
   }
 
   ~XrCube() {
+    vkDestroyPipeline(renderer->device, pipeline, nullptr);
+    vkDestroyFence(renderer->device, fence, nullptr);
+    vkFreeMemory(renderer->device, mem, nullptr);
+    vkDestroyBuffer(renderer->device, buffer, nullptr);
+    vkDestroyPipelineLayout(renderer->device, pipeline_layout, nullptr);
+    vkDestroyDescriptorSetLayout(renderer->device, descriptor_set_layout, nullptr);
+    vkDestroyDescriptorPool(renderer->device, descriptor_pool, nullptr);
   }
 
   void build_command_buffers() {
@@ -71,12 +80,12 @@ class XrCube : public vik::Application {
 
   void init() {
     Application::init();
-    VkDescriptorSetLayout set_layout = init_descriptor_set_layout();
-    init_pipeline_layout(set_layout);
+    descriptor_set_layout = init_descriptor_set_layout();
+    init_pipeline_layout(descriptor_set_layout);
     init_pipeline();
     init_vertex_buffer();
-    VkDescriptorPool descriptor_pool = init_descriptor_pool();
-    init_descriptor_sets(descriptor_pool, set_layout);
+    descriptor_pool = init_descriptor_pool();
+    init_descriptor_sets(descriptor_pool, descriptor_set_layout);
     update_descriptor_sets();
 
     VkFenceCreateInfo fenceinfo = {};
@@ -94,19 +103,17 @@ class XrCube : public vik::Application {
   }
 
   void submit_queue(VkCommandBuffer cmd_buffer) {
-    VkPipelineStageFlags stageflags[] = {
-      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+    VkSubmitInfo submit_info = renderer->init_render_submit_info();
+
+    std::array<VkPipelineStageFlags,1> stage_flags = {
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
     };
+    submit_info.pWaitDstStageMask = stage_flags.data();
 
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    // submitInfo.waitSemaphoreCount = 1;
-    // submitInfo.pWaitSemaphores = &semaphore;
-    submitInfo.pWaitDstStageMask = stageflags;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &cmd_buffer;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &cmd_buffer;
 
-    vkQueueSubmit(renderer->queue, 1, &submitInfo, fence);
+    vkQueueSubmit(renderer->queue, 1, &submit_info, fence);
   }
 
   virtual void render() {
@@ -263,6 +270,9 @@ class XrCube : public vik::Application {
                               &pipeLineCreateInfo,
                               NULL,
                               &pipeline);
+
+    vkDestroyShaderModule(renderer->device, stagesInfo[0].module, nullptr);
+    vkDestroyShaderModule(renderer->device, stagesInfo[1].module, nullptr);
   }
 
   VkDescriptorSetLayout init_descriptor_set_layout() {
@@ -346,6 +356,16 @@ class XrCube : public vik::Application {
     writeDescriptorSet[0].pBufferInfo = &descriptorBufferInfo;
 
     vkUpdateDescriptorSets(renderer->device, 1, writeDescriptorSet.data(), 0, NULL);
+  }
+
+  uint32_t getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties) {
+    for (uint32_t i = 0; i < renderer->deviceMemoryProperties.memoryTypeCount; i++) {
+      if ((typeBits & 1) == 1
+          && (renderer->deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+        return i;
+      typeBits >>= 1;
+    }
+    throw "Could not find a suitable memory type!";
   }
 
   void init_vertex_buffer() {
@@ -453,22 +473,6 @@ class XrCube : public vik::Application {
     normals_offset = colors_offset + sizeof(vColors);
     uint32_t mem_size = normals_offset + sizeof(vNormals);
 
-    VkMemoryAllocateInfo allcoinfo;
-    allcoinfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allcoinfo.allocationSize = mem_size;
-    allcoinfo.memoryTypeIndex = 0;
-
-    vkAllocateMemory(renderer->device,
-                     &allcoinfo,
-                     NULL,
-                     &mem);
-
-    VkResult r = vkMapMemory(renderer->device, mem, 0, mem_size, 0, &map);
-    vik_log_f_if(r != VK_SUCCESS, "vkMapMemory failed");
-
-    memcpy(((char*)map + vertex_offset), vVertices, sizeof(vVertices));
-    memcpy(((char*)map + colors_offset), vColors, sizeof(vColors));
-    memcpy(((char*)map + normals_offset), vNormals, sizeof(vNormals));
 
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -478,8 +482,30 @@ class XrCube : public vik::Application {
 
     vkCreateBuffer(renderer->device,
                    &bufferInfo,
-                   NULL,
+                   nullptr,
                    &buffer);
+
+    VkMemoryRequirements memReqs;
+    vkGetBufferMemoryRequirements(renderer->device, buffer, &memReqs);
+
+    VkMemoryAllocateInfo allcoinfo;
+    allcoinfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allcoinfo.allocationSize = memReqs.size;
+    allcoinfo.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    vkAllocateMemory(renderer->device,
+                     &allcoinfo,
+                     nullptr,
+                     &mem);
+
+    VkResult r = vkMapMemory(renderer->device, mem, 0, allcoinfo.allocationSize, 0, &map);
+    vik_log_f_if(r != VK_SUCCESS, "vkMapMemory failed");
+
+    memcpy(((char*)map + vertex_offset), vVertices, sizeof(vVertices));
+    memcpy(((char*)map + colors_offset), vColors, sizeof(vColors));
+    memcpy(((char*)map + normals_offset), vNormals, sizeof(vNormals));
+
+    //vkUnmapMemory(renderer->device, mem);
 
     vkBindBufferMemory(renderer->device, buffer, mem, 0);
   }
@@ -517,15 +543,16 @@ class XrCube : public vik::Application {
     vik_log_e_if(r != VK_SUCCESS, "vkBeginCommandBuffer: %s",
                  vik::Log::result_string(r).c_str());
 
-    std::array<VkClearValue, 1> clearValues = {};
+    std::array<VkClearValue, 2> clearValues = {};
     clearValues[0].color = { { 0.2f, 0.2f, 0.2f, 1.0f } };
+    clearValues[1].depthStencil = { 1.0f, 0 };
 
     VkRenderPassBeginInfo passBeginInfo = {};
     passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     passBeginInfo.renderPass = renderer->render_pass;
     passBeginInfo.framebuffer = frame_buffer;
     passBeginInfo.renderArea = { { 0, 0 }, { renderer->width, renderer->height } };
-    passBeginInfo.clearValueCount = 1;
+    passBeginInfo.clearValueCount = clearValues.size();
     passBeginInfo.pClearValues = clearValues.data();
 
     vkCmdBeginRenderPass(cmd_buffer,
