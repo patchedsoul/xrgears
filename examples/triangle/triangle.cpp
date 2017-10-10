@@ -127,10 +127,10 @@ class Triangle : public vik::Application {
 
     vik_log_check(vkEndCommandBuffer(commandBuffer));
 
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
+    VkSubmitInfo submit_info = {};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &commandBuffer;
 
     VkFenceCreateInfo fenceCreateInfo = {};
     fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -138,7 +138,7 @@ class Triangle : public vik::Application {
     VkFence fence;
     vik_log_check(vkCreateFence(renderer->device, &fenceCreateInfo, nullptr, &fence));
 
-    vik_log_check(vkQueueSubmit(renderer->queue, 1, &submitInfo, fence));
+    vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, fence));
     vik_log_check(vkWaitForFences(renderer->device, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
 
     vkDestroyFence(renderer->device, fence, nullptr);
@@ -211,6 +211,12 @@ class Triangle : public vik::Application {
     vik_log_check(vkResetFences(renderer->device, 1, &waitFences[renderer->currentBuffer]));
 
     VkSubmitInfo submit_info = renderer->init_render_submit_info();
+
+    std::array<VkPipelineStageFlags,1> stage_flags = {
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+    };
+    submit_info.pWaitDstStageMask = stage_flags.data();
+
     submit_info.pCommandBuffers = renderer->get_current_command_buffer();
     vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, waitFences[renderer->currentBuffer]));
   }
