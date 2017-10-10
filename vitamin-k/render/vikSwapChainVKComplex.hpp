@@ -23,7 +23,7 @@
 
 #include "vikTools.hpp"
 
-#include "system/vikLog.hpp"
+#include "../system/vikLog.hpp"
 #include "vikSwapChainVK.hpp"
 
 namespace vik {
@@ -32,7 +32,7 @@ class SwapChainVkComplex : public vik::SwapChainVK {
  public:
   // Index of the deteced graphics and presenting device queue
   /** @brief Queue family index of the detected graphics and presenting device queue */
-  uint32_t queueNodeIndex = UINT32_MAX;
+  uint32_t queue_index = 0;
 
   std::function<void(uint32_t width, uint32_t height)> dimension_cb;
   void set_dimension_cb(std::function<void(uint32_t width, uint32_t height)> cb) {
@@ -40,9 +40,10 @@ class SwapChainVkComplex : public vik::SwapChainVK {
   }
 
   uint32_t get_queue_index() {
-    return queueNodeIndex;
+    return queue_index;
   }
 
+  /*
   void select_queue() {
     // Get available queue family properties
     uint32_t queueCount;
@@ -94,8 +95,9 @@ class SwapChainVkComplex : public vik::SwapChainVK {
     if (graphicsQueueNodeIndex != presentQueueNodeIndex)
       vik_log_f("Separate graphics and presenting queues are not supported yet!");
 
-    queueNodeIndex = graphicsQueueNodeIndex;
+    queue_index = graphicsQueueNodeIndex;
   }
+  */
 
   VkExtent2D select_extent(const VkSurfaceCapabilitiesKHR &caps,
                            uint32_t width, uint32_t height) {
@@ -170,6 +172,11 @@ class SwapChainVkComplex : public vik::SwapChainVK {
   */
   void create(uint32_t width, uint32_t height) {
     // Get physical device surface properties and formats
+
+    VkBool32 supported;
+    vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, 0, surface, &supported);
+    assert(supported);
+
     VkSurfaceCapabilitiesKHR surfCaps;
     vik_log_check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &surfCaps));
 

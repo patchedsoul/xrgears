@@ -119,19 +119,19 @@ class XRGears : public vik::Application {
     delete hmd;
   }
 
+#define check_feature(f) {\
+  if (renderer->deviceFeatures.f) \
+    renderer->enabledFeatures.f = VK_TRUE; \
+  else \
+    vik_log_f("Feature not supported: %s", #f);\
+}
+
   // Enable physical device features required for this example
   virtual void get_enabled_features() {
-    // Geometry shader support is required for this example
-    if (renderer->deviceFeatures.geometryShader)
-      renderer->enabledFeatures.geometryShader = VK_TRUE;
-    else
-      vik_log_f("Feature not supported: Selected GPU does not support geometry shaders!");
-
-    // Multiple viewports must be supported
-    if (renderer->deviceFeatures.multiViewport)
-      renderer->enabledFeatures.multiViewport = VK_TRUE;
-    else
-      vik_log_f("Feature not supported: Selected GPU does not support multi viewports!");
+    check_feature(geometryShader);
+    check_feature(multiViewport);
+    check_feature(textureCompressionBC);
+    check_feature(samplerAnisotropy);
   }
 
   void build_command_buffers() {

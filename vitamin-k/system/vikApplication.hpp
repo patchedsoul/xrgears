@@ -67,7 +67,7 @@ class Application {
     auto set_window_resize_cb = [this]() { resize(); };
     renderer->set_window_resize_cb(set_window_resize_cb);
 
-    auto enabled_features_cb = [this]() { get_enabled_features(); };
+    auto enabled_features_cb = [this]() { enable_required_features(); };
     renderer->set_enabled_features_cb(enabled_features_cb);
 
     auto frame_start_cb = [this]() {
@@ -191,7 +191,7 @@ class Application {
   virtual void view_changed_cb() {}
   virtual void key_pressed(Input::Key) {}
   virtual void build_command_buffers() {}
-  virtual void get_enabled_features() {}
+  virtual void enable_required_features() {}
   virtual void update_text_overlay(vik::TextOverlay *overlay) {}
 
   void check_view_update() {
