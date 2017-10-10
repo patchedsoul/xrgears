@@ -28,30 +28,41 @@ class CameraFirstPerson : public Camera {
     transM = glm::translate(glm::mat4(), position);
 
     matrices.view = rotM * transM;
+
+    // vik_log_d("pos: %.2f %.2f %.2f", position.x, position.y, position.z);
+    // vik_log_d("rot: %.2f %.2f %.2f", rotation.x, rotation.y, rotation.z);
   }
 
   bool moving() {
     return keys.left || keys.right || keys.up || keys.down;
   }
 
-  void update_movement(float deltaTime) {
-    if (moving()) {
-      glm::vec3 camFront;
-      camFront.x = -cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
-      camFront.y = sin(glm::radians(rotation.x));
-      camFront.z = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
-      camFront = glm::normalize(camFront);
+  const glm::vec3 up_vec = glm::vec3(0.0f, 1.0f, 0.0f);
 
-      float moveSpeed = deltaTime * movement_speed;
+  void update_movement(float time) {
+    if (moving()) {
+
+      float rad_x = glm::radians(rotation.x);
+      float rad_y = glm::radians(rotation.y);
+
+      glm::vec3 front_vec;
+      front_vec.x = -cos(rad_x) * sin(rad_y);
+      front_vec.y = sin(rad_x);
+      front_vec.z = cos(rad_x) * cos(rad_y);
+      front_vec = glm::normalize(front_vec);
+
+      float move_distance = time * movement_speed;
+
+      glm::vec3 side_vec = glm::normalize(glm::cross(front_vec, up_vec));
 
       if (keys.up)
-        position += camFront * moveSpeed;
+        position += front_vec * move_distance;
       if (keys.down)
-        position -= camFront * moveSpeed;
+        position -= front_vec * move_distance;
       if (keys.left)
-        position -= glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
+        position -= side_vec * move_distance;
       if (keys.right)
-        position += glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
+        position += side_vec * move_distance;
 
       update_view();
     }
@@ -81,14 +92,7 @@ class CameraFirstPerson : public Camera {
     double dy = last_mouse_position.y - y;
 
     if (mouse_buttons.left) {
-      //rotation.x += dy * 1.25f * rotationSpeed;
-      //rotation.y -= dx * 1.25f * rotationSpeed;
-
-
-      rotate(glm::vec3(
-                      dy * rotation_speed,
-                      -dx * rotation_speed,
-                      0.0f));
+      rotate(glm::vec3(dy * rotation_speed, -dx * rotation_speed, 0.0f));
       view_updated_cb();
     }
 

@@ -57,6 +57,7 @@ class XrCube : public vik::Application {
 
   XrCube(int argc, char *argv[]) : Application(argc, argv) {
     name = "Cube";
+    camera = new vik::Camera();
   }
 
   ~XrCube() {

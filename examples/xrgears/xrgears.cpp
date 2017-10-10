@@ -567,9 +567,9 @@ class XRGears : public vik::Application {
   }
 
   void updateUniformBuffers() {
-    ((vik::Camera*)camera)->update_ubo();
+    camera->update_ubo();
 
-    vik::StereoView sv = {};
+    vik::Camera::StereoView sv = {};
     sv.view[0] = ((vik::Camera*)camera)->ubo.view[0];
     sv.view[1] = ((vik::Camera*)camera)->ubo.view[1];
 
@@ -650,8 +650,8 @@ class XRGears : public vik::Application {
       camera = new vik::CameraFirstPerson();
     }
 
-    camera->set_rotation(glm::vec3(0.0f, 0.0f, 0.0f));
-    camera->set_position(glm::vec3(2.2f, 3.2f, -7.6));
+    camera->set_rotation(glm::vec3(-4.f, 23.f, 0));
+    camera->set_position(glm::vec3(6.2f, 4.f, -15.2f));
     camera->set_perspective(60.0f, (float)renderer->width / (float)renderer->height, 0.1f, 256.0f);
     camera->movement_speed = 5.0f;
 

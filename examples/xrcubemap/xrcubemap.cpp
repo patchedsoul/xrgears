@@ -474,31 +474,15 @@ public:
 		updateUniformBuffers();
 	}
 
-	void updateUniformBuffers()
-	{
-		// 3D object
-		glm::mat4 viewMatrix = glm::mat4();
-    uboVS.projection = glm::perspective(glm::radians(60.0f), (float)renderer->width / (float)renderer->height, 0.001f, 256.0f);
-    viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, ((vik::CameraArcBall*)camera)->zoom));
-
-		uboVS.model = glm::mat4();
-    uboVS.model = viewMatrix * glm::translate(uboVS.model, camera->position);
-    uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-
+  void updateUniformBuffers() {
+    // object
+    uboVS.projection = camera->get_projection_matrix();
+    uboVS.model = camera->get_view_matrix();
 		memcpy(uniformBuffers.object.mapped, &uboVS, sizeof(uboVS));
 
 		// Skybox
-		viewMatrix = glm::mat4();
-    uboVS.projection = glm::perspective(glm::radians(60.0f), (float)renderer->width / (float)renderer->height, 0.001f, 256.0f);
-
-		uboVS.model = glm::mat4();
-    //uboVS.model = viewMatrix * glm::translate(uboVS.model, glm::vec3(0, 0, 0));
-    uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    uboVS.model = glm::rotate(uboVS.model, glm::radians(camera->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-
+    uboVS.projection = camera->get_projection_matrix();
+    uboVS.model = camera->get_rotation_matrix();
 		memcpy(uniformBuffers.skybox.mapped, &uboVS, sizeof(uboVS));
 	}
 
@@ -519,6 +503,11 @@ public:
 		loadTextures();
 		loadMeshes();
 		setupVertexDescriptions();
+
+    camera->set_perspective(60.0f,
+                            (float)renderer->width / (float)renderer->height,
+                            0.001f, 256.0f);
+
 		prepareUniformBuffers();
 		setupDescriptorSetLayout();
 		preparePipelines();
