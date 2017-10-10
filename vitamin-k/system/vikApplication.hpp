@@ -61,8 +61,9 @@ class Application {
   Application(int argc, char *argv[]) {
     if (!settings.parse_args(argc, argv))
       vik_log_f("Invalid arguments.");
+    renderer = new RendererTextOverlay(&settings);
+
     init_window();
-    renderer = new RendererTextOverlay(&settings, window);
 
     auto set_window_resize_cb = [this]() { resize(); };
     renderer->set_window_resize_cb(set_window_resize_cb);
@@ -87,6 +88,25 @@ class Application {
 
     if (camera != nullptr)
       camera->set_view_updated_cb([this]() { viewUpdated = true; });
+  }
+
+  ~Application()  {
+    delete renderer;
+  }
+
+  void set_window_callbacks() {
+    window->set_pointer_motion_cb(
+          [this](double x, double y) {
+      camera->pointer_motion_cb(x,y);
+    });
+    window->set_pointer_button_cb(
+          [this](Input::MouseButton button, bool state) {
+      camera->pointer_button_cb(button, state);
+    });
+    window->set_pointer_axis_cb(
+          [this](Input::MouseScrollAxis axis, double value) {
+      camera->pointer_axis_cb(axis, value);
+    });
 
     auto keyboard_key_cb = [this](Input::Key key, bool state) {
       switch (key) {
@@ -110,45 +130,35 @@ class Application {
 
       camera->keyboard_key_cb(key, state);
     };
-
-    window->set_pointer_motion_cb(
-          [this](double x, double y) {
-      camera->pointer_motion_cb(x,y);
-    });
-    window->set_pointer_button_cb(
-          [this](Input::MouseButton button, bool state) {
-      camera->pointer_button_cb(button, state);
-    });
-    window->set_pointer_axis_cb(
-          [this](Input::MouseScrollAxis axis, double value) {
-      camera->pointer_axis_cb(axis, value);
-    });
     window->set_keyboard_key_cb(keyboard_key_cb);
 
     auto quit_cb = [this]() { quit = true; };
     window->set_quit_cb(quit_cb);
   }
 
-  ~Application()  {
-    delete renderer;
+  int set_and_init_window() {
+    set_window_callbacks();
+    renderer->set_window(window);
+    return window->init();
   }
 
   int init_window_from_settings() {
     switch (settings.type) {
       case Settings::KMS:
         window = new WindowKMS(&settings);
-        break;
+        return set_and_init_window();
       case Settings::XCB:
         window = new WindowXCB(&settings);
-        break;
+        return set_and_init_window();
       case Settings::WAYLAND_XDG:
         window = new WindowWaylandXDG(&settings);
-        break;
+        return set_and_init_window();
       case Settings::WAYLAND_SHELL:
         window = new WindowWaylandShell(&settings);
-        break;
+        return set_and_init_window();
       case Settings::KHR_DISPLAY:
         window = new WindowKhrDisplay(&settings);
+        return set_and_init_window();
       default:
         return -1;
     }
@@ -158,11 +168,11 @@ class Application {
   void init_window_auto() {
     settings.type = Settings::WAYLAND_XDG;
     if (init_window_from_settings() == -1) {
-      vik_log_e("failed to initialize wayland, falling back to xcb");
+      vik_log_w("Failed to initialize wayland-xdg, falling back to xcb.");
       delete(window);
       settings.type = Settings::XCB;
       if (init_window_from_settings() == -1) {
-        vik_log_e("failed to initialize xcb, falling back to kms");
+        vik_log_w("Failed to initialize xcb, falling back to kms.");
         delete(window);
         settings.type = Settings::KMS;
         init_window_from_settings();
@@ -174,7 +184,7 @@ class Application {
     if (settings.type == Settings::AUTO)
       init_window_auto();
     else if (init_window_from_settings() == -1)
-      vik_log_f("failed to initialize %s", window->name.c_str());
+      vik_log_f("Failed to initialize %s back end.", window->name.c_str());
   }
 
   virtual void render() = 0;

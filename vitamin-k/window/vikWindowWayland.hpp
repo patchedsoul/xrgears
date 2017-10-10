@@ -52,15 +52,18 @@ class WindowWayland : public Window {
 
 
   ~WindowWayland() {
-    wl_surface_destroy(surface);
+    if (surface)
+      wl_surface_destroy(surface);
     if (keyboard)
       wl_keyboard_destroy(keyboard);
     if (pointer)
       wl_pointer_destroy(pointer);
-    wl_seat_destroy(seat);
-
-    wl_compositor_destroy(compositor);
-    wl_display_disconnect(display);
+    if (seat)
+      wl_seat_destroy(seat);
+    if (compositor)
+      wl_compositor_destroy(compositor);
+    if (display)
+      wl_display_disconnect(display);
   }
 
   void iterate() {

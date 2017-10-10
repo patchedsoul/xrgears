@@ -87,36 +87,10 @@ class Renderer {
   std::function<void()> window_resize_cb;
   std::function<void()> enabled_features_cb;
 
-  Renderer(Settings *s, Window *w) {
+  Renderer(Settings *s) {
     settings = s;
-    window = w;
     width = s->size.first;
     height = s->size.second;
-
-    auto dimension_cb = [this](uint32_t w, uint32_t h) {
-      if (((w != width) || (h != height))
-          && (width > 0) && (width > 0)) {
-        width = w;
-        height = h;
-        resize();
-      }
-    };
-    window->set_dimension_cb(dimension_cb);
-
-    auto size_only_cb = [this](uint32_t w, uint32_t h) {
-      if (((w != width) || (h != height))
-          && (width > 0) && (width > 0)) {
-        width = w;
-        height = h;
-      }
-    };
-    window->set_size_only_cb(size_only_cb);
-
-    window->set_render_frame_cb([this](){
-      prepare_frame();
-      render_cb();
-      submit_frame();
-    });
   }
 
   ~Renderer() {
@@ -146,6 +120,35 @@ class Renderer {
       debug::freeDebugCallback(instance);
 
     vkDestroyInstance(instance, nullptr);
+  }
+
+  void set_window(Window *w) {
+    window = w;
+
+    auto dimension_cb = [this](uint32_t w, uint32_t h) {
+      if (((w != width) || (h != height))
+          && (width > 0) && (width > 0)) {
+        width = w;
+        height = h;
+        resize();
+      }
+    };
+    window->set_dimension_cb(dimension_cb);
+
+    auto size_only_cb = [this](uint32_t w, uint32_t h) {
+      if (((w != width) || (h != height))
+          && (width > 0) && (width > 0)) {
+        width = w;
+        height = h;
+      }
+    };
+    window->set_size_only_cb(size_only_cb);
+
+    window->set_render_frame_cb([this](){
+      prepare_frame();
+      render_cb();
+      submit_frame();
+    });
   }
 
   void create_buffers(uint32_t count) {
@@ -249,7 +252,7 @@ class Renderer {
     init_vulkan(name, window->required_extensions());
     create_pipeline_cache();
 
-    window->init();
+    //window->init();
 
     window->update_window_title(make_title_string(name));
     window->get_swap_chain()->set_context(instance, physical_device, device);

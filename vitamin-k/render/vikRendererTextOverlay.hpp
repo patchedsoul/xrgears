@@ -27,7 +27,7 @@ class RendererTextOverlay : public Renderer {
 
   std::string name;
 
-  RendererTextOverlay(Settings *s, Window *w) : Renderer(s, w) {}
+  RendererTextOverlay(Settings *s) : Renderer(s) {}
   virtual ~RendererTextOverlay() {
     vkDestroySemaphore(device, text_overlay_complete, nullptr);
     if (settings->enable_text_overlay)

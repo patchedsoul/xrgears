@@ -33,17 +33,27 @@ class WindowWaylandShell : public WindowWayland {
 
   int init() {
     display = wl_display_connect(NULL);
-    vik_log_f_if(!display, "Could not connect to Wayland display!");
+
+    if (!display) {
+      vik_log_e("Could not connect to Wayland display.");
+      return -1;
+    }
 
     wl_registry *registry = wl_display_get_registry(display);
-    vik_log_f_if(!registry, "Could not get Wayland registry!");
+    if (!registry) {
+      vik_log_e("Could not get Wayland registry.");
+      return -1;
+    }
 
     wl_registry_add_listener(registry, &registry_listener, this);
     wl_display_dispatch(display);
     wl_display_roundtrip(display);
 
-    vik_log_f_if(!compositor || !shell || !seat,
-                 "Could not bind Wayland protocols!");
+    if (!compositor || !shell || !seat) {
+      vik_log_e("Could not bind Wayland protocols.");
+      return -1;
+    }
+
     wl_registry_destroy(registry);
 
     surface = wl_compositor_create_surface(compositor);
