@@ -575,8 +575,7 @@ public:
     }
   }
 
-  virtual void update_text_overlay(vik::TextOverlay *overlay)
-	{
+  virtual void update_text_overlay(vik::TextOverlay *overlay) {
 		std::stringstream ss;
 		ss << std::setprecision(2) << std::fixed << uboVS.lodBias;
     overlay->addText("Press \"s\" to toggle skybox", 5.0f, 85.0f, vik::TextOverlay::alignLeft);

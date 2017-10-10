@@ -129,7 +129,6 @@ class Renderer {
     for (uint32_t i = 0; i < frame_buffers.size(); i++)
       vkDestroyFramebuffer(device, frame_buffers[i], nullptr);
 
-
     vkDestroyImageView(device, depthStencil.view, nullptr);
     vkDestroyImage(device, depthStencil.image, nullptr);
     vkFreeMemory(device, depthStencil.mem, nullptr);
@@ -149,12 +148,10 @@ class Renderer {
     vkDestroyInstance(instance, nullptr);
   }
 
-
   void create_buffers(uint32_t count) {
     create_frame_buffers(count);
     allocate_command_buffers(count);
   }
-
 
   void set_window_resize_cb(std::function<void()> cb) {
     window_resize_cb = cb;
