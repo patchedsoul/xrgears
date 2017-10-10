@@ -135,8 +135,6 @@ class XRGears : public vik::Application {
   }
 
   void build_command_buffers() {
-    vik_log_d("Draw command buffers size: %ld", renderer->cmd_buffers.size());
-
     if (enableDistortion) {
       for (uint32_t i = 0; i < renderer->cmd_buffers.size(); ++i)
         buildWarpCommandBuffer(renderer->cmd_buffers[i], renderer->frame_buffers[i]);

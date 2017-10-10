@@ -537,9 +537,6 @@ class Renderer {
   void create_render_pass() {
     std::array<VkAttachmentDescription, 2> attachments = {};
     // Color attachment
-    vik_log_d("Creating renderpass with format %s",
-              Log::color_format_string(window->get_swap_chain()->surface_format.format).c_str());
-
     attachments[0].format = window->get_swap_chain()->surface_format.format;
     attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
     attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -630,7 +627,6 @@ class Renderer {
     // VK_KHX_multiview
 
     vik_log_check(vkCreateRenderPass(device, &renderPassInfo, nullptr, &render_pass));
-    vik_log_d("renderpass setup complete");
   }
 
   void init_depth_stencil() {

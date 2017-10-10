@@ -97,51 +97,6 @@ class SwapChainVkComplex : public vik::SwapChainVK {
     queueNodeIndex = graphicsQueueNodeIndex;
   }
 
-  void select_surface_format() {
-    // Get list of supported surface formats
-    uint32_t count;
-    vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(
-                  physical_device, surface, &count, NULL));
-    assert(count > 0);
-
-    std::vector<VkSurfaceFormatKHR> formats(count);
-    vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(
-                    physical_device, surface, &count, formats.data()));
-
-    print_available_formats(formats);
-
-    // If the surface format list only includes one entry with VK_FORMAT_UNDEFINED,
-    // there is no preferered format, so we assume VK_FORMAT_B8G8R8A8_UNORM
-    if ((count == 1) && (formats[0].format == VK_FORMAT_UNDEFINED)) {
-      vik_log_d("Using color format VK_FORMAT_B8G8R8A8_UNORM\n");
-      surface_format.format = VK_FORMAT_B8G8R8A8_UNORM;
-      surface_format.colorSpace = formats[0].colorSpace;
-    } else {
-      // iterate over the list of available surface format and
-      // check for the presence of VK_FORMAT_B8G8R8A8_UNORM
-      bool found_B8G8R8A8_UNORM = false;
-      for (VkSurfaceFormatKHR format : formats) {
-        if (format.format == VK_FORMAT_B8G8R8A8_UNORM) {
-          vik_log_d("Using color format %s",
-                    Log::color_format_string(format.format).c_str());
-          vik_log_d("Using color space %s",
-                    Log::color_space_string(format.colorSpace).c_str());
-          surface_format = format;
-          found_B8G8R8A8_UNORM = true;
-          break;
-        }
-      }
-
-      // in case VK_FORMAT_B8G8R8A8_UNORM is not available
-      // select the first available color format
-      if (!found_B8G8R8A8_UNORM) {
-        vik_log_d("B8G8R8A8_UNORM not found. Using %d\n", formats[0].format);
-        surface_format.format = formats[0].format;
-        surface_format.colorSpace = formats[0].colorSpace;
-      }
-    }
-  }
-
   VkExtent2D select_extent(const VkSurfaceCapabilitiesKHR &caps,
                            uint32_t width, uint32_t height) {
     VkExtent2D extent = {};

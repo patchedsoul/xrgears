@@ -59,18 +59,14 @@ pkg_search_module(WAYLAND REQUIRED wayland-client)
 pkg_search_module(GBM REQUIRED gbm)
 pkg_search_module(DRM REQUIRED libdrm)
 
-foreach(A_MODULE ${MODS})
-    check_module(${A_MODULE})
-endforeach(A_MODULE)
-
 file(GLOB VITAMINK_SRC vitamin-k/*.hpp)
 file(GLOB XDG_SRC xdg-shell/*.c)
 
 add_library(xdg-shell ${XDG_SRC})
 
 include_directories(
-    vitamin-k
-    xdg-shell
+    ${CMAKE_SOURCE_DIR}/vitamin-k
+    ${CMAKE_SOURCE_DIR}/xdg-shell
     ${OPENHMD_INCLUDE_DIRS}
     ${DRM_INCLUDE_DIRS})
 

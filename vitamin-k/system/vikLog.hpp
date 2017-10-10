@@ -53,31 +53,31 @@ class Log {
   /** @brief Returns an result code as a string */
   static std::string result_string(VkResult code) {
     switch (code) {
-  #define STR(r) case VK_ ##r: return #r
-      STR(SUCCESS);
-      STR(NOT_READY);
-      STR(TIMEOUT);
-      STR(EVENT_SET);
-      STR(EVENT_RESET);
-      STR(INCOMPLETE);
-      STR(ERROR_OUT_OF_HOST_MEMORY);
-      STR(ERROR_OUT_OF_DEVICE_MEMORY);
-      STR(ERROR_INITIALIZATION_FAILED);
-      STR(ERROR_DEVICE_LOST);
-      STR(ERROR_MEMORY_MAP_FAILED);
-      STR(ERROR_LAYER_NOT_PRESENT);
-      STR(ERROR_EXTENSION_NOT_PRESENT);
-      STR(ERROR_FEATURE_NOT_PRESENT);
-      STR(ERROR_INCOMPATIBLE_DRIVER);
-      STR(ERROR_TOO_MANY_OBJECTS);
-      STR(ERROR_FORMAT_NOT_SUPPORTED);
-      STR(ERROR_SURFACE_LOST_KHR);
-      STR(ERROR_NATIVE_WINDOW_IN_USE_KHR);
-      STR(SUBOPTIMAL_KHR);
-      STR(ERROR_OUT_OF_DATE_KHR);
-      STR(ERROR_INCOMPATIBLE_DISPLAY_KHR);
-      STR(ERROR_VALIDATION_FAILED_EXT);
-      STR(ERROR_INVALID_SHADER_NV);
+  #define STR(r) case r: return #r
+      STR(VK_SUCCESS);
+      STR(VK_NOT_READY);
+      STR(VK_TIMEOUT);
+      STR(VK_EVENT_SET);
+      STR(VK_EVENT_RESET);
+      STR(VK_INCOMPLETE);
+      STR(VK_ERROR_OUT_OF_HOST_MEMORY);
+      STR(VK_ERROR_OUT_OF_DEVICE_MEMORY);
+      STR(VK_ERROR_INITIALIZATION_FAILED);
+      STR(VK_ERROR_DEVICE_LOST);
+      STR(VK_ERROR_MEMORY_MAP_FAILED);
+      STR(VK_ERROR_LAYER_NOT_PRESENT);
+      STR(VK_ERROR_EXTENSION_NOT_PRESENT);
+      STR(VK_ERROR_FEATURE_NOT_PRESENT);
+      STR(VK_ERROR_INCOMPATIBLE_DRIVER);
+      STR(VK_ERROR_TOO_MANY_OBJECTS);
+      STR(VK_ERROR_FORMAT_NOT_SUPPORTED);
+      STR(VK_ERROR_SURFACE_LOST_KHR);
+      STR(VK_ERROR_NATIVE_WINDOW_IN_USE_KHR);
+      STR(VK_SUBOPTIMAL_KHR);
+      STR(VK_ERROR_OUT_OF_DATE_KHR);
+      STR(VK_ERROR_INCOMPATIBLE_DISPLAY_KHR);
+      STR(VK_ERROR_VALIDATION_FAILED_EXT);
+      STR(VK_ERROR_INVALID_SHADER_NV);
   #undef STR
       default:
         return "UNKNOWN RESULT";
@@ -86,25 +86,40 @@ class Log {
 
   static std::string color_format_string(VkFormat code) {
     switch(code) {
-#define STR(r) case VK_ ##r: return #r
-    STR(FORMAT_B8G8R8A8_UNORM);
-    STR(FORMAT_UNDEFINED);
-    STR(FORMAT_R8G8B8A8_SRGB);
-    STR(FORMAT_B8G8R8A8_SRGB);
-    STR(FORMAT_R8G8B8_SRGB);
-    STR(FORMAT_B8G8R8_SRGB);
-    STR(FORMAT_R5G6B5_UNORM_PACK16);
-    STR(FORMAT_B5G6R5_UNORM_PACK16);
+#define STR(r) case r: return #r
+    STR(VK_FORMAT_B8G8R8A8_UNORM);
+    STR(VK_FORMAT_UNDEFINED);
+    STR(VK_FORMAT_R8G8B8A8_SRGB);
+    STR(VK_FORMAT_B8G8R8A8_SRGB);
+    STR(VK_FORMAT_R8G8B8_SRGB);
+    STR(VK_FORMAT_B8G8R8_SRGB);
+    STR(VK_FORMAT_R5G6B5_UNORM_PACK16);
+    STR(VK_FORMAT_B5G6R5_UNORM_PACK16);
 #undef STR
       default:
         return "UNKNOWN FORMAT";
     }
   }
 
+#define STR_TO_FORMAT(r) if (str.compare(#r) == 0) return r
+
+  static VkFormat string_to_color_format(const std::string& str) {
+    STR_TO_FORMAT(VK_FORMAT_B8G8R8A8_UNORM);
+    STR_TO_FORMAT(VK_FORMAT_UNDEFINED);
+    STR_TO_FORMAT(VK_FORMAT_R8G8B8A8_SRGB);
+    STR_TO_FORMAT(VK_FORMAT_B8G8R8A8_SRGB);
+    STR_TO_FORMAT(VK_FORMAT_R8G8B8_SRGB);
+    STR_TO_FORMAT(VK_FORMAT_B8G8R8_SRGB);
+    STR_TO_FORMAT(VK_FORMAT_R5G6B5_UNORM_PACK16);
+    STR_TO_FORMAT(VK_FORMAT_B5G6R5_UNORM_PACK16);
+    vik_log_w("Unknown format %s", str.c_str());
+    return VK_FORMAT_UNDEFINED;
+  }
+
   static std::string color_space_string(VkColorSpaceKHR code) {
     switch(code) {
-#define STR(r) case VK_ ##r: return #r
-      STR(COLORSPACE_SRGB_NONLINEAR_KHR);
+#define STR(r) case r: return #r
+      STR(VK_COLORSPACE_SRGB_NONLINEAR_KHR);
 #undef STR
       default:
         return "UNKNOWN COLOR SPACE";

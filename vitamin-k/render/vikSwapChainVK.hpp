@@ -15,6 +15,7 @@
 #include <vulkan/vulkan.h>
 
 #include <vector>
+#include <map>
 
 #include "vikSwapChain.hpp"
 
@@ -120,36 +121,60 @@ class SwapChainVK : public SwapChain {
     return vkQueuePresentKHR(queue, &presentInfo);
   }
 
-  void print_available_formats(const std::vector<VkSurfaceFormatKHR>& formats) {
+  void print_available_formats() {
+    std::vector<VkSurfaceFormatKHR> formats
+        = get_surface_formats(physical_device, surface);
+
     vik_log_d("Available formats:");
     for (VkSurfaceFormatKHR format : formats)
-        vik_log_d("(%s, %s)",
+        vik_log_d("%s (%s)",
                   Log::color_format_string(format.format).c_str(),
                   Log::color_space_string(format.colorSpace).c_str());
   }
 
-  virtual void select_surface_format() {
+  static std::vector<VkSurfaceFormatKHR>
+  get_surface_formats(VkPhysicalDevice d, VkSurfaceKHR s) {
     uint32_t count = 0;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &count, NULL);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(d, s, &count, NULL);
     assert(count > 0);
 
     std::vector<VkSurfaceFormatKHR> formats(count);
     vik_log_check(vkGetPhysicalDeviceSurfaceFormatsKHR(
-                    physical_device, surface, &count, formats.data()));
+                    d, s, &count, formats.data()));
+    return formats;
+  }
 
-    print_available_formats(formats);
+  virtual void select_surface_format() {
+    if (settings->list_formats_and_exit) {
+      print_available_formats();
+      exit(0);
+    }
 
-    for (uint32_t i = 0; i < count; i++) {
-      switch (formats[i].format) {
-        case VK_FORMAT_B8G8R8A8_UNORM:
-          surface_format = formats[i];
-          vik_log_d("Using color format %s, %s",
-                    Log::color_format_string(surface_format.format).c_str(),
-                    Log::color_space_string(surface_format.colorSpace).c_str());
-          break;
-        default:
-          continue;
-      }
+    std::vector<VkSurfaceFormatKHR> formats
+        = get_surface_formats(physical_device, surface);
+
+    std::map<VkFormat, VkSurfaceFormatKHR> format_map;
+    for (auto format : formats)
+      format_map.insert(
+            std::pair<VkFormat, VkSurfaceFormatKHR>(format.format, format));
+
+    auto search = format_map.find(settings->color_format);
+    if (search != format_map.end()) {
+        surface_format = search->second;
+        vik_log_i("Using color format %s (%s)",
+                  Log::color_format_string(surface_format.format).c_str(),
+                  Log::color_space_string(surface_format.colorSpace).c_str());
+    } else {
+        vik_log_w("Selected format %s not found, falling back to default.",
+                  Log::color_format_string(settings->color_format).c_str());
+        auto search2 = format_map.find(VK_FORMAT_B8G8R8A8_UNORM);
+        if(search2 != format_map.end()) {
+            surface_format = search2->second;
+        } else {
+            vik_log_e("VK_FORMAT_B8G8R8A8_UNORM format not found.");
+            print_available_formats();
+            vik_log_f("No usable format set.");
+        }
     }
 
     assert(surface_format.format != VK_FORMAT_UNDEFINED);

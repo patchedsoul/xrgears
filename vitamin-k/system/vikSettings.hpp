@@ -47,11 +47,14 @@ class Settings {
   bool list_gpus_and_exit = false;
   bool list_screens_and_exit = false;
   bool list_hmds_and_exit = false;
+  bool list_formats_and_exit = false;
 
   bool enable_text_overlay = true;
 
   uint32_t display = 0;
   uint32_t mode = 0;
+
+  VkFormat color_format = VK_FORMAT_B8G8R8A8_UNORM;
 
   enum window_type type = AUTO;
 
@@ -62,20 +65,22 @@ class Settings {
         "A XR demo for Vulkan and OpenHMD\n"
         "\n"
         "Options:\n"
-        "  -s, --size WxH              Size of the output window (default: 1280x720)\n"
-        "  -f, --fullscreen            Run fullscreen. Optinally specify display and mode.\n"
-        "  -d, --display D             Display to fullscreen on. (default: 0)\n"
-        "  -m, --mode M                Mode for fullscreen. (default: 0)\n"
-        "  -w, --window WS             Window system to use (default: auto)\n"
-        "                              [xcb, wayland, kms]\n"
-        "      --hmd HMD               HMD to use (default: 0)\n"
-        "      --listgpus              List available GPUs\n"
-        "      --listdisplays          List available displays\n"
-        "      --listhmds              List available HMDs\n"
-        "  -h, --help                  Display help\n";
+        "  -s, --size WxH      Size of the output window (default: 1280x720)\n"
+        "  -f, --fullscreen    Run fullscreen. Optinally specify display and mode.\n"
+        "  -d, --display D     Display to fullscreen on. (default: 0)\n"
+        "  -m, --mode M        Mode for fullscreen (wayland-shell only) (default: 0)\n"
+        "  -w, --window WS     Window system to use (default: auto)\n"
+        "                      [xcb, wayland, wayland-shell, kms]\n"
+        "  -g, --gpu GPU       GPU to use (default: 0)\n"
+        "      --hmd HMD       HMD to use (default: 0)\n"
+        "      --format F      Color format to use (default: VK_FORMAT_B8G8R8A8_UNORM)\n"
+        "\n"
+        "      --listgpus      List available GPUs\n"
+        "      --listdisplays  List available displays\n"
+        "      --listhmds      List available HMDs\n"
+        "      --listformats   List available color formats\n"
+        "  -h, --help          Show this help\n";
 
-    // for (auto const& wsh : window_system_help)
-    //    help += wsh;
  // VK_PRESENT_MODE_FIFO_KHR for vsync
     return help;
   }
@@ -83,6 +88,11 @@ class Settings {
   std::pair<uint32_t,uint32_t> parse_size(std::string const& str) {
       std::pair<uint32_t,uint32_t> size;
       auto const dimensions = tools::split(str, 'x');
+
+      if (dimensions.size() != 2
+          || !is_number(dimensions[0])
+          || !is_number(dimensions[1]))
+        vik_log_f("Size must be 2 integers separated with x.");
 
       size.first = tools::from_string<uint32_t>(dimensions[0]);
 
@@ -109,7 +119,7 @@ class Settings {
      */
 
     int option_index = -1;
-    static const char *optstring = "hs:w:vfgd:m:";
+    static const char *optstring = "hs:w:vfg:d:m:";
 
 
     struct option long_options[] = {
@@ -157,8 +167,12 @@ class Settings {
         list_screens_and_exit = true;
       } else if (optname == "listhmds") {
         list_hmds_and_exit = true;
+      } else if (optname == "listformats") {
+        list_formats_and_exit = true;
       } else if (opt == 's' || optname == "size") {
         size = parse_size(optarg);
+      } else if (optname == "format") {
+        color_format = Log::string_to_color_format(optarg);
       } else if (opt == 'f' || optname == "fullscreen") {
         fullscreen = true;
       } else if (opt == 'd' || optname == "display") {
@@ -170,13 +184,7 @@ class Settings {
       } else if (optname == "hmd") {
         hmd = parse_id(optarg);
       } else if (opt == 'g' || optname == "gpu") {
-        /*
-        if ((args[i] == std::string("-g")) || (args[i] == std::string("-gpu"))) {
-          char* endptr;
-          uint32_t gpu_index = strtol(args[i + 1], &endptr, 10);
-          if (endptr != args[i + 1]) settings.gpu_index = gpu_index;
-        }
-        */
+        gpu = parse_id(optarg);
       } else if (opt == 'w' || optname == "window") {
         type = window_type_from_string(optarg);
         if (type == INVALID)
