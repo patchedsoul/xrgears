@@ -33,30 +33,27 @@ class Settings {
     INVALID
   };
 
-  /** @brief Activates validation layers (and message output) when set to true */
-  bool validation = false;
-  /** @brief Set to true if fullscreen mode has been requested via command line */
-  bool fullscreen = false;
-  /** @brief Set to true if v-sync will be forced for the swapchain */
-  bool vsync = false;
-
   uint32_t gpu = 0;
-
   uint32_t hmd = 0;
-
-  bool list_gpus_and_exit = false;
-  bool list_screens_and_exit = false;
-  bool list_hmds_and_exit = false;
-  bool list_formats_and_exit = false;
-
-  bool enable_text_overlay = true;
 
   uint32_t display = 0;
   uint32_t mode = 0;
 
   VkFormat color_format = VK_FORMAT_B8G8R8A8_UNORM;
+  VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
 
   enum window_type type = AUTO;
+
+  bool validation = false;
+  bool fullscreen = false;
+
+  bool list_gpus_and_exit = false;
+  bool list_screens_and_exit = false;
+  bool list_hmds_and_exit = false;
+  bool list_formats_and_exit = false;
+  bool list_present_modes_and_exit = false;
+
+  bool enable_text_overlay = true;
 
   std::pair<uint32_t,uint32_t> size = {1280, 720};
 
@@ -65,21 +62,23 @@ class Settings {
         "A XR demo for Vulkan and OpenHMD\n"
         "\n"
         "Options:\n"
-        "  -s, --size WxH      Size of the output window (default: 1280x720)\n"
-        "  -f, --fullscreen    Run fullscreen. Optinally specify display and mode.\n"
-        "  -d, --display D     Display to fullscreen on. (default: 0)\n"
-        "  -m, --mode M        Mode for fullscreen (wayland-shell only) (default: 0)\n"
-        "  -w, --window WS     Window system to use (default: auto)\n"
-        "                      [xcb, wayland, wayland-shell, kms]\n"
-        "  -g, --gpu GPU       GPU to use (default: 0)\n"
-        "      --hmd HMD       HMD to use (default: 0)\n"
-        "      --format F      Color format to use (default: VK_FORMAT_B8G8R8A8_UNORM)\n"
+        "  -s, --size WxH          Size of the output window (default: 1280x720)\n"
+        "  -f, --fullscreen        Run fullscreen. Optinally specify display and mode.\n"
+        "  -d, --display D         Display to fullscreen on. (default: 0)\n"
+        "  -m, --mode M            Mode for fullscreen (wayland-shell only) (default: 0)\n"
+        "  -w, --window WS         Window system to use (default: auto)\n"
+        "                          [xcb, wayland, wayland-shell, kms]\n"
+        "  -g, --gpu GPU           GPU to use (default: 0)\n"
+        "      --hmd HMD           HMD to use (default: 0)\n"
+        "      --format F          Color format to use (default: VK_FORMAT_B8G8R8A8_UNORM)\n"
+        "      --presentmode M     Present mode to use (default: VK_PRESENT_MODE_FIFO_KHR)\n"
         "\n"
-        "      --listgpus      List available GPUs\n"
-        "      --listdisplays  List available displays\n"
-        "      --listhmds      List available HMDs\n"
-        "      --listformats   List available color formats\n"
-        "  -h, --help          Show this help\n";
+        "      --listgpus          List available GPUs\n"
+        "      --listdisplays      List available displays\n"
+        "      --listhmds          List available HMDs\n"
+        "      --listformats       List available color formats\n"
+        "      --listpresentmodes  List available present modes\n"
+        "  -h, --help              Show this help\n";
 
  // VK_PRESENT_MODE_FIFO_KHR for vsync
     return help;
@@ -127,7 +126,6 @@ class Settings {
       {"size", 1, 0, 0},
       {"help", 0, 0, 0},
       {"validation", 0, 0, 0},
-      {"vsync", 0, 0, 0},
       {"fullscreen", 0, 0, 0},
       {"display", 1, 0, 0},
       {"mode", 1, 0, 0},
@@ -159,8 +157,6 @@ class Settings {
         exit(0);
       } else if (opt == 'v' || optname == "validation") {
         validation = true;
-      } else if (optname == "vsync") {
-        vsync = true;
       } else if (optname == "listgpus") {
         list_gpus_and_exit = true;
       } else if (optname == "listdisplays") {
@@ -169,8 +165,12 @@ class Settings {
         list_hmds_and_exit = true;
       } else if (optname == "listformats") {
         list_formats_and_exit = true;
+      } else if (optname == "listpresentmodes") {
+        list_present_modes_and_exit = true;
       } else if (opt == 's' || optname == "size") {
         size = parse_size(optarg);
+      } else if (optname == "presentmode") {
+        present_mode = Log::string_to_present_mode(optarg);
       } else if (optname == "format") {
         color_format = Log::string_to_color_format(optarg);
       } else if (opt == 'f' || optname == "fullscreen") {

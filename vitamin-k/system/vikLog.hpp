@@ -37,6 +37,9 @@
   vik_log_f_if(res != VK_SUCCESS, "VkResult is %s", vik::Log::result_string(res).c_str());\
 }
 
+#define ENUM_TO_STR(r) case r: return #r
+#define STR_TO_ENUM(r) if (str.compare(#r) == 0) return r
+
 namespace vik {
 class Log {
   static const bool use_color = true;
@@ -53,32 +56,30 @@ class Log {
   /** @brief Returns an result code as a string */
   static std::string result_string(VkResult code) {
     switch (code) {
-  #define STR(r) case r: return #r
-      STR(VK_SUCCESS);
-      STR(VK_NOT_READY);
-      STR(VK_TIMEOUT);
-      STR(VK_EVENT_SET);
-      STR(VK_EVENT_RESET);
-      STR(VK_INCOMPLETE);
-      STR(VK_ERROR_OUT_OF_HOST_MEMORY);
-      STR(VK_ERROR_OUT_OF_DEVICE_MEMORY);
-      STR(VK_ERROR_INITIALIZATION_FAILED);
-      STR(VK_ERROR_DEVICE_LOST);
-      STR(VK_ERROR_MEMORY_MAP_FAILED);
-      STR(VK_ERROR_LAYER_NOT_PRESENT);
-      STR(VK_ERROR_EXTENSION_NOT_PRESENT);
-      STR(VK_ERROR_FEATURE_NOT_PRESENT);
-      STR(VK_ERROR_INCOMPATIBLE_DRIVER);
-      STR(VK_ERROR_TOO_MANY_OBJECTS);
-      STR(VK_ERROR_FORMAT_NOT_SUPPORTED);
-      STR(VK_ERROR_SURFACE_LOST_KHR);
-      STR(VK_ERROR_NATIVE_WINDOW_IN_USE_KHR);
-      STR(VK_SUBOPTIMAL_KHR);
-      STR(VK_ERROR_OUT_OF_DATE_KHR);
-      STR(VK_ERROR_INCOMPATIBLE_DISPLAY_KHR);
-      STR(VK_ERROR_VALIDATION_FAILED_EXT);
-      STR(VK_ERROR_INVALID_SHADER_NV);
-  #undef STR
+      ENUM_TO_STR(VK_SUCCESS);
+      ENUM_TO_STR(VK_NOT_READY);
+      ENUM_TO_STR(VK_TIMEOUT);
+      ENUM_TO_STR(VK_EVENT_SET);
+      ENUM_TO_STR(VK_EVENT_RESET);
+      ENUM_TO_STR(VK_INCOMPLETE);
+      ENUM_TO_STR(VK_ERROR_OUT_OF_HOST_MEMORY);
+      ENUM_TO_STR(VK_ERROR_OUT_OF_DEVICE_MEMORY);
+      ENUM_TO_STR(VK_ERROR_INITIALIZATION_FAILED);
+      ENUM_TO_STR(VK_ERROR_DEVICE_LOST);
+      ENUM_TO_STR(VK_ERROR_MEMORY_MAP_FAILED);
+      ENUM_TO_STR(VK_ERROR_LAYER_NOT_PRESENT);
+      ENUM_TO_STR(VK_ERROR_EXTENSION_NOT_PRESENT);
+      ENUM_TO_STR(VK_ERROR_FEATURE_NOT_PRESENT);
+      ENUM_TO_STR(VK_ERROR_INCOMPATIBLE_DRIVER);
+      ENUM_TO_STR(VK_ERROR_TOO_MANY_OBJECTS);
+      ENUM_TO_STR(VK_ERROR_FORMAT_NOT_SUPPORTED);
+      ENUM_TO_STR(VK_ERROR_SURFACE_LOST_KHR);
+      ENUM_TO_STR(VK_ERROR_NATIVE_WINDOW_IN_USE_KHR);
+      ENUM_TO_STR(VK_SUBOPTIMAL_KHR);
+      ENUM_TO_STR(VK_ERROR_OUT_OF_DATE_KHR);
+      ENUM_TO_STR(VK_ERROR_INCOMPATIBLE_DISPLAY_KHR);
+      ENUM_TO_STR(VK_ERROR_VALIDATION_FAILED_EXT);
+      ENUM_TO_STR(VK_ERROR_INVALID_SHADER_NV);
       default:
         return "UNKNOWN RESULT";
     }
@@ -86,41 +87,54 @@ class Log {
 
   static std::string color_format_string(VkFormat code) {
     switch(code) {
-#define STR(r) case r: return #r
-    STR(VK_FORMAT_B8G8R8A8_UNORM);
-    STR(VK_FORMAT_UNDEFINED);
-    STR(VK_FORMAT_R8G8B8A8_SRGB);
-    STR(VK_FORMAT_B8G8R8A8_SRGB);
-    STR(VK_FORMAT_R8G8B8_SRGB);
-    STR(VK_FORMAT_B8G8R8_SRGB);
-    STR(VK_FORMAT_R5G6B5_UNORM_PACK16);
-    STR(VK_FORMAT_B5G6R5_UNORM_PACK16);
-#undef STR
+      ENUM_TO_STR(VK_FORMAT_B8G8R8A8_UNORM);
+      ENUM_TO_STR(VK_FORMAT_UNDEFINED);
+      ENUM_TO_STR(VK_FORMAT_R8G8B8A8_SRGB);
+      ENUM_TO_STR(VK_FORMAT_B8G8R8A8_SRGB);
+      ENUM_TO_STR(VK_FORMAT_R8G8B8_SRGB);
+      ENUM_TO_STR(VK_FORMAT_B8G8R8_SRGB);
+      ENUM_TO_STR(VK_FORMAT_R5G6B5_UNORM_PACK16);
+      ENUM_TO_STR(VK_FORMAT_B5G6R5_UNORM_PACK16);
       default:
         return "UNKNOWN FORMAT";
     }
   }
 
-#define STR_TO_FORMAT(r) if (str.compare(#r) == 0) return r
+  static std::string present_mode_string(VkPresentModeKHR code) {
+    switch(code) {
+      ENUM_TO_STR(VK_PRESENT_MODE_FIFO_KHR);
+      ENUM_TO_STR(VK_PRESENT_MODE_MAILBOX_KHR);
+      ENUM_TO_STR(VK_PRESENT_MODE_IMMEDIATE_KHR);
+      default:
+        vik_log_w("Unkown mode %d", code);
+        return "UNKNOWN MODE";
+    }
+  }
+
+  static VkPresentModeKHR string_to_present_mode(const std::string& str) {
+    STR_TO_ENUM(VK_PRESENT_MODE_FIFO_KHR);
+    STR_TO_ENUM(VK_PRESENT_MODE_MAILBOX_KHR);
+    STR_TO_ENUM(VK_PRESENT_MODE_IMMEDIATE_KHR);
+    vik_log_w("Unknown present mode %s", str.c_str());
+    return VK_PRESENT_MODE_FIFO_KHR;
+  }
 
   static VkFormat string_to_color_format(const std::string& str) {
-    STR_TO_FORMAT(VK_FORMAT_B8G8R8A8_UNORM);
-    STR_TO_FORMAT(VK_FORMAT_UNDEFINED);
-    STR_TO_FORMAT(VK_FORMAT_R8G8B8A8_SRGB);
-    STR_TO_FORMAT(VK_FORMAT_B8G8R8A8_SRGB);
-    STR_TO_FORMAT(VK_FORMAT_R8G8B8_SRGB);
-    STR_TO_FORMAT(VK_FORMAT_B8G8R8_SRGB);
-    STR_TO_FORMAT(VK_FORMAT_R5G6B5_UNORM_PACK16);
-    STR_TO_FORMAT(VK_FORMAT_B5G6R5_UNORM_PACK16);
+    STR_TO_ENUM(VK_FORMAT_B8G8R8A8_UNORM);
+    STR_TO_ENUM(VK_FORMAT_UNDEFINED);
+    STR_TO_ENUM(VK_FORMAT_R8G8B8A8_SRGB);
+    STR_TO_ENUM(VK_FORMAT_B8G8R8A8_SRGB);
+    STR_TO_ENUM(VK_FORMAT_R8G8B8_SRGB);
+    STR_TO_ENUM(VK_FORMAT_B8G8R8_SRGB);
+    STR_TO_ENUM(VK_FORMAT_R5G6B5_UNORM_PACK16);
+    STR_TO_ENUM(VK_FORMAT_B5G6R5_UNORM_PACK16);
     vik_log_w("Unknown format %s", str.c_str());
     return VK_FORMAT_UNDEFINED;
   }
 
   static std::string color_space_string(VkColorSpaceKHR code) {
     switch(code) {
-#define STR(r) case r: return #r
-      STR(VK_COLORSPACE_SRGB_NONLINEAR_KHR);
-#undef STR
+      ENUM_TO_STR(VK_COLORSPACE_SRGB_NONLINEAR_KHR);
       default:
         return "UNKNOWN COLOR SPACE";
     }

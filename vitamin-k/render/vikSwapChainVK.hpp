@@ -125,11 +125,11 @@ class SwapChainVK : public SwapChain {
     std::vector<VkSurfaceFormatKHR> formats
         = get_surface_formats(physical_device, surface);
 
-    vik_log_d("Available formats:");
+    vik_log_i_short("Available formats:");
     for (VkSurfaceFormatKHR format : formats)
-        vik_log_d("%s (%s)",
-                  Log::color_format_string(format.format).c_str(),
-                  Log::color_space_string(format.colorSpace).c_str());
+      vik_log_i_short("%s (%s)",
+                      Log::color_format_string(format.format).c_str(),
+                      Log::color_space_string(format.colorSpace).c_str());
   }
 
   static std::vector<VkSurfaceFormatKHR>
@@ -197,36 +197,51 @@ class SwapChainVK : public SwapChain {
     }
   }
 
-  VkPresentModeKHR select_present_mode() {
-    // Select a present mode for the swapchain
 
-    // The VK_PRESENT_MODE_FIFO_KHR mode must always be present as per spec
-    // This mode waits for the vertical blank ("v-sync")
+  void print_available_present_modes() {
+    std::vector<VkPresentModeKHR> present_modes =
+        get_present_modes(physical_device, surface);
 
+    vik_log_i_short("Available present modes:");
+    for (auto mode : present_modes)
+        vik_log_i_short("%s", Log::present_mode_string(mode).c_str());
+  }
 
-    // If v-sync is not requested, try to find a mailbox mode
-    // It's the lowest latency non-tearing present mode available
-
-    // Get available present modes
+  static std::vector<VkPresentModeKHR>
+  get_present_modes(VkPhysicalDevice d, VkSurfaceKHR s) {
     uint32_t count;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface,
-                                              &count, NULL);
+    vkGetPhysicalDeviceSurfacePresentModesKHR(d, s, &count, NULL);
     assert(count > 0);
 
     std::vector<VkPresentModeKHR> present_modes(count);
 
-    vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface,
-                                              &count, present_modes.data());
+    vkGetPhysicalDeviceSurfacePresentModesKHR(
+          d, s, &count, present_modes.data());
+    return present_modes;
+  }
 
-    VkPresentModeKHR mode = VK_PRESENT_MODE_FIFO_KHR;
-
-    for (size_t i = 0; i < count; i++) {
-      if (present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
-        return VK_PRESENT_MODE_MAILBOX_KHR;
-      else if (present_modes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR)
-        return VK_PRESENT_MODE_IMMEDIATE_KHR;
+  VkPresentModeKHR select_present_mode() {
+    if (settings->list_present_modes_and_exit) {
+      print_available_present_modes();
+      exit(0);
     }
-    return mode;
+
+    std::vector<VkPresentModeKHR> present_modes =
+        get_present_modes(physical_device, surface);
+
+    if(std::find(present_modes.begin(),
+                 present_modes.end(),
+                 settings->present_mode) != present_modes.end()) {
+      vik_log_i("Using present mode %s",
+                Log::present_mode_string(settings->present_mode).c_str());
+      return settings->present_mode;
+    } else {
+      vik_log_w("Present mode %s not available",
+                Log::present_mode_string(settings->present_mode).c_str());
+      print_available_present_modes();
+      vik_log_w("Using %s", Log::present_mode_string(present_modes[0]).c_str());
+      return present_modes[0];
+    }
   }
 
   /**

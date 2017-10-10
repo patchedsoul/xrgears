@@ -195,7 +195,7 @@ class SwapChainVkComplex : public vik::SwapChainVK {
 
     swap_chain_info.minImageCount = select_image_count(surfCaps);
     swap_chain_info.preTransform = select_transform_flags(surfCaps);
-    swap_chain_info.presentMode = settings->vsync ? VK_PRESENT_MODE_FIFO_KHR : select_present_mode();
+    swap_chain_info.presentMode = select_present_mode();
     swap_chain_info.compositeAlpha = select_composite_alpha(surfCaps);
 
     // Set additional usage flag for blitting from the swapchain images if supported
