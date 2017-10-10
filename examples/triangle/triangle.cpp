@@ -89,9 +89,6 @@ class Triangle : public vik::Application {
     vkDestroyBuffer(renderer->device, uniformBufferVS.buffer, nullptr);
     vkFreeMemory(renderer->device, uniformBufferVS.memory, nullptr);
 
-    vkDestroySemaphore(renderer->device, renderer->semaphores.present_complete, nullptr);
-    vkDestroySemaphore(renderer->device, renderer->semaphores.render_complete, nullptr);
-
     for (auto& fence : waitFences)
       vkDestroyFence(renderer->device, fence, nullptr);
   }
