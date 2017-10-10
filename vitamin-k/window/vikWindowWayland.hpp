@@ -306,8 +306,9 @@ class WindowWayland : public Window {
 
   void print_displays() {
     int i_d = 0;
+    vik_log_i_short("Available displays:");
     for (auto d : displays) {
-      vik_log_i("%d: %s %s [%d, %d] %dx%dmm (%d Modes)",
+      vik_log_i_short("%d: %s %s [%d, %d] %dx%dmm (%d Modes)",
                 i_d,
                 d.make.c_str(),
                 d.model.c_str(),
@@ -317,7 +318,7 @@ class WindowWayland : public Window {
 
       int i_m = 0;
       for (auto m : d.modes) {
-        vik_log_i("\t%d: %s", i_m, mode_to_string(m).c_str());
+        vik_log_i_short("\t%d: %s", i_m, mode_to_string(m).c_str());
         i_m++;
       }
       i_d++;
