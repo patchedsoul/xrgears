@@ -90,6 +90,10 @@ class TextOverlay {
   std::function<void(vik::TextOverlay *overlay)>
     update_cb = [](vik::TextOverlay *overlay) {};
 
+  void set_update_cb(std::function<void(vik::TextOverlay *overlay)> cb) {
+    update_cb = cb;
+  }
+
   std::vector<VkCommandBuffer> cmdBuffers;
 
   /**

@@ -21,7 +21,7 @@ namespace vik {
 
 class RendererTextOverlay : public Renderer {
  public:
-  TextOverlay *textOverlay;
+  TextOverlay *text_overlay;
 
   VkSemaphore text_overlay_complete;
 
@@ -31,25 +31,26 @@ class RendererTextOverlay : public Renderer {
   virtual ~RendererTextOverlay() {
     vkDestroySemaphore(device, text_overlay_complete, nullptr);
     if (settings->enable_text_overlay)
-      delete textOverlay;
+      delete text_overlay;
   }
 
-  void init(const std::string &n) {
+  void init(const std::string &n,
+            std::function<void(vik::TextOverlay *overlay)> cb) {
     Renderer::init(n);
     name = n;
     if (settings->enable_text_overlay) {
-      init_text_overlay();
+      init_text_overlay(cb);
       update_text_overlay();
     }
   }
 
-  void init_text_overlay() {
+  void init_text_overlay(std::function<void(vik::TextOverlay *overlay)> cb) {
     // Load the text rendering shaders
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
     shaderStages.push_back(Shader::load(device, "base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
     shaderStages.push_back(Shader::load(device, "base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
 
-    textOverlay = new TextOverlay(
+    text_overlay = new TextOverlay(
           vksDevice,
           queue,
           &frame_buffers,
@@ -58,6 +59,7 @@ class RendererTextOverlay : public Renderer {
           &width,
           &height,
           shaderStages);
+    text_overlay->set_update_cb(cb);
   }
 
   VkSubmitInfo init_text_submit_info() {
@@ -86,12 +88,12 @@ class RendererTextOverlay : public Renderer {
        << " fps)";
     std::string deviceName(deviceProperties.deviceName);
 
-    textOverlay->update(name, ss.str(), deviceName);
+    text_overlay->update(name, ss.str(), deviceName);
   }
 
   void submit_text_overlay() {
     VkSubmitInfo submit_info = init_text_submit_info();
-    submit_info.pCommandBuffers = &textOverlay->cmdBuffers[currentBuffer];
+    submit_info.pCommandBuffers = &text_overlay->cmdBuffers[currentBuffer];
     vik_log_check(vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE));
   }
 
@@ -107,14 +109,14 @@ class RendererTextOverlay : public Renderer {
   void resize() {
     Renderer::resize();
     if (settings->enable_text_overlay) {
-      textOverlay->reallocateCommandBuffers();
+      text_overlay->reallocateCommandBuffers();
       update_text_overlay();
     }
   }
 
   void submit_frame() {
     VkSemaphore waitSemaphore;
-    if (settings->enable_text_overlay && textOverlay->visible) {
+    if (settings->enable_text_overlay && text_overlay->visible) {
       submit_text_overlay();
       waitSemaphore = text_overlay_complete;
     } else {

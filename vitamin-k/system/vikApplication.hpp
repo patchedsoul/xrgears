@@ -43,7 +43,7 @@ class Application {
   Window *window;
   bool quit = false;
 
-  RendererTextOverlay *renderer = nullptr;
+  Renderer *renderer = nullptr;
   Camera *camera = nullptr;
 
   bool viewUpdated = false;
@@ -60,7 +60,10 @@ class Application {
        exit(0);
     }
 
-    renderer = new RendererTextOverlay(&settings);
+    if (settings.enable_text_overlay)
+      renderer = new RendererTextOverlay(&settings);
+    else
+      renderer = new Renderer(&settings);
 
     init_window();
 
@@ -116,7 +119,8 @@ class Application {
           break;
         case Input::Key::F1:
           if (state && settings.enable_text_overlay)
-            renderer->textOverlay->visible = !renderer->textOverlay->visible;
+            ((RendererTextOverlay*)renderer)->text_overlay->visible =
+              !((RendererTextOverlay*)renderer)->text_overlay->visible;
           break;
         case Input::Key::ESCAPE:
           quit = true;
@@ -202,15 +206,14 @@ class Application {
   }
 
   virtual void init() {
-    renderer->init(name);
-
-    std::function<void(vik::TextOverlay *overlay)>
-      text_overlay_update_cb = [this](vik::TextOverlay *overlay) {
-      update_text_overlay(overlay);
-    };
-
-    renderer->textOverlay->update_cb = text_overlay_update_cb;
-
+    if (settings.enable_text_overlay) {
+      auto update_cb = [this](vik::TextOverlay *overlay) {
+        update_text_overlay(overlay);
+      };
+      ((RendererTextOverlay*)renderer)->init(name, update_cb);
+    } else {
+      renderer->init(name);
+    }
   }
 
   void loop() {

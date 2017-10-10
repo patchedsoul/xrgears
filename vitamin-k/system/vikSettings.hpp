@@ -62,23 +62,25 @@ class Settings {
         "A XR demo for Vulkan and OpenHMD\n"
         "\n"
         "Options:\n"
-        "  -s, --size WxH          Size of the output window (default: 1280x720)\n"
-        "  -f, --fullscreen        Run fullscreen. Optinally specify display and mode.\n"
-        "  -d, --display D         Display to fullscreen on. (default: 0)\n"
-        "  -m, --mode M            Mode for fullscreen (wayland-shell only) (default: 0)\n"
-        "  -w, --window WS         Window system to use (default: auto)\n"
-        "                          [xcb, wayland, wayland-shell, kms]\n"
-        "  -g, --gpu GPU           GPU to use (default: 0)\n"
-        "      --hmd HMD           HMD to use (default: 0)\n"
-        "      --format F          Color format to use (default: VK_FORMAT_B8G8R8A8_UNORM)\n"
-        "      --presentmode M     Present mode to use (default: VK_PRESENT_MODE_FIFO_KHR)\n"
+        "  -s, --size WxH           Size of the output window (default: 1280x720)\n"
+        "  -f, --fullscreen         Run fullscreen. Optinally specify display and mode.\n"
+        "  -d, --display D          Display to fullscreen on. (default: 0)\n"
+        "  -m, --mode M             Mode for fullscreen (wayland-shell only) (default: 0)\n"
+        "  -w, --window WS          Window system to use (default: auto)\n"
+        "                           [xcb, wayland, wayland-shell, kms]\n"
+        "  -g, --gpu GPU            GPU to use (default: 0)\n"
+        "      --hmd HMD            HMD to use (default: 0)\n"
+        "      --format F           Color format to use (default: VK_FORMAT_B8G8R8A8_UNORM)\n"
+        "      --presentmode M      Present mode to use (default: VK_PRESENT_MODE_FIFO_KHR)\n"
         "\n"
-        "      --listgpus          List available GPUs\n"
-        "      --listdisplays      List available displays\n"
-        "      --listhmds          List available HMDs\n"
-        "      --listformats       List available color formats\n"
-        "      --listpresentmodes  List available present modes\n"
-        "  -h, --help              Show this help\n";
+        "      --list-gpus          List available GPUs\n"
+        "      --list-displays      List available displays\n"
+        "      --list-hmds          List available HMDs\n"
+        "      --list-formats       List available color formats\n"
+        "      --list-presentmodes  List available present modes\n"
+        "\n"
+        "      --disable-overlay    Disable text overlay\n"
+        "  -h, --help               Show this help\n";
 
  // VK_PRESENT_MODE_FIFO_KHR for vsync
     return help;
@@ -133,11 +135,12 @@ class Settings {
       {"hmd", 1, 0, 0},
       {"format", 1, 0, 0},
       {"presentmode", 1, 0, 0},
-      {"listgpus", 0, 0, 0},
-      {"listdisplays", 0, 0, 0},
-      {"listhmds", 0, 0, 0},
-      {"listformats", 0, 0, 0},
-      {"listpresentmodes", 0, 0, 0},
+      {"list-gpus", 0, 0, 0},
+      {"list-displays", 0, 0, 0},
+      {"list-hmds", 0, 0, 0},
+      {"list-formats", 0, 0, 0},
+      {"list-presentmodes", 0, 0, 0},
+      {"disable-overlay", 0, 0, 0},
       {0, 0, 0, 0}
     };
 
@@ -157,16 +160,18 @@ class Settings {
         exit(0);
       } else if (opt == 'v' || optname == "validation") {
         validation = true;
-      } else if (optname == "listgpus") {
+      } else if (optname == "list-gpus") {
         list_gpus_and_exit = true;
-      } else if (optname == "listdisplays") {
+      } else if (optname == "list-displays") {
         list_screens_and_exit = true;
-      } else if (optname == "listhmds") {
+      } else if (optname == "list-hmds") {
         list_hmds_and_exit = true;
-      } else if (optname == "listformats") {
+      } else if (optname == "list-formats") {
         list_formats_and_exit = true;
-      } else if (optname == "listpresentmodes") {
+      } else if (optname == "list-presentmodes") {
         list_present_modes_and_exit = true;
+      } else if (optname == "disable-overlay") {
+        enable_text_overlay = false;
       } else if (opt == 's' || optname == "size") {
         size = parse_size(optarg);
       } else if (optname == "presentmode") {

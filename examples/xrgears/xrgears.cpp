@@ -127,7 +127,7 @@ class XRGears : public vik::Application {
 }
 
   // Enable physical device features required for this example
-  virtual void get_enabled_features() {
+  virtual void enable_required_features() {
     check_feature(geometryShader);
     check_feature(multiViewport);
     check_feature(textureCompressionBC);
