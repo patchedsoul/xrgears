@@ -53,7 +53,7 @@ class Application {
   Renderer *renderer = nullptr;
   Camera *camera = nullptr;
 
-  bool viewUpdated = false;
+  bool view_updated = false;
 
   std::string name = "vitamin-k Example";
 
@@ -96,7 +96,7 @@ class Application {
     renderer->set_render_cb(render_cb);
 
     if (camera != nullptr)
-      camera->set_view_updated_cb([this]() { viewUpdated = true; });
+      camera->set_view_updated_cb([this]() { view_updated = true; });
   }
 
   ~Application()  {
@@ -208,8 +208,8 @@ class Application {
   virtual void update_text_overlay(vik::TextOverlay *overlay) {}
 
   void check_view_update() {
-    if (viewUpdated) {
-      viewUpdated = false;
+    if (view_updated) {
+      view_updated = false;
       view_changed_cb();
     }
   }
@@ -234,7 +234,7 @@ class Application {
   void update_camera(float frame_time) {
     camera->update_movement(frame_time);
     if (camera->moving())
-      viewUpdated = true;
+      view_updated = true;
   }
 
   void resize() {

@@ -74,6 +74,6 @@ class CameraArcBall : public Camera {
     return matrix;
   }
 
-  void update_ubo() {}
+  void update_uniform_buffer() {}
 };
 }  // namespace vik

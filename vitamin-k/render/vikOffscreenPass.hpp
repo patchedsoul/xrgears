@@ -118,7 +118,7 @@ class OffscreenPass {
   }
 
   // Prepare a new framebuffer and attachments for offscreen rendering (G-Buffer)
-  void prepareOffscreenFramebuffer(Device *vulkanDevice, const VkPhysicalDevice& physicalDevice) {
+  void init_offscreen_framebuffer(Device *vulkanDevice, const VkPhysicalDevice& physicalDevice) {
     offScreenFrameBuf.width = FB_DIM;
     offScreenFrameBuf.height = FB_DIM;
 

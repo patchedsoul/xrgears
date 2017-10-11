@@ -71,7 +71,7 @@ class Triangle : public vik::Application {
     name = "Triangle";
     camera = new vik::CameraArcBall();
     ((vik::CameraArcBall*)camera)->zoom = -2.5f;
-    camera->set_view_updated_cb([this]() { viewUpdated = true; });
+    camera->set_view_updated_cb([this]() { view_updated = true; });
   }
 
   ~Triangle() {
@@ -387,7 +387,7 @@ class Triangle : public vik::Application {
     descriptorPoolInfo.pPoolSizes = typeCounts;
     descriptorPoolInfo.maxSets = 1;
 
-    vik_log_check(vkCreateDescriptorPool(renderer->device, &descriptorPoolInfo, nullptr, &renderer->descriptorPool));
+    vik_log_check(vkCreateDescriptorPool(renderer->device, &descriptorPoolInfo, nullptr, &renderer->descriptor_pool));
   }
 
   void setupDescriptorSetLayout() {
@@ -417,7 +417,7 @@ class Triangle : public vik::Application {
   void setupDescriptorSet() {
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = renderer->descriptorPool;
+    allocInfo.descriptorPool = renderer->descriptor_pool;
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = &descriptorSetLayout;
 

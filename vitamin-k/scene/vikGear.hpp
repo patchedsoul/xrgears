@@ -31,11 +31,11 @@ struct Vertex {
 };
 
 struct GearInfo {
-  float innerRadius;
-  float outerRadius;
+  float inner_radius;
+  float outer_radius;
   float width;
-  int numTeeth;
-  float toothDepth;
+  int tooth_count;
+  float tooth_depth;
 };
 
 class Gear {
@@ -74,15 +74,15 @@ class Gear {
     float sin_ta, sin_ta_1da, sin_ta_2da, sin_ta_3da, sin_ta_4da;
     int32_t ix0, ix1, ix2, ix3, ix4, ix5;
 
-    r0 = gearinfo->innerRadius;
-    r1 = gearinfo->outerRadius - gearinfo->toothDepth / 2.0f;
-    r2 = gearinfo->outerRadius + gearinfo->toothDepth / 2.0f;
-    da = 2.0f * M_PI / gearinfo->numTeeth / 4.0f;
+    r0 = gearinfo->inner_radius;
+    r1 = gearinfo->outer_radius - gearinfo->tooth_depth / 2.0f;
+    r2 = gearinfo->outer_radius + gearinfo->tooth_depth / 2.0f;
+    da = 2.0f * M_PI / gearinfo->tooth_count / 4.0f;
 
     glm::vec3 normal;
 
-    for (i = 0; i < gearinfo->numTeeth; i++) {
-      ta = i * 2.0f * M_PI / gearinfo->numTeeth;
+    for (i = 0; i < gearinfo->tooth_count; i++) {
+      ta = i * 2.0f * M_PI / gearinfo->tooth_count;
 
       cos_ta = cos(ta);
       cos_ta_1da = cos(ta + da);

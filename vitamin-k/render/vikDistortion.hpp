@@ -59,7 +59,7 @@ class Distortion {
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
   }
 
-  void createPipeLine(const VkRenderPass& renderPass, const VkPipelineCache& pipelineCache) {
+  void init_pipeLine(const VkRenderPass& renderPass, const VkPipelineCache& pipelineCache) {
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
         initializers::pipelineInputAssemblyStateCreateInfo(
           VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
@@ -150,7 +150,7 @@ class Distortion {
           &uboHandle.descriptor);
   }
 
-  void createDescriptorSet(OffscreenPass *offscreenPass, const VkDescriptorPool& descriptorPool) {
+  void init_descriptor_set(OffscreenPass *offscreenPass, const VkDescriptorPool& descriptorPool) {
     std::vector<VkWriteDescriptorSet> writeDescriptorSets;
 
     // Textured quad descriptor set
@@ -174,7 +174,7 @@ class Distortion {
     vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
   }
 
-  void createDescriptorSetLayout() {
+  void init_descriptor_set_layout() {
     // Deferred shading layout
     std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
       // Binding 0 : Render texture target
@@ -197,7 +197,7 @@ class Distortion {
     vik_log_check(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &descriptorSetLayout));
   }
 
-  void createPipeLineLayout() {
+  void init_pipeline_layout() {
     VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
         initializers::pipelineLayoutCreateInfo(
           &descriptorSetLayout,
@@ -225,7 +225,7 @@ class Distortion {
     vkCmdDraw(commandBuffer, 12, 1, 0, 0);
   }
 
-  void generateQuads(Device *vulkanDevice) {
+  void init_quads(Device *vulkanDevice) {
     // Setup vertices for multiple screen aligned quads
     // Used for displaying final result and debug
     struct Vertex {
@@ -266,7 +266,7 @@ class Distortion {
   }
 
   // Update fragment shader hmd warp uniform block
-  void updateUniformBufferWarp(ohmd_device* openHmdDevice) {
+  void update_uniform_buffer_warp(ohmd_device* openHmdDevice) {
     float viewport_scale[2];
     float distortion_coeffs[4];
     float aberr_scale[4];
@@ -303,7 +303,7 @@ class Distortion {
     memcpy(uboHandle.mapped, &uboData, sizeof(uboData));
   }
 
-  void prepareUniformBuffer(Device *vulkanDevice) {
+  void init_uniform_buffer(Device *vulkanDevice) {
     // Warp UBO in deferred fragment shader
     vik_log_check(vulkanDevice->createBuffer(
                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,

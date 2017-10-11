@@ -23,7 +23,7 @@ class NodeModel : public Node {
     model.destroy();
   }
 
-  void loadModel(const std::string& name, VertexLayout layout,
+  void load_model(const std::string& name, VertexLayout layout,
                  float scale,  Device *device, VkQueue queue) {
     model.loadFromFile(vik::Assets::getAssetPath() + "models/" + name,
                        layout,

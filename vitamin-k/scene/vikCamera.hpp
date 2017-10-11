@@ -94,7 +94,7 @@ class Camera {
     return glm::mat4();
   }
 
-  virtual void update_ubo() {
+  virtual void update_uniform_buffer() {
     ubo.projection[0] = matrices.projection;
     ubo.view[0] = matrices.view;
     ubo.skyView[0] = glm::mat4(glm::mat3(matrices.view));
@@ -102,7 +102,7 @@ class Camera {
     memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
   }
 
-  void init_ubo(Device *device) {
+  void init_uniform_buffer(Device *device) {
     device->create_and_map(&uniformBuffer, sizeof(ubo));
   }
 

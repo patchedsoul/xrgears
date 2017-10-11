@@ -87,7 +87,7 @@ class XRCubeMap : public vik::Application {
     ((vik::CameraArcBall*)camera)->zoom = -4.0f;
     camera->rotation_speed = 0.25f;
     camera->rotation = { -7.25f, -120.0f, 0.0f };
-    camera->set_view_updated_cb([this]() { viewUpdated = true; });
+    camera->set_view_updated_cb([this]() { view_updated = true; });
   }
 
   ~XRCubeMap() {
@@ -268,7 +268,7 @@ class XRCubeMap : public vik::Application {
           poolSizes.data(),
           2);
 
-    vik_log_check(vkCreateDescriptorPool(renderer->device, &descriptorPoolInfo, nullptr, &renderer->descriptorPool));
+    vik_log_check(vkCreateDescriptorPool(renderer->device, &descriptorPoolInfo, nullptr, &renderer->descriptor_pool));
   }
 
   void setupDescriptorSetLayout() {
@@ -310,7 +310,7 @@ class XRCubeMap : public vik::Application {
 
     VkDescriptorSetAllocateInfo allocInfo =
         vik::initializers::descriptorSetAllocateInfo(
-          renderer->descriptorPool,
+          renderer->descriptor_pool,
           &descriptorSetLayout,
           1);
 

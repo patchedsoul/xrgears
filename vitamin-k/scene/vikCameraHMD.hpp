@@ -28,7 +28,7 @@ class CameraHMD : public CameraFirstPerson {
     m[2][1] = -m[2][1];
   }
 
-  void update_ubo() {
+  void update_uniform_buffer() {
     glm::mat4 hmdProjectionLeft, hmdProjectionRight;
     glm::mat4 hmdViewLeft, hmdViewRight;
 

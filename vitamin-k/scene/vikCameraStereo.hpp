@@ -31,7 +31,7 @@ class CameraStereo : public CameraFirstPerson {
     eyeSeparation += delta;
   }
 
-  void update_ubo() {
+  void update_uniform_buffer() {
     // Geometry shader matrices for the two viewports
     // See http://paulbourke.net/stereographics/stereorender/
 

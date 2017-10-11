@@ -67,7 +67,7 @@ class SkyBox {
     initTextureDescriptor();
   }
 
-  void createDescriptorSet(const VkDescriptorSetAllocateInfo& allocInfo,
+  void create_descriptor_set(const VkDescriptorSetAllocateInfo& allocInfo,
                            VkDescriptorBufferInfo* cameraDescriptor) {
     vik_log_check(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
 
@@ -100,7 +100,7 @@ class SkyBox {
     vkCmdDrawIndexed(cmdbuffer, model.indexCount, 1, 0, 0, 0);
   }
 
-  void createPipeline(VkGraphicsPipelineCreateInfo* pipelineCreateInfo,
+  void init_pipeline(VkGraphicsPipelineCreateInfo* pipelineCreateInfo,
                       const VkPipelineCache& pipelineCache) {
     VkPipelineRasterizationStateCreateInfo rasterizationStateSky =
         initializers::pipelineRasterizationStateCreateInfo(

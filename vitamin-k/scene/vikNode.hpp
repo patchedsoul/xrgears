@@ -29,9 +29,9 @@ class Node {
   VkDescriptorSet descriptorSet;
 
   struct NodeInfo {
-    glm::vec3 pos;
-    float rotSpeed;
-    float rotOffset;
+    glm::vec3 position;
+    float rotation_speed;
+    float rotation_offset;
     Material material;
   } info;
 
@@ -49,17 +49,17 @@ class Node {
   }
 
   void setPosition(const glm::vec3& p) {
-    info.pos = p;
+    info.position = p;
   }
 
   void setInfo(NodeInfo *nodeinfo) {
-    info.pos = nodeinfo->pos;
-    info.rotOffset = nodeinfo->rotOffset;
-    info.rotSpeed = nodeinfo->rotSpeed;
+    info.position = nodeinfo->position;
+    info.rotation_offset = nodeinfo->rotation_offset;
+    info.rotation_speed = nodeinfo->rotation_speed;
     info.material = nodeinfo->material;
   }
 
-  void createDescriptorSet(const VkDevice& device,
+  void create_descriptor_set(const VkDevice& device,
                            const VkDescriptorPool& descriptorPool,
                            const VkDescriptorSetLayout& descriptorSetLayout,
                            VkDescriptorBufferInfo* lightsDescriptor,
@@ -102,11 +102,11 @@ class Node {
                            nullptr);
   }
 
-  void updateUniformBuffer(vik::Camera::StereoView sv, float timer) {
+  void update_uniform_buffer(vik::Camera::StereoView sv, float timer) {
     ubo.model = glm::mat4();
 
-    ubo.model = glm::translate(ubo.model, info.pos);
-    float rotation_z = (info.rotSpeed * timer * 360.0f) + info.rotOffset;
+    ubo.model = glm::translate(ubo.model, info.position);
+    float rotation_z = (info.rotation_speed * timer * 360.0f) + info.rotation_offset;
     ubo.model = glm::rotate(ubo.model, glm::radians(rotation_z), glm::vec3(0.0f, 0.0f, 1.0f));
 
     ubo.normal[0] = glm::inverseTranspose(sv.view[0] * ubo.model);
@@ -114,7 +114,7 @@ class Node {
     memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
   }
 
-  void prepareUniformBuffer(Device *vulkanDevice) {
+  void init_uniform_buffer(Device *vulkanDevice) {
     vulkanDevice->create_and_map(&uniformBuffer, sizeof(ubo));
   }
 

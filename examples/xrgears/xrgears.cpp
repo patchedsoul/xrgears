@@ -42,52 +42,52 @@
 class XRGears : public vik::Application {
  public:
   // Vertex layout for the models
-  vik::VertexLayout vertexLayout = vik::VertexLayout({
+  vik::VertexLayout vertex_layout = vik::VertexLayout({
     vik::VERTEX_COMPONENT_POSITION,
     vik::VERTEX_COMPONENT_NORMAL
   });
 
   vik::HMD* hmd;
 
-  bool enableSky = true;
-  bool enableHMDCam = true;
-  bool enableDistortion = true;
-  bool enableStereo = true;
+  bool enable_sky = true;
+  bool enable_hmd_cam = true;
+  bool enable_distortion = true;
+  bool enable_stereo = true;
 
-  vik::SkyBox *skyBox = nullptr;
-  vik::Distortion *hmdDistortion = nullptr;
-  vik::OffscreenPass *offscreenPass = nullptr;
+  vik::SkyBox *sky_box = nullptr;
+  vik::Distortion *distortion = nullptr;
+  vik::OffscreenPass *offscreen_pass = nullptr;
 
   struct {
     VkDescriptorSet object;
-  } descriptorSets;
+  } descriptor_sets;
 
   struct {
-    VkPipelineVertexInputStateCreateInfo inputState;
-    std::vector<VkVertexInputBindingDescription> bindingDescriptions;
-    std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+    VkPipelineVertexInputStateCreateInfo input_state;
+    std::vector<VkVertexInputBindingDescription> binding_descriptions;
+    std::vector<VkVertexInputAttributeDescription> attribute_descriptions;
   } vertices;
 
   std::vector<vik::Node*> nodes;
 
   struct UBOLights {
     glm::vec4 lights[4];
-  } uboLights;
+  } ubo_lights;
 
   struct {
     vik::Buffer lights;
-  } uniformBuffers;
+  } uniform_buffers;
 
   struct {
     VkPipeline pbr;
   } pipelines;
 
-  VkPipelineLayout pipelineLayout;
-  VkDescriptorSetLayout descriptorSetLayout;
+  VkPipelineLayout pipeline_layout;
+  VkDescriptorSetLayout descriptor_set_layout;
 
-  VkCommandBuffer offScreenCmdBuffer = VK_NULL_HANDLE;
+  VkCommandBuffer offscreen_command_buffer = VK_NULL_HANDLE;
   // Semaphore used to synchronize between offscreen and final scene rendering
-  VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
+  VkSemaphore offscreen_semaphore = VK_NULL_HANDLE;
 
   XRGears(int argc, char *argv[]) : Application(argc, argv) {
     name = "XR Gears";
@@ -96,26 +96,26 @@ class XRGears : public vik::Application {
   }
 
   ~XRGears() {
-    if (offscreenPass)
-      delete offscreenPass;
+    if (offscreen_pass)
+      delete offscreen_pass;
 
     vkDestroyPipeline(renderer->device, pipelines.pbr, nullptr);
 
-    if (enableSky)
-      delete skyBox;
+    if (enable_sky)
+      delete sky_box;
 
-    vkDestroyPipelineLayout(renderer->device, pipelineLayout, nullptr);
-    vkDestroyDescriptorSetLayout(renderer->device, descriptorSetLayout, nullptr);
+    vkDestroyPipelineLayout(renderer->device, pipeline_layout, nullptr);
+    vkDestroyDescriptorSetLayout(renderer->device, descriptor_set_layout, nullptr);
 
-    if (hmdDistortion)
-      delete hmdDistortion;
+    if (distortion)
+      delete distortion;
 
-    uniformBuffers.lights.destroy();
+    uniform_buffers.lights.destroy();
 
     for (auto& node : nodes)
       delete(node);
 
-    vkDestroySemaphore(renderer->device, offscreenSemaphore, nullptr);
+    vkDestroySemaphore(renderer->device, offscreen_semaphore, nullptr);
 
     delete hmd;
   }
@@ -129,159 +129,179 @@ class XRGears : public vik::Application {
   }
 
   void build_command_buffers() {
-    if (enableDistortion) {
+    if (enable_distortion) {
       for (uint32_t i = 0; i < renderer->cmd_buffers.size(); ++i)
-        buildWarpCommandBuffer(renderer->cmd_buffers[i], renderer->frame_buffers[i]);
+        build_warp_command_buffer(renderer->cmd_buffers[i], renderer->frame_buffers[i]);
     } else {
       for (uint32_t i = 0; i < renderer->cmd_buffers.size(); ++i)
-        buildPbrCommandBuffer(renderer->cmd_buffers[i], renderer->frame_buffers[i], false);
+        build_pbr_command_buffer(renderer->cmd_buffers[i], renderer->frame_buffers[i], false);
     }
   }
 
-  inline VkRenderPassBeginInfo defaultRenderPassBeginInfo() {
-    VkRenderPassBeginInfo renderPassBeginInfo = vik::initializers::renderPassBeginInfo();
-    renderPassBeginInfo.renderPass = renderer->render_pass;
-    renderPassBeginInfo.renderArea.offset.x = 0;
-    renderPassBeginInfo.renderArea.offset.y = 0;
-    renderPassBeginInfo.renderArea.extent.width = renderer->width;
-    renderPassBeginInfo.renderArea.extent.height = renderer->height;
-    return renderPassBeginInfo;
+  inline VkRenderPassBeginInfo default_render_pass_info() {
+    VkRenderPassBeginInfo info = vik::initializers::renderPassBeginInfo();
+    info.renderPass = renderer->render_pass;
+    info.renderArea.offset.x = 0;
+    info.renderArea.offset.y = 0;
+    info.renderArea.extent.width = renderer->width;
+    info.renderArea.extent.height = renderer->height;
+    return info;
   }
 
-  void buildWarpCommandBuffer(VkCommandBuffer cmdBuffer, VkFramebuffer frameBuffer) {
-    std::array<VkClearValue, 2> clearValues;
-    clearValues[0].color = { { 0.0f, 0.0f, 0.2f, 0.0f } };
-    clearValues[1].depthStencil = { 1.0f, 0 };
+  void build_warp_command_buffer(VkCommandBuffer command_buffer,
+                                 VkFramebuffer framebuffer) {
+    std::array<VkClearValue, 2> clear_values;
+    clear_values[0].color = { { 0.0f, 0.0f, 0.2f, 0.0f } };
+    clear_values[1].depthStencil = { 1.0f, 0 };
 
-    VkRenderPassBeginInfo renderPassBeginInfo = defaultRenderPassBeginInfo();
-    renderPassBeginInfo.clearValueCount = clearValues.size();
-    renderPassBeginInfo.pClearValues = clearValues.data();
+    VkRenderPassBeginInfo render_pass_begin_info = default_render_pass_info();
+    render_pass_begin_info.clearValueCount = clear_values.size();
+    render_pass_begin_info.pClearValues = clear_values.data();
 
     // Set target frame buffer
-    renderPassBeginInfo.framebuffer = frameBuffer;
+    render_pass_begin_info.framebuffer = framebuffer;
 
-    VkCommandBufferBeginInfo cmdBufInfo = vik::initializers::commandBufferBeginInfo();
-    vik_log_check(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
+    VkCommandBufferBeginInfo command_bufffer_info = vik::initializers::commandBufferBeginInfo();
+    vik_log_check(vkBeginCommandBuffer(command_buffer, &command_bufffer_info));
 
-    vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
     VkViewport viewport = vik::initializers::viewport(
-          (float) renderer->width, (float) renderer->height,
-          0.0f, 1.0f);
-    vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
+          (float) renderer->width, (float) renderer->height, 0.0f, 1.0f);
+    vkCmdSetViewport(command_buffer, 0, 1, &viewport);
 
-    VkRect2D scissor = vik::initializers::rect2D(renderer->width, renderer->height, 0, 0);
-    vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
+    VkRect2D scissor = vik::initializers::rect2D(
+          renderer->width, renderer->height, 0, 0);
+    vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
     // Final composition as full screen quad
-    hmdDistortion->drawQuad(cmdBuffer);
+    distortion->drawQuad(command_buffer);
 
-    vkCmdEndRenderPass(cmdBuffer);
+    vkCmdEndRenderPass(command_buffer);
 
-    vik_log_check(vkEndCommandBuffer(cmdBuffer));
+    vik_log_check(vkEndCommandBuffer(command_buffer));
   }
 
   // Build command buffer for rendering the scene to the offscreen frame buffer attachments
-  void buildOffscreenCommandBuffer() {
-    if (offScreenCmdBuffer == VK_NULL_HANDLE)
-      offScreenCmdBuffer = renderer->create_command_buffer();
+  void build_offscreen_command_buffer() {
+    if (offscreen_command_buffer == VK_NULL_HANDLE)
+      offscreen_command_buffer = renderer->create_command_buffer();
 
     // Create a semaphore used to synchronize offscreen rendering and usage
-    VkSemaphoreCreateInfo semaphoreCreateInfo = vik::initializers::semaphoreCreateInfo();
-    vik_log_check(vkCreateSemaphore(renderer->device, &semaphoreCreateInfo, nullptr, &offscreenSemaphore));
+    VkSemaphoreCreateInfo semaphore_info = vik::initializers::semaphoreCreateInfo();
+    vik_log_check(vkCreateSemaphore(renderer->device, &semaphore_info,
+                                    nullptr, &offscreen_semaphore));
 
     VkFramebuffer unused;
-
-    buildPbrCommandBuffer(offScreenCmdBuffer, unused, true);
+    build_pbr_command_buffer(offscreen_command_buffer, unused, true);
   }
 
-  void buildPbrCommandBuffer(const VkCommandBuffer& cmdBuffer,
-                             const VkFramebuffer& framebuffer, bool offScreen) {
-    VkCommandBufferBeginInfo cmdBufInfo = vik::initializers::commandBufferBeginInfo();
-    vik_log_check(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
+  void build_pbr_command_buffer(const VkCommandBuffer& command_buffer,
+                                const VkFramebuffer& framebuffer,
+                                bool offscreen) {
+    VkCommandBufferBeginInfo command_buffer_info = vik::initializers::commandBufferBeginInfo();
+    vik_log_check(vkBeginCommandBuffer(command_buffer, &command_buffer_info));
 
     if (vik::debugmarker::active)
-      vik::debugmarker::beginRegion(cmdBuffer,
-                                    offScreen ? "Pbr offscreen" : "PBR Pass Onscreen",
+      vik::debugmarker::beginRegion(command_buffer,
+                                    offscreen ? "Pbr offscreen" : "PBR Pass Onscreen",
                                     glm::vec4(0.3f, 0.94f, 1.0f, 1.0f));
 
-    if (offScreen) {
-      offscreenPass->beginRenderPass(cmdBuffer);
-      offscreenPass->setViewPortAndScissorStereo(cmdBuffer);
+    if (offscreen) {
+      offscreen_pass->beginRenderPass(command_buffer);
+      offscreen_pass->setViewPortAndScissorStereo(command_buffer);
     } else {
-      std::array<VkClearValue, 2> clearValues;
-      clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
-      clearValues[1].depthStencil = { 1.0f, 0 };
+      std::array<VkClearValue, 2> clear_values;
+      clear_values[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
+      clear_values[1].depthStencil = { 1.0f, 0 };
 
-      VkRenderPassBeginInfo renderPassBeginInfo = defaultRenderPassBeginInfo();
-      renderPassBeginInfo.clearValueCount = clearValues.size();
-      renderPassBeginInfo.pClearValues = clearValues.data();
-      renderPassBeginInfo.framebuffer = framebuffer;
+      VkRenderPassBeginInfo render_pass_begin_info = default_render_pass_info();
+      render_pass_begin_info.clearValueCount = clear_values.size();
+      render_pass_begin_info.pClearValues = clear_values.data();
+      render_pass_begin_info.framebuffer = framebuffer;
 
-      vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+      vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
-      if (enableStereo)
-        setStereoViewPortAndScissors(cmdBuffer);
+      if (enable_stereo)
+        set_stereo_viewport_and_scissors(command_buffer);
       else
-        setMonoViewPortAndScissors(cmdBuffer);
+        set_mono_viewport_and_scissors(command_buffer);
     }
 
-    drawScene(cmdBuffer);
+    draw_scene(command_buffer);
 
-    vkCmdEndRenderPass(cmdBuffer);
+    vkCmdEndRenderPass(command_buffer);
 
     if (vik::debugmarker::active)
-      vik::debugmarker::endRegion(cmdBuffer);
+      vik::debugmarker::endRegion(command_buffer);
 
-    vik_log_check(vkEndCommandBuffer(cmdBuffer));
+    vik_log_check(vkEndCommandBuffer(command_buffer));
   }
 
-  void drawScene(VkCommandBuffer cmdBuffer) {
-    if (enableSky)
-      skyBox->draw(cmdBuffer, pipelineLayout);
+  void draw_scene(VkCommandBuffer command_buffer) {
+    if (enable_sky)
+      sky_box->draw(command_buffer, pipeline_layout);
 
-    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
+    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.pbr);
 
     for (auto& node : nodes)
-      node->draw(cmdBuffer, pipelineLayout);
+      node->draw(command_buffer, pipeline_layout);
   }
 
-  void setMonoViewPortAndScissors(VkCommandBuffer cmdBuffer) {
-    VkViewport viewport = vik::initializers::viewport((float)renderer->width, (float)renderer->height, 0.0f, 1.0f);
-    vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
+  void set_mono_viewport_and_scissors(VkCommandBuffer command_buffer) {
+    VkViewport viewport = vik::initializers::viewport(
+          (float)renderer->width,
+          (float)renderer->height,
+          0.0f, 1.0f);
+    vkCmdSetViewport(command_buffer, 0, 1, &viewport);
 
-    VkRect2D scissor = vik::initializers::rect2D(renderer->width, renderer->height, 0, 0);
-    vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
+    VkRect2D scissor = vik::initializers::rect2D(
+          renderer->width,
+          renderer->height,
+          0.0f, 0.0f);
+    vkCmdSetScissor(command_buffer, 0, 1, &scissor);
   }
 
-  void setStereoViewPortAndScissors(VkCommandBuffer cmdBuffer) {
+  void set_stereo_viewport_and_scissors(VkCommandBuffer command_buffer) {
     VkViewport viewports[2];
     // Left
-    viewports[0] = { 0, 0, (float)renderer->width / 2.0f, (float)renderer->height, 0.0, 1.0f };
+    viewports[0] = {
+      0.0f,
+      0.0f,
+      (float)renderer->width / 2.0f,
+      (float)renderer->height,
+      0.0f,
+      1.0f };
     // Right
-    viewports[1] = { (float)renderer->width / 2.0f, 0, (float)renderer->width / 2.0f, (float)renderer->height, 0.0, 1.0f };
+    viewports[1] = {
+      (float)renderer->width / 2.0f,
+      0.0f,
+      (float)renderer->width / 2.0f,
+      (float)renderer->height,
+      0.0f,
+      1.0f };
 
-    vkCmdSetViewport(cmdBuffer, 0, 2, viewports);
+    vkCmdSetViewport(command_buffer, 0, 2, viewports);
 
-    VkRect2D scissorRects[2] = {
+    VkRect2D scissor_rects[2] = {
       vik::initializers::rect2D(renderer->width/2, renderer->height, 0, 0),
       vik::initializers::rect2D(renderer->width/2, renderer->height, renderer->width / 2, 0),
     };
-    vkCmdSetScissor(cmdBuffer, 0, 2, scissorRects);
+    vkCmdSetScissor(command_buffer, 0, 2, scissor_rects);
   }
 
-  void loadAssets() {
-    if (enableSky)
-      skyBox->loadAssets(vertexLayout, renderer->vksDevice, renderer->queue);
+  void load_assets() {
+    if (enable_sky)
+      sky_box->loadAssets(vertex_layout, renderer->vksDevice, renderer->queue);
   }
 
-  void initGears() {
+  void init_gears() {
     // Gear definitions
-    std::vector<float> innerRadiuses = { 1.0f, 0.5f, 1.3f };
-    std::vector<float> outerRadiuses = { 4.0f, 2.0f, 2.0f };
+    std::vector<float> inner_radiuses = { 1.0f, 0.5f, 1.3f };
+    std::vector<float> outer_radiuses = { 4.0f, 2.0f, 2.0f };
     std::vector<float> widths = { 1.0f, 2.0f, 0.5f };
-    std::vector<int32_t> toothCount = { 20, 10, 10 };
-    std::vector<float> toothDepth = { 0.7f, 0.7f, 0.7f };
+    std::vector<int32_t> tooth_count = { 20, 10, 10 };
+    std::vector<float> tooth_depth = { 0.7f, 0.7f, 0.7f };
     std::vector<glm::vec3> positions = {
       glm::vec3(-3.0, 0.0, 0.0),
       glm::vec3(3.1, 0.0, 0.0),
@@ -294,47 +314,48 @@ class XRGears : public vik::Application {
       vik::Material("Blue", glm::vec3(0.0f, 0.0f, 1.0f), 0.5f, 0.5f)
     };
 
-    std::vector<float> rotationSpeeds = { 1.0f, -2.0f, -2.0f };
-    std::vector<float> rotationOffsets = { 0.0f, -9.0f, -30.0f };
+    std::vector<float> rotation_speeds = { 1.0f, -2.0f, -2.0f };
+    std::vector<float> rotation_offsets = { 0.0f, -9.0f, -30.0f };
 
     nodes.resize(positions.size());
     for (uint32_t i = 0; i < nodes.size(); ++i) {
-      vik::Node::NodeInfo gearNodeInfo = {};
-      vik::GearInfo gearInfo = {};
-      gearInfo.innerRadius = innerRadiuses[i];
-      gearInfo.outerRadius = outerRadiuses[i];
-      gearInfo.width = widths[i];
-      gearInfo.numTeeth = toothCount[i];
-      gearInfo.toothDepth = toothDepth[i];
-      gearNodeInfo.pos = positions[i];
-      gearNodeInfo.rotSpeed = rotationSpeeds[i];
-      gearNodeInfo.rotOffset = rotationOffsets[i];
-      gearNodeInfo.material = materials[i];
+      vik::Node::NodeInfo gear_node_info = {};
+      vik::GearInfo gear_info = {};
+      gear_info.inner_radius = inner_radiuses[i];
+      gear_info.outer_radius = outer_radiuses[i];
+      gear_info.width = widths[i];
+      gear_info.tooth_count = tooth_count[i];
+      gear_info.tooth_depth = tooth_depth[i];
+      gear_node_info.position = positions[i];
+      gear_node_info.rotation_speed = rotation_speeds[i];
+      gear_node_info.rotation_offset = rotation_offsets[i];
+      gear_node_info.material = materials[i];
 
       nodes[i] = new vik::NodeGear();
-      nodes[i]->setInfo(&gearNodeInfo);
-      ((vik::NodeGear*)nodes[i])->generate(renderer->vksDevice, &gearInfo, renderer->queue);
+      nodes[i]->setInfo(&gear_node_info);
+      ((vik::NodeGear*)nodes[i])->generate(renderer->vksDevice,
+                                           &gear_info, renderer->queue);
     }
 
-    vik::NodeModel* teapotNode = new vik::NodeModel();
-    teapotNode->loadModel("teapot.dae",
-                          vertexLayout,
+    vik::NodeModel* teapot_node = new vik::NodeModel();
+    teapot_node->load_model("teapot.dae",
+                          vertex_layout,
                           0.25f,
                           renderer->vksDevice,
                           renderer->queue);
 
-    vik::Material teapotMaterial = vik::Material("Cream", glm::vec3(1.0f, 1.0f, 0.7f), 1.0f, 1.0f);
-    teapotNode->setMateral(teapotMaterial);
-    nodes.push_back(teapotNode);
+    vik::Material teapot_material = vik::Material("Cream", glm::vec3(1.0f, 1.0f, 0.7f), 1.0f, 1.0f);
+    teapot_node->setMateral(teapot_material);
+    nodes.push_back(teapot_node);
 
-    glm::vec3 teapotPosition = glm::vec3(-15.0, -5.0, -5.0);
-    teapotNode->setPosition(teapotPosition);
+    glm::vec3 teapot_position = glm::vec3(-15.0, -5.0, -5.0);
+    teapot_node->setPosition(teapot_position);
   }
 
-  void prepareVertices() {
+  void prepare_vertices() {
     // Binding and attribute descriptions are shared across all gears
-    vertices.bindingDescriptions.resize(1);
-    vertices.bindingDescriptions[0] =
+    vertices.binding_descriptions.resize(1);
+    vertices.binding_descriptions[0] =
         vik::initializers::vertexInputBindingDescription(
           VERTEX_BUFFER_BIND_ID,
           sizeof(vik::Vertex),
@@ -342,54 +363,56 @@ class XRGears : public vik::Application {
 
     // Attribute descriptions
     // Describes memory layout and shader positions
-    vertices.attributeDescriptions.resize(3);
+    vertices.attribute_descriptions.resize(3);
     // Location 0 : Position
-    vertices.attributeDescriptions[0] =
+    vertices.attribute_descriptions[0] =
         vik::initializers::vertexInputAttributeDescription(
           VERTEX_BUFFER_BIND_ID,
           0,
           VK_FORMAT_R32G32B32_SFLOAT,
           0);
     // Location 1 : Normal
-    vertices.attributeDescriptions[1] =
+    vertices.attribute_descriptions[1] =
         vik::initializers::vertexInputAttributeDescription(
           VERTEX_BUFFER_BIND_ID,
           1,
           VK_FORMAT_R32G32B32_SFLOAT,
           sizeof(float) * 3);
     // Location 2 : Color
-    vertices.attributeDescriptions[2] =
+    vertices.attribute_descriptions[2] =
         vik::initializers::vertexInputAttributeDescription(
           VERTEX_BUFFER_BIND_ID,
           2,
           VK_FORMAT_R32G32B32_SFLOAT,
           sizeof(float) * 6);
 
-    vertices.inputState = vik::initializers::pipelineVertexInputStateCreateInfo();
-    vertices.inputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertices.bindingDescriptions.size());
-    vertices.inputState.pVertexBindingDescriptions = vertices.bindingDescriptions.data();
-    vertices.inputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertices.attributeDescriptions.size());
-    vertices.inputState.pVertexAttributeDescriptions = vertices.attributeDescriptions.data();
+    vertices.input_state = vik::initializers::pipelineVertexInputStateCreateInfo();
+    vertices.input_state.vertexBindingDescriptionCount = static_cast<uint32_t>(vertices.binding_descriptions.size());
+    vertices.input_state.pVertexBindingDescriptions = vertices.binding_descriptions.data();
+    vertices.input_state.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertices.attribute_descriptions.size());
+    vertices.input_state.pVertexAttributeDescriptions = vertices.attribute_descriptions.data();
   }
 
-  void setupDescriptorPool() {
+  void init_descriptor_pool() {
     // Example uses two ubos
-    std::vector<VkDescriptorPoolSize> poolSizes = {
+    std::vector<VkDescriptorPoolSize> pool_sizes = {
       vik::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16),
       vik::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 6)
     };
 
-    VkDescriptorPoolCreateInfo descriptorPoolInfo =
+    VkDescriptorPoolCreateInfo descriptor_pool_info =
         vik::initializers::descriptorPoolCreateInfo(
-          static_cast<uint32_t>(poolSizes.size()),
-          poolSizes.data(),
+          static_cast<uint32_t>(pool_sizes.size()),
+          pool_sizes.data(),
           6);
 
-    vik_log_check(vkCreateDescriptorPool(renderer->device, &descriptorPoolInfo, nullptr, &renderer->descriptorPool));
+    vik_log_check(vkCreateDescriptorPool(renderer->device,
+                                         &descriptor_pool_info,
+                                         nullptr, &renderer->descriptor_pool));
   }
 
-  void setupDescriptorSetLayout() {
-    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
+  void init_descriptor_set_layout() {
+    std::vector<VkDescriptorSetLayoutBinding> set_layout_bindings = {
       // ubo model
       vik::initializers::descriptorSetLayoutBinding(
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -408,118 +431,126 @@ class XRGears : public vik::Application {
     };
 
     // cube map sampler
-    if (enableSky)
-      setLayoutBindings.push_back(vik::initializers::descriptorSetLayoutBinding(
+    if (enable_sky)
+      set_layout_bindings.push_back(vik::initializers::descriptorSetLayoutBinding(
                                     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                     VK_SHADER_STAGE_FRAGMENT_BIT,
                                     3));
 
-    VkDescriptorSetLayoutCreateInfo descriptorLayout =
-        vik::initializers::descriptorSetLayoutCreateInfo(setLayoutBindings);
+    VkDescriptorSetLayoutCreateInfo descriptor_layout =
+        vik::initializers::descriptorSetLayoutCreateInfo(set_layout_bindings);
 
-    vik_log_check(vkCreateDescriptorSetLayout(renderer->device, &descriptorLayout, nullptr, &descriptorSetLayout));
+    vik_log_check(vkCreateDescriptorSetLayout(renderer->device,
+                                              &descriptor_layout,
+                                              nullptr, &descriptor_set_layout));
 
-    VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
-        vik::initializers::pipelineLayoutCreateInfo(&descriptorSetLayout, 1);
+    VkPipelineLayoutCreateInfo pipeline_layout_info =
+        vik::initializers::pipelineLayoutCreateInfo(&descriptor_set_layout, 1);
 
     /*
      * Push Constants
      */
 
-    std::vector<VkPushConstantRange> pushConstantRanges = {
-      vik::initializers::pushConstantRange(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(vik::Material::PushBlock), sizeof(glm::vec3)),
+    std::vector<VkPushConstantRange> push_constant_ranges = {
+      vik::initializers::pushConstantRange(
+        VK_SHADER_STAGE_FRAGMENT_BIT,
+        sizeof(vik::Material::PushBlock),
+        sizeof(glm::vec3)),
     };
 
-    pPipelineLayoutCreateInfo.pushConstantRangeCount = pushConstantRanges.size();
-    pPipelineLayoutCreateInfo.pPushConstantRanges = pushConstantRanges.data();
+    pipeline_layout_info.pushConstantRangeCount = push_constant_ranges.size();
+    pipeline_layout_info.pPushConstantRanges = push_constant_ranges.data();
 
-    vik_log_check(vkCreatePipelineLayout(renderer->device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+    vik_log_check(vkCreatePipelineLayout(renderer->device,
+                                         &pipeline_layout_info,
+                                         nullptr, &pipeline_layout));
   }
 
-  void setupDescriptorSet() {
-    if (enableSky) {
-      VkDescriptorSetAllocateInfo allocInfo =
+  void init_descriptor_set() {
+    if (enable_sky) {
+      VkDescriptorSetAllocateInfo info =
           vik::initializers::descriptorSetAllocateInfo(
-            renderer->descriptorPool,
-            &descriptorSetLayout,
+            renderer->descriptor_pool,
+            &descriptor_set_layout,
             1);
 
-      skyBox->createDescriptorSet(allocInfo, &camera->uniformBuffer.descriptor);
+      sky_box->create_descriptor_set(info, &camera->uniformBuffer.descriptor);
     }
 
     for (auto& node : nodes)
-      node->createDescriptorSet(renderer->device, renderer->descriptorPool, descriptorSetLayout,
-                                &uniformBuffers.lights.descriptor,
+      node->create_descriptor_set(renderer->device, renderer->descriptor_pool,
+                                descriptor_set_layout,
+                                &uniform_buffers.lights.descriptor,
                                 &camera->uniformBuffer.descriptor,
-                                skyBox);
+                                sky_box);
 }
 
-  void preparePipelines() {
-    VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
+  void init_pipelines() {
+    VkPipelineInputAssemblyStateCreateInfo input_assembly_state =
         vik::initializers::pipelineInputAssemblyStateCreateInfo(
           VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
           0,
           VK_FALSE);
 
-    VkPipelineRasterizationStateCreateInfo rasterizationState =
+    VkPipelineRasterizationStateCreateInfo rasterization_state =
         vik::initializers::pipelineRasterizationStateCreateInfo(
           VK_POLYGON_MODE_FILL,
           VK_CULL_MODE_BACK_BIT,
           VK_FRONT_FACE_CLOCKWISE);
 
-    VkPipelineColorBlendAttachmentState blendAttachmentState =
+    VkPipelineColorBlendAttachmentState blend_attachment_state =
         vik::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE);
 
-    VkPipelineColorBlendStateCreateInfo colorBlendState =
-        vik::initializers::pipelineColorBlendStateCreateInfo(1, &blendAttachmentState);
+    VkPipelineColorBlendStateCreateInfo color_blend_state =
+        vik::initializers::pipelineColorBlendStateCreateInfo(1, &blend_attachment_state);
 
-    VkPipelineDepthStencilStateCreateInfo depthStencilState =
+    VkPipelineDepthStencilStateCreateInfo depth_stencil_state =
         vik::initializers::pipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
 
-    VkPipelineViewportStateCreateInfo viewportState;
-    if (enableStereo)
-      viewportState = vik::initializers::pipelineViewportStateCreateInfo(2, 2, 0);
+    VkPipelineViewportStateCreateInfo viewport_state;
+    if (enable_stereo)
+      viewport_state = vik::initializers::pipelineViewportStateCreateInfo(2, 2, 0);
     else
-      viewportState = vik::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+      viewport_state = vik::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
 
 
-    VkPipelineMultisampleStateCreateInfo multisampleState =
+    VkPipelineMultisampleStateCreateInfo multisample_state =
         vik::initializers::pipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
 
-    std::vector<VkDynamicState> dynamicStateEnables = {
+    std::vector<VkDynamicState> dynamic_state_enables = {
       VK_DYNAMIC_STATE_VIEWPORT,
       VK_DYNAMIC_STATE_SCISSOR,
       VK_DYNAMIC_STATE_LINE_WIDTH
     };
     VkPipelineDynamicStateCreateInfo dynamicState =
-        vik::initializers::pipelineDynamicStateCreateInfo(dynamicStateEnables);
+        vik::initializers::pipelineDynamicStateCreateInfo(dynamic_state_enables);
 
     // Load shaders
-    std::array<VkPipelineShaderStageCreateInfo, 3> shaderStages;
-    shaderStages[0] = vik::Shader::load(renderer->device, "xrgears/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+    std::array<VkPipelineShaderStageCreateInfo, 3> shader_stages;
+    shader_stages[0] = vik::Shader::load(renderer->device, "xrgears/scene.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 
-    if (enableSky)
-      shaderStages[1] = vik::Shader::load(renderer->device, "xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+    if (enable_sky)
+      shader_stages[1] = vik::Shader::load(renderer->device, "xrgears/scene.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
     else
-      shaderStages[1] = vik::Shader::load(renderer->device, "xrgears/scene_no_sky.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+      shader_stages[1] = vik::Shader::load(renderer->device, "xrgears/scene_no_sky.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    shaderStages[2] = vik::Shader::load(renderer->device, "xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
+    shader_stages[2] = vik::Shader::load(renderer->device, "xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 
-    VkGraphicsPipelineCreateInfo pipelineCreateInfo;
+    VkGraphicsPipelineCreateInfo pipeline_info;
 
-    VkRenderPass usedPass;
-    if (enableDistortion)
-      usedPass = offscreenPass->getRenderPass();
+    VkRenderPass used_pass;
+    if (enable_distortion)
+      used_pass = offscreen_pass->getRenderPass();
     else
-      usedPass = renderer->render_pass;
+      used_pass = renderer->render_pass;
 
-    pipelineCreateInfo = vik::initializers::pipelineCreateInfo(pipelineLayout, usedPass);
+    pipeline_info = vik::initializers::pipelineCreateInfo(pipeline_layout, used_pass);
 
     // Vertex bindings an attributes
-    std::vector<VkVertexInputBindingDescription> vertexInputBindings = {
-      vik::initializers::vertexInputBindingDescription(0, vertexLayout.stride(), VK_VERTEX_INPUT_RATE_VERTEX),
+    std::vector<VkVertexInputBindingDescription> vertex_input_bindings = {
+      vik::initializers::vertexInputBindingDescription(0, vertex_layout.stride(), VK_VERTEX_INPUT_RATE_VERTEX),
     };
-    std::vector<VkVertexInputAttributeDescription> vertexInputAttributes = {
+    std::vector<VkVertexInputAttributeDescription> vertex_input_attributes = {
       // Location 0: Position
       vik::initializers::vertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0),
       // Location 1: Normals
@@ -527,75 +558,77 @@ class XRGears : public vik::Application {
       // Location 2: Color
       vik::initializers::vertexInputAttributeDescription(0, 2, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 6),
     };
-    VkPipelineVertexInputStateCreateInfo vertexInputState = vik::initializers::pipelineVertexInputStateCreateInfo();
-    vertexInputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertexInputBindings.size());
-    vertexInputState.pVertexBindingDescriptions = vertexInputBindings.data();
-    vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributes.size());
-    vertexInputState.pVertexAttributeDescriptions = vertexInputAttributes.data();
+    VkPipelineVertexInputStateCreateInfo vertex_input_state = vik::initializers::pipelineVertexInputStateCreateInfo();
+    vertex_input_state.vertexBindingDescriptionCount = static_cast<uint32_t>(vertex_input_bindings.size());
+    vertex_input_state.pVertexBindingDescriptions = vertex_input_bindings.data();
+    vertex_input_state.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertex_input_attributes.size());
+    vertex_input_state.pVertexAttributeDescriptions = vertex_input_attributes.data();
 
-    pipelineCreateInfo.pVertexInputState = &vertexInputState;
-    pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
-    pipelineCreateInfo.pRasterizationState = &rasterizationState;
-    pipelineCreateInfo.pColorBlendState = &colorBlendState;
-    pipelineCreateInfo.pMultisampleState = &multisampleState;
-    pipelineCreateInfo.pViewportState = &viewportState;
-    pipelineCreateInfo.pDepthStencilState = &depthStencilState;
-    pipelineCreateInfo.pDynamicState = &dynamicState;
-    pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
-    pipelineCreateInfo.pStages = shaderStages.data();
+    pipeline_info.pVertexInputState = &vertex_input_state;
+    pipeline_info.pInputAssemblyState = &input_assembly_state;
+    pipeline_info.pRasterizationState = &rasterization_state;
+    pipeline_info.pColorBlendState = &color_blend_state;
+    pipeline_info.pMultisampleState = &multisample_state;
+    pipeline_info.pViewportState = &viewport_state;
+    pipeline_info.pDepthStencilState = &depth_stencil_state;
+    pipeline_info.pDynamicState = &dynamicState;
+    pipeline_info.stageCount = static_cast<uint32_t>(shader_stages.size());
+    pipeline_info.pStages = shader_stages.data();
+    pipeline_info.renderPass = used_pass;
 
-    pipelineCreateInfo.renderPass = usedPass;
+    vik_log_check(vkCreateGraphicsPipelines(renderer->device,
+                                            renderer->pipelineCache, 1,
+                                            &pipeline_info,
+                                            nullptr, &pipelines.pbr));
 
-    vik_log_check(vkCreateGraphicsPipelines(renderer->device, renderer->pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.pbr));
+    if (enable_sky)
+      sky_box->init_pipeline(&pipeline_info, renderer->pipelineCache);
 
-    if (enableSky)
-      skyBox->createPipeline(&pipelineCreateInfo, renderer->pipelineCache);
-
-    vkDestroyShaderModule(renderer->device, shaderStages[0].module, nullptr);
-    vkDestroyShaderModule(renderer->device, shaderStages[1].module, nullptr);
-    vkDestroyShaderModule(renderer->device, shaderStages[2].module, nullptr);
+    vkDestroyShaderModule(renderer->device, shader_stages[0].module, nullptr);
+    vkDestroyShaderModule(renderer->device, shader_stages[1].module, nullptr);
+    vkDestroyShaderModule(renderer->device, shader_stages[2].module, nullptr);
   }
 
   // Prepare and initialize uniform buffer containing shader uniforms
-  void prepareUniformBuffers() {
-    renderer->vksDevice->create_and_map(&uniformBuffers.lights, sizeof(uboLights));
+  void init_uniform_buffers() {
+    renderer->vksDevice->create_and_map(&uniform_buffers.lights, sizeof(ubo_lights));
 
-    ((vik::Camera*)camera)->init_ubo(renderer->vksDevice);
+    camera->init_uniform_buffer(renderer->vksDevice);
 
     for (auto& node : nodes)
-      node->prepareUniformBuffer(renderer->vksDevice);
+      node->init_uniform_buffer(renderer->vksDevice);
 
-    updateUniformBuffers();
+    update_uniform_buffers();
   }
 
-  void updateUniformBuffers() {
-    camera->update_ubo();
+  void update_uniform_buffers() {
+    camera->update_uniform_buffer();
 
     vik::Camera::StereoView sv = {};
-    sv.view[0] = ((vik::Camera*)camera)->ubo.view[0];
-    sv.view[1] = ((vik::Camera*)camera)->ubo.view[1];
+    sv.view[0] = camera->ubo.view[0];
+    sv.view[1] = camera->ubo.view[1];
 
     for (auto& node : nodes)
-      node->updateUniformBuffer(sv, renderer->timer.animation_timer);
+      node->update_uniform_buffer(sv, renderer->timer.animation_timer);
 
-    updateLights();
+    update_lights();
   }
 
-  void updateLights() {
+  void update_lights() {
     const float p = 15.0f;
-    uboLights.lights[0] = glm::vec4(-p, -p*0.5f, -p, 1.0f);
-    uboLights.lights[1] = glm::vec4(-p, -p*0.5f,  p, 1.0f);
-    uboLights.lights[2] = glm::vec4( p, -p*0.5f,  p, 1.0f);
-    uboLights.lights[3] = glm::vec4( p, -p*0.5f, -p, 1.0f);
+    ubo_lights.lights[0] = glm::vec4(-p, -p*0.5f, -p, 1.0f);
+    ubo_lights.lights[1] = glm::vec4(-p, -p*0.5f,  p, 1.0f);
+    ubo_lights.lights[2] = glm::vec4( p, -p*0.5f,  p, 1.0f);
+    ubo_lights.lights[3] = glm::vec4( p, -p*0.5f, -p, 1.0f);
 
     if (!renderer->timer.animation_paused) {
-      uboLights.lights[0].x = sin(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
-      uboLights.lights[0].z = cos(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
-      uboLights.lights[1].x = cos(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
-      uboLights.lights[1].y = sin(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
+      ubo_lights.lights[0].x = sin(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
+      ubo_lights.lights[0].z = cos(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
+      ubo_lights.lights[1].x = cos(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
+      ubo_lights.lights[1].y = sin(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
     }
 
-    memcpy(uniformBuffers.lights.mapped, &uboLights, sizeof(uboLights));
+    memcpy(uniform_buffers.lights.mapped, &ubo_lights, sizeof(ubo_lights));
   }
 
   void draw() {
@@ -606,7 +639,7 @@ class XRGears : public vik::Application {
     };
     submit_info.pWaitDstStageMask = stage_flags.data();
 
-    if (enableDistortion) {
+    if (enable_distortion) {
       // The scene render command buffer has to wait for the offscreen
       // rendering to be finished before we can use the framebuffer
       // color image for sampling during final rendering
@@ -623,16 +656,16 @@ class XRGears : public vik::Application {
       // Wait for swap chain presentation to finish
       submit_info.pWaitSemaphores = &renderer->semaphores.present_complete;
       // Signal ready with offscreen semaphore
-      submit_info.pSignalSemaphores = &offscreenSemaphore;
+      submit_info.pSignalSemaphores = &offscreen_semaphore;
 
       // Submit work
-      submit_info.pCommandBuffers = &offScreenCmdBuffer;
+      submit_info.pCommandBuffers = &offscreen_command_buffer;
       vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, VK_NULL_HANDLE));
 
       // Scene rendering
 
       // Wait for offscreen semaphore
-      submit_info.pWaitSemaphores = &offscreenSemaphore;
+      submit_info.pWaitSemaphores = &offscreen_semaphore;
       // Signal ready with render complete semaphpre
       submit_info.pSignalSemaphores = &renderer->semaphores.render_complete;
     }
@@ -647,8 +680,8 @@ class XRGears : public vik::Application {
 
     hmd = new vik::HMD(&settings);
 
-    if (enableStereo) {
-      if (enableHMDCam)
+    if (enable_stereo) {
+      if (enable_hmd_cam)
         camera = new vik::CameraHMD(hmd);
       else
         camera = new vik::CameraStereo(renderer->width, renderer->height);
@@ -661,38 +694,38 @@ class XRGears : public vik::Application {
     camera->set_perspective(60.0f, (float)renderer->width / (float)renderer->height, 0.1f, 256.0f);
     camera->movement_speed = 5.0f;
 
-    camera->set_view_updated_cb([this]() { viewUpdated = true; });
+    camera->set_view_updated_cb([this]() { view_updated = true; });
 
-    if (enableSky)
-      skyBox = new vik::SkyBox(renderer->device);
+    if (enable_sky)
+      sky_box = new vik::SkyBox(renderer->device);
 
 
-    loadAssets();
-    initGears();
-    prepareVertices();
-    prepareUniformBuffers();
-    setupDescriptorPool();
-    setupDescriptorSetLayout();
+    load_assets();
+    init_gears();
+    prepare_vertices();
+    init_uniform_buffers();
+    init_descriptor_pool();
+    init_descriptor_set_layout();
 
-    if (enableDistortion) {
-      offscreenPass = new vik::OffscreenPass(renderer->device);
-      offscreenPass->prepareOffscreenFramebuffer(renderer->vksDevice, renderer->physical_device);
-      hmdDistortion = new vik::Distortion(renderer->device);
-      hmdDistortion->generateQuads(renderer->vksDevice);
-      hmdDistortion->prepareUniformBuffer(renderer->vksDevice);
-      hmdDistortion->updateUniformBufferWarp(hmd->device);
-      hmdDistortion->createDescriptorSetLayout();
-      hmdDistortion->createPipeLineLayout();
-      hmdDistortion->createPipeLine(renderer->render_pass, renderer->pipelineCache);
-      hmdDistortion->createDescriptorSet(offscreenPass, renderer->descriptorPool);
+    if (enable_distortion) {
+      offscreen_pass = new vik::OffscreenPass(renderer->device);
+      offscreen_pass->init_offscreen_framebuffer(renderer->vksDevice, renderer->physical_device);
+      distortion = new vik::Distortion(renderer->device);
+      distortion->init_quads(renderer->vksDevice);
+      distortion->init_uniform_buffer(renderer->vksDevice);
+      distortion->update_uniform_buffer_warp(hmd->device);
+      distortion->init_descriptor_set_layout();
+      distortion->init_pipeline_layout();
+      distortion->init_pipeLine(renderer->render_pass, renderer->pipelineCache);
+      distortion->init_descriptor_set(offscreen_pass, renderer->descriptor_pool);
     }
 
-    preparePipelines();
-    setupDescriptorSet();
+    init_pipelines();
+    init_descriptor_set();
     build_command_buffers();
 
-    if (enableDistortion)
-      buildOffscreenCommandBuffer();
+    if (enable_distortion)
+      build_offscreen_command_buffer();
   }
 
   virtual void render() {
@@ -700,27 +733,29 @@ class XRGears : public vik::Application {
     draw();
     vkDeviceWaitIdle(renderer->device);
     if (!renderer->timer.animation_paused)
-      updateUniformBuffers();
+      update_uniform_buffers();
   }
 
   virtual void view_changed_cb() {
-    updateUniformBuffers();
+    update_uniform_buffers();
   }
 
-  void changeEyeSeparation(float delta) {
-    if (!enableHMDCam)
+  /*
+  void change_eye_separation(float delta) {
+    if (!enable_hmd_cam)
       ((vik::CameraStereo*)camera)->changeEyeSeparation(delta);
-    updateUniformBuffers();
+    update_uniform_buffers();
   }
+  */
 
   virtual void key_pressed(vik::Input::Key keyCode) {
     /*
     switch (keyCode) {
       case KEY_KPADD:
-        changeEyeSeparation(0.005);
+        change_eye_separation(0.005);
         break;
       case KEY_KPSUB:
-        changeEyeSeparation(-0.005);
+        change_eye_separation(-0.005);
         break;
     }
     */

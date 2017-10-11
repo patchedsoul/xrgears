@@ -64,7 +64,7 @@ class Renderer {
   VkPhysicalDeviceFeatures enabledFeatures{};
 
   VkFormat depthFormat;
-  VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+  VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
   VkPipelineCache pipelineCache;
 
   VkClearColorValue defaultClearColor = { { 0.025f, 0.025f, 0.025f, 1.0f } };
@@ -95,8 +95,8 @@ class Renderer {
 
   virtual ~Renderer() {
     window->get_swap_chain()->cleanup();
-    if (descriptorPool != VK_NULL_HANDLE)
-      vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+    if (descriptor_pool != VK_NULL_HANDLE)
+      vkDestroyDescriptorPool(device, descriptor_pool, nullptr);
 
     destroy_command_buffers();
     vkDestroyRenderPass(device, render_pass, nullptr);

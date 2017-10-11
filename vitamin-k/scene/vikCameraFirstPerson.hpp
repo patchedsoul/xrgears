@@ -98,6 +98,6 @@ class CameraFirstPerson : public Camera {
     last_mouse_position = glm::vec2(x, y);
   }
 
-  void update_ubo() {}
+  void update_uniform_buffer() {}
 };
 }  // namespace vik
