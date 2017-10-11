@@ -59,7 +59,7 @@ class Camera {
   } keys;
 
  public:
-  Buffer uniformBuffer;
+  Buffer uniform_buffer;
 
   struct StereoView {
     glm::mat4 view[2];
@@ -68,12 +68,12 @@ class Camera {
   struct UBOCamera {
     glm::mat4 projection[2];
     glm::mat4 view[2];
-    glm::mat4 skyView[2];
+    glm::mat4 sky_view[2];
     glm::vec3 position;
   } ubo;
 
   virtual ~Camera() {
-    uniformBuffer.destroy();
+    uniform_buffer.destroy();
   }
 
   virtual void update_movement(float deltaTime) {}
@@ -97,13 +97,13 @@ class Camera {
   virtual void update_uniform_buffer() {
     ubo.projection[0] = matrices.projection;
     ubo.view[0] = matrices.view;
-    ubo.skyView[0] = glm::mat4(glm::mat3(matrices.view));
+    ubo.sky_view[0] = glm::mat4(glm::mat3(matrices.view));
     ubo.position = position * -1.0f;
-    memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
+    memcpy(uniform_buffer.mapped, &ubo, sizeof(ubo));
   }
 
   void init_uniform_buffer(Device *device) {
-    device->create_and_map(&uniformBuffer, sizeof(ubo));
+    device->create_and_map(&uniform_buffer, sizeof(ubo));
   }
 
   std::function<void()> view_updated_cb = [](){};

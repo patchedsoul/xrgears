@@ -12,10 +12,10 @@
 
 #include <vector>
 
-#include "render/vikModel.hpp"
+#include "../render/vikModel.hpp"
 
 #include "vikMaterial.hpp"
-#include "system/vikAssets.hpp"
+#include "../system/vikAssets.hpp"
 #include "vikSkyBox.hpp"
 
 namespace vik {
@@ -26,7 +26,7 @@ class Node {
     glm::mat4 model;
   } ubo;
 
-  VkDescriptorSet descriptorSet;
+  VkDescriptorSet descriptor_set;
 
   struct NodeInfo {
     glm::vec3 position;
@@ -71,29 +71,29 @@ class Node {
           &descriptorSetLayout,
           1);
 
-    vik_log_check(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
+    vik_log_check(vkAllocateDescriptorSets(device, &allocInfo, &descriptor_set));
 
     std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
       // Binding 0 : Vertex shader uniform buffer
       initializers::writeDescriptorSet(
-      descriptorSet,
+      descriptor_set,
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       0,
       &uniformBuffer.descriptor),
       initializers::writeDescriptorSet(
-      descriptorSet,
+      descriptor_set,
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       1,
       lightsDescriptor),
       initializers::writeDescriptorSet(
-      descriptorSet,
+      descriptor_set,
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       2,
       cameraDescriptor)
     };
 
     if (skyDome != nullptr)
-      writeDescriptorSets.push_back(skyDome->getCubeMapWriteDescriptorSet(3, descriptorSet));
+      writeDescriptorSets.push_back(skyDome->get_cube_map_write_descriptor_set(3, descriptor_set));
 
     vkUpdateDescriptorSets(device,
                            static_cast<uint32_t>(writeDescriptorSets.size()),

@@ -138,7 +138,7 @@ class XRCubeMap : public vik::Application {
       vik_log_f("Device does not support any compressed texture format!");
     }
 
-    cubeMap.loadFromFile(vik::Assets::getTexturePath() + filename, format, renderer->vik_device, renderer->queue);
+    cubeMap.loadFromFile(vik::Assets::get_texture_path() + filename, format, renderer->vik_device, renderer->queue);
   }
 
   void reBuildCommandBuffers() {
@@ -205,12 +205,12 @@ class XRCubeMap : public vik::Application {
 
   void loadMeshes() {
     // Skybox
-    models.skybox.loadFromFile(vik::Assets::getAssetPath() + "models/cube.obj", vertexLayout, 0.05f, renderer->vik_device, renderer->queue);
+    models.skybox.loadFromFile(vik::Assets::get_asset_path() + "models/cube.obj", vertexLayout, 0.05f, renderer->vik_device, renderer->queue);
     // Objects
     std::vector<std::string> filenames = { "sphere.obj", "teapot.dae", "torusknot.obj" };
     for (auto file : filenames) {
       vik::Model model;
-      model.loadFromFile(vik::Assets::getAssetPath() + "models/" + file, vertexLayout, 0.05f, renderer->vik_device, renderer->queue);
+      model.loadFromFile(vik::Assets::get_asset_path() + "models/" + file, vertexLayout, 0.05f, renderer->vik_device, renderer->queue);
       models.objects.push_back(model);
     }
   }

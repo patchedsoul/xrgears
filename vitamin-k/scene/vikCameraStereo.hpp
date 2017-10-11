@@ -16,8 +16,8 @@ namespace vik {
 class CameraStereo : public CameraFirstPerson {
  public:
   // Camera and view properties
-  float eyeSeparation = 0.08f;
-  const float focalLength = 0.5f;
+  float eye_separation = 0.08f;
+  const float focal_length = 0.5f;
 
   int width, height;
 
@@ -27,8 +27,8 @@ class CameraStereo : public CameraFirstPerson {
     zfar = 256.0f;
   }
 
-  void changeEyeSeparation(float delta) {
-    eyeSeparation += delta;
+  void change_eye_separation(float delta) {
+    eye_separation += delta;
   }
 
   void update_uniform_buffer() {
@@ -36,50 +36,50 @@ class CameraStereo : public CameraFirstPerson {
     // See http://paulbourke.net/stereographics/stereorender/
 
     // Calculate some variables
-    float aspectRatio = (float)(width * 0.5f) / (float)height;
+    float aspect_ratio = (float)(width * 0.5f) / (float)height;
     float wd2 = znear * tan(glm::radians(fov / 2.0f));
-    float ndfl = znear / focalLength;
+    float ndfl = znear / focal_length;
     float left, right;
     float top = wd2;
     float bottom = -wd2;
 
-    glm::vec3 camFront;
-    camFront.x = -cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
-    camFront.y = sin(glm::radians(rotation.x));
-    camFront.z = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
-    camFront = glm::normalize(camFront);
-    glm::vec3 camRight = glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f)));
+    glm::vec3 front_vec;
+    front_vec.x = -cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
+    front_vec.y = sin(glm::radians(rotation.x));
+    front_vec.z = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
+    front_vec = glm::normalize(front_vec);
+    glm::vec3 right_vec = glm::normalize(glm::cross(front_vec, glm::vec3(0.0f, 1.0f, 0.0f)));
 
-    glm::mat4 rotM = glm::mat4();
-    glm::mat4 transM;
+    glm::mat4 rot_mat = glm::mat4();
+    glm::mat4 trans_mat;
 
-    rotM = glm::rotate(rotM, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    rotM = glm::rotate(rotM, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    rotM = glm::rotate(rotM, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    rot_mat = glm::rotate(rot_mat, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    rot_mat = glm::rotate(rot_mat, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    rot_mat = glm::rotate(rot_mat, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
     // Left eye
-    left = -aspectRatio * wd2 + 0.5f * eyeSeparation * ndfl;
-    right = aspectRatio * wd2 + 0.5f * eyeSeparation * ndfl;
+    left = -aspect_ratio * wd2 + 0.5f * eye_separation * ndfl;
+    right = aspect_ratio * wd2 + 0.5f * eye_separation * ndfl;
 
-    transM = glm::translate(glm::mat4(), position - camRight * (eyeSeparation / 2.0f));
+    trans_mat = glm::translate(glm::mat4(), position - right_vec * (eye_separation / 2.0f));
 
     ubo.projection[0] = glm::frustum(left, right, bottom, top, znear, zfar);
-    ubo.view[0] = rotM * transM;
-    ubo.skyView[0] = rotM * glm::translate(glm::mat4(), -camRight * (eyeSeparation / 2.0f));
+    ubo.view[0] = rot_mat * trans_mat;
+    ubo.sky_view[0] = rot_mat * glm::translate(glm::mat4(), -right_vec * (eye_separation / 2.0f));
 
     // Right eye
-    left = -aspectRatio * wd2 - 0.5f * eyeSeparation * ndfl;
-    right = aspectRatio * wd2 - 0.5f * eyeSeparation * ndfl;
+    left = -aspect_ratio * wd2 - 0.5f * eye_separation * ndfl;
+    right = aspect_ratio * wd2 - 0.5f * eye_separation * ndfl;
 
-    transM = glm::translate(glm::mat4(), position + camRight * (eyeSeparation / 2.0f));
+    trans_mat = glm::translate(glm::mat4(), position + right_vec * (eye_separation / 2.0f));
 
     ubo.projection[1] = glm::frustum(left, right, bottom, top, znear, zfar);
-    ubo.view[1] = rotM * transM;
-    ubo.skyView[1] = rotM * glm::translate(glm::mat4(), camRight * (eyeSeparation / 2.0f));
+    ubo.view[1] = rot_mat * trans_mat;
+    ubo.sky_view[1] = rot_mat * glm::translate(glm::mat4(), right_vec * (eye_separation / 2.0f));
 
     ubo.position = position * -1.0f;
 
-    memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
+    memcpy(uniform_buffer.mapped, &ubo, sizeof(ubo));
   }
 };
 }  // namespace vik

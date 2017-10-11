@@ -29,28 +29,28 @@ class CameraHMD : public CameraFirstPerson {
   }
 
   void update_uniform_buffer() {
-    glm::mat4 hmdProjectionLeft, hmdProjectionRight;
-    glm::mat4 hmdViewLeft, hmdViewRight;
+    glm::mat4 hmd_projection_left, hmd_projection_right;
+    glm::mat4 hmd_view_left, hmd_view_right;
 
-    hmd->getTransformation(&hmdProjectionLeft, &hmdProjectionRight,
-                           &hmdViewLeft, &hmdViewRight);
+    hmd->getTransformation(&hmd_projection_left, &hmd_projection_right,
+                           &hmd_view_left, &hmd_view_right);
 
-    fix_handedness(hmdViewLeft);
-    fix_handedness(hmdViewRight);
+    fix_handedness(hmd_view_left);
+    fix_handedness(hmd_view_right);
 
-    glm::mat4 translationMatrix = glm::translate(glm::mat4(), position);
+    glm::mat4 translation_matrix = glm::translate(glm::mat4(), position);
 
-    ubo.projection[0] = hmdProjectionLeft;
-    ubo.view[0] = hmdViewLeft * translationMatrix;
-    ubo.skyView[0] = hmdViewLeft;
+    ubo.projection[0] = hmd_projection_left;
+    ubo.view[0] = hmd_view_left * translation_matrix;
+    ubo.sky_view[0] = hmd_view_left;
 
-    ubo.projection[1] = hmdProjectionRight;
-    ubo.view[1] = hmdViewRight  * translationMatrix;
-    ubo.skyView[1] = hmdViewRight;
+    ubo.projection[1] = hmd_projection_right;
+    ubo.view[1] = hmd_view_right  * translation_matrix;
+    ubo.sky_view[1] = hmd_view_right;
 
     ubo.position = position * -1.0f;
 
-    memcpy(uniformBuffer.mapped, &ubo, sizeof(ubo));
+    memcpy(uniform_buffer.mapped, &ubo, sizeof(ubo));
   }
 };
 }  // namespace vik

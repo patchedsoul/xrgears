@@ -292,7 +292,7 @@ class XRGears : public vik::Application {
 
   void load_assets() {
     if (enable_sky)
-      sky_box->loadAssets(vertex_layout, renderer->vik_device, renderer->queue);
+      sky_box->load_assets(vertex_layout, renderer->vik_device, renderer->queue);
   }
 
   void init_gears() {
@@ -474,14 +474,14 @@ class XRGears : public vik::Application {
             &descriptor_set_layout,
             1);
 
-      sky_box->create_descriptor_set(info, &camera->uniformBuffer.descriptor);
+      sky_box->create_descriptor_set(info, &camera->uniform_buffer.descriptor);
     }
 
     for (auto& node : nodes)
       node->create_descriptor_set(renderer->device, renderer->descriptor_pool,
                                 descriptor_set_layout,
                                 &uniform_buffers.lights.descriptor,
-                                &camera->uniformBuffer.descriptor,
+                                &camera->uniform_buffer.descriptor,
                                 sky_box);
 }
 

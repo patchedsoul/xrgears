@@ -37,23 +37,23 @@ class NodeGear : public Node {
   Gear gear;
 
  public:
-  void generate(Device *vulkanDevice, GearInfo *gearinfo, VkQueue queue) {
-    gear.generate(vulkanDevice, gearinfo, queue);
+  void generate(Device *vik_device, GearInfo *gear_info, VkQueue queue) {
+    gear.generate(vik_device, gear_info, queue);
   }
 
-  void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout) {
+  void draw(VkCommandBuffer command_buffer, VkPipelineLayout pipeline_layout) {
     VkDeviceSize offsets[1] = { 0 };
-    vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, NULL);
-    vkCmdBindVertexBuffers(cmdbuffer, 0, 1, &gear.vertexBuffer.buffer, offsets);
-    vkCmdBindIndexBuffer(cmdbuffer, gear.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 0, 1, &descriptor_set, 0, NULL);
+    vkCmdBindVertexBuffers(command_buffer, 0, 1, &gear.vertexBuffer.buffer, offsets);
+    vkCmdBindIndexBuffer(command_buffer, gear.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
-    vkCmdPushConstants(cmdbuffer,
-                       pipelineLayout,
+    vkCmdPushConstants(command_buffer,
+                       pipeline_layout,
                        VK_SHADER_STAGE_FRAGMENT_BIT,
                        sizeof(glm::vec3),
                        sizeof(Material::PushBlock), &info.material);
 
-    vkCmdDrawIndexed(cmdbuffer, gear.indexCount, 1, 0, 0, 1);
+    vkCmdDrawIndexed(command_buffer, gear.indexCount, 1, 0, 0, 1);
   }
 };
 }  // namespace vik

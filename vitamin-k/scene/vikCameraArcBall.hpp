@@ -18,7 +18,7 @@ class CameraArcBall : public Camera {
     rotation_speed = 1.25f;
   }
 
-  float zoomSpeed = 1.0f;
+  float zoom_speed = 0.005f;
   float zoom = 0;
 
   void update_view() {}
@@ -26,8 +26,8 @@ class CameraArcBall : public Camera {
   void pointer_axis_cb(Input::MouseScrollAxis axis, double value) {
     switch (axis) {
       case Input::MouseScrollAxis::X:
-        zoom += value * 0.005f * zoomSpeed;
-        translate(glm::vec3(0.0f, 0.0f, value * 0.005f * zoomSpeed));
+        zoom += value * zoom_speed;
+        translate(glm::vec3(0.0f, 0.0f, value * zoom_speed));
         view_updated_cb();
         break;
       default:
@@ -45,7 +45,7 @@ class CameraArcBall : public Camera {
     }
 
     if (mouse_buttons.right) {
-      zoom += dy * .005f * zoomSpeed;
+      zoom += dy * zoom_speed;
       view_updated_cb();
     }
 

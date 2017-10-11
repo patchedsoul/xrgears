@@ -18,16 +18,16 @@ class CameraFirstPerson : public Camera {
   CameraFirstPerson() {}
 
   void update_view() {
-    glm::mat4 rotM = glm::mat4();
-    glm::mat4 transM;
+    glm::mat4 rot_mat = glm::mat4();
+    glm::mat4 trans_mat;
 
-    rotM = glm::rotate(rotM, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    rotM = glm::rotate(rotM, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    rotM = glm::rotate(rotM, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    rot_mat = glm::rotate(rot_mat, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    rot_mat = glm::rotate(rot_mat, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    rot_mat = glm::rotate(rot_mat, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-    transM = glm::translate(glm::mat4(), position);
+    trans_mat = glm::translate(glm::mat4(), position);
 
-    matrices.view = rotM * transM;
+    matrices.view = rot_mat * trans_mat;
 
     // vik_log_d("pos: %.2f %.2f %.2f", position.x, position.y, position.z);
     // vik_log_d("rot: %.2f %.2f %.2f", rotation.x, rotation.y, rotation.z);

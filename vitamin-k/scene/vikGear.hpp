@@ -12,8 +12,8 @@
 
 #include <vector>
 
-#include "render/vikBuffer.hpp"
-#include "render/vikDevice.hpp"
+#include "../render/vikBuffer.hpp"
+#include "../render/vikDevice.hpp"
 
 namespace vik {
 struct Vertex {

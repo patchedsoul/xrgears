@@ -32,17 +32,18 @@ class NodeModel : public Node {
                        queue);
   }
 
-  void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout) {
-    vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+  void draw(VkCommandBuffer command_buffer, VkPipelineLayout pipeline_layout) {
+    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            pipeline_layout, 0, 1, &descriptor_set, 0, nullptr);
     VkDeviceSize offsets[1] = { 0 };
-    vkCmdBindVertexBuffers(cmdbuffer, 0, 1, &model.vertices.buffer, offsets);
-    vkCmdBindIndexBuffer(cmdbuffer, model.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-    vkCmdPushConstants(cmdbuffer,
-                       pipelineLayout,
+    vkCmdBindVertexBuffers(command_buffer, 0, 1, &model.vertices.buffer, offsets);
+    vkCmdBindIndexBuffer(command_buffer, model.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdPushConstants(command_buffer,
+                       pipeline_layout,
                        VK_SHADER_STAGE_FRAGMENT_BIT,
                        sizeof(glm::vec3),
                        sizeof(Material::PushBlock), &info.material);
-    vkCmdDrawIndexed(cmdbuffer, model.indexCount, 1, 0, 0, 0);
+    vkCmdDrawIndexed(command_buffer, model.indexCount, 1, 0, 0, 0);
   }
 };
 }  // namespace vik
