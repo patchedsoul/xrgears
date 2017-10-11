@@ -50,11 +50,11 @@ class RendererTextOverlay : public Renderer {
     shaderStages.push_back(Shader::load(device, "base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
 
     text_overlay = new TextOverlay(
-          vksDevice,
+          vik_device,
           queue,
           &frame_buffers,
           window->get_swap_chain()->surface_format.format,
-          depthFormat,
+          depth_format,
           &width,
           &height,
           shaderStages);
@@ -85,14 +85,14 @@ class RendererTextOverlay : public Renderer {
        << (timer.frame_time_seconds * 1000.0f)
        << "ms (" << timer.frames_per_second
        << " fps)";
-    std::string deviceName(deviceProperties.deviceName);
+    std::string deviceName(device_properties.deviceName);
 
     text_overlay->update(name, ss.str(), deviceName);
   }
 
   void submit_text_overlay() {
     VkSubmitInfo submit_info = init_text_submit_info();
-    submit_info.pCommandBuffers = &text_overlay->cmdBuffers[currentBuffer];
+    submit_info.pCommandBuffers = &text_overlay->cmdBuffers[current_buffer];
 
     VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     submit_info.pWaitDstStageMask = &stageFlags;
@@ -127,7 +127,7 @@ class RendererTextOverlay : public Renderer {
     }
 
     SwapChainVK *sc = (SwapChainVK*) window->get_swap_chain();
-    vik_log_check(sc->present(queue, currentBuffer, waitSemaphore));
+    vik_log_check(sc->present(queue, current_buffer, waitSemaphore));
     vik_log_check(vkQueueWaitIdle(queue));
   }
 

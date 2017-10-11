@@ -125,20 +125,20 @@ class XRCubeMap : public vik::Application {
     // As the support differs between implemementations we need to check device features and select a proper format and file
     std::string filename;
     VkFormat format;
-    if (renderer->deviceFeatures.textureCompressionBC) {
+    if (renderer->device_features.textureCompressionBC) {
       filename = "cubemap_yokohama_bc3_unorm.ktx";
       format = VK_FORMAT_BC2_UNORM_BLOCK;
-    } else if (renderer->deviceFeatures.textureCompressionASTC_LDR) {
+    } else if (renderer->device_features.textureCompressionASTC_LDR) {
       filename = "cubemap_yokohama_astc_8x8_unorm.ktx";
       format = VK_FORMAT_ASTC_8x8_UNORM_BLOCK;
-    } else if (renderer->deviceFeatures.textureCompressionETC2) {
+    } else if (renderer->device_features.textureCompressionETC2) {
       filename = "cubemap_yokohama_etc2_unorm.ktx";
       format = VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
     } else {
       vik_log_f("Device does not support any compressed texture format!");
     }
 
-    cubeMap.loadFromFile(vik::Assets::getTexturePath() + filename, format, renderer->vksDevice, renderer->queue);
+    cubeMap.loadFromFile(vik::Assets::getTexturePath() + filename, format, renderer->vik_device, renderer->queue);
   }
 
   void reBuildCommandBuffers() {
@@ -153,7 +153,7 @@ class XRCubeMap : public vik::Application {
     VkCommandBufferBeginInfo cmdBufInfo = vik::initializers::commandBufferBeginInfo();
 
     VkClearValue clearValues[2];
-    clearValues[0].color = renderer->defaultClearColor;
+    clearValues[0].color = renderer->default_clear_color;
     clearValues[1].depthStencil = { 1.0f, 0 };
 
     VkRenderPassBeginInfo renderPassBeginInfo = vik::initializers::renderPassBeginInfo();
@@ -205,12 +205,12 @@ class XRCubeMap : public vik::Application {
 
   void loadMeshes() {
     // Skybox
-    models.skybox.loadFromFile(vik::Assets::getAssetPath() + "models/cube.obj", vertexLayout, 0.05f, renderer->vksDevice, renderer->queue);
+    models.skybox.loadFromFile(vik::Assets::getAssetPath() + "models/cube.obj", vertexLayout, 0.05f, renderer->vik_device, renderer->queue);
     // Objects
     std::vector<std::string> filenames = { "sphere.obj", "teapot.dae", "torusknot.obj" };
     for (auto file : filenames) {
       vik::Model model;
-      model.loadFromFile(vik::Assets::getAssetPath() + "models/" + file, vertexLayout, 0.05f, renderer->vksDevice, renderer->queue);
+      model.loadFromFile(vik::Assets::getAssetPath() + "models/" + file, vertexLayout, 0.05f, renderer->vik_device, renderer->queue);
       models.objects.push_back(model);
     }
   }
@@ -424,7 +424,7 @@ class XRCubeMap : public vik::Application {
     pipelineCreateInfo.stageCount = shaderStages.size();
     pipelineCreateInfo.pStages = shaderStages.data();
 
-    vik_log_check(vkCreateGraphicsPipelines(renderer->device, renderer->pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.skybox));
+    vik_log_check(vkCreateGraphicsPipelines(renderer->device, renderer->pipeline_cache, 1, &pipelineCreateInfo, nullptr, &pipelines.skybox));
 
     vkDestroyShaderModule(renderer->device, shaderStages[0].module, nullptr);
     vkDestroyShaderModule(renderer->device, shaderStages[1].module, nullptr);
@@ -437,7 +437,7 @@ class XRCubeMap : public vik::Application {
     depthStencilState.depthTestEnable = VK_TRUE;
     // Flip cull mode
     rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;
-    vik_log_check(vkCreateGraphicsPipelines(renderer->device, renderer->pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.reflect));
+    vik_log_check(vkCreateGraphicsPipelines(renderer->device, renderer->pipeline_cache, 1, &pipelineCreateInfo, nullptr, &pipelines.reflect));
 
     vkDestroyShaderModule(renderer->device, shaderStages[0].module, nullptr);
     vkDestroyShaderModule(renderer->device, shaderStages[1].module, nullptr);
@@ -446,14 +446,14 @@ class XRCubeMap : public vik::Application {
   // Prepare and initialize uniform buffer containing shader uniforms
   void prepareUniformBuffers() {
     // Objact vertex shader uniform buffer
-    vik_log_check(renderer->vksDevice->createBuffer(
+    vik_log_check(renderer->vik_device->createBuffer(
                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                     &uniformBuffers.object,
                     sizeof(uboVS)));
 
     // Skybox vertex shader uniform buffer
-    vik_log_check(renderer->vksDevice->createBuffer(
+    vik_log_check(renderer->vik_device->createBuffer(
                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                     &uniformBuffers.skybox,
@@ -486,7 +486,7 @@ class XRCubeMap : public vik::Application {
     submit_info.pWaitDstStageMask = stage_flags.data();
 
     submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &renderer->cmd_buffers[renderer->currentBuffer];
+    submit_info.pCommandBuffers = &renderer->cmd_buffers[renderer->current_buffer];
     vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, VK_NULL_HANDLE));
   }
 

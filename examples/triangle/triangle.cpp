@@ -94,9 +94,9 @@ class Triangle : public vik::Application {
   }
 
   uint32_t getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties) {
-    for (uint32_t i = 0; i < renderer->deviceMemoryProperties.memoryTypeCount; i++) {
+    for (uint32_t i = 0; i < renderer->device_memory_properties.memoryTypeCount; i++) {
       if ((typeBits & 1) == 1
-          && (renderer->deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+          && (renderer->device_memory_properties.memoryTypes[i].propertyFlags & properties) == properties)
         return i;
       typeBits >>= 1;
     }
@@ -200,8 +200,8 @@ class Triangle : public vik::Application {
   }
 
   void draw() {
-    vik_log_check(vkWaitForFences(renderer->device, 1, &waitFences[renderer->currentBuffer], VK_TRUE, UINT64_MAX));
-    vik_log_check(vkResetFences(renderer->device, 1, &waitFences[renderer->currentBuffer]));
+    vik_log_check(vkWaitForFences(renderer->device, 1, &waitFences[renderer->current_buffer], VK_TRUE, UINT64_MAX));
+    vik_log_check(vkResetFences(renderer->device, 1, &waitFences[renderer->current_buffer]));
 
     VkSubmitInfo submit_info = renderer->init_render_submit_info();
 
@@ -211,7 +211,7 @@ class Triangle : public vik::Application {
     submit_info.pWaitDstStageMask = stage_flags.data();
 
     submit_info.pCommandBuffers = renderer->get_current_command_buffer();
-    vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, waitFences[renderer->currentBuffer]));
+    vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, waitFences[renderer->current_buffer]));
   }
 
   void prepareVertices(bool useStagingBuffers) {
@@ -536,7 +536,7 @@ class Triangle : public vik::Application {
     pipelineCreateInfo.renderPass = renderer->render_pass;
     pipelineCreateInfo.pDynamicState = &dynamicState;
 
-    vik_log_check(vkCreateGraphicsPipelines(renderer->device, renderer->pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
+    vik_log_check(vkCreateGraphicsPipelines(renderer->device, renderer->pipeline_cache, 1, &pipelineCreateInfo, nullptr, &pipeline));
 
     vkDestroyShaderModule(renderer->device, shaderStages[0].module, nullptr);
     vkDestroyShaderModule(renderer->device, shaderStages[1].module, nullptr);

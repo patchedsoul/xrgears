@@ -292,7 +292,7 @@ class XRGears : public vik::Application {
 
   void load_assets() {
     if (enable_sky)
-      sky_box->loadAssets(vertex_layout, renderer->vksDevice, renderer->queue);
+      sky_box->loadAssets(vertex_layout, renderer->vik_device, renderer->queue);
   }
 
   void init_gears() {
@@ -333,7 +333,7 @@ class XRGears : public vik::Application {
 
       nodes[i] = new vik::NodeGear();
       nodes[i]->setInfo(&gear_node_info);
-      ((vik::NodeGear*)nodes[i])->generate(renderer->vksDevice,
+      ((vik::NodeGear*)nodes[i])->generate(renderer->vik_device,
                                            &gear_info, renderer->queue);
     }
 
@@ -341,7 +341,7 @@ class XRGears : public vik::Application {
     teapot_node->load_model("teapot.dae",
                           vertex_layout,
                           0.25f,
-                          renderer->vksDevice,
+                          renderer->vik_device,
                           renderer->queue);
 
     vik::Material teapot_material = vik::Material("Cream", glm::vec3(1.0f, 1.0f, 0.7f), 1.0f, 1.0f);
@@ -577,12 +577,12 @@ class XRGears : public vik::Application {
     pipeline_info.renderPass = used_pass;
 
     vik_log_check(vkCreateGraphicsPipelines(renderer->device,
-                                            renderer->pipelineCache, 1,
+                                            renderer->pipeline_cache, 1,
                                             &pipeline_info,
                                             nullptr, &pipelines.pbr));
 
     if (enable_sky)
-      sky_box->init_pipeline(&pipeline_info, renderer->pipelineCache);
+      sky_box->init_pipeline(&pipeline_info, renderer->pipeline_cache);
 
     vkDestroyShaderModule(renderer->device, shader_stages[0].module, nullptr);
     vkDestroyShaderModule(renderer->device, shader_stages[1].module, nullptr);
@@ -591,12 +591,12 @@ class XRGears : public vik::Application {
 
   // Prepare and initialize uniform buffer containing shader uniforms
   void init_uniform_buffers() {
-    renderer->vksDevice->create_and_map(&uniform_buffers.lights, sizeof(ubo_lights));
+    renderer->vik_device->create_and_map(&uniform_buffers.lights, sizeof(ubo_lights));
 
-    camera->init_uniform_buffer(renderer->vksDevice);
+    camera->init_uniform_buffer(renderer->vik_device);
 
     for (auto& node : nodes)
-      node->init_uniform_buffer(renderer->vksDevice);
+      node->init_uniform_buffer(renderer->vik_device);
 
     update_uniform_buffers();
   }
@@ -622,10 +622,13 @@ class XRGears : public vik::Application {
     ubo_lights.lights[3] = glm::vec4( p, -p*0.5f, -p, 1.0f);
 
     if (!renderer->timer.animation_paused) {
-      ubo_lights.lights[0].x = sin(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
-      ubo_lights.lights[0].z = cos(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
-      ubo_lights.lights[1].x = cos(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
-      ubo_lights.lights[1].y = sin(glm::radians(renderer->timer.animation_timer * 360.0f)) * 20.0f;
+
+      float rad = glm::radians(renderer->timer.animation_timer * 360.0f);
+
+      ubo_lights.lights[0].x = sin(rad) * 20.0f;
+      ubo_lights.lights[0].z = cos(rad) * 20.0f;
+      ubo_lights.lights[1].x = cos(rad) * 20.0f;
+      ubo_lights.lights[1].y = sin(rad) * 20.0f;
     }
 
     memcpy(uniform_buffers.lights.mapped, &ubo_lights, sizeof(ubo_lights));
@@ -709,14 +712,14 @@ class XRGears : public vik::Application {
 
     if (enable_distortion) {
       offscreen_pass = new vik::OffscreenPass(renderer->device);
-      offscreen_pass->init_offscreen_framebuffer(renderer->vksDevice, renderer->physical_device);
+      offscreen_pass->init_offscreen_framebuffer(renderer->vik_device, renderer->physical_device);
       distortion = new vik::Distortion(renderer->device);
-      distortion->init_quads(renderer->vksDevice);
-      distortion->init_uniform_buffer(renderer->vksDevice);
+      distortion->init_quads(renderer->vik_device);
+      distortion->init_uniform_buffer(renderer->vik_device);
       distortion->update_uniform_buffer_warp(hmd->device);
       distortion->init_descriptor_set_layout();
       distortion->init_pipeline_layout();
-      distortion->init_pipeLine(renderer->render_pass, renderer->pipelineCache);
+      distortion->init_pipeLine(renderer->render_pass, renderer->pipeline_cache);
       distortion->init_descriptor_set(offscreen_pass, renderer->descriptor_pool);
     }
 

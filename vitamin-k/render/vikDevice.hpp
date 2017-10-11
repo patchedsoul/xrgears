@@ -43,7 +43,7 @@ class Device {
   VkCommandPool commandPool = VK_NULL_HANDLE;
 
   /** @brief Set to true when the debug marker extension is detected */
-  bool enableDebugMarkers = false;
+  bool enable_debug_markers = false;
 
   /** @brief Contains queue family indices */
   struct {

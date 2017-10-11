@@ -14,16 +14,16 @@
 namespace vik {
 class Assets {
  public:
-  static const std::string getAssetPath() {
+  static const std::string get_asset_path() {
     return "./data/";
   }
 
-  static const std::string getShaderPath() {
-    return getAssetPath() + "shaders/";
+  static const std::string get_shader_path() {
+    return get_asset_path() + "shaders/";
   }
 
-  static const std::string getTexturePath() {
-    return getAssetPath() + "textures/";
+  static const std::string get_texture_path() {
+    return get_asset_path() + "textures/";
   }
 };
 }  // namespace vik

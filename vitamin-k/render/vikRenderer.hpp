@@ -56,33 +56,33 @@ class Renderer {
 
 
   Timer timer;
-  Device *vksDevice;
+  Device *vik_device;
 
-  VkPhysicalDeviceProperties deviceProperties;
-  VkPhysicalDeviceFeatures deviceFeatures;
-  VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
-  VkPhysicalDeviceFeatures enabledFeatures{};
+  VkPhysicalDeviceProperties device_properties;
+  VkPhysicalDeviceFeatures device_features;
+  VkPhysicalDeviceMemoryProperties device_memory_properties;
+  VkPhysicalDeviceFeatures enabled_features{};
 
-  VkFormat depthFormat;
+  VkFormat depth_format;
   VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
-  VkPipelineCache pipelineCache;
+  VkPipelineCache pipeline_cache;
 
-  VkClearColorValue defaultClearColor = { { 0.025f, 0.025f, 0.025f, 1.0f } };
+  VkClearColorValue default_clear_color = { { 0.025f, 0.025f, 0.025f, 1.0f } };
 
   struct {
     VkImage image;
     VkDeviceMemory mem;
     VkImageView view;
-  } depthStencil;
+  } depth_stencil;
 
   struct {
     VkSemaphore present_complete;
     VkSemaphore render_complete;
   } semaphores;
 
-  std::vector<const char*> enabledExtensions;
+  std::vector<const char*> enabled_extensions;
 
-  uint32_t currentBuffer = 0;
+  uint32_t current_buffer = 0;
 
   std::function<void()> window_resize_cb;
   std::function<void()> enabled_features_cb;
@@ -103,18 +103,18 @@ class Renderer {
     for (uint32_t i = 0; i < frame_buffers.size(); i++)
       vkDestroyFramebuffer(device, frame_buffers[i], nullptr);
 
-    vkDestroyImageView(device, depthStencil.view, nullptr);
-    vkDestroyImage(device, depthStencil.image, nullptr);
-    vkFreeMemory(device, depthStencil.mem, nullptr);
+    vkDestroyImageView(device, depth_stencil.view, nullptr);
+    vkDestroyImage(device, depth_stencil.image, nullptr);
+    vkFreeMemory(device, depth_stencil.mem, nullptr);
 
-    vkDestroyPipelineCache(device, pipelineCache, nullptr);
+    vkDestroyPipelineCache(device, pipeline_cache, nullptr);
 
     vkDestroyCommandPool(device, cmd_pool, nullptr);
 
     vkDestroySemaphore(device, semaphores.present_complete, nullptr);
     vkDestroySemaphore(device, semaphores.render_complete, nullptr);
 
-    delete vksDevice;
+    delete vik_device;
 
     if (settings->validation)
       debug::freeDebugCallback(instance);
@@ -257,12 +257,12 @@ class Renderer {
     window->init_swap_chain(width, height);
 
     auto _render_cb = [this](uint32_t index) {
-      currentBuffer = index;
+      current_buffer = index;
       render_cb();
     };
     window->get_swap_chain()->set_render_cb(_render_cb);
 
-    if (vksDevice->enableDebugMarkers)
+    if (vik_device->enable_debug_markers)
       debugmarker::setup(device);
 
     create_command_pool(window->get_swap_chain()->get_queue_index());
@@ -288,7 +288,9 @@ class Renderer {
   }
 
   void destroy_command_buffers() {
-    vkFreeCommandBuffers(device, cmd_pool, static_cast<uint32_t>(cmd_buffers.size()), cmd_buffers.data());
+    vkFreeCommandBuffers(device, cmd_pool,
+                         static_cast<uint32_t>(cmd_buffers.size()),
+                         cmd_buffers.data());
   }
 
   VkCommandBuffer create_command_buffer() {
@@ -311,22 +313,23 @@ class Renderer {
     VkPipelineCacheCreateInfo pipeline_cache_info = {};
     pipeline_cache_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
     vik_log_check(vkCreatePipelineCache(device, &pipeline_cache_info,
-                                        nullptr, &pipelineCache));
+                                        nullptr, &pipeline_cache));
   }
 
   void init_physical_device() {
     VkResult err;
 
     // Physical device
-    uint32_t gpuCount = 0;
+    uint32_t gpu_count = 0;
     // Get number of available physical devices
-    vik_log_check(vkEnumeratePhysicalDevices(instance, &gpuCount, nullptr));
-    assert(gpuCount > 0);
+    vik_log_check(vkEnumeratePhysicalDevices(instance, &gpu_count, nullptr));
+    assert(gpu_count > 0);
     // Enumerate devices
-    std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
-    err = vkEnumeratePhysicalDevices(instance, &gpuCount, physicalDevices.data());
+    std::vector<VkPhysicalDevice> physicalDevices(gpu_count);
+    err = vkEnumeratePhysicalDevices(instance, &gpu_count, physicalDevices.data());
 
-    vik_log_f_if(err, "Could not enumerate physical devices: %s", Log::result_string(err).c_str());
+    vik_log_f_if(err, "Could not enumerate physical devices: %s",
+                 Log::result_string(err).c_str());
 
     // GPU selection
     if (settings->list_gpus_and_exit) {
@@ -336,35 +339,40 @@ class Renderer {
 
     // Select physical device to be used for the Vulkan example
     // Defaults to the first device unless specified by command line
-    uint32_t selectedDevice = 0;
-    if (settings->gpu > gpuCount - 1) {
-      std::cerr << "Selected device index " << settings->gpu
-                << " is out of range, reverting to device 0 (use -listgpus to show available Vulkan devices)"
-                << std::endl;
+    uint32_t selected_device = 0;
+    if (settings->gpu > gpu_count - 1) {
+      vik_log_f("Selected device index %d is out of range,"
+                " reverting to device 0"
+                " (use --list-gpus to show available Vulkan devices)",
+                settings->gpu);
     } else if (settings->gpu != 0) {
       vik_log_i("Selected Vulkan device %d", settings->gpu);
-      selectedDevice = settings->gpu;
+      selected_device = settings->gpu;
     }
 
-    physical_device = physicalDevices[selectedDevice];
+    physical_device = physicalDevices[selected_device];
   }
 
   void list_gpus() {
-    uint32_t gpuCount = 0;
-    vik_log_check(vkEnumeratePhysicalDevices(instance, &gpuCount, nullptr));
-    if (gpuCount == 0) {
+    uint32_t gpu_count = 0;
+    vik_log_check(vkEnumeratePhysicalDevices(instance, &gpu_count, nullptr));
+    if (gpu_count == 0) {
       vik_log_e("No Vulkan devices found!");
     } else {
       // Enumerate devices
       vik_log_i("Available Vulkan devices");
-      std::vector<VkPhysicalDevice> devices(gpuCount);
-      vik_log_check(vkEnumeratePhysicalDevices(instance, &gpuCount, devices.data()));
-      for (uint32_t i = 0; i < gpuCount; i++) {
-        VkPhysicalDeviceProperties deviceProperties;
-        vkGetPhysicalDeviceProperties(devices[i], &deviceProperties);
-        vik_log_i("Device [%d] : %s", i, deviceProperties.deviceName);
-        vik_log_i(" Type: %s", tools::physicalDeviceTypeString(deviceProperties.deviceType).c_str());
-        vik_log_i(" API: %d.%d.%d", deviceProperties.apiVersion >> 22, (deviceProperties.apiVersion >> 12) & 0x3ff, deviceProperties.apiVersion & 0xfff);
+      std::vector<VkPhysicalDevice> devices(gpu_count);
+      vik_log_check(vkEnumeratePhysicalDevices(instance, &gpu_count, devices.data()));
+      for (uint32_t i = 0; i < gpu_count; i++) {
+        VkPhysicalDeviceProperties device_properties;
+        vkGetPhysicalDeviceProperties(devices[i], &device_properties);
+        vik_log_i("Device [%d] : %s", i, device_properties.deviceName);
+        vik_log_i(" Type: %s",
+                  tools::physicalDeviceTypeString(device_properties.deviceType).c_str());
+        vik_log_i(" API: %d.%d.%d",
+                  device_properties.apiVersion >> 22,
+                  (device_properties.apiVersion >> 12) & 0x3ff,
+                  device_properties.apiVersion & 0xfff);
       }
     }
   }
@@ -372,25 +380,24 @@ class Renderer {
   void get_physical_device_properties() {
     // Store properties (including limits), features and memory properties
     // of the phyiscal device (so that examples can check against them)
-    vkGetPhysicalDeviceProperties(physical_device, &deviceProperties);
-    vkGetPhysicalDeviceFeatures(physical_device, &deviceFeatures);
-    vkGetPhysicalDeviceMemoryProperties(physical_device, &deviceMemoryProperties);
+    vkGetPhysicalDeviceProperties(physical_device, &device_properties);
+    vkGetPhysicalDeviceFeatures(physical_device, &device_features);
+    vkGetPhysicalDeviceMemoryProperties(physical_device, &device_memory_properties);
   }
 
   void init_debugging() {
-    // The report flags determine what type of messages for the layers will be displayed
-    // For validating (debugging) an appplication the error and warning bits should suffice
-    VkDebugReportFlagsEXT debugReportFlags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-    // Additional flags include performance info, loader and layer debug messages, etc.
-    debug::setupDebugging(instance, debugReportFlags, VK_NULL_HANDLE);
+    // The report flags determine what type of messages for the layers
+    // will be displayed For validating (debugging) an appplication the error
+    // and warning bits should suffice
+    VkDebugReportFlagsEXT debug_report_flags =
+        VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+    // Additional flags include performance info,
+    // loader and layer debug messages, etc.
+    debug::setupDebugging(instance, debug_report_flags, VK_NULL_HANDLE);
   }
 
   void init_vulkan(const std::string &name, const std::vector<const char*> &extensions) {
-    VkResult err;
-
-    // Vulkan instance
-    err = create_instance(name, extensions);
-
+    VkResult err = create_instance(name, extensions);
     vik_log_f_if(err, "Could not create Vulkan instance: %s",
                  Log::result_string(err).c_str());
 
@@ -408,7 +415,7 @@ class Renderer {
     // Vulkan device creation
     // This is handled by a separate class that gets a logical device representation
     // and encapsulates functions related to a device
-    vksDevice = new Device(physical_device);
+    vik_device = new Device(physical_device);
 
     /*
     enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
@@ -417,18 +424,20 @@ class Renderer {
     enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     */
 
-    VkResult res = vksDevice->createLogicalDevice(enabledFeatures, enabledExtensions);
-    vik_log_f_if(res != VK_SUCCESS, "Could not create Vulkan device: %s", Log::result_string(res).c_str());
+    VkResult res = vik_device->createLogicalDevice(enabled_features, enabled_extensions);
+    vik_log_f_if(res != VK_SUCCESS,
+                 "Could not create Vulkan device: %s",
+                 Log::result_string(res).c_str());
 
-    device = vksDevice->logicalDevice;
+    device = vik_device->logicalDevice;
 
     // vksDevice->printMultiviewProperties();
 
     // Get a graphics queue from the device
-    vkGetDeviceQueue(device, vksDevice->queueFamilyIndices.graphics, 0, &queue);
+    vkGetDeviceQueue(device, vik_device->queueFamilyIndices.graphics, 0, &queue);
 
     // Find a suitable depth format
-    VkBool32 validDepthFormat = tools::getSupportedDepthFormat(physical_device, &depthFormat);
+    VkBool32 validDepthFormat = tools::getSupportedDepthFormat(physical_device, &depth_format);
     assert(validDepthFormat);
 
     init_semaphores();
@@ -436,13 +445,13 @@ class Renderer {
 
   virtual void init_semaphores() {
     // Create synchronization objects
-    VkSemaphoreCreateInfo semaphoreCreateInfo = initializers::semaphoreCreateInfo();
+    VkSemaphoreCreateInfo semaphore_info = initializers::semaphoreCreateInfo();
     // Create a semaphore used to synchronize image presentation
     // Ensures that the image is displayed before we start submitting new commands to the queu
-    vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.present_complete));
+    vik_log_check(vkCreateSemaphore(device, &semaphore_info, nullptr, &semaphores.present_complete));
     // Create a semaphore used to synchronize command submission
     // Ensures that the image is not presented until all commands have been sumbitted and executed
-    vik_log_check(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.render_complete));
+    vik_log_check(vkCreateSemaphore(device, &semaphore_info, nullptr, &semaphores.render_complete));
   }
 
   void create_command_pool(uint32_t index) {
@@ -455,11 +464,11 @@ class Renderer {
   }
 
   std::string make_title_string(const std::string& title) {
-    std::string device_str(deviceProperties.deviceName);
-    std::string windowTitle = title + " - " + device_str;
+    std::string device_str(device_properties.deviceName);
+    std::string window_title = title + " - " + device_str;
     if (!settings->enable_text_overlay)
-      windowTitle += " - " + std::to_string(timer.frames_since_tick) + " fps";
-    return windowTitle;
+      window_title += " - " + std::to_string(timer.frames_since_tick) + " fps";
+    return window_title;
   }
 
   float get_aspect_ratio() {
@@ -469,15 +478,16 @@ class Renderer {
   virtual void resize() {
     vik_log_d("Resize!");
 
-    // Ensure all operations on the device have been finished before destroying resources
+    // Ensure all operations on the device have been finished
+    // before destroying resources
     wait_idle();
 
     window->get_swap_chain()->create(width, height);
     // Recreate the frame buffers
 
-    vkDestroyImageView(device, depthStencil.view, nullptr);
-    vkDestroyImage(device, depthStencil.image, nullptr);
-    vkFreeMemory(device, depthStencil.mem, nullptr);
+    vkDestroyImageView(device, depth_stencil.view, nullptr);
+    vkDestroyImage(device, depth_stencil.image, nullptr);
+    vkFreeMemory(device, depth_stencil.mem, nullptr);
     init_depth_stencil();
 
     for (uint32_t i = 0; i < frame_buffers.size(); i++)
@@ -517,7 +527,7 @@ class Renderer {
   }
 
   VkCommandBuffer* get_current_command_buffer() {
-    return &cmd_buffers[currentBuffer];
+    return &cmd_buffers[current_buffer];
   }
 
   void create_frame_buffers(uint32_t count) {
@@ -526,7 +536,7 @@ class Renderer {
 
     std::vector<VkImageView> attachments = std::vector<VkImageView>(2);
     // Depth/Stencil attachment is the same for all frame buffers
-    attachments[1] = depthStencil.view;
+    attachments[1] = depth_stencil.view;
 
     for (uint32_t i = 0; i < count; i++) {
       attachments[0] = window->get_swap_chain()->buffers[i].view;
@@ -546,7 +556,7 @@ class Renderer {
     attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     // Depth attachment
-    attachments[1].format = depthFormat;
+    attachments[1].format = depth_format;
     attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
     attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -555,24 +565,24 @@ class Renderer {
     attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentReference colorReference = {};
-    colorReference.attachment = 0;
-    colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference color_reference = {};
+    color_reference.attachment = 0;
+    color_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentReference depthReference = {};
-    depthReference.attachment = 1;
-    depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference depth_reference = {};
+    depth_reference.attachment = 1;
+    depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    VkSubpassDescription subpassDescription = {};
-    subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpassDescription.colorAttachmentCount = 1;
-    subpassDescription.pColorAttachments = &colorReference;
-    subpassDescription.pDepthStencilAttachment = &depthReference;
-    subpassDescription.inputAttachmentCount = 0;
-    subpassDescription.pInputAttachments = nullptr;
-    subpassDescription.preserveAttachmentCount = 0;
-    subpassDescription.pPreserveAttachments = nullptr;
-    subpassDescription.pResolveAttachments = nullptr;
+    VkSubpassDescription subpass_description = {};
+    subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass_description.colorAttachmentCount = 1;
+    subpass_description.pColorAttachments = &color_reference;
+    subpass_description.pDepthStencilAttachment = &depth_reference;
+    subpass_description.inputAttachmentCount = 0;
+    subpass_description.pInputAttachments = nullptr;
+    subpass_description.preserveAttachmentCount = 0;
+    subpass_description.pPreserveAttachments = nullptr;
+    subpass_description.pResolveAttachments = nullptr;
 
     // Subpass dependencies for layout transitions
     std::array<VkSubpassDependency, 2> dependencies;
@@ -593,14 +603,14 @@ class Renderer {
     dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
     dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-    VkRenderPassCreateInfo renderPassInfo = {};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    renderPassInfo.pAttachments = attachments.data();
-    renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpassDescription;
-    renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
-    renderPassInfo.pDependencies = dependencies.data();
+    VkRenderPassCreateInfo render_pass_info = {};
+    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    render_pass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+    render_pass_info.pAttachments = attachments.data();
+    render_pass_info.subpassCount = 1;
+    render_pass_info.pSubpasses = &subpass_description;
+    render_pass_info.dependencyCount = static_cast<uint32_t>(dependencies.size());
+    render_pass_info.pDependencies = dependencies.data();
 
 
     // VK_KHX_multiview
@@ -626,14 +636,14 @@ class Renderer {
     */
     // VK_KHX_multiview
 
-    vik_log_check(vkCreateRenderPass(device, &renderPassInfo, nullptr, &render_pass));
+    vik_log_check(vkCreateRenderPass(device, &render_pass_info, nullptr, &render_pass));
   }
 
   void init_depth_stencil() {
     VkImageCreateInfo image = {};
     image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     image.imageType = VK_IMAGE_TYPE_2D;
-    image.format = depthFormat;
+    image.format = depth_format;
     image.extent = { width, height, 1 };
     image.mipLevels = 1;
     image.arrayLayers = 1;
@@ -650,7 +660,7 @@ class Renderer {
     VkImageViewCreateInfo depthStencilView = {};
     depthStencilView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     depthStencilView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    depthStencilView.format = depthFormat;
+    depthStencilView.format = depth_format;
     depthStencilView.flags = 0;
     depthStencilView.subresourceRange = {};
     depthStencilView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
@@ -661,15 +671,15 @@ class Renderer {
 
     VkMemoryRequirements memReqs;
 
-    vik_log_check(vkCreateImage(device, &image, nullptr, &depthStencil.image));
-    vkGetImageMemoryRequirements(device, depthStencil.image, &memReqs);
+    vik_log_check(vkCreateImage(device, &image, nullptr, &depth_stencil.image));
+    vkGetImageMemoryRequirements(device, depth_stencil.image, &memReqs);
     mem_alloc.allocationSize = memReqs.size;
-    mem_alloc.memoryTypeIndex = vksDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vik_log_check(vkAllocateMemory(device, &mem_alloc, nullptr, &depthStencil.mem));
-    vik_log_check(vkBindImageMemory(device, depthStencil.image, depthStencil.mem, 0));
+    mem_alloc.memoryTypeIndex = vik_device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vik_log_check(vkAllocateMemory(device, &mem_alloc, nullptr, &depth_stencil.mem));
+    vik_log_check(vkBindImageMemory(device, depth_stencil.image, depth_stencil.mem, 0));
 
-    depthStencilView.image = depthStencil.image;
-    vik_log_check(vkCreateImageView(device, &depthStencilView, nullptr, &depthStencil.view));
+    depthStencilView.image = depth_stencil.image;
+    vik_log_check(vkCreateImageView(device, &depthStencilView, nullptr, &depth_stencil.view));
   }
 
   virtual void check_tick_finnished() {
@@ -682,7 +692,7 @@ class Renderer {
   void prepare_frame() {
     // Acquire the next image from the swap chain
     SwapChainVK *sc = (SwapChainVK*) window->get_swap_chain();
-    VkResult err = sc->acquire_next_image(semaphores.present_complete, &currentBuffer);
+    VkResult err = sc->acquire_next_image(semaphores.present_complete, &current_buffer);
     // Recreate the swapchain if it's no longer compatible with the surface
     // (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
     if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR))
@@ -698,7 +708,7 @@ class Renderer {
   // until all commands have been submitted
   virtual void submit_frame() {
     SwapChainVK *sc = (SwapChainVK*) window->get_swap_chain();
-    vik_log_check(sc->present(queue, currentBuffer, semaphores.render_complete));
+    vik_log_check(sc->present(queue, current_buffer, semaphores.render_complete));
     vik_log_check(vkQueueWaitIdle(queue));
   }
 

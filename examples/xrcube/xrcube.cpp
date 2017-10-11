@@ -119,7 +119,7 @@ class XrCube : public vik::Application {
   virtual void render() {
     uint64_t t = get_animation_time();
     update_uniform_buffer(t);
-    submit_queue(renderer->cmd_buffers[renderer->currentBuffer]);
+    submit_queue(renderer->cmd_buffers[renderer->current_buffer]);
     VkFence fences[] = { fence };
     vkWaitForFences(renderer->device, 1, fences, VK_TRUE, INT64_MAX);
     vkResetFences(renderer->device, 1, &fence);
@@ -359,9 +359,9 @@ class XrCube : public vik::Application {
   }
 
   uint32_t getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties) {
-    for (uint32_t i = 0; i < renderer->deviceMemoryProperties.memoryTypeCount; i++) {
+    for (uint32_t i = 0; i < renderer->device_memory_properties.memoryTypeCount; i++) {
       if ((typeBits & 1) == 1
-          && (renderer->deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+          && (renderer->device_memory_properties.memoryTypes[i].propertyFlags & properties) == properties)
         return i;
       typeBits >>= 1;
     }

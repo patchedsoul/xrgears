@@ -26,7 +26,7 @@ class Shader {
     shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStage.stage = stage;
 
-    std::string path = Assets::getShaderPath() + fileName;
+    std::string path = Assets::get_shader_path() + fileName;
     shaderStage.module = load(path.c_str(), device);
     shaderStage.pName = "main";
     assert(shaderStage.module != VK_NULL_HANDLE);

@@ -36,8 +36,8 @@
 #include "../input/vikHMD.hpp"
 
 #define check_feature(f) {\
-  if (renderer->deviceFeatures.f) {\
-    renderer->enabledFeatures.f = VK_TRUE; \
+  if (renderer->device_features.f) {\
+    renderer->enabled_features.f = VK_TRUE; \
   } else { \
     vik_log_f("Feature not supported: %s", #f);\
   } \

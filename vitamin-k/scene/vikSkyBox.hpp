@@ -56,9 +56,9 @@ class SkyBox {
 
   void loadAssets(VertexLayout vertexLayout, Device *vulkanDevice, VkQueue queue) {
     // Skybox
-    model.loadFromFile(vik::Assets::getAssetPath() + "models/cube.obj", vertexLayout, 10.0f, vulkanDevice, queue);
+    model.loadFromFile(vik::Assets::get_asset_path() + "models/cube.obj", vertexLayout, 10.0f, vulkanDevice, queue);
     cubeMap.loadFromFile(
-          vik::Assets::getTexturePath() + "cubemap_yokohama_bc3_unorm.ktx", VK_FORMAT_BC2_UNORM_BLOCK,
+          vik::Assets::get_texture_path() + "cubemap_yokohama_bc3_unorm.ktx", VK_FORMAT_BC2_UNORM_BLOCK,
           // VikAssets::getTexturePath() + "equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT,
           // VikAssets::getTexturePath() + "hdr/pisa_cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT,
           // VikAssets::getAssetPath() + "textures/cubemap_space.ktx", VK_FORMAT_R8G8B8A8_UNORM,
