@@ -444,13 +444,13 @@ class XRGears : public vik::Application {
             &descriptorSetLayout,
             1);
 
-      skyBox->createDescriptorSet(allocInfo, &((vik::Camera*)camera)->uniformBuffer.descriptor);
+      skyBox->createDescriptorSet(allocInfo, &camera->uniformBuffer.descriptor);
     }
 
     for (auto& node : nodes)
       node->createDescriptorSet(renderer->device, renderer->descriptorPool, descriptorSetLayout,
                                 &uniformBuffers.lights.descriptor,
-                                &((vik::Camera*)camera)->uniformBuffer.descriptor,
+                                &camera->uniformBuffer.descriptor,
                                 skyBox);
 }
 
@@ -601,7 +601,7 @@ class XRGears : public vik::Application {
   void draw() {
     VkSubmitInfo submit_info = renderer->init_render_submit_info();
 
-    std::array<VkPipelineStageFlags,1> stage_flags = {
+    std::array<VkPipelineStageFlags, 1> stage_flags = {
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
     };
     submit_info.pWaitDstStageMask = stage_flags.data();

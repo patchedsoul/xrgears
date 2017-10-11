@@ -10,7 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <vector>
+
+#include <vulkan/vulkan.h>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -19,7 +20,9 @@
 
 #include <gli/gli.hpp>
 
-#include <vulkan/vulkan.h>
+#include <vector>
+#include <string>
+
 #include "system/vikApplication.hpp"
 #include "render/vikModel.hpp"
 #include "render/vikTexture.hpp"
@@ -28,9 +31,8 @@
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
 
-class XRCubeMap : public vik::Application
-{
-public:
+class XRCubeMap : public vik::Application {
+ public:
   bool displaySkybox = true;
 
   vik::TextureCubeMap cubeMap;
@@ -88,8 +90,7 @@ public:
     camera->set_view_updated_cb([this]() { viewUpdated = true; });
   }
 
-  ~XRCubeMap()
-  {
+  ~XRCubeMap() {
     // Clean up used Vulkan resources
     // Note : Inherited destructor cleans up resources stored in base class
 
@@ -119,8 +120,7 @@ public:
     check_feature(samplerAnisotropy);
   }
 
-  void loadTextures()
-  {
+  void loadTextures() {
     // Vulkan core supports three different compressed texture formats
     // As the support differs between implemementations we need to check device features and select a proper format and file
     std::string filename;
@@ -128,34 +128,28 @@ public:
     if (renderer->deviceFeatures.textureCompressionBC) {
       filename = "cubemap_yokohama_bc3_unorm.ktx";
       format = VK_FORMAT_BC2_UNORM_BLOCK;
-    }
-    else if (renderer->deviceFeatures.textureCompressionASTC_LDR) {
+    } else if (renderer->deviceFeatures.textureCompressionASTC_LDR) {
       filename = "cubemap_yokohama_astc_8x8_unorm.ktx";
       format = VK_FORMAT_ASTC_8x8_UNORM_BLOCK;
-    }
-    else if (renderer->deviceFeatures.textureCompressionETC2) {
+    } else if (renderer->deviceFeatures.textureCompressionETC2) {
       filename = "cubemap_yokohama_etc2_unorm.ktx";
       format = VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
-    }
-    else {
+    } else {
       vik_log_f("Device does not support any compressed texture format!");
     }
 
     cubeMap.loadFromFile(vik::Assets::getTexturePath() + filename, format, renderer->vksDevice, renderer->queue);
   }
 
-  void reBuildCommandBuffers()
-  {
-    if (!renderer->check_command_buffers())
-    {
+  void reBuildCommandBuffers() {
+    if (!renderer->check_command_buffers()) {
       renderer->destroy_command_buffers();
       renderer->allocate_command_buffers(window->get_swap_chain()->image_count);
     }
     buildCommandBuffers();
   }
 
-  void buildCommandBuffers()
-  {
+  void buildCommandBuffers() {
     VkCommandBufferBeginInfo cmdBufInfo = vik::initializers::commandBufferBeginInfo();
 
     VkClearValue clearValues[2];
@@ -171,8 +165,7 @@ public:
     renderPassBeginInfo.clearValueCount = 2;
     renderPassBeginInfo.pClearValues = clearValues;
 
-    for (int32_t i = 0; i < renderer->cmd_buffers.size(); ++i)
-    {
+    for (int32_t i = 0; i < renderer->cmd_buffers.size(); ++i) {
       // Set target frame buffer
       renderPassBeginInfo.framebuffer = renderer->frame_buffers[i];
 
@@ -180,17 +173,16 @@ public:
 
       vkCmdBeginRenderPass(renderer->cmd_buffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-      VkViewport viewport = vik::initializers::viewport((float)renderer->width,	(float)renderer->height, 0.0f, 1.0f);
+      VkViewport viewport = vik::initializers::viewport((float)renderer->width, (float)renderer->height, 0.0f, 1.0f);
       vkCmdSetViewport(renderer->cmd_buffers[i], 0, 1, &viewport);
 
-      VkRect2D scissor = vik::initializers::rect2D(renderer->width,	renderer->height,	0, 0);
+      VkRect2D scissor = vik::initializers::rect2D(renderer->width, renderer->height, 0, 0);
       vkCmdSetScissor(renderer->cmd_buffers[i], 0, 1, &scissor);
 
       VkDeviceSize offsets[1] = { 0 };
 
       // Skybox
-      if (displaySkybox)
-      {
+      if (displaySkybox) {
         vkCmdBindDescriptorSets(renderer->cmd_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets.skybox, 0, NULL);
         vkCmdBindVertexBuffers(renderer->cmd_buffers[i], VERTEX_BUFFER_BIND_ID, 1, &models.skybox.vertices.buffer, offsets);
         vkCmdBindIndexBuffer(renderer->cmd_buffers[i], models.skybox.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
@@ -211,8 +203,7 @@ public:
     }
   }
 
-  void loadMeshes()
-  {
+  void loadMeshes() {
     // Skybox
     models.skybox.loadFromFile(vik::Assets::getAssetPath() + "models/cube.obj", vertexLayout, 0.05f, renderer->vksDevice, renderer->queue);
     // Objects
@@ -224,8 +215,7 @@ public:
     }
   }
 
-  void setupVertexDescriptions()
-  {
+  void setupVertexDescriptions() {
     // Binding description
     vertices.bindingDescriptions.resize(1);
     vertices.bindingDescriptions[0] =
@@ -266,10 +256,8 @@ public:
     vertices.inputState.pVertexAttributeDescriptions = vertices.attributeDescriptions.data();
   }
 
-  void setupDescriptorPool()
-  {
-    std::vector<VkDescriptorPoolSize> poolSizes =
-    {
+  void setupDescriptorPool() {
+    std::vector<VkDescriptorPoolSize> poolSizes = {
       vik::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2),
       vik::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2)
     };
@@ -283,10 +271,8 @@ public:
     vik_log_check(vkCreateDescriptorPool(renderer->device, &descriptorPoolInfo, nullptr, &renderer->descriptorPool));
   }
 
-  void setupDescriptorSetLayout()
-  {
-    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
-    {
+  void setupDescriptorSetLayout() {
+    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
       // Binding 0 : Vertex shader uniform buffer
       vik::initializers::descriptorSetLayoutBinding(
       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -314,8 +300,7 @@ public:
     vik_log_check(vkCreatePipelineLayout(renderer->device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
   }
 
-  void setupDescriptorSets()
-  {
+  void setupDescriptorSets() {
     // Image descriptor for the cube map texture
     VkDescriptorImageInfo textureDescriptor =
         vik::initializers::descriptorImageInfo(
@@ -332,8 +317,7 @@ public:
     // 3D object descriptor set
     vik_log_check(vkAllocateDescriptorSets(renderer->device, &allocInfo, &descriptorSets.object));
 
-    std::vector<VkWriteDescriptorSet> writeDescriptorSets =
-    {
+    std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
       // Binding 0 : Vertex shader uniform buffer
       vik::initializers::writeDescriptorSet(
       descriptorSets.object,
@@ -352,8 +336,7 @@ public:
     // Sky box descriptor set
     vik_log_check(vkAllocateDescriptorSets(renderer->device, &allocInfo, &descriptorSets.skybox));
 
-    writeDescriptorSets =
-    {
+    writeDescriptorSets = {
       // Binding 0 : Vertex shader uniform buffer
       vik::initializers::writeDescriptorSet(
       descriptorSets.skybox,
@@ -370,8 +353,7 @@ public:
     vkUpdateDescriptorSets(renderer->device, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
   }
 
-  void preparePipelines()
-  {
+  void preparePipelines() {
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
         vik::initializers::pipelineInputAssemblyStateCreateInfo(
           VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
@@ -420,7 +402,7 @@ public:
           0);
 
     // Skybox pipeline (background cube)
-    std::array<VkPipelineShaderStageCreateInfo,2> shaderStages;
+    std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 
     shaderStages[0] = vik::Shader::load(renderer->device, "cubemap/skybox.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
     shaderStages[1] = vik::Shader::load(renderer->device, "cubemap/skybox.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -462,8 +444,7 @@ public:
   }
 
   // Prepare and initialize uniform buffer containing shader uniforms
-  void prepareUniformBuffers()
-  {
+  void prepareUniformBuffers() {
     // Objact vertex shader uniform buffer
     vik_log_check(renderer->vksDevice->createBuffer(
                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -497,11 +478,9 @@ public:
     memcpy(uniformBuffers.skybox.mapped, &uboVS, sizeof(uboVS));
   }
 
-  void draw()
-  {
-
+  void draw() {
     VkSubmitInfo submit_info = renderer->init_render_submit_info();
-    std::array<VkPipelineStageFlags,1> stage_flags = {
+    std::array<VkPipelineStageFlags, 1> stage_flags = {
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
     };
     submit_info.pWaitDstStageMask = stage_flags.data();
@@ -509,11 +488,9 @@ public:
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &renderer->cmd_buffers[renderer->currentBuffer];
     vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, VK_NULL_HANDLE));
-
   }
 
-  void init()
-  {
+  void init() {
     vik::Application::init();
     loadTextures();
     loadMeshes();
@@ -531,34 +508,27 @@ public:
     buildCommandBuffers();
   }
 
-  virtual void render()
-  {
+  virtual void render() {
     draw();
   }
 
-  virtual void view_changed_cb()
-  {
+  virtual void view_changed_cb() {
     updateUniformBuffers();
   }
 
-  void toggleSkyBox()
-  {
+  void toggleSkyBox() {
     displaySkybox = !displaySkybox;
     reBuildCommandBuffers();
   }
 
-  void toggleObject()
-  {
+  void toggleObject() {
     models.objectIndex++;
     if (models.objectIndex >= static_cast<uint32_t>(models.objects.size()))
-    {
       models.objectIndex = 0;
-    }
     reBuildCommandBuffers();
   }
 
-  void changeLodBias(float delta)
-  {
+  void changeLodBias(float delta) {
     uboVS.lodBias += delta;
     if (uboVS.lodBias < 0.0f)
       uboVS.lodBias = 0.0f;
@@ -566,8 +536,8 @@ public:
       uboVS.lodBias = cubeMap.mipLevels;
 
     updateUniformBuffers();
-    //TODO
-    //renderer->updateTextOverlay();
+    // TODO(lubosz)
+    // renderer->updateTextOverlay();
   }
 
   void key_pressed(vik::Input::Key key) {

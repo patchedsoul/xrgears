@@ -16,6 +16,7 @@
 
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "vikWindow.hpp"
 
@@ -91,7 +92,6 @@ class WindowXCB : public Window {
     syms = xcb_key_symbols_alloc(connection);
 
     if (settings->fullscreen) {
-
       get_randr_outputs();
 
       if (settings->display > displays.size()) {

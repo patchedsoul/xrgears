@@ -105,7 +105,7 @@ class XrCube : public vik::Application {
   void submit_queue(VkCommandBuffer cmd_buffer) {
     VkSubmitInfo submit_info = renderer->init_render_submit_info();
 
-    std::array<VkPipelineStageFlags,1> stage_flags = {
+    std::array<VkPipelineStageFlags, 1> stage_flags = {
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
     };
     submit_info.pWaitDstStageMask = stage_flags.data();
@@ -504,8 +504,6 @@ class XrCube : public vik::Application {
     memcpy(((char*)map + vertex_offset), vVertices, sizeof(vVertices));
     memcpy(((char*)map + colors_offset), vColors, sizeof(vColors));
     memcpy(((char*)map + normals_offset), vNormals, sizeof(vNormals));
-
-    //vkUnmapMemory(renderer->device, mem);
 
     vkBindBufferMemory(renderer->device, buffer, mem, 0);
   }

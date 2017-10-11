@@ -205,7 +205,7 @@ class Triangle : public vik::Application {
 
     VkSubmitInfo submit_info = renderer->init_render_submit_info();
 
-    std::array<VkPipelineStageFlags,1> stage_flags = {
+    std::array<VkPipelineStageFlags, 1> stage_flags = {
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
     };
     submit_info.pWaitDstStageMask = stage_flags.data();
