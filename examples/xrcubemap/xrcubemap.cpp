@@ -138,7 +138,7 @@ class XRCubeMap : public vik::Application {
       vik_log_f("Device does not support any compressed texture format!");
     }
 
-    cubeMap.loadFromFile(vik::Assets::get_texture_path() + filename, format, renderer->vik_device, renderer->queue);
+    cubeMap.loadFromFile(vik::Assets::get_texture_path() + "cubemaps/sdr/" + filename, format, renderer->vik_device, renderer->queue);
   }
 
   void reBuildCommandBuffers() {

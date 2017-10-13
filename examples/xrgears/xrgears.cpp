@@ -296,16 +296,16 @@ class XRGears : public vik::Application {
       std::string file_name;
       VkFormat format;
 
-      //file_name = "hdr/uffizi_cube.ktx";
+      //file_name = "cubemaps/hdr/uffizi_cube.ktx";
       //format = VK_FORMAT_R16G16B16A16_SFLOAT;
 
-      file_name = "cubemap_yokohama_bc3_unorm.ktx";
+      file_name = "cubemaps/sdr/cubemap_yokohama_bc3_unorm.ktx";
       format = VK_FORMAT_BC2_UNORM_BLOCK;
 
-      // file_name = "equirect/cube2/cube.ktx";
+      // file_name = "cubemaps/sdr/cube.ktx";
       // format = VK_FORMAT_R16G16B16A16_SFLOAT;
 
-      // file_name = "cubemap_space.ktx";
+      // file_name = "cubemaps/sdr/cubemap_space.ktx";
       // format = VK_FORMAT_R8G8B8A8_UNORM;
 
       sky_box->load_assets(vertex_layout, renderer->vik_device, renderer->queue,
