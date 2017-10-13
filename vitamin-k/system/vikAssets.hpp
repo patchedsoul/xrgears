@@ -15,11 +15,11 @@ namespace vik {
 class Assets {
  public:
   static const std::string get_asset_path() {
-    return "./data/";
+    return "./assets/";
   }
 
   static const std::string get_shader_path() {
-    return get_asset_path() + "shaders/";
+    return "./shaders/";
   }
 
   static const std::string get_texture_path() {

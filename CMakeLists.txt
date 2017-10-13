@@ -3,7 +3,6 @@ project(xrgears)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
 
-
 function(add_cxxflag FLAG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}" PARENT_SCOPE)
 endfunction(add_cxxflag)
@@ -67,37 +66,29 @@ add_library(xdg-shell ${XDG_SRC})
 include_directories(
     ${CMAKE_SOURCE_DIR}/vitamin-k
     ${CMAKE_SOURCE_DIR}/xdg-shell
+    ${CMAKE_SOURCE_DIR}/fonts
     ${OPENHMD_INCLUDE_DIRS}
     ${DRM_INCLUDE_DIRS})
 
-# glslc -o gears.vert.spv gears.vert
+set(SHADER_DIR ${CMAKE_SOURCE_DIR}/shaders)
 
 file(GLOB_RECURSE SHADER_GLOB
-    ${CMAKE_SOURCE_DIR}/data/shaders/*.vert
-    ${CMAKE_SOURCE_DIR}/data/shaders/*.frag
-    ${CMAKE_SOURCE_DIR}/data/shaders/*.geom)
+    ${SHADER_DIR}/*.vert
+    ${SHADER_DIR}/*.frag
+    ${SHADER_DIR}/*.geom)
 
 # build shaders
 foreach(SHADER ${SHADER_GLOB})
     message("Compiling SPV shader for ${SHADER}")
     execute_process(
-	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/data/shaders
-	COMMAND glslc -o ${SHADER}.spv ${SHADER}
-	)
+	WORKING_DIRECTORY ${SHADER_DIR}
+	COMMAND glslc -o ${SHADER}.spv ${SHADER})
 endforeach(SHADER)
 
 file(GLOB_RECURSE VITAMINK_SRC vitamin-k/*.hpp)
 add_library(vitamin-k ${VITAMINK_SRC})
 SET_TARGET_PROPERTIES(vitamin-k  PROPERTIES LINKER_LANGUAGE CXX)
 set(LINT_SOURCES ${VITAMINK_SRC})
-
-pkg_search_module(VULKAN REQUIRED vulkan)
-pkg_search_module(OPENHMD REQUIRED openhmd)
-pkg_search_module(ASSIMP REQUIRED assimp)
-pkg_search_module(XCB REQUIRED xcb-keysyms)
-pkg_search_module(WAYLAND REQUIRED wayland-client)
-pkg_search_module(GBM REQUIRED gbm)
-pkg_search_module(DRM REQUIRED libdrm)
 
 set(EXAMPLE_LIBS
     ${VULKAN_LIBRARIES}
