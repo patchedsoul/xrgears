@@ -51,7 +51,6 @@ class WindowWayland : public Window {
 
   std::vector<Display> displays;
 
-
   ~WindowWayland() {
     if (surface)
       wl_surface_destroy(surface);
@@ -211,6 +210,7 @@ class WindowWayland : public Window {
 
   const wl_seat_listener seat_listener = {
     _seat_capabilities_cb,
+    _seat_name_cb
   };
 
   const wl_output_listener output_listener = {
@@ -264,9 +264,11 @@ class WindowWayland : public Window {
     self->pointer_axis_cb(wayland_to_vik_axis(axis), wl_fixed_to_double(value));
   }
 
-  static void _registry_global_cb(void *data, wl_registry *registry, uint32_t name,
-                                  const char *interface, uint32_t version) {
+  static void _registry_global_cb(void *data, wl_registry *registry,
+                                  uint32_t name, const char *interface,
+                                  uint32_t version) {
     WindowWayland *self = reinterpret_cast<WindowWayland *>(data);
+    // vik_log_d("Interface: %s Version %d", interface, version);
     self->registry_global(registry, name, interface);
   }
 
@@ -369,7 +371,8 @@ class WindowWayland : public Window {
     Display* d = current_display();
 
     if (settings->mode > d->modes.size()) {
-      vik_log_e("Requested mode %d, but only %d modes are available on display %d.",
+      vik_log_e("Requested mode %d, but only %d modes"
+                " are available on display %d.",
                 settings->mode,
                 d->modes.size(),
                 settings->display);
@@ -400,7 +403,8 @@ class WindowWayland : public Window {
     Mode *m = current_mode();
     if (fullscreen_requested &&
         (m->size.first != width || m->size.second != height)) {
-      vik_log_w("Received mode %dx%d does not match requested Mode %dx%d. Compositor bug? Requesting again.",
+      vik_log_w("Received mode %dx%d does not match requested Mode %dx%d. "
+                "Compositor bug? Requesting again.",
                 width, height,
                 m->size.first, m->size.second);
       fullscreen_requested = false;
@@ -428,8 +432,8 @@ class WindowWayland : public Window {
                                   uint32_t format, int fd, uint32_t size) {}
   static void _keyboard_modifiers_cb(void *data, wl_keyboard *keyboard,
                                      uint32_t serial, uint32_t mods_depressed,
-                                     uint32_t mods_latched, uint32_t mods_locked,
-                                     uint32_t group) {}
+                                     uint32_t mods_latched,
+                                     uint32_t mods_locked, uint32_t group) {}
   static void _keyboard_repeat_cb(void *data, wl_keyboard *keyboard,
                                   int32_t rate, int32_t delay) {}
 
@@ -444,5 +448,6 @@ class WindowWayland : public Window {
                                 wl_fixed_t sx, wl_fixed_t sy) {}
   static void _pointer_leave_cb(void *data, wl_pointer *pointer,
                                 uint32_t serial, wl_surface *surface) {}
+  static void _seat_name_cb (void *data, wl_seat *wl_seat, const char *name) {}
 };
 }  // namespace vik

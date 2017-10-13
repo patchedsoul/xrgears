@@ -45,10 +45,8 @@ class WindowWaylandXDG : public WindowWayland {
     wl_registry *registry = wl_display_get_registry(display);
     wl_registry_add_listener(registry, &registry_listener, this);
 
-    /* Round-trip to get globals */
     wl_display_roundtrip(display);
 
-    /* We don't need this anymore */
     wl_registry_destroy(registry);
 
     surface = wl_compositor_create_surface(compositor);
@@ -64,8 +62,6 @@ class WindowWaylandXDG : public WindowWayland {
 
     zxdg_toplevel_v6_add_listener(xdg_toplevel, &xdg_toplevel_listener, this);
 
-    update_window_title("vkcube");
-
     wl_surface_commit(surface);
 
     return 0;
@@ -79,14 +75,14 @@ class WindowWaylandXDG : public WindowWayland {
                        const char *interface) {
     if (strcmp(interface, "wl_compositor") == 0) {
       compositor = (wl_compositor*)
-          wl_registry_bind(registry, name, &wl_compositor_interface, 1);
+          wl_registry_bind(registry, name, &wl_compositor_interface, 4);
     } else if (strcmp(interface, "zxdg_shell_v6") == 0) {
       shell = (zxdg_shell_v6*)
           wl_registry_bind(registry, name, &zxdg_shell_v6_interface, 1);
       zxdg_shell_v6_add_listener(shell, &xdg_shell_listener, this);
     } else if (strcmp(interface, "wl_seat") == 0) {
       seat = (wl_seat*)
-          wl_registry_bind(registry, name, &wl_seat_interface, 1);
+          wl_registry_bind(registry, name, &wl_seat_interface, 4);
       wl_seat_add_listener(seat, &seat_listener, this);
     } else if (strcmp(interface, "wl_output") == 0) {
       wl_output* _output = (wl_output*)
