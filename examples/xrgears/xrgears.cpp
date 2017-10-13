@@ -291,8 +291,26 @@ class XRGears : public vik::Application {
   }
 
   void load_assets() {
-    if (enable_sky)
-      sky_box->load_assets(vertex_layout, renderer->vik_device, renderer->queue);
+    if (enable_sky) {
+
+      std::string file_name;
+      VkFormat format;
+
+      file_name = "hdr/uffizi_cube.ktx";
+      format = VK_FORMAT_R16G16B16A16_SFLOAT;
+
+      // file_name = "cubemap_yokohama_bc3_unorm.ktx";
+      // format = VK_FORMAT_BC2_UNORM_BLOCK;
+
+      // file_name = "equirect/cube2/cube.ktx";
+      // format = VK_FORMAT_R16G16B16A16_SFLOAT;
+
+      // file_name = "cubemap_space.ktx";
+      // format = VK_FORMAT_R8G8B8A8_UNORM;
+
+      sky_box->load_assets(vertex_layout, renderer->vik_device, renderer->queue,
+                           vik::Assets::get_texture_path() + file_name, format);
+    }
   }
 
   void init_gears() {

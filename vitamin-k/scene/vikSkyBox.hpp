@@ -46,7 +46,8 @@ class SkyBox {
           cube_map.imageLayout);
   }
 
-  VkWriteDescriptorSet get_cube_map_write_descriptor_set(unsigned binding, VkDescriptorSet ds) {
+  VkWriteDescriptorSet
+  get_cube_map_write_descriptor_set(unsigned binding, VkDescriptorSet ds) {
     return initializers::writeDescriptorSet(
           ds,
           VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -54,21 +55,16 @@ class SkyBox {
           &texture_descriptor);
   }
 
-  void load_assets(VertexLayout vertexLayout, Device *vulkanDevice, VkQueue queue) {
-    // Skybox
-    model.loadFromFile(vik::Assets::get_asset_path() + "models/cube.obj", vertexLayout, 10.0f, vulkanDevice, queue);
-    cube_map.loadFromFile(
-          vik::Assets::get_texture_path() + "cubemap_yokohama_bc3_unorm.ktx", VK_FORMAT_BC2_UNORM_BLOCK,
-          // VikAssets::getTexturePath() + "equirect/cube2/cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT,
-          // VikAssets::getTexturePath() + "hdr/pisa_cube.ktx", VK_FORMAT_R16G16B16A16_SFLOAT,
-          // VikAssets::getAssetPath() + "textures/cubemap_space.ktx", VK_FORMAT_R8G8B8A8_UNORM,
-          vulkanDevice,
-          queue);
+  void load_assets(VertexLayout vertexLayout, Device *vik_device, VkQueue queue,
+                   const std::string& file_name, VkFormat format) {
+    model.loadFromFile(vik::Assets::get_asset_path() + "models/cube.obj",
+                       vertexLayout, 10.0f, vik_device, queue);
+    cube_map.loadFromFile(file_name, format, vik_device, queue);
     init_texture_descriptor();
   }
 
   void create_descriptor_set(const VkDescriptorSetAllocateInfo& allocInfo,
-                           VkDescriptorBufferInfo* cameraDescriptor) {
+                             VkDescriptorBufferInfo* cameraDescriptor) {
     vik_log_check(vkAllocateDescriptorSets(device, &allocInfo, &descriptor_set));
 
     std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
@@ -102,7 +98,7 @@ class SkyBox {
   }
 
   void init_pipeline(VkGraphicsPipelineCreateInfo* pipeline_info,
-                      const VkPipelineCache& pipeline_cache) {
+                     const VkPipelineCache& pipeline_cache) {
     VkPipelineRasterizationStateCreateInfo rasterization_state =
         initializers::pipelineRasterizationStateCreateInfo(
           VK_POLYGON_MODE_FILL,
