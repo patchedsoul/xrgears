@@ -256,6 +256,7 @@ class Renderer {
     window->get_swap_chain()->set_context(instance, physical_device, device);
     window->init_swap_chain(width, height);
 
+    // KMS render callback
     auto _render_cb = [this](uint32_t index) {
       current_buffer = index;
       render_cb();
@@ -695,9 +696,10 @@ class Renderer {
     VkResult err = sc->acquire_next_image(semaphores.present_complete, &current_buffer);
     // Recreate the swapchain if it's no longer compatible with the surface
     // (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
-    if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR))
+    if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR)) {
+      vik_log_w("Received VK_ERROR_OUT_OF_DATE_KHR or VK_SUBOPTIMAL_KHR.");
       resize();
-    else
+    } else
       vik_log_check(err);
   }
 

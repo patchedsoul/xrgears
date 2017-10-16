@@ -16,11 +16,11 @@
 #include <vector>
 
 #include "vikWindow.hpp"
-#include "../render/vikSwapChainVKComplex.hpp"
+#include "../render/vikSwapChainVK.hpp"
 
 namespace vik {
 class WindowKhrDisplay  : public Window {
-  SwapChainVkComplex swap_chain;
+  SwapChainVK swap_chain;
 
  public:
   explicit WindowKhrDisplay(Settings *s) : Window(s) {}

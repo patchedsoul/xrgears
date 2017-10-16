@@ -27,7 +27,7 @@ class WindowWaylandXDG : public WindowWayland {
   zxdg_shell_v6 *shell = nullptr;
   zxdg_surface_v6 *xdg_surface = nullptr;
   zxdg_toplevel_v6 *xdg_toplevel = nullptr;
-  SwapChainVkComplex swap_chain;
+  SwapChainVK swap_chain;
 
  public:
   explicit WindowWaylandXDG(Settings *s) : WindowWayland(s) {

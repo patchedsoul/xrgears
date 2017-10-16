@@ -19,7 +19,7 @@
 
 #include "vikWindow.hpp"
 
-#include "../render/vikSwapChainVKComplex.hpp"
+#include "../render/vikSwapChainVK.hpp"
 
 namespace vik {
 class WindowWayland : public Window {

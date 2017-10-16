@@ -20,7 +20,7 @@
 
 #include "vikWindow.hpp"
 
-#include "../render/vikSwapChainVKComplex.hpp"
+#include "../render/vikSwapChainVK.hpp"
 
 namespace vik {
 class WindowXCB : public Window {
@@ -41,7 +41,7 @@ class WindowXCB : public Window {
   xcb_atom_t atom_wm_protocols;
   xcb_atom_t atom_wm_delete_window;
 
-  SwapChainVkComplex swap_chain;
+  SwapChainVK swap_chain;
 
   struct Display {
     std::string name;
@@ -134,7 +134,7 @@ class WindowXCB : public Window {
   void init_swap_chain(uint32_t width, uint32_t height) {
     VkResult err = create_surface(swap_chain.instance, &swap_chain.surface);
     vik_log_f_if(err != VK_SUCCESS, "Could not create surface!");
-    swap_chain.set_dimension_cb(dimension_cb);
+    swap_chain.set_dimension_cb(size_only_cb);
     swap_chain.set_settings(settings);
     swap_chain.select_surface_format();
     swap_chain.create(width, height);
