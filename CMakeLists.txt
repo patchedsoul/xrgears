@@ -143,11 +143,7 @@ FILE(GLOB EXAMPLE_DIRS RELATIVE
 
 # Build all examples
 foreach(EXAMPLE ${EXAMPLE_DIRS})
-    if (EXAMPLE STREQUAL "glfw-test")
-	message("skipping glfw test for now.")
-    else()
-	buildExample(${EXAMPLE})
-    endif()
+    buildExample(${EXAMPLE})
 endforeach(EXAMPLE)
 
 set(IGNORE
