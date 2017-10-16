@@ -9,3 +9,4 @@ CMakeLists.txt.user
 xrgears.cbp
 *~
 *.a
+wayland-protocols/

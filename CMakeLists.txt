@@ -57,15 +57,19 @@ pkg_search_module(XCB_RANDR REQUIRED xcb-randr)
 pkg_search_module(WAYLAND REQUIRED wayland-client)
 pkg_search_module(GBM REQUIRED gbm)
 pkg_search_module(DRM REQUIRED libdrm)
-
+pkg_search_module(WAYLAND_SCANNER REQUIRED wayland-scanner)
+pkg_search_module(WAYLAND_PROTOCOLS REQUIRED wayland-protocols)
 file(GLOB VITAMINK_SRC vitamin-k/*.hpp)
-file(GLOB XDG_SRC xdg-shell/*.c)
+#file(GLOB XDG_SRC xdg-shell/*.c)
 
-add_library(xdg-shell ${XDG_SRC})
+pkg_get_variable(WAYLAND_PROTOCOLS_DATADIR wayland-protocols pkgdatadir)
+pkg_get_variable(WAYLAND_SCANNER wayland-scanner wayland_scanner)
+message("WAYLAND_SCANNER found: ${WAYLAND_SCANNER}")
+message("WAYLAND_PROTOCOLS_DATADIR: ${WAYLAND_PROTOCOLS_DATADIR}")
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/vitamin-k
-    ${CMAKE_SOURCE_DIR}/xdg-shell
+    ${CMAKE_SOURCE_DIR}/wayland-protocols
     ${CMAKE_SOURCE_DIR}/fonts
     ${OPENHMD_INCLUDE_DIRS}
     ${DRM_INCLUDE_DIRS})
@@ -85,6 +89,28 @@ foreach(SHADER ${SHADER_GLOB})
 	COMMAND glslc -o ${SHADER}.spv ${SHADER})
 endforeach(SHADER)
 
+# generate wayland protocols
+set(WAYLAND_PROTOCOLS_DIR ${CMAKE_SOURCE_DIR}/wayland-protocols/)
+file(MAKE_DIRECTORY ${WAYLAND_PROTOCOLS_DIR})
+
+set(PROTOCOL xdg-shell-unstable-v6)
+set(PROTOCOL_XML
+    ${WAYLAND_PROTOCOLS_DATADIR}/unstable/xdg-shell/${PROTOCOL}.xml)
+
+execute_process(COMMAND
+    ${WAYLAND_SCANNER}
+    code
+    ${PROTOCOL_XML}
+    ${WAYLAND_PROTOCOLS_DIR}/${PROTOCOL}.c)
+execute_process(COMMAND
+    ${WAYLAND_SCANNER}
+    client-header
+    ${PROTOCOL_XML}
+    ${WAYLAND_PROTOCOLS_DIR}/${PROTOCOL}.h)
+
+file(GLOB WAYLAND_PROTOCOLS_SRC ${WAYLAND_PROTOCOLS_DIR}/*.c)
+add_library(wayland-protocols ${WAYLAND_PROTOCOLS_SRC})
+
 file(GLOB_RECURSE VITAMINK_SRC vitamin-k/*.hpp)
 add_library(vitamin-k ${VITAMINK_SRC})
 SET_TARGET_PROPERTIES(vitamin-k  PROPERTIES LINKER_LANGUAGE CXX)
@@ -97,7 +123,7 @@ set(EXAMPLE_LIBS
     ${XCB_LIBRARIES}
     ${XCB_KEY_LIBRARIES}
     ${WAYLAND_LIBRARIES}
-    xdg-shell
+    wayland-protocols
     ${GBM_LIBRARIES}
     ${XCB_RANDR_LIBRARIES}
     ${DRM_LIBRARIES})

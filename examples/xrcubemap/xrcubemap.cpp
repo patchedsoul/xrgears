@@ -138,6 +138,9 @@ class XRCubeMap : public vik::Application {
       vik_log_f("Device does not support any compressed texture format!");
     }
 
+    filename = "EnricoKitchen.left.ktx";
+    format = VK_FORMAT_R16G16B16A16_SFLOAT;
+
     cubeMap.loadFromFile(vik::Assets::get_texture_path() + "cubemaps/sdr/" + filename, format, renderer->vik_device, renderer->queue);
   }
 
