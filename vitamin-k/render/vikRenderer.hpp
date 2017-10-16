@@ -128,6 +128,8 @@ class Renderer {
     auto dimension_cb = [this](uint32_t w, uint32_t h) {
       if (((w != width) || (h != height))
           && (width > 0) && (width > 0)) {
+        vik_log_e("dimension cb: requested %dx%d differs current %dx%d",
+                  w, h, width, height);
         width = w;
         height = h;
         resize();
@@ -699,8 +701,9 @@ class Renderer {
     if ((err == VK_ERROR_OUT_OF_DATE_KHR) || (err == VK_SUBOPTIMAL_KHR)) {
       vik_log_w("Received VK_ERROR_OUT_OF_DATE_KHR or VK_SUBOPTIMAL_KHR.");
       resize();
-    } else
+    } else {
       vik_log_check(err);
+    }
   }
 
   // Present the current buffer to the swap chain

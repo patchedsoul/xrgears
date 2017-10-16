@@ -23,6 +23,7 @@
 #include <gli/gli.hpp>
 
 #include <vector>
+#include <string>
 
 #include "system/vikApplication.hpp"
 #include "render/vikModel.hpp"
@@ -50,8 +51,8 @@ class XRGears : public vik::Application {
   vik::HMD* hmd;
 
   bool enable_sky = true;
-  bool enable_hmd_cam = true;
-  bool enable_distortion = true;
+  bool enable_hmd_cam = false;
+  bool enable_distortion = false;
   bool enable_stereo = true;
 
   vik::SkyBox *sky_box = nullptr;
@@ -292,12 +293,11 @@ class XRGears : public vik::Application {
 
   void load_assets() {
     if (enable_sky) {
-
       std::string file_name;
       VkFormat format;
 
-      //file_name = "cubemaps/hdr/uffizi_cube.ktx";
-      //format = VK_FORMAT_R16G16B16A16_SFLOAT;
+      // file_name = "cubemaps/hdr/uffizi_cube.ktx";
+      // format = VK_FORMAT_R16G16B16A16_SFLOAT;
 
       file_name = "cubemaps/sdr/cubemap_yokohama_bc3_unorm.ktx";
       format = VK_FORMAT_BC2_UNORM_BLOCK;
@@ -640,7 +640,6 @@ class XRGears : public vik::Application {
     ubo_lights.lights[3] = glm::vec4( p, -p*0.5f, -p, 1.0f);
 
     if (!renderer->timer.animation_paused) {
-
       float rad = glm::radians(renderer->timer.animation_timer * 360.0f);
 
       ubo_lights.lights[0].x = sin(rad) * 20.0f;

@@ -274,6 +274,8 @@ class SwapChainVK : public SwapChain {
   }
 
   void update_images() {
+    vik_log_e("Images: %d Buffers: %d", image_count, buffers.size());
+
     vkGetSwapchainImagesKHR(device, swap_chain, &image_count, NULL);
     assert(image_count > 0);
     vik_log_d("Creating swap chain with %d images.", image_count);
@@ -282,6 +284,8 @@ class SwapChainVK : public SwapChain {
     vkGetSwapchainImagesKHR(device, swap_chain, &image_count, images.data());
 
     buffers.resize(image_count);
+
+    vik_log_e("Images: %d Buffers: %d", image_count, buffers.size());
 
     for (uint32_t i = 0; i < image_count; i++) {
       buffers[i].image = images[i];

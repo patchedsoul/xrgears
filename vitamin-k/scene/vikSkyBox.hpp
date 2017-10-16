@@ -11,6 +11,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 #include "../render/vikTexture.hpp"
 #include "../render/vikModel.hpp"

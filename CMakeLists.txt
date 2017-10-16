@@ -45,7 +45,6 @@ add_cxxflag("-Wunreachable-code")
 # gcc coverage stats
 #add_cxxflag("--coverage")
 
-
 find_package(PkgConfig REQUIRED)
 
 pkg_search_module(VULKAN REQUIRED vulkan)
@@ -60,7 +59,6 @@ pkg_search_module(DRM REQUIRED libdrm)
 pkg_search_module(WAYLAND_SCANNER REQUIRED wayland-scanner)
 pkg_search_module(WAYLAND_PROTOCOLS REQUIRED wayland-protocols)
 file(GLOB VITAMINK_SRC vitamin-k/*.hpp)
-#file(GLOB XDG_SRC xdg-shell/*.c)
 
 pkg_get_variable(WAYLAND_PROTOCOLS_DATADIR wayland-protocols pkgdatadir)
 pkg_get_variable(WAYLAND_SCANNER wayland-scanner wayland_scanner)
