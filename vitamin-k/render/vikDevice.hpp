@@ -527,46 +527,52 @@ class Device {
     return (std::find(supportedExtensions.begin(), supportedExtensions.end(), extension) != supportedExtensions.end());
   }
 
-  void printMultiviewProperties() {
+  void printMultiviewProperties(VkInstance instance) {
     PFN_vkGetPhysicalDeviceFeatures2KHR fpGetPhysicalDeviceFeatures2KHR;
     PFN_vkGetPhysicalDeviceProperties2KHR fpGetPhysicalDeviceProperties2KHR;
 
-    GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceProperties2KHR);
-    GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceFeatures2KHR);
+    GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceFeatures2KHR);
+    // also retrievable from device
+    //GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceFeatures2KHR);
+    GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceProperties2KHR);
 
     if (fpGetPhysicalDeviceFeatures2KHR) {
-      VkPhysicalDeviceFeatures2KHR deviceFeatures2{};
-      VkPhysicalDeviceMultiviewFeaturesKHX multiViewFeatures{};
-      multiViewFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHX;
-      deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
-      deviceFeatures2.pNext = &multiViewFeatures;
-      fpGetPhysicalDeviceFeatures2KHR(physicalDevice, &deviceFeatures2);
+      VkPhysicalDeviceFeatures2KHR device_features{};
+      VkPhysicalDeviceMultiviewFeaturesKHX multi_view_features{};
+      multi_view_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHX;
+      device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
+      device_features.pNext = &multi_view_features;
+      fpGetPhysicalDeviceFeatures2KHR(physicalDevice, &device_features);
 
-      printf("multiview %d\n", multiViewFeatures.multiview);
-      printf("multiviewGeometryShader %d\n", multiViewFeatures.multiviewGeometryShader);
-      printf("multiviewTessellationShader %d\n", multiViewFeatures.multiviewTessellationShader);
+      vik_log_i("multiview %d", multi_view_features.multiview);
+      vik_log_i("multiviewGeometryShader %d", multi_view_features.multiviewGeometryShader);
+      vik_log_i("multiviewTessellationShader %d", multi_view_features.multiviewTessellationShader);
+    } else {
+      vik_log_w("vkGetPhysicalDeviceFeatures2KHR extension not found.");
     }
 
     if (fpGetPhysicalDeviceProperties2KHR) {
-      VkPhysicalDeviceProperties2KHR deviceProps2{};
+      VkPhysicalDeviceProperties2KHR device_props{};
 
-      VkPhysicalDeviceMultiviewPropertiesKHX extProps{};
-      extProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHX;
-      deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
-      deviceProps2.pNext = &extProps;
-      fpGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps2);
+      VkPhysicalDeviceMultiviewPropertiesKHX multi_view_props{};
+      multi_view_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHX;
+      device_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+      device_props.pNext = &multi_view_props;
+      fpGetPhysicalDeviceProperties2KHR(physicalDevice, &device_props);
 
-      printf("maxMultiviewViewCount %d\n", extProps.maxMultiviewViewCount);
-      printf("maxMultiviewInstanceIndex %d\n", extProps.maxMultiviewInstanceIndex);
+      vik_log_i("maxMultiviewViewCount %d", multi_view_props.maxMultiviewViewCount);
+      vik_log_i("maxMultiviewInstanceIndex %d", multi_view_props.maxMultiviewInstanceIndex);
 
-      VkPhysicalDeviceProperties2KHR deviceProps22{};
-      VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX extProps2{};
-      extProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX;
-      deviceProps22.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
-      deviceProps22.pNext = &extProps2;
-      fpGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps22);
+      VkPhysicalDeviceProperties2KHR device_props2{};
+      VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX multi_view_props2{};
+      multi_view_props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX;
+      device_props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+      device_props2.pNext = &multi_view_props2;
+      fpGetPhysicalDeviceProperties2KHR(physicalDevice, &device_props2);
 
-      printf("perViewPositionAllComponents %d\n", extProps2.perViewPositionAllComponents);
+      vik_log_i("perViewPositionAllComponents %d", multi_view_props2.perViewPositionAllComponents);
+    } else {
+      vik_log_w("vkGetPhysicalDeviceProperties2KHR extension not found.");
     }
   }
 };

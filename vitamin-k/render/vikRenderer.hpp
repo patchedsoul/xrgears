@@ -434,7 +434,7 @@ class Renderer {
 
     device = vik_device->logicalDevice;
 
-    // vksDevice->printMultiviewProperties();
+    vik_device->printMultiviewProperties(instance);
 
     // Get a graphics queue from the device
     vkGetDeviceQueue(device, vik_device->queueFamilyIndices.graphics, 0, &queue);
