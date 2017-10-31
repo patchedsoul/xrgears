@@ -251,7 +251,9 @@ class Device {
       deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     }
 
-    // enableIfSupported(&deviceExtensions, VK_KHX_MULTIVIEW_EXTENSION_NAME);
+    enable_if_supported(&deviceExtensions, VK_KHX_MULTIVIEW_EXTENSION_NAME);
+    enable_if_supported(&deviceExtensions, VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME);
+    enable_if_supported(&deviceExtensions, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
 
     VkDeviceCreateInfo deviceCreateInfo = {};
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

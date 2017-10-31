@@ -195,10 +195,6 @@ class Renderer {
     enable_if_supported(&extensions, VK_KHR_SURFACE_EXTENSION_NAME);
     enable_if_supported(&extensions, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
-    enable_if_supported(&extensions, VK_KHX_MULTIVIEW_EXTENSION_NAME);
-    enable_if_supported(&extensions, VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME);
-    enable_if_supported(&extensions, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
-
     // Enable surface extensions depending on window system
     extensions.insert(extensions.end(),
                       window_extensions.begin(),
