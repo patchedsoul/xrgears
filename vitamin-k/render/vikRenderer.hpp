@@ -54,7 +54,6 @@ class Renderer {
 
   Window *window;
 
-
   Timer timer;
   Device *vik_device;
 
@@ -62,6 +61,8 @@ class Renderer {
   VkPhysicalDeviceFeatures device_features;
   VkPhysicalDeviceMemoryProperties device_memory_properties;
   VkPhysicalDeviceFeatures enabled_features{};
+
+  std::vector<std::string> supported_extensions;
 
   VkFormat depth_format;
   VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
@@ -79,8 +80,6 @@ class Renderer {
     VkSemaphore present_complete;
     VkSemaphore render_complete;
   } semaphores;
-
-  std::vector<const char*> enabled_extensions;
 
   uint32_t current_buffer = 0;
 
@@ -183,16 +182,22 @@ class Renderer {
   }
   VkResult create_instance(const std::string& name,
                            const std::vector<const char*> &window_extensions) {
+
+    query_supported_extensions();
+
     VkApplicationInfo app_info = {};
     app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     app_info.pApplicationName = name.c_str();
     app_info.pEngineName = "vitamin-k";
     app_info.apiVersion = VK_MAKE_VERSION(1, 0, 2);
 
-    std::vector<const char*> extensions = {
-      VK_KHR_SURFACE_EXTENSION_NAME,
-      VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
-    };
+    std::vector<const char*> extensions;
+    enable_if_supported(&extensions, VK_KHR_SURFACE_EXTENSION_NAME);
+    enable_if_supported(&extensions, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+
+    enable_if_supported(&extensions, VK_KHX_MULTIVIEW_EXTENSION_NAME);
+    enable_if_supported(&extensions, VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME);
+    enable_if_supported(&extensions, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
 
     // Enable surface extensions depending on window system
     extensions.insert(extensions.end(),
@@ -200,7 +205,7 @@ class Renderer {
                       window_extensions.end());
 
     if (settings->validation)
-      extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+      enable_if_supported(&extensions, VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
     VkInstanceCreateInfo instance_info = {};
     instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -420,21 +425,15 @@ class Renderer {
     // and encapsulates functions related to a device
     vik_device = new Device(physical_device);
 
-    /*
-    enabledExtensions.push_back(VK_KHX_MULTIVIEW_EXTENSION_NAME);
-    enabledExtensions.push_back(VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME);
-    enabledExtensions.push_back(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
-    enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-    */
-
-    VkResult res = vik_device->createLogicalDevice(enabled_features, enabled_extensions);
+    VkResult res = vik_device->createLogicalDevice(enabled_features);
     vik_log_f_if(res != VK_SUCCESS,
                  "Could not create Vulkan device: %s",
                  Log::result_string(res).c_str());
 
     device = vik_device->logicalDevice;
 
-    vik_device->printMultiviewProperties(instance);
+    if (is_extension_supported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME))
+      vik_device->print_multiview_properties(instance);
 
     // Get a graphics queue from the device
     vkGetDeviceQueue(device, vik_device->queueFamilyIndices.graphics, 0, &queue);
@@ -444,6 +443,42 @@ class Renderer {
     assert(validDepthFormat);
 
     init_semaphores();
+  }
+
+  bool enable_if_supported(std::vector<const char*> *extensions,
+                           const char* name) {
+    if (is_extension_supported(name)) {
+      vik_log_d("Enabling supported %s.", name);
+      extensions->push_back(name);
+      return true;
+    } else {
+      vik_log_w("%s not supported.", name);
+      return false;
+    }
+  }
+
+  void query_supported_extensions() {
+    uint32_t count = 0;
+    vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
+    if (count > 0) {
+      std::vector<VkExtensionProperties> extensions(count);
+      if (vkEnumerateInstanceExtensionProperties(nullptr, &count, &extensions.front()) == VK_SUCCESS)
+        for (auto ext : extensions)
+          supported_extensions.push_back(ext.extensionName);
+    }
+  }
+
+  bool is_extension_supported(std::string extension) {
+    return std::find(supported_extensions.begin(),
+                     supported_extensions.end(),
+                     extension) != supported_extensions.end();
+  }
+
+  void print_supported_extensions() {
+    vik_log_i("Supported instance extensions");
+    for (auto extension : supported_extensions) {
+      vik_log_i("%s", extension.c_str());
+    }
   }
 
   virtual void init_semaphores() {

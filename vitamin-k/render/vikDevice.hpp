@@ -37,7 +37,7 @@ class Device {
   /** @brief Queue family properties of the physical device */
   std::vector<VkQueueFamilyProperties> queueFamilyProperties;
   /** @brief List of extensions supported by the device */
-  std::vector<std::string> supportedExtensions;
+  std::vector<std::string> supported_extensions;
 
   /** @brief Default command pool for the graphics queue family index */
   VkCommandPool commandPool = VK_NULL_HANDLE;
@@ -86,7 +86,7 @@ class Device {
       std::vector<VkExtensionProperties> extensions(extCount);
       if (vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extCount, &extensions.front()) == VK_SUCCESS)
         for (auto ext : extensions)
-          supportedExtensions.push_back(ext.extensionName);
+          supported_extensions.push_back(ext.extensionName);
     }
   }
 
@@ -184,7 +184,7 @@ class Device {
     *
     * @return VkResult of the device creation call
     */
-  VkResult createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures, std::vector<const char*> enabledExtensions,
+  VkResult createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures,
                                bool useSwapChain = true, VkQueueFlags requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT) {
     // Desired queues need to be requested upon logical device creation
     // Due to differing queue family configurations of Vulkan implementations this can be a bit tricky, especially if the application
@@ -245,17 +245,13 @@ class Device {
     }
 
     // Create the logical device representation
-    std::vector<const char*> deviceExtensions(enabledExtensions);
+    std::vector<const char*> deviceExtensions;
     if (useSwapChain) {
       // If the device will be used for presenting to a display via a swapchain we need to request the swapchain extension
       deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     }
 
-    /*
-    enableIfSupported(&deviceExtensions, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-    enableIfSupported(&deviceExtensions, VK_KHX_MULTIVIEW_EXTENSION_NAME);
-    deviceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-    */
+    // enableIfSupported(&deviceExtensions, VK_KHX_MULTIVIEW_EXTENSION_NAME);
 
     VkDeviceCreateInfo deviceCreateInfo = {};
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -277,30 +273,7 @@ class Device {
       // Create a default command pool for graphics command buffers
       commandPool = createCommandPool(queueFamilyIndices.graphics);
 
-    // VK_KHX_multiview
-    /*
-    if (extensionSupported(VK_KHX_MULTIVIEW_EXTENSION_NAME))
-      printMultiviewProperties();
-    */
-
     return result;
-  }
-
-  bool enableIfSupported(std::vector<const char*> *deviceExtensions, const char* name) {
-    if (extensionSupported(name)) {
-      printf("%s supported.\n", name);
-      deviceExtensions->push_back(name);
-      return true;
-    } else {
-      printf("%s not supported.\n", name);
-      return false;
-    }
-  }
-
-  void printSupportedExtensions() {
-    for (auto extension : supportedExtensions) {
-      printf("%s\n", extension.c_str());
-    }
   }
 
   /**
@@ -516,24 +489,38 @@ class Device {
       vkFreeCommandBuffers(logicalDevice, commandPool, 1, &commandBuffer);
   }
 
-  /**
-    * Check if an extension is supported by the (physical device)
-    *
-    * @param extension Name of the extension to check
-    *
-    * @return True if the extension is supported (present in the list read at device creation time)
-    */
-  bool extensionSupported(std::string extension) {
-    return (std::find(supportedExtensions.begin(), supportedExtensions.end(), extension) != supportedExtensions.end());
+  bool enable_if_supported(std::vector<const char*> *extensions,
+                           const char* name) {
+    if (is_extension_supported(name)) {
+      vik_log_d("Enabling supported %s.", name);
+      extensions->push_back(name);
+      return true;
+    } else {
+      vik_log_w("%s not supported.", name);
+      return false;
+    }
   }
 
-  void printMultiviewProperties(VkInstance instance) {
+  void print_supported_extensions() {
+    vik_log_i("Supported device extensions");
+    for (auto extension : supported_extensions) {
+      vik_log_i("%s", extension.c_str());
+    }
+  }
+
+  bool is_extension_supported(std::string extension) {
+    return std::find(supported_extensions.begin(),
+                     supported_extensions.end(),
+                     extension) != supported_extensions.end();
+  }
+
+  void print_multiview_properties(VkInstance instance) {
     PFN_vkGetPhysicalDeviceFeatures2KHR fpGetPhysicalDeviceFeatures2KHR;
     PFN_vkGetPhysicalDeviceProperties2KHR fpGetPhysicalDeviceProperties2KHR;
 
     GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceFeatures2KHR);
     // also retrievable from device
-    //GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceFeatures2KHR);
+    // GET_DEVICE_PROC_ADDR(logicalDevice, GetPhysicalDeviceFeatures2KHR);
     GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceProperties2KHR);
 
     if (fpGetPhysicalDeviceFeatures2KHR) {
