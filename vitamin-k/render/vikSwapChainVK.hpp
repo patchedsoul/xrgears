@@ -89,7 +89,7 @@ class SwapChainVK : public SwapChain {
     if (oldSwapchain != VK_NULL_HANDLE)
       destroy_old(oldSwapchain);
 
-    update_images();
+    create_image_views();
   }
 
   VkExtent2D select_extent(const VkSurfaceCapabilitiesKHR &caps,
@@ -157,7 +157,7 @@ class SwapChainVK : public SwapChain {
   void recreate(uint32_t width, uint32_t height) {
     destroy();
     create(width, height);
-    update_images();
+    create_image_views();
   }
 
   void destroy() {
@@ -273,19 +273,15 @@ class SwapChainVK : public SwapChain {
     assert(surface_format.format != VK_FORMAT_UNDEFINED);
   }
 
-  void update_images() {
-    vik_log_e("Images: %d Buffers: %d", image_count, buffers.size());
-
+  void create_image_views() {
     vkGetSwapchainImagesKHR(device, swap_chain, &image_count, NULL);
     assert(image_count > 0);
-    vik_log_d("Creating swap chain with %d images.", image_count);
+    vik_log_d("Creating %d image views.", image_count);
 
     std::vector<VkImage> images(image_count);
     vkGetSwapchainImagesKHR(device, swap_chain, &image_count, images.data());
 
     buffers.resize(image_count);
-
-    vik_log_e("Images: %d Buffers: %d", image_count, buffers.size());
 
     for (uint32_t i = 0; i < image_count; i++) {
       buffers[i].image = images[i];
