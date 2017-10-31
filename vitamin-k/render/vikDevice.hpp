@@ -494,11 +494,11 @@ class Device {
   bool enable_if_supported(std::vector<const char*> *extensions,
                            const char* name) {
     if (is_extension_supported(name)) {
-      vik_log_d("Enabling supported %s.", name);
+      vik_log_d("device: Enabling supported %s.", name);
       extensions->push_back(name);
       return true;
     } else {
-      vik_log_w("%s not supported.", name);
+      vik_log_w("device: %s not supported.", name);
       return false;
     }
   }

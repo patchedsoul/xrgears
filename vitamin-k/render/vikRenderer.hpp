@@ -444,11 +444,11 @@ class Renderer {
   bool enable_if_supported(std::vector<const char*> *extensions,
                            const char* name) {
     if (is_extension_supported(name)) {
-      vik_log_d("Enabling supported %s.", name);
+      vik_log_d("instance: Enabling supported %s.", name);
       extensions->push_back(name);
       return true;
     } else {
-      vik_log_w("%s not supported.", name);
+      vik_log_w("instance: %s not supported.", name);
       return false;
     }
   }
