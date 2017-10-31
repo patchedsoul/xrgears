@@ -94,13 +94,13 @@ class WindowXCB : public Window {
     if (settings->fullscreen) {
       get_randr_outputs();
 
-      if (settings->display > displays.size()) {
-        vik_log_e("Requested display %d, but only %d displays are available.",
+      if (settings->display > displays.size() - 1) {
+        vik_log_w("Requested display %d, but only %d displays are available.",
                   settings->display, displays.size());
 
         settings->display = 0;
         Display *d = current_display();
-        vik_log_e("Selecting '%s' instead.",
+        vik_log_w("Selecting '%s' instead.",
                   d->name.c_str());
       }
 
