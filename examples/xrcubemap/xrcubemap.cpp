@@ -539,8 +539,11 @@ class XRCubeMap : public vik::Application {
       uboVS.lodBias = cubeMap.mipLevels;
 
     updateUniformBuffers();
-    // TODO(lubosz)
-    // renderer->updateTextOverlay();
+
+    if (settings.enable_text_overlay) {
+      vik::RendererTextOverlay * r = (vik::RendererTextOverlay *) renderer;
+      r->update_text_overlay();
+    }
   }
 
   void key_pressed(vik::Input::Key key) {

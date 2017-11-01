@@ -291,7 +291,12 @@ class WindowXCB : public Window {
         return Input::Key::ESCAPE;
       case XK_space:
         return Input::Key::SPACE;
+      case XK_KP_Add:
+        return Input::Key::KPPLUS;
+      case XK_KP_Subtract:
+        return Input::Key::KPMINUS;
       default:
+        // vik_log_w("Unknown key %d", xcb_keyp);
         return Input::Key::UNKNOWN;
     }
   }
