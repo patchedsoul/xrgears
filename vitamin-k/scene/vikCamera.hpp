@@ -90,10 +90,6 @@ class Camera {
     return glm::mat4();
   }
 
-  virtual glm::mat4 get_view_matrix_no_position() {
-    return glm::mat4();
-  }
-
   virtual void update_uniform_buffer() {
     ubo.projection[0] = matrices.projection;
     ubo.view[0] = matrices.view;
