@@ -59,7 +59,7 @@ class Distortion {
     vkDestroyPipelineLayout(device, pipeline_layout, nullptr);
   }
 
-  void init_pipeLine(const VkRenderPass& render_pass,
+  void init_pipeline(const VkRenderPass& render_pass,
                      const VkPipelineCache& pipeline_cache) {
     VkPipelineInputAssemblyStateCreateInfo input_assembly_state =
         initializers::pipelineInputAssemblyStateCreateInfo(
