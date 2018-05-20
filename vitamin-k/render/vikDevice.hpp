@@ -251,7 +251,7 @@ class Device {
       deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     }
 
-    enable_if_supported(&deviceExtensions, VK_KHX_MULTIVIEW_EXTENSION_NAME);
+    enable_if_supported(&deviceExtensions, VK_KHR_MULTIVIEW_EXTENSION_NAME);
     enable_if_supported(&deviceExtensions, VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME);
     enable_if_supported(&deviceExtensions, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
 
@@ -527,8 +527,8 @@ class Device {
 
     if (fpGetPhysicalDeviceFeatures2KHR) {
       VkPhysicalDeviceFeatures2KHR device_features{};
-      VkPhysicalDeviceMultiviewFeaturesKHX multi_view_features{};
-      multi_view_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHX;
+      VkPhysicalDeviceMultiviewFeaturesKHR multi_view_features{};
+      multi_view_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHR;
       device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
       device_features.pNext = &multi_view_features;
       fpGetPhysicalDeviceFeatures2KHR(physicalDevice, &device_features);
@@ -543,8 +543,8 @@ class Device {
     if (fpGetPhysicalDeviceProperties2KHR) {
       VkPhysicalDeviceProperties2KHR device_props{};
 
-      VkPhysicalDeviceMultiviewPropertiesKHX multi_view_props{};
-      multi_view_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHX;
+      VkPhysicalDeviceMultiviewPropertiesKHR multi_view_props{};
+      multi_view_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR;
       device_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
       device_props.pNext = &multi_view_props;
       fpGetPhysicalDeviceProperties2KHR(physicalDevice, &device_props);
