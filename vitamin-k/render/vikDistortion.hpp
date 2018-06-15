@@ -128,12 +128,12 @@ class Distortion {
     // Final fullscreen composition pass pipeline
     shader_stages[0] =
         vik::Shader::load(device,
-                          "hmddistortion/distortion.vert.spv",
+                          "distortion/distortion.vert.spv",
                           VK_SHADER_STAGE_VERTEX_BIT);
     shader_stages[1] =
         vik::Shader::load(device,
-                          "hmddistortion/openhmd-distortion-sps.frag.spv",
-                          // "hmddistortion/ph5-distortion.frag.spv",
+                          //"distortion/panotools.frag.spv",
+                          "distortion/vive.frag.spv",
                           VK_SHADER_STAGE_FRAGMENT_BIT);
 
     VkPipelineVertexInputStateCreateInfo empty_input_state =
