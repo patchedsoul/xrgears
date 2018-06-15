@@ -51,8 +51,8 @@ class XRGears : public vik::Application {
   vik::HMD* hmd;
 
   bool enable_sky = true;
-  bool enable_hmd_cam = false;
-  bool enable_distortion = false;
+  bool enable_hmd_cam = true;
+  bool enable_distortion = true;
   bool enable_stereo = true;
 
   vik::SkyBox *sky_box = nullptr;
@@ -94,6 +94,8 @@ class XRGears : public vik::Application {
     name = "XR Gears";
 
     renderer->timer.animation_timer_speed *= 0.25f;
+
+    enable_hmd_cam = !settings.mouse_navigation;
   }
 
   ~XRGears() {

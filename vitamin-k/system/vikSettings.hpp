@@ -54,6 +54,8 @@ class Settings {
   bool list_formats_and_exit = false;
   bool list_present_modes_and_exit = false;
 
+  bool mouse_navigation = false;
+
   bool enable_text_overlay = true;
 
   std::pair<uint32_t, uint32_t> size = {1280, 720};
@@ -139,6 +141,7 @@ class Settings {
       {"list-formats", 0, 0, 0},
       {"list-presentmodes", 0, 0, 0},
       {"disable-overlay", 0, 0, 0},
+      {"mouse-navigation", 0, 0, 0},
       {0, 0, 0, 0}
     };
 
@@ -192,6 +195,8 @@ class Settings {
         window_type = window_type_from_string(optarg);
         if (window_type == INVALID)
           vik_log_f("option -w given bad display mode");
+      } else if (optname == "mouse-navigation") {
+        mouse_navigation = true;
       } else {
         vik_log_f("Unknown option %s", optname.c_str());
       }
