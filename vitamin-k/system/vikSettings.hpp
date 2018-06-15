@@ -24,7 +24,7 @@
 namespace vik {
 class Settings {
  public:
-  enum window_type {
+  enum WindowType {
     AUTO = 0,
     KMS,
     XCB,
@@ -43,7 +43,7 @@ class Settings {
   VkFormat color_format = VK_FORMAT_B8G8R8A8_UNORM;
   VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
 
-  enum window_type type = AUTO;
+  enum WindowType window_type = AUTO;
 
   bool validation = false;
   bool fullscreen = false;
@@ -189,8 +189,8 @@ class Settings {
       } else if (opt == 'g' || optname == "gpu") {
         gpu = parse_id(optarg);
       } else if (opt == 'w' || optname == "window") {
-        type = window_type_from_string(optarg);
-        if (type == INVALID)
+        window_type = window_type_from_string(optarg);
+        if (window_type == INVALID)
           vik_log_f("option -w given bad display mode");
       } else {
         vik_log_f("Unknown option %s", optname.c_str());
@@ -221,7 +221,7 @@ class Settings {
     return strcmp(a, b) == 0;
   }
 
-  static window_type window_type_from_string(const char *s) {
+  static WindowType window_type_from_string(const char *s) {
     if (streq(s, "auto"))
       return AUTO;
     else if (streq(s, "kms"))

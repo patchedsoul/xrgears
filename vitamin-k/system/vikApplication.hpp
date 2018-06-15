@@ -156,7 +156,7 @@ class Application {
   }
 
   int init_window_from_settings() {
-    switch (settings.type) {
+    switch (settings.window_type) {
       case Settings::KMS:
         window = new WindowKMS(&settings);
         return set_and_init_window();
@@ -179,22 +179,22 @@ class Application {
   }
 
   void init_window_auto() {
-    settings.type = Settings::WAYLAND_XDG;
+    settings.window_type = Settings::WAYLAND_XDG;
     if (init_window_from_settings() == -1) {
       vik_log_w("Failed to initialize wayland-xdg, falling back to xcb.");
       delete(window);
-      settings.type = Settings::XCB;
+      settings.window_type = Settings::XCB;
       if (init_window_from_settings() == -1) {
         vik_log_w("Failed to initialize xcb, falling back to kms.");
         delete(window);
-        settings.type = Settings::KMS;
+        settings.window_type = Settings::KMS;
         init_window_from_settings();
       }
     }
   }
 
   void init_window() {
-    if (settings.type == Settings::AUTO)
+    if (settings.window_type == Settings::AUTO)
       init_window_auto();
     else if (init_window_from_settings() == -1)
       vik_log_f("Failed to initialize %s back end.", window->name.c_str());
