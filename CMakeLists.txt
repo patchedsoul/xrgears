@@ -134,7 +134,6 @@ set(IGNORE
     "-readability/streams,"
     "-readability/casting,"
     "-whitespace/line_length,"
-    "-whitespace/tab,"
     "-whitespace/parens")
 
 add_custom_target(style

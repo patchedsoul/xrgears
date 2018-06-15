@@ -97,7 +97,7 @@ class Triangle : public vik::Application {
     for (uint32_t i = 0; i < renderer->deviceMemoryProperties.memoryTypeCount; i++) {
       if ((typeBits & 1) == 1
           && (renderer->deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
-          return i;
+        return i;
       typeBits >>= 1;
     }
     throw "Could not find a suitable memory type!";
@@ -328,7 +328,7 @@ class Triangle : public vik::Application {
       vkCmdCopyBuffer(copyCmd, stagingBuffers.vertices.buffer, vertices.buffer, 1, &copyRegion);
       // Index buffer
       copyRegion.size = indexBufferSize;
-      vkCmdCopyBuffer(copyCmd, stagingBuffers.indices.buffer, indices.buffer,	1, &copyRegion);
+      vkCmdCopyBuffer(copyCmd, stagingBuffers.indices.buffer, indices.buffer,  1, &copyRegion);
 
       // Flushing the command buffer will also submit it to the queue and uses a fence to ensure that all commands have been executed before returning
       flushCommandBuffer(copyCmd);
