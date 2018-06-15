@@ -175,7 +175,7 @@ class XRGears : public vik::Application {
     vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
     // Final composition as full screen quad
-    distortion->drawQuad(command_buffer);
+    distortion->draw_quad(command_buffer);
 
     vkCmdEndRenderPass(command_buffer);
 

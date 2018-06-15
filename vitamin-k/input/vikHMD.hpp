@@ -42,11 +42,11 @@ class HMD {
 
     ohmd_device_settings* settings = ohmd_device_settings_create(context);
 
-    // If OHMD_IDS_AUTOMATIC_UPDATE is set to 0, ohmd_ctx_update() must be called at least 10 times per second.
+    // If OHMD_IDS_AUTOMATIC_UPDATE is set to 0, ohmd_ctx_update()
+    // must be called at least 10 times per second.
     // It is enabled by default.
-
-    int auto_update = 1;
-    ohmd_device_settings_seti(settings, OHMD_IDS_AUTOMATIC_UPDATE, &auto_update);
+    int update = 1;
+    ohmd_device_settings_seti(settings, OHMD_IDS_AUTOMATIC_UPDATE, &update);
 
     device = ohmd_list_open_device_s(context, s->hmd, settings);
 
@@ -151,22 +151,23 @@ class HMD {
         viewport_scale[1]);
   }
 
-  void getTransformation(glm::mat4 *hmdProjectionLeft, glm::mat4 *hmdProjectionRight,
-                         glm::mat4 *hmdViewLeft, glm::mat4 *hmdViewRight) {
+  void get_transformation(glm::mat4 *projection_left,
+                          glm::mat4 *projection_right,
+                          glm::mat4 *view_left, glm::mat4 *view_right) {
     ohmd_ctx_update(context);
 
     float mat[16];
     ohmd_device_getf(device, OHMD_LEFT_EYE_GL_PROJECTION_MATRIX, mat);
-    *hmdProjectionLeft = glm::make_mat4(mat);
+    *projection_left = glm::make_mat4(mat);
 
     ohmd_device_getf(device, OHMD_RIGHT_EYE_GL_PROJECTION_MATRIX, mat);
-    *hmdProjectionRight = glm::make_mat4(mat);
+    *projection_right = glm::make_mat4(mat);
 
     ohmd_device_getf(device, OHMD_LEFT_EYE_GL_MODELVIEW_MATRIX, mat);
-    *hmdViewLeft = glm::make_mat4(mat);
+    *view_left = glm::make_mat4(mat);
 
     ohmd_device_getf(device, OHMD_RIGHT_EYE_GL_MODELVIEW_MATRIX, mat);
-    *hmdViewRight = glm::make_mat4(mat);
+    *view_right = glm::make_mat4(mat);
   }
 };
 }  // namespace vik

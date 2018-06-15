@@ -239,7 +239,7 @@ class OffscreenPass {
     vik_log_check(vkCreateSampler(device, &sampler, nullptr, &colorSampler));
   }
 
-  VkDescriptorImageInfo getDescriptorImageInfo() {
+  VkDescriptorImageInfo get_descriptor_image_info() {
     // Image descriptors for the offscreen color attachments
     return initializers::descriptorImageInfo(
           colorSampler,
@@ -247,7 +247,7 @@ class OffscreenPass {
           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
 
-  VkWriteDescriptorSet getImageWriteDescriptorSet(const VkDescriptorSet& descriptorSet, VkDescriptorImageInfo *texDescriptorPosition, uint32_t binding) {
+  VkWriteDescriptorSet get_image_write_descriptor_set(const VkDescriptorSet& descriptorSet, VkDescriptorImageInfo *texDescriptorPosition, uint32_t binding) {
     return initializers::writeDescriptorSet(
           descriptorSet,
           VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,

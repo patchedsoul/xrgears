@@ -32,7 +32,7 @@ class CameraHMD : public CameraFirstPerson {
     glm::mat4 hmd_projection_left, hmd_projection_right;
     glm::mat4 hmd_view_left, hmd_view_right;
 
-    hmd->getTransformation(&hmd_projection_left, &hmd_projection_right,
+    hmd->get_transformation(&hmd_projection_left, &hmd_projection_right,
                            &hmd_view_left, &hmd_view_right);
 
     fix_handedness(hmd_view_left);
