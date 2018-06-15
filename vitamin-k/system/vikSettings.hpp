@@ -56,6 +56,26 @@ class Settings {
 
   bool mouse_navigation = false;
 
+  enum DistortionType {
+    DISTORTION_TYPE_NONE = 0,
+    DISTORTION_TYPE_PANOTOOLS,
+    DISTORTION_TYPE_VIVE,
+    DISTORTION_TYPE_INVALID
+  };
+
+  static DistortionType distortion_type_from_string(const char *s) {
+    if (streq(s, "none"))
+      return DISTORTION_TYPE_NONE;
+    else if (streq(s, "panotools"))
+      return DISTORTION_TYPE_PANOTOOLS;
+    else if (streq(s, "vive"))
+      return DISTORTION_TYPE_VIVE;
+    else
+      return DISTORTION_TYPE_INVALID;
+  }
+
+  enum DistortionType distortion_type = DISTORTION_TYPE_PANOTOOLS;
+
   bool enable_text_overlay = true;
 
   std::pair<uint32_t, uint32_t> size = {1280, 720};
@@ -83,6 +103,9 @@ class Settings {
         "      --list-presentmodes  List available present modes\n"
         "\n"
         "      --disable-overlay    Disable text overlay\n"
+        "      --mouse-navigation   Use mouse instead of HMD for camera control.\n"
+        "      --distortion         HMD lens distortion (default: panotools)\n"
+        "                           [none, panotools, vive]\n"
         "  -h, --help               Show this help\n";
   }
 
@@ -142,6 +165,7 @@ class Settings {
       {"list-presentmodes", 0, 0, 0},
       {"disable-overlay", 0, 0, 0},
       {"mouse-navigation", 0, 0, 0},
+      {"distortion", 1, 0, 0},
       {0, 0, 0, 0}
     };
 
@@ -197,6 +221,10 @@ class Settings {
           vik_log_f("option -w given bad display mode");
       } else if (optname == "mouse-navigation") {
         mouse_navigation = true;
+      } else if (optname == "distortion") {
+        distortion_type = distortion_type_from_string(optarg);
+        if (distortion_type == DISTORTION_TYPE_INVALID)
+          vik_log_f("option --distortion_type given bad type.");
       } else {
         vik_log_f("Unknown option %s", optname.c_str());
       }
@@ -242,5 +270,6 @@ class Settings {
     else
       return INVALID;
   }
+
 };
 }  // namespace vik

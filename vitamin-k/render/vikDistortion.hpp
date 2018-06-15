@@ -21,6 +21,8 @@
 #include "vikOffscreenPass.hpp"
 #include "vikShader.hpp"
 
+#include "../system/vikSettings.hpp"
+
 #define VERTEX_BUFFER_BIND_ID 0
 
 namespace vik {
@@ -60,7 +62,8 @@ class Distortion {
   }
 
   void init_pipeline(const VkRenderPass& render_pass,
-                     const VkPipelineCache& pipeline_cache) {
+                     const VkPipelineCache& pipeline_cache,
+                     Settings::DistortionType distortion_type) {
     VkPipelineInputAssemblyStateCreateInfo input_assembly_state =
         initializers::pipelineInputAssemblyStateCreateInfo(
           VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
@@ -130,11 +133,23 @@ class Distortion {
         vik::Shader::load(device,
                           "distortion/distortion.vert.spv",
                           VK_SHADER_STAGE_VERTEX_BIT);
-    shader_stages[1] =
-        vik::Shader::load(device,
-                          //"distortion/panotools.frag.spv",
-                          "distortion/vive.frag.spv",
-                          VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    std::string fragment_shader_name;
+
+    switch (distortion_type) {
+      case Settings::DistortionType::DISTORTION_TYPE_PANOTOOLS:
+        fragment_shader_name = "distortion/panotools.frag.spv";
+        break;
+      case Settings::DistortionType::DISTORTION_TYPE_VIVE:
+        fragment_shader_name = "distortion/vive.frag.spv";
+        break;
+      default:
+        fragment_shader_name = "distortion/panotools.frag.spv";
+    }
+
+    shader_stages[1] = vik::Shader::load(device,
+                                         fragment_shader_name,
+                                         VK_SHADER_STAGE_FRAGMENT_BIT);
 
     VkPipelineVertexInputStateCreateInfo empty_input_state =
         initializers::pipelineVertexInputStateCreateInfo();

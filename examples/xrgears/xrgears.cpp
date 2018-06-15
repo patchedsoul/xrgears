@@ -96,6 +96,10 @@ class XRGears : public vik::Application {
     renderer->timer.animation_timer_speed *= 0.25f;
 
     enable_hmd_cam = !settings.mouse_navigation;
+
+    if (settings.distortion_type
+        == vik::Settings::DistortionType::DISTORTION_TYPE_NONE)
+      enable_distortion = false;
   }
 
   ~XRGears() {
@@ -738,7 +742,8 @@ class XRGears : public vik::Application {
       distortion->update_uniform_buffer_warp(hmd->device);
       distortion->init_descriptor_set_layout();
       distortion->init_pipeline_layout();
-      distortion->init_pipeline(renderer->render_pass, renderer->pipeline_cache);
+      distortion->init_pipeline(renderer->render_pass, renderer->pipeline_cache,
+                                settings.distortion_type);
       distortion->init_descriptor_set(offscreen_pass, renderer->descriptor_pool);
     }
 
