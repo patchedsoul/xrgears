@@ -23,7 +23,9 @@ class WindowKhrDisplay  : public Window {
   SwapChainVK swap_chain;
 
  public:
-  explicit WindowKhrDisplay(Settings *s) : Window(s) {}
+  explicit WindowKhrDisplay(Settings *s) : Window(s) {
+    name = "khr-display";
+  }
   ~WindowKhrDisplay() {}
 
   const std::vector<const char*> required_extensions() {
