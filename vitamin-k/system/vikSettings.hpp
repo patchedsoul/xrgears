@@ -106,6 +106,7 @@ class Settings {
         "      --mouse-navigation   Use mouse instead of HMD for camera control.\n"
         "      --distortion         HMD lens distortion (default: panotools)\n"
         "                           [none, panotools, vive]\n"
+        "  -v, --validation         Run Vulkan validation\n"
         "  -h, --help               Show this help\n";
   }
 
