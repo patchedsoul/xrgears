@@ -14,6 +14,9 @@
 #include <xcb/xcb_keysyms.h>
 #include <xcb/randr.h>
 
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_xcb.h>
+
 #include <string>
 #include <vector>
 #include <utility>
@@ -145,7 +148,7 @@ class WindowXCB : public Window {
   }
 
   int connect() {
-    connection = xcb_connect(0, 0);
+    connection = xcb_connect(nullptr, nullptr);
     return !xcb_connection_has_error(connection);
   }
 
