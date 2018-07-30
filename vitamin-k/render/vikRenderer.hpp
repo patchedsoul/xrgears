@@ -196,9 +196,8 @@ class Renderer {
     enable_if_supported(&extensions, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
     // Enable surface extensions depending on window system
-    extensions.insert(extensions.end(),
-                      window_extensions.begin(),
-                      window_extensions.end());
+    for (auto window_ext : window_extensions)
+      enable_if_supported(&extensions, window_ext);
 
     if (settings->validation)
       enable_if_supported(&extensions, VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
