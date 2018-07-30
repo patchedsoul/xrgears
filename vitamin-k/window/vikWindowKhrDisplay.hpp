@@ -11,6 +11,8 @@
 #pragma once
 
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xresource.h>
 #include <X11/extensions/Xrandr.h>
 
 #include <vulkan/vulkan.h>
@@ -49,37 +51,119 @@ class WindowKhrDisplay  : public Window {
   }
 
   void init_swap_chain(uint32_t width, uint32_t height) {
-    uint32_t displayPropertyCount;
+    vik_log_e("init_swap_chain!!!");
+
+    uint32_t display_property_count;
 
     VkPhysicalDevice physical_device = swap_chain.physical_device;
+    vik_log_e("Got device from swapchain: %d", swap_chain.physical_device);
 
     // Get display property
-    vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device, &displayPropertyCount, NULL);
-    VkDisplayPropertiesKHR* pDisplayProperties = new VkDisplayPropertiesKHR[displayPropertyCount];
-    vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device, &displayPropertyCount, pDisplayProperties);
+    VkResult res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device,
+                                                           &display_property_count,
+                                                           nullptr);
+    vik_log_f_if(res != VK_SUCCESS,
+                 "Could not get Physical Device Display Properties: %s",
+                 Log::result_string(res).c_str());
+
+    vik_log_i("Found %d display properites.", display_property_count);
+
+    VkDisplayPropertiesKHR* display_properties =
+      new VkDisplayPropertiesKHR[display_property_count];
+
+    res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device,
+                                                  &display_property_count,
+                                                  display_properties);
+    vik_log_f_if(res != VK_SUCCESS,
+                 "Could not get Physical Device Display Properties: %s",
+                 Log::result_string(res).c_str());
 
     // Get plane property
-    uint32_t planePropertyCount;
-    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physical_device, &planePropertyCount, NULL);
-    VkDisplayPlanePropertiesKHR* pPlaneProperties = new VkDisplayPlanePropertiesKHR[planePropertyCount];
-    vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physical_device, &planePropertyCount, pPlaneProperties);
+    uint32_t plane_property_count;
+    res = vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physical_device,
+                                                      &plane_property_count,
+                                                       nullptr);
+    vik_log_f_if(res != VK_SUCCESS,
+                 "Could not vkGetPhysicalDeviceDisplayPlanePropertiesKHR: %s",
+                 Log::result_string(res).c_str());
 
-    VkDisplayKHR display = VK_NULL_HANDLE;
+    vik_log_i("Found %d plane properites.", display_property_count);
+
+    VkDisplayPlanePropertiesKHR* plane_properties =
+        new VkDisplayPlanePropertiesKHR[plane_property_count];
+
+    res = vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physical_device,
+                                                      &plane_property_count,
+                                                       plane_properties);
+    vik_log_f_if(res != VK_SUCCESS,
+                 "Could not vkGetPhysicalDeviceDisplayPlanePropertiesKHR: %s",
+                 Log::result_string(res).c_str());
+
+    /* print available */
+    for (uint32_t i = 0; i < display_property_count; ++i) {
+      VkDisplayKHR display = display_properties[i].display;
+      uint32_t modeCount;
+      vkGetDisplayModePropertiesKHR(physical_device, display, &modeCount, nullptr);
+      vik_log_i("Found display %s (%d modes)",
+                display_properties[i].displayName,
+                modeCount);
+      vik_log_i("physicalDimensions %dx%d",
+                display_properties[i].physicalDimensions.width,
+                display_properties[i].physicalDimensions.height);
+      vik_log_i("physicalResolution %dx%d",
+                display_properties[i].physicalResolution.width,
+                display_properties[i].physicalResolution.height);
+
+      VkDisplayPowerStateEXT power_state = get_display_power_state(display);
+      vik_log_i("power state %s", Log::power_state_string(power_state).c_str());
+
+      uint32_t mode_count;
+      vkGetDisplayModePropertiesKHR(physical_device, display,
+                                    &mode_count, nullptr);
+
+      vik_log_i("Found %d VkDisplayModePropertiesKHR", mode_count);
+      VkDisplayModePropertiesKHR* mode_properties
+          = new VkDisplayModePropertiesKHR[mode_count];
+      vkGetDisplayModePropertiesKHR(physical_device, display,
+                                    &mode_count, mode_properties);
+
+      for (uint32_t j = 0; j < mode_count; ++j) {
+        const VkDisplayModePropertiesKHR* mode = &mode_properties[j];
+          vik_log_i("Mode %d. %dx%d@%d",
+                    j,
+                    mode->parameters.visibleRegion.width,
+                    mode->parameters.visibleRegion.height,
+                    mode->parameters.refreshRate);
+      }
+    }
+
+    VkDisplayKHR display = nullptr;
     VkDisplayModeKHR displayMode;
-    VkDisplayModePropertiesKHR* pModeProperties;
+    VkDisplayModePropertiesKHR* mode_properties;
     bool foundMode = false;
 
-    for (uint32_t i = 0; i < displayPropertyCount; ++i) {
-      display = pDisplayProperties[i].display;
-      uint32_t modeCount;
-      vkGetDisplayModePropertiesKHR(physical_device, display, &modeCount, NULL);
-      pModeProperties = new VkDisplayModePropertiesKHR[modeCount];
-      vkGetDisplayModePropertiesKHR(physical_device, display, &modeCount, pModeProperties);
+    for (uint32_t i = 0; i < display_property_count; ++i) {
 
-      for (uint32_t j = 0; j < modeCount; ++j) {
-        const VkDisplayModePropertiesKHR* mode = &pModeProperties[j];
+      display = display_properties[i].display;
+      uint32_t mode_count;
+      vkGetDisplayModePropertiesKHR(physical_device, display,
+                                    &mode_count, nullptr);
 
-        if (mode->parameters.visibleRegion.width == width && mode->parameters.visibleRegion.height == height) {
+      vik_log_i("Found %d VkDisplayModePropertiesKHR", mode_count);
+      mode_properties = new VkDisplayModePropertiesKHR[mode_count];
+      vkGetDisplayModePropertiesKHR(physical_device, display,
+                                    &mode_count, mode_properties);
+
+      for (uint32_t j = 0; j < mode_count; ++j) {
+        const VkDisplayModePropertiesKHR* mode = &mode_properties[j];
+
+        if (mode->parameters.visibleRegion.width == width
+            && mode->parameters.visibleRegion.height == height) {
+
+          vik_log_i("Using display %s (%d modes) with mode %d",
+                    display_properties[i].displayName,
+                    mode_count, j);
+
           displayMode = mode->displayMode;
           foundMode = true;
           break;
@@ -87,18 +171,20 @@ class WindowKhrDisplay  : public Window {
       }
       if (foundMode)
         break;
-      delete [] pModeProperties;
+      delete [] mode_properties;
     }
 
     vik_log_f_if(!foundMode, "Can't find a display and a display mode!");
 
+    // aquireXlibDisplay(display);
+
     // Search for a best plane we can use
     uint32_t bestPlaneIndex = UINT32_MAX;
-    VkDisplayKHR* pDisplays = NULL;
-    for (uint32_t i = 0; i < planePropertyCount; i++) {
+    VkDisplayKHR* pDisplays = nullptr;
+    for (uint32_t i = 0; i < plane_property_count; i++) {
       uint32_t planeIndex = i;
       uint32_t displayCount;
-      vkGetDisplayPlaneSupportedDisplaysKHR(physical_device, planeIndex, &displayCount, NULL);
+      vkGetDisplayPlaneSupportedDisplaysKHR(physical_device, planeIndex, &displayCount, nullptr);
       if (pDisplays)
         delete [] pDisplays;
       pDisplays = new VkDisplayKHR[displayCount];
@@ -130,27 +216,94 @@ class WindowKhrDisplay  : public Window {
 
     VkDisplaySurfaceCreateInfoKHR surfaceInfo{};
     surfaceInfo.sType = VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR;
-    surfaceInfo.pNext = NULL;
     surfaceInfo.flags = 0;
     surfaceInfo.displayMode = displayMode;
     surfaceInfo.planeIndex = bestPlaneIndex;
-    surfaceInfo.planeStackIndex = pPlaneProperties[bestPlaneIndex].currentStackIndex;
+    surfaceInfo.planeStackIndex = plane_properties[bestPlaneIndex].currentStackIndex;
     surfaceInfo.transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     surfaceInfo.globalAlpha = 1.0;
     surfaceInfo.alphaMode = alphaMode;
     surfaceInfo.imageExtent.width = width;
     surfaceInfo.imageExtent.height = height;
 
-    VkResult result = vkCreateDisplayPlaneSurfaceKHR(swap_chain.instance, &surfaceInfo, NULL, &swap_chain.surface);
+    VkResult result = vkCreateDisplayPlaneSurfaceKHR(swap_chain.instance, &surfaceInfo, nullptr, &swap_chain.surface);
     vik_log_f_if(result !=VK_SUCCESS, "Failed to create surface!");
 
     delete[] pDisplays;
-    delete[] pModeProperties;
-    delete[] pDisplayProperties;
-    delete[] pPlaneProperties;
+    delete[] mode_properties;
+    delete[] display_properties;
+    delete[] plane_properties;
 
-    // swap_chain.select_queue();
+    aquireXlibDisplay(display);
+
+    swap_chain.set_settings(settings);
     swap_chain.select_surface_format();
+    swap_chain.create(width, height);
+
+    vik_log_i("vkGetSwapchainCounterEXT: %d", get_swap_chain_counter());
+  }
+
+  uint64_t get_swap_chain_counter () {
+    PFN_vkGetSwapchainCounterEXT fun =
+        (PFN_vkGetSwapchainCounterEXT) vkGetDeviceProcAddr(swap_chain.device,
+                                                           "vkGetSwapchainCounterEXT");
+    vik_log_f_if(fun == nullptr,
+                 "Could not Get Device Proc Addr vkDisplayPowerControlEXT.");
+
+    uint64_t counter_value;
+    VkResult res = fun(
+        swap_chain.device,
+        swap_chain.swap_chain,
+        VK_SURFACE_COUNTER_VBLANK_EXT,
+       &counter_value);
+
+    vik_log_f_if(res != VK_SUCCESS,
+                 "Could not vkGetSwapchainCounterEXT: %s",
+                 Log::result_string(res).c_str());
+
+    return counter_value;
+  }
+
+  VkDisplayPowerStateEXT get_display_power_state(VkDisplayKHR display) {
+    VkDisplayPowerInfoEXT power_info = {
+      .sType = VK_STRUCTURE_TYPE_DISPLAY_POWER_INFO_EXT
+    };
+
+    PFN_vkDisplayPowerControlEXT fun =
+        (PFN_vkDisplayPowerControlEXT) vkGetDeviceProcAddr(swap_chain.device,
+                                                           "vkDisplayPowerControlEXT");
+    vik_log_f_if(fun == nullptr,
+                 "Could not Get Device Proc Addr vkDisplayPowerControlEXT.");
+
+    VkResult res = fun(swap_chain.device, display, &power_info);
+
+    vik_log_f_if(res != VK_SUCCESS,
+                 "Could not vkDisplayPowerControlEXT: %s",
+                 Log::result_string(res).c_str());
+
+     return power_info.powerState;
+  }
+
+  void aquireXlibDisplay(VkDisplayKHR display) {
+    Display *dpy = XOpenDisplay(nullptr);
+    vik_log_f_if(dpy == nullptr, "Could not open X display.");
+
+    PFN_vkAcquireXlibDisplayEXT fun =
+        (PFN_vkAcquireXlibDisplayEXT)vkGetInstanceProcAddr(swap_chain.instance,
+                                                           "vkAcquireXlibDisplayEXT");
+    vik_log_f_if(fun == nullptr,
+                 "Could not Get Device Proc Addr vkAcquireXlibDisplayEXT.");
+
+    vik_log_e("Using physical device %d", swap_chain.physical_device);
+
+    VkResult res = fun(
+        swap_chain.physical_device,
+        dpy,
+        display);
+
+    vik_log_f_if(res != VK_SUCCESS,
+                 "Could not acquire Xlib display: %s",
+                 Log::result_string(res).c_str());
   }
 
   SwapChain* get_swap_chain() {
@@ -163,7 +316,9 @@ class WindowKhrDisplay  : public Window {
     return 0;
   }
 
-  void iterate() {}
+  void iterate() {
+    render_frame_cb();
+  }
 
   VkBool32 check_support(VkPhysicalDevice physical_device) {
     return true;
