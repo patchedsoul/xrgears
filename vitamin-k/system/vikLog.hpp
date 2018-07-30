@@ -114,6 +114,17 @@ class Log {
     }
   }
 
+  static std::string power_state_string(VkDisplayPowerStateEXT code) {
+    switch(code) {
+      ENUM_TO_STR(VK_DISPLAY_POWER_STATE_OFF_EXT);
+      ENUM_TO_STR(VK_DISPLAY_POWER_STATE_SUSPEND_EXT);
+      ENUM_TO_STR(VK_DISPLAY_POWER_STATE_ON_EXT);
+      default:
+        vik_log_w("Unkown mode %d", code);
+        return "UNKNOWN MODE";
+    }
+  }
+
   static VkPresentModeKHR string_to_present_mode(const std::string& str) {
     STR_TO_ENUM(VK_PRESENT_MODE_FIFO_KHR);
     STR_TO_ENUM(VK_PRESENT_MODE_MAILBOX_KHR);
