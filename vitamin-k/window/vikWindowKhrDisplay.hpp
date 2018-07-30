@@ -95,12 +95,9 @@ class WindowKhrDisplay  : public Window {
   }
 
   void init_swap_chain(uint32_t width, uint32_t height) {
-    vik_log_e("init_swap_chain!!!");
-
     uint32_t display_property_count;
 
     VkPhysicalDevice physical_device = swap_chain.physical_device;
-    vik_log_e("Got device from swapchain: %d", swap_chain.physical_device);
 
     // Get display property
     VkResult res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device,
@@ -163,7 +160,7 @@ class WindowKhrDisplay  : public Window {
 
     vik_log_f_if(!foundMode, "Can't find a display and a display mode!");
 
-    aquireXlibDisplay(display);
+    aquire_xlib_display(display);
 
     // Get plane property
     uint32_t plane_property_count;
@@ -290,7 +287,7 @@ class WindowKhrDisplay  : public Window {
      return power_info.powerState;
   }
 
-  void aquireXlibDisplay(VkDisplayKHR display) {
+  void aquire_xlib_display(VkDisplayKHR display) {
     Display *dpy = XOpenDisplay(nullptr);
     vik_log_f_if(dpy == nullptr, "Could not open X display.");
 
@@ -299,8 +296,6 @@ class WindowKhrDisplay  : public Window {
                                                            "vkAcquireXlibDisplayEXT");
     vik_log_f_if(fun == nullptr,
                  "Could not Get Device Proc Addr vkAcquireXlibDisplayEXT.");
-
-    vik_log_e("Using physical device %d", swap_chain.physical_device);
 
     VkResult res = fun(
         swap_chain.physical_device,
