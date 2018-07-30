@@ -188,6 +188,10 @@ class WindowKMS : public Window {
     return {};
   }
 
+  const std::vector<const char*> required_device_extensions() {
+    return {};
+  }
+
   void init_swap_chain(uint32_t width, uint32_t height) {
     swap_chain.surface_format.format = VK_FORMAT_B8G8R8A8_UNORM;
     swap_chain.init(swap_chain.device, swap_chain.surface_format.format, gbm_dev, fd,

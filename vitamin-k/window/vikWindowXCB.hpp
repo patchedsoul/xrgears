@@ -314,6 +314,10 @@ class WindowXCB : public Window {
     return { VK_KHR_XCB_SURFACE_EXTENSION_NAME };
   }
 
+  const std::vector<const char*> required_device_extensions() {
+    return {};
+  }
+
   VkBool32 check_support(VkPhysicalDevice physical_device) {
     return vkGetPhysicalDeviceXcbPresentationSupportKHR(
           physical_device, 0, connection, screen->root_visual);

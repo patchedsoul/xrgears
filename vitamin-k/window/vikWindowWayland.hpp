@@ -138,6 +138,10 @@ class WindowWayland : public Window {
     return {VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME };
   }
 
+  const std::vector<const char*> required_device_extensions() {
+    return {};
+  }
+
   // needs initialized vulkan
   VkBool32 check_support(VkPhysicalDevice physical_device) {
     return vkGetPhysicalDeviceWaylandPresentationSupportKHR(

@@ -420,7 +420,8 @@ class Renderer {
     // and encapsulates functions related to a device
     vik_device = new Device(physical_device);
 
-    VkResult res = vik_device->createLogicalDevice(enabled_features);
+    VkResult res = vik_device->createLogicalDevice(enabled_features,
+                                                   window->required_device_extensions());
     vik_log_f_if(res != VK_SUCCESS,
                  "Could not create Vulkan device: %s",
                  Log::result_string(res).c_str());

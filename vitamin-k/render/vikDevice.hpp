@@ -185,7 +185,9 @@ class Device {
     * @return VkResult of the device creation call
     */
   VkResult createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures,
-                               bool useSwapChain = true, VkQueueFlags requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT) {
+                               const std::vector<const char*> &window_extensions,
+                               bool useSwapChain = true,
+                               VkQueueFlags requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT) {
     // Desired queues need to be requested upon logical device creation
     // Due to differing queue family configurations of Vulkan implementations this can be a bit tricky, especially if the application
     // requests different queue types
@@ -254,6 +256,9 @@ class Device {
     enable_if_supported(&deviceExtensions, VK_KHR_MULTIVIEW_EXTENSION_NAME);
     enable_if_supported(&deviceExtensions, VK_NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME);
     enable_if_supported(&deviceExtensions, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME);
+
+    for (auto window_ext : window_extensions)
+      enable_if_supported(&deviceExtensions, window_ext);
 
     VkDeviceCreateInfo deviceCreateInfo = {};
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

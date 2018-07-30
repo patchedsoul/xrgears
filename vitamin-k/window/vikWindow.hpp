@@ -91,6 +91,7 @@ class Window {
   virtual int init() = 0;
 
   virtual const std::vector<const char*> required_extensions() = 0;
+  virtual const std::vector<const char*> required_device_extensions() = 0;
   virtual void update_window_title(const std::string& title) = 0;
   virtual VkBool32 check_support(VkPhysicalDevice physical_device) = 0;
 };
