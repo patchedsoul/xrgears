@@ -10,7 +10,11 @@
 
 #pragma once
 
+#include <X11/Xlib.h>
+#include <X11/extensions/Xrandr.h>
+
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_xlib_xrandr.h>
 
 #include <string>
 #include <vector>
@@ -29,7 +33,19 @@ class WindowKhrDisplay  : public Window {
   ~WindowKhrDisplay() {}
 
   const std::vector<const char*> required_extensions() {
-    return { VK_KHR_DISPLAY_EXTENSION_NAME };
+    return {
+      VK_KHR_DISPLAY_EXTENSION_NAME,
+      VK_EXT_DISPLAY_SURFACE_COUNTER_EXTENSION_NAME,
+      VK_EXT_DIRECT_MODE_DISPLAY_EXTENSION_NAME,
+      VK_EXT_ACQUIRE_XLIB_DISPLAY_EXTENSION_NAME
+    };
+  }
+
+  const std::vector<const char*> required_device_extensions() {
+    return {
+      VK_KHR_DISPLAY_SWAPCHAIN_EXTENSION_NAME,
+      VK_EXT_DISPLAY_CONTROL_EXTENSION_NAME
+    };
   }
 
   void init_swap_chain(uint32_t width, uint32_t height) {
