@@ -58,6 +58,9 @@ pkg_search_module(GBM REQUIRED gbm)
 pkg_search_module(DRM REQUIRED libdrm)
 pkg_search_module(WAYLAND_SCANNER REQUIRED wayland-scanner)
 pkg_search_module(WAYLAND_PROTOCOLS REQUIRED wayland-protocols)
+
+pkg_search_module(X11 REQUIRED x11)
+
 file(GLOB VITAMINK_SRC vitamin-k/*.hpp)
 
 pkg_get_variable(WAYLAND_PROTOCOLS_DATADIR wayland-protocols pkgdatadir)
@@ -124,6 +127,8 @@ set(EXAMPLE_LIBS
     wayland-protocols
     ${GBM_LIBRARIES}
     ${XCB_RANDR_LIBRARIES}
+    ${X11_LIBRARIES}
+    X11
     ${DRM_LIBRARIES})
 
 # Function for building single example
