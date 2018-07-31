@@ -25,7 +25,11 @@
 #include "../window/vikWindowXCB.hpp"
 #include "../window/vikWindowWaylandXDG.hpp"
 #include "../window/vikWindowWaylandShell.hpp"
+
+#ifdef HAVE_VULKAN_INTEL
 #include "../window/vikWindowKMS.hpp"
+#endif
+
 #include "../window/vikWindowKhrDisplay.hpp"
 
 #include "../render/vikTools.hpp"
@@ -157,9 +161,11 @@ class Application {
 
   int init_window_from_settings() {
     switch (settings.window_type) {
+#ifdef HAVE_VULKAN_INTEL
       case Settings::KMS:
         window = new WindowKMS(&settings);
         return set_and_init_window();
+#endif
       case Settings::XCB:
         window = new WindowXCB(&settings);
         return set_and_init_window();
@@ -173,6 +179,7 @@ class Application {
         window = new WindowKhrDisplay(&settings);
         return set_and_init_window();
       default:
+        vik_log_f("Usupported Window Type %d", settings.window_type);
         return -1;
     }
     return 0;

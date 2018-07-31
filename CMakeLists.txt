@@ -68,6 +68,14 @@ pkg_get_variable(WAYLAND_SCANNER wayland-scanner wayland_scanner)
 message("WAYLAND_SCANNER found: ${WAYLAND_SCANNER}")
 message("WAYLAND_PROTOCOLS_DATADIR: ${WAYLAND_PROTOCOLS_DATADIR}")
 
+include(CheckIncludeFile)
+CHECK_INCLUDE_FILE(vulkan/vulkan_intel.h HAVE_VULKAN_INTEL)
+message("HAVE_VULKAN_INTEL: ${HAVE_VULKAN_INTEL}")
+
+IF(HAVE_VULKAN_INTEL)
+   add_definitions(-DHAVE_VULKAN_INTEL)
+ENDIF(HAVE_VULKAN_INTEL)
+
 include_directories(
     ${CMAKE_SOURCE_DIR}/vitamin-k
     ${CMAKE_SOURCE_DIR}/wayland-protocols
