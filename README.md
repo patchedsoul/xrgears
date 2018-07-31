@@ -1,3 +1,5 @@
+![Screenshot](https://gitlab.com/lubosz/xrgears/raw/master/doc/screenshot.jpg "Screenshot")
+
 # xrgears
 
 xrgears is a stand alone VR demo using OpenHMD for tracking and Vulkan
