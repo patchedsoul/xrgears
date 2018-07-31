@@ -178,12 +178,57 @@ class WindowKhrDisplay  : public Window {
     VkDisplayModePropertiesKHR* mode_properties;
     VkDisplayModeKHR displayMode;
 
-    /* find by current resolution */
-    std::tie(display, mode_properties, displayMode) =
-      find_mode_by_resolution (physical_device,
-                               display_property_count,
-                               display_properties,
-                               width, height);
+
+    if (settings->display == -1) {
+      /* find by current resolution */
+      std::tie(display, mode_properties, displayMode) =
+        find_mode_by_resolution (physical_device,
+                                 display_property_count,
+                                 display_properties,
+                                 width, height);
+    } else {
+      /* find by settings id */
+      if (settings->display > (int) display_property_count - 1) {
+        vik_log_w("Requested display %d, but only %d displays are available.",
+                  settings->display, display_property_count);
+        settings->display = 0;
+        vik_log_w("Selecting first display instead.");
+      }
+
+      /* Use mode 0 by default */
+      if (settings->mode == -1)
+        settings->mode = 0;
+
+      display = display_properties[settings->display].display;
+
+      uint32_t mode_count;
+      vkGetDisplayModePropertiesKHR(physical_device, display,
+                                    &mode_count, nullptr);
+      mode_properties = new VkDisplayModePropertiesKHR[mode_count];
+      vkGetDisplayModePropertiesKHR(physical_device, display,
+                                    &mode_count, mode_properties);
+
+      if (settings->mode > (int) mode_count - 1) {
+        vik_log_w("Requested mode %d, but only %d modes are available.",
+                  settings->mode, mode_count);
+        settings->mode = 0;
+        vik_log_w("Selecting first mode instead.");
+      }
+
+      const VkDisplayModePropertiesKHR* mode = &mode_properties[settings->mode];
+
+      if (mode->parameters.visibleRegion.width == width
+          && mode->parameters.visibleRegion.height == height) {
+
+        vik_log_i("Using display %s (%d modes) with mode %d",
+                  display_properties[settings->display].displayName,
+                  mode_count, settings->mode);
+
+        displayMode = mode->displayMode;
+      }
+
+      delete [] mode_properties;
+    }
 
     aquire_xlib_display(display);
 
