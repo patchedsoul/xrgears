@@ -340,6 +340,10 @@ class Renderer {
       exit(0);
     }
 
+    // Select first device by default
+    if (settings->gpu == -1)
+      settings->gpu = 0;
+
     // Select physical device to be used for the Vulkan example
     // Defaults to the first device unless specified by command line
     uint32_t selected_device = 0;

@@ -48,6 +48,10 @@ class HMD {
     int update = 1;
     ohmd_device_settings_seti(settings, OHMD_IDS_AUTOMATIC_UPDATE, &update);
 
+    // select first hmd by default
+    if (s->hmd == -1)
+      s->hmd = 0;
+
     device = ohmd_list_open_device_s(context, s->hmd, settings);
 
     if (!device)

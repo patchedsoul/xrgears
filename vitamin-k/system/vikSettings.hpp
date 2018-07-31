@@ -34,11 +34,11 @@ class Settings {
     INVALID
   };
 
-  uint32_t gpu = 0;
-  uint32_t hmd = 0;
+  int gpu = -1;
+  int hmd = -1;
 
-  uint32_t display = 0;
-  uint32_t mode = 0;
+  int display = -1;
+  int mode = -1;
 
   VkFormat color_format = VK_FORMAT_B8G8R8A8_UNORM;
   VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
