@@ -59,8 +59,8 @@ class WindowKhrDisplay  : public Window {
       VkDisplayKHR display = display_properties[i].display;
       uint32_t modeCount;
       vkGetDisplayModePropertiesKHR(physical_device, display, &modeCount, nullptr);
-      vik_log_i("Found display %p %s (%d modes)",
-                display,
+      vik_log_i("%d: Found display %p %s (%d modes)",
+                i, display,
                 display_properties[i].displayName,
                 modeCount);
       vik_log_i("physicalDimensions %dx%d",
@@ -94,37 +94,15 @@ class WindowKhrDisplay  : public Window {
     }
   }
 
-  void init_swap_chain(uint32_t width, uint32_t height) {
-    uint32_t display_property_count;
-
-    VkPhysicalDevice physical_device = swap_chain.physical_device;
-
-    // Get display property
-    VkResult res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device,
-                                                           &display_property_count,
-                                                           nullptr);
-    vik_log_f_if(res != VK_SUCCESS,
-                 "Could not get Physical Device Display Properties: %s",
-                 Log::result_string(res).c_str());
-
-    vik_log_i("Found %d display properites.", display_property_count);
-
-    VkDisplayPropertiesKHR* display_properties =
-      new VkDisplayPropertiesKHR[display_property_count];
-
-    res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device,
-                                                  &display_property_count,
-                                                  display_properties);
-    vik_log_f_if(res != VK_SUCCESS,
-                 "Could not get Physical Device Display Properties: %s",
-                 Log::result_string(res).c_str());
-
-    print_displays (display_properties, display_property_count);
-
-    VkDisplayKHR display = nullptr;
-    VkDisplayModeKHR displayMode;
-    VkDisplayModePropertiesKHR* mode_properties;
+  std::tuple<VkDisplayKHR, VkDisplayModePropertiesKHR*, VkDisplayModeKHR>
+  find_mode_by_resolution (VkPhysicalDevice physical_device,
+                           uint32_t display_property_count,
+                           VkDisplayPropertiesKHR* display_properties,
+                           uint32_t width, uint32_t height) {
     bool foundMode = false;
+    VkDisplayKHR display = nullptr;
+    VkDisplayModePropertiesKHR* mode_properties;
+    VkDisplayModeKHR displayMode;
 
     for (uint32_t i = 0; i < display_property_count; ++i) {
 
@@ -159,6 +137,53 @@ class WindowKhrDisplay  : public Window {
     }
 
     vik_log_f_if(!foundMode, "Can't find a display and a display mode!");
+
+    return std::tuple<
+        VkDisplayKHR,
+        VkDisplayModePropertiesKHR*,
+        VkDisplayModeKHR> (display, mode_properties, displayMode);
+  }
+
+  void init_swap_chain(uint32_t width, uint32_t height) {
+    uint32_t display_property_count;
+
+    VkPhysicalDevice physical_device = swap_chain.physical_device;
+
+    // Get display property
+    VkResult res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device,
+                                                           &display_property_count,
+                                                           nullptr);
+    vik_log_f_if(res != VK_SUCCESS,
+                 "Could not get Physical Device Display Properties: %s",
+                 Log::result_string(res).c_str());
+
+    vik_log_i("Found %d display properites.", display_property_count);
+
+    VkDisplayPropertiesKHR* display_properties =
+      new VkDisplayPropertiesKHR[display_property_count];
+
+    res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device,
+                                                  &display_property_count,
+                                                  display_properties);
+    vik_log_f_if(res != VK_SUCCESS,
+                 "Could not get Physical Device Display Properties: %s",
+                 Log::result_string(res).c_str());
+
+    if (settings->list_screens_and_exit) {
+      print_displays (display_properties, display_property_count);
+      exit (0);
+    }
+
+    VkDisplayKHR display = nullptr;
+    VkDisplayModePropertiesKHR* mode_properties;
+    VkDisplayModeKHR displayMode;
+
+    /* find by current resolution */
+    std::tie(display, mode_properties, displayMode) =
+      find_mode_by_resolution (physical_device,
+                               display_property_count,
+                               display_properties,
+                               width, height);
 
     aquire_xlib_display(display);
 
