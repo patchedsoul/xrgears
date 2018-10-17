@@ -489,17 +489,18 @@ class XrCube : public vik::Application {
     VkMemoryRequirements memReqs;
     vkGetBufferMemoryRequirements(renderer->device, buffer, &memReqs);
 
-    VkMemoryAllocateInfo allcoinfo;
+    VkMemoryAllocateInfo allcoinfo = {};
     allcoinfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allcoinfo.allocationSize = memReqs.size;
     allcoinfo.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    vkAllocateMemory(renderer->device,
-                     &allcoinfo,
-                     nullptr,
-                     &mem);
+    VkResult r = vkAllocateMemory(renderer->device,
+                                   &allcoinfo,
+				    nullptr,
+				   &mem);
+    vik_log_f_if(r != VK_SUCCESS, "vkAllocateMemory failed");
 
-    VkResult r = vkMapMemory(renderer->device, mem, 0, allcoinfo.allocationSize, 0, &map);
+    r = vkMapMemory(renderer->device, mem, 0, allcoinfo.allocationSize, 0, &map);
     vik_log_f_if(r != VK_SUCCESS, "vkMapMemory failed");
 
     memcpy(((char*)map + vertex_offset), vVertices, sizeof(vVertices));
