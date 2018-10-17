@@ -91,11 +91,21 @@ file(GLOB_RECURSE SHADER_GLOB
     ${SHADER_DIR}/*.geom)
 
 # build shaders
+
+find_program(GLSLANG glslangValidator)
+
+if(NOT GLSLANG)
+  message(FATAL_ERROR "glslang was not found.")
+endif()
+
 foreach(SHADER ${SHADER_GLOB})
-    message("Compiling SPV shader for ${SHADER}")
-    execute_process(
-	WORKING_DIRECTORY ${SHADER_DIR}
-	COMMAND glslc -o ${SHADER}.spv ${SHADER})
+    execute_process(WORKING_DIRECTORY ${SHADER_DIR}
+                    COMMAND ${GLSLANG} -V -o ${SHADER}.spv ${SHADER}
+                    RESULT_VARIABLE SHADER_BUILD_RES)
+
+    if(NOT SHADER_BUILD_RES EQUAL 0)
+        message(FATAL_ERROR "Could not build shader ${SHADER}.")
+    endif()
 endforeach(SHADER)
 
 # generate wayland protocols
