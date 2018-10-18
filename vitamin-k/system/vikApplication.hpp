@@ -30,7 +30,6 @@
 #include "../window/vikWindowKMS.hpp"
 #endif
 
-#include "../window/vikWindowKhrDisplay.hpp"
 #include "../window/vikWindowDirectMode.hpp"
 
 #include "../render/vikTools.hpp"
@@ -175,9 +174,6 @@ class Application {
         return set_and_init_window();
       case Settings::WAYLAND_SHELL:
         window = new WindowWaylandShell(&settings);
-        return set_and_init_window();
-      case Settings::KHR_DISPLAY:
-        window = new WindowKhrDisplay(&settings);
         return set_and_init_window();
       case Settings::DIRECT_MODE:
         window = new WindowDirectMode(&settings);

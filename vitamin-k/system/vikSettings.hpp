@@ -30,7 +30,6 @@ class Settings {
     XCB,
     WAYLAND_XDG,
     WAYLAND_SHELL,
-    KHR_DISPLAY,
     DIRECT_MODE,
     INVALID
   };
@@ -89,7 +88,7 @@ class Settings {
         "  -s, --size WxH           Size of the output window (default: 1280x720)\n"
         "  -f, --fullscreen         Run fullscreen. Optinally specify display and mode.\n"
         "  -d, --display D          Display to fullscreen on. (default: 0)\n"
-        "  -m, --mode M             Mode for fullscreen (wayland-shell and khr-display only) (default: 0)\n"
+        "  -m, --mode M             Mode for fullscreen (used in wayland-shell only) (default: 0)\n"
         "  -w, --window WS          Window system to use (default: auto)\n"
         "                           [xcb, wayland, wayland-shell, kms, direct]\n"
         "  -g, --gpu GPU            GPU to use (default: 0)\n"
@@ -269,8 +268,6 @@ class Settings {
       return WAYLAND_SHELL;
     else if (streq(s, "direct"))
       return DIRECT_MODE;
-    else if (streq(s, "khr-display"))
-      return KHR_DISPLAY;
     else
       return INVALID;
   }
