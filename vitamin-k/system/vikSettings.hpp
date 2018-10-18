@@ -31,6 +31,7 @@ class Settings {
     WAYLAND_XDG,
     WAYLAND_SHELL,
     KHR_DISPLAY,
+    DIRECT_MODE,
     INVALID
   };
 
@@ -90,7 +91,7 @@ class Settings {
         "  -d, --display D          Display to fullscreen on. (default: 0)\n"
         "  -m, --mode M             Mode for fullscreen (wayland-shell and khr-display only) (default: 0)\n"
         "  -w, --window WS          Window system to use (default: auto)\n"
-        "                           [xcb, wayland, wayland-shell, kms, khr-display]\n"
+        "                           [xcb, wayland, wayland-shell, kms, direct]\n"
         "  -g, --gpu GPU            GPU to use (default: 0)\n"
         "      --hmd HMD            HMD to use (default: 0)\n"
         "      --format F           Color format to use (default: VK_FORMAT_B8G8R8A8_UNORM)\n"
@@ -266,6 +267,8 @@ class Settings {
       return WAYLAND_XDG;
     else if (streq(s, "wayland-shell"))
       return WAYLAND_SHELL;
+    else if (streq(s, "direct"))
+      return DIRECT_MODE;
     else if (streq(s, "khr-display"))
       return KHR_DISPLAY;
     else

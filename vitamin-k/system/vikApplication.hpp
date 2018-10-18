@@ -31,6 +31,7 @@
 #endif
 
 #include "../window/vikWindowKhrDisplay.hpp"
+#include "../window/vikWindowDirectMode.hpp"
 
 #include "../render/vikTools.hpp"
 #include "../render/vikInitializers.hpp"
@@ -177,6 +178,9 @@ class Application {
         return set_and_init_window();
       case Settings::KHR_DISPLAY:
         window = new WindowKhrDisplay(&settings);
+        return set_and_init_window();
+      case Settings::DIRECT_MODE:
+        window = new WindowDirectMode(&settings);
         return set_and_init_window();
       default:
         vik_log_f("Usupported Window Type %d", settings.window_type);
