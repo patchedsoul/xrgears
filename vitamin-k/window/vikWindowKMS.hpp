@@ -56,7 +56,6 @@ class WindowKMS : public Window {
   drmModeConnector *connector;
 
   gbm_device *gbm_dev;
-  gbm_bo *gbm_buffer;
 
   int fd;
 
