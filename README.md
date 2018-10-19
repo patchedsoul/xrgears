@@ -61,9 +61,9 @@ Options:
   -s, --size WxH           Size of the output window (default: 1280x720)
   -f, --fullscreen         Run fullscreen. Optinally specify display and mode.
   -d, --display D          Display to fullscreen on. (default: 0)
-  -m, --mode M             Mode for fullscreen (wayland-shell and khr-display only) (default: 0)
+  -m, --mode M             Mode for fullscreen (used in wayland-shell only) (default: 0)
   -w, --window WS          Window system to use (default: auto)
-                           [xcb, wayland, wayland-shell, kms, khr-display]
+                           [xcb, wayland, wayland-shell, kms, direct]
   -g, --gpu GPU            GPU to use (default: 0)
       --hmd HMD            HMD to use (default: 0)
       --format F           Color format to use (default: VK_FORMAT_B8G8R8A8_UNORM)
@@ -80,30 +80,30 @@ Options:
       --distortion         HMD lens distortion (default: panotools)
                            [none, panotools, vive]
   -v, --validation         Run Vulkan validation
-  -h, --help               Show this help\
+  -h, --help               Show this help
 ```
 
 # Examples
 
 ### Run on XCB display 1 in full screen
 ```
-./bin/xrgears -m xcb -d 1
+./bin/xrgears -w xcb -d 1
 ```
 
-### Run on wayland, using vive distortion shader
+### Run on wayland, using VIVE1 distortion shader
 ```
-./bin/xrgears -m wayland --distortion vive
-```
-
-### Enumerate displays for kdr-display backend
-
-```
-sudo ./bin/xrgears --list-displays --window khr-display
+./bin/xrgears -w wayland --distortion vive
 ```
 
-### Run on a display in direct mode which provides a mode that matches --size
+### Enumerate displays with XCB for direct backend
+
 ```
-sudo ./bin/xrgears --size 2160x1200 --window khr-display
+./bin/xrgears --list-displays --window direct
+```
+
+### Run on first non-desktop output in direct mode with VIVE1 distortion.
+```
+./bin/xrgears --window direct --distortion vive
 ```
 
 ### Run cube example using the format VK_FORMAT_B8G8R8A8_SRGB
