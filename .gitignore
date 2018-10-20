@@ -10,3 +10,5 @@ xrgears.cbp
 *~
 *.a
 wayland-protocols/
+build/
+.vscode/
