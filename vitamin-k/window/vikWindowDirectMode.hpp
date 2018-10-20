@@ -353,6 +353,14 @@ class WindowDirectMode : public Window {
         xcb_randr_mode_t * output_modes =
           xcb_randr_get_output_info_modes (output_reply);
 
+        int num_modes = xcb_randr_get_output_info_modes_length(output_reply);
+        if (num_modes == 0)
+          vik_log_f("%s does not have any modes available. "
+                    "Check `xrandr --prop`.", name_str);
+
+        if (!modes.count(output_modes[0]))
+          vik_log_f("No mode with id %d found??", output_modes[0]);
+
         VikDisplay d = {
           .name = std::string(name_str),
           .output = xcb_outputs[i],
