@@ -58,6 +58,7 @@ pkg_search_module(GBM REQUIRED gbm)
 pkg_search_module(DRM REQUIRED libdrm)
 pkg_search_module(WAYLAND_SCANNER REQUIRED wayland-scanner)
 pkg_search_module(WAYLAND_PROTOCOLS REQUIRED wayland-protocols)
+pkg_search_module(GLM REQUIRED glm)
 
 pkg_search_module(X11 REQUIRED x11)
 
@@ -68,20 +69,24 @@ pkg_get_variable(WAYLAND_SCANNER wayland-scanner wayland_scanner)
 message("WAYLAND_SCANNER found: ${WAYLAND_SCANNER}")
 message("WAYLAND_PROTOCOLS_DATADIR: ${WAYLAND_PROTOCOLS_DATADIR}")
 
-include(CheckIncludeFile)
-CHECK_INCLUDE_FILE(vulkan/vulkan_intel.h HAVE_VULKAN_INTEL)
-message("HAVE_VULKAN_INTEL: ${HAVE_VULKAN_INTEL}")
-
-IF(HAVE_VULKAN_INTEL)
-   add_definitions(-DHAVE_VULKAN_INTEL)
-ENDIF(HAVE_VULKAN_INTEL)
-
 include_directories(
     ${CMAKE_SOURCE_DIR}/vitamin-k
     ${CMAKE_SOURCE_DIR}/wayland-protocols
     ${CMAKE_SOURCE_DIR}/fonts
     ${OPENHMD_INCLUDE_DIRS}
     ${DRM_INCLUDE_DIRS})
+
+include(CheckIncludeFileCXX)
+CHECK_INCLUDE_FILE_CXX(vulkan/vulkan_intel.h HAVE_VULKAN_INTEL)
+
+CHECK_INCLUDE_FILE_CXX(gli/gli.hpp HAVE_GLI)
+IF(NOT HAVE_GLI)
+  message(FATAL_ERROR "GLI not found. Get a version matching GLM from https://github.com/g-truc/gli")
+ENDIF()
+
+IF(HAVE_VULKAN_INTEL)
+   add_definitions(-DHAVE_VULKAN_INTEL)
+ENDIF(HAVE_VULKAN_INTEL)
 
 set(SHADER_DIR ${CMAKE_SOURCE_DIR}/shaders)
 
