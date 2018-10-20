@@ -75,7 +75,8 @@ class WindowDirectMode : public Window {
       exit(0);
     }
 
-    vik_log_w("Requested display %d", settings->display);
+    if (displays.size() < 1)
+      vik_log_f("No non-desktop output available.");
 
     if (settings->display > displays.size() - 1) {
       vik_log_w("Requested display %d, but only %d displays are available.",
