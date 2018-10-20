@@ -18,7 +18,7 @@
 #include <gli/gli.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <openhmd/openhmd.h>
+#include <openhmd.h>
 
 #include "../scene/vikCamera.hpp"
 #include "../render/vikBuffer.hpp"

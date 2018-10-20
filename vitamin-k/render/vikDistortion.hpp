@@ -11,7 +11,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include <openhmd/openhmd.h>
+#include <openhmd.h>
 
 #include <vector>
 

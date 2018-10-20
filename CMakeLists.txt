@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.8)
 project(xrgears)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
+# Yeah it's gross but it's to find the assets. You're welcome to make it better.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin/")
 
 function(add_cxxflag FLAG)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}" PARENT_SCOPE)
-endfunction(add_cxxflag)
+    string(APPEND CMAKE_CXX_FLAGS " ${FLAG}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" PARENT_SCOPE)
+endfunction()
 
 add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
 add_definitions(-DVK_USE_PLATFORM_XCB_KHR)
-
-add_cxxflag("-std=c++14")
 
 # warnings
 # add_cxxflag("-Werror")
@@ -45,6 +45,7 @@ add_cxxflag("-Wunreachable-code")
 # gcc coverage stats
 #add_cxxflag("--coverage")
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(PkgConfig REQUIRED)
 
 pkg_search_module(VULKAN REQUIRED vulkan)
@@ -70,27 +71,37 @@ message("WAYLAND_SCANNER found: ${WAYLAND_SCANNER}")
 message("WAYLAND_PROTOCOLS_DATADIR: ${WAYLAND_PROTOCOLS_DATADIR}")
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/vitamin-k
-    ${CMAKE_SOURCE_DIR}/wayland-protocols
-    ${CMAKE_SOURCE_DIR}/fonts
+    ${CMAKE_CURRENT_SOURCE_DIR}/vitamin-k
+    ${CMAKE_CURRENT_SOURCE_DIR}/wayland-protocols
+    ${CMAKE_CURRENT_SOURCE_DIR}/fonts
     ${OPENHMD_INCLUDE_DIRS}
     ${DRM_INCLUDE_DIRS})
 
 include(CheckIncludeFileCXX)
+find_file(VULKAN_INTEL_INCLUDE_FILE
+    NAMES
+    vulkan/vulkan_intel.h
+    HINTS
+    # Vulkan include dir?
+    )
 CHECK_INCLUDE_FILE_CXX(vulkan/vulkan_intel.h HAVE_VULKAN_INTEL)
 
-CHECK_INCLUDE_FILE_CXX(gli/gli.hpp HAVE_GLI)
-IF(NOT HAVE_GLI)
-  message(FATAL_ERROR "GLI not found. Get a version matching GLM from https://github.com/g-truc/gli")
-ENDIF()
+find_path(GLI_INCLUDE_DIR
+    NAMES
+    gli/gli.hpp)
+if(NOT GLI_INCLUDE_DIR)
+    message(FATAL_ERROR "GLI not found. Get a version matching GLM from https://github.com/g-truc/gli")
+endif()
+include_directories(${GLI_INCLUDE_DIR})
 
-IF(HAVE_VULKAN_INTEL)
+if(VULKAN_INTEL_INCLUDE_FILE)
    add_definitions(-DHAVE_VULKAN_INTEL)
-ENDIF(HAVE_VULKAN_INTEL)
+endif()
 
-set(SHADER_DIR ${CMAKE_SOURCE_DIR}/shaders)
+set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 
 file(GLOB_RECURSE SHADER_GLOB
+    RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
     ${SHADER_DIR}/*.vert
     ${SHADER_DIR}/*.frag
     ${SHADER_DIR}/*.geom)
@@ -103,41 +114,56 @@ if(NOT GLSLANG)
   message(FATAL_ERROR "glslang was not found.")
 endif()
 
+set(CUSTOM_OUTPUTS)
 foreach(SHADER ${SHADER_GLOB})
-    execute_process(WORKING_DIRECTORY ${SHADER_DIR}
-                    COMMAND ${GLSLANG} -V -o ${SHADER}.spv ${SHADER}
-                    RESULT_VARIABLE SHADER_BUILD_RES)
-
-    if(NOT SHADER_BUILD_RES EQUAL 0)
-        message(FATAL_ERROR "Could not build shader ${SHADER}.")
-    endif()
-endforeach(SHADER)
+    set(OUTFILE "${CMAKE_CURRENT_SOURCE_DIR}/${SHADER}.spv")
+    add_custom_command(OUTPUT "${OUTFILE}"
+        COMMAND
+        "${GLSLANG}" -V -o "${OUTFILE}" "${CMAKE_CURRENT_SOURCE_DIR}/${SHADER}"
+        VERBATIM
+        WORKING_DIRECTORY "${SHADER_DIR}"
+        COMMENT "Compiling ${SHADER} with glslang")
+    list(APPEND CUSTOM_OUTPUTS "${OUTFILE}")
+endforeach()
 
 # generate wayland protocols
-set(WAYLAND_PROTOCOLS_DIR ${CMAKE_SOURCE_DIR}/wayland-protocols/)
-file(MAKE_DIRECTORY ${WAYLAND_PROTOCOLS_DIR})
+set(WAYLAND_PROTOCOLS_DIR "${CMAKE_CURRENT_BINARY_DIR}/wayland-protocols/")
+file(MAKE_DIRECTORY "${WAYLAND_PROTOCOLS_DIR}")
 
 set(PROTOCOL xdg-shell-unstable-v6)
 set(PROTOCOL_XML
-    ${WAYLAND_PROTOCOLS_DATADIR}/unstable/xdg-shell/${PROTOCOL}.xml)
+    "${WAYLAND_PROTOCOLS_DATADIR}/unstable/xdg-shell/${PROTOCOL}.xml")
 
-execute_process(COMMAND
+set(WAYLAND_PROTOCOLS_SRC)
+set(OUTFILE "${WAYLAND_PROTOCOLS_DIR}/${PROTOCOL}.c")
+list(APPEND WAYLAND_PROTOCOLS_SRC "${OUTFILE}")
+add_custom_command(OUTPUT "${OUTFILE}"
+    COMMAND
     ${WAYLAND_SCANNER}
     code
-    ${PROTOCOL_XML}
-    ${WAYLAND_PROTOCOLS_DIR}/${PROTOCOL}.c)
-execute_process(COMMAND
+    "${PROTOCOL_XML}"
+    "${OUTFILE}"
+    VERBATIM
+    COMMENT "Generating code file with wayland-scanner")
+
+
+set(OUTFILE "${WAYLAND_PROTOCOLS_DIR}/${PROTOCOL}.h")
+list(APPEND WAYLAND_PROTOCOLS_SRC "${OUTFILE}")
+add_custom_command(OUTPUT "${OUTFILE}"
+    COMMAND
     ${WAYLAND_SCANNER}
     client-header
-    ${PROTOCOL_XML}
-    ${WAYLAND_PROTOCOLS_DIR}/${PROTOCOL}.h)
+    "${PROTOCOL_XML}"
+    "${OUTFILE}"
+    VERBATIM
+    COMMENT "Generating client header file with wayland-scanner")
 
-file(GLOB WAYLAND_PROTOCOLS_SRC ${WAYLAND_PROTOCOLS_DIR}/*.c)
 add_library(wayland-protocols ${WAYLAND_PROTOCOLS_SRC})
+target_include_directories(wayland-protocols PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
 
 file(GLOB_RECURSE VITAMINK_SRC vitamin-k/*.hpp)
 add_library(vitamin-k ${VITAMINK_SRC})
-SET_TARGET_PROPERTIES(vitamin-k  PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(vitamin-k  PROPERTIES LINKER_LANGUAGE CXX)
 set(LINT_SOURCES ${VITAMINK_SRC})
 
 set(EXAMPLE_LIBS
@@ -157,9 +183,10 @@ set(EXAMPLE_LIBS
 # Function for building single example
 function(buildExample EXAMPLE_NAME)
     file(GLOB EXAMPLE_SRC examples/${EXAMPLE_NAME}/*.cpp)
-    add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
+    add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC} ${CUSTOM_OUTPUTS})
     set(LINT_SOURCES ${LINT_SOURCES} ${EXAMPLE_SRC} PARENT_SCOPE)
     target_link_libraries(${EXAMPLE_NAME} ${EXAMPLE_LIBS})
+    target_compile_features(${EXAMPLE_NAME} PRIVATE cxx_std_14)
 endfunction(buildExample)
 
 # build examples

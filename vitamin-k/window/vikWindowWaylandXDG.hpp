@@ -17,7 +17,7 @@
 #include <vulkan/vulkan.h>
 #include <string>
 
-#include "../../wayland-protocols/xdg-shell-unstable-v6.h"
+#include "wayland-protocols/xdg-shell-unstable-v6.h"
 
 #include "vikWindowWayland.hpp"
 #include "../system/vikLog.hpp"
