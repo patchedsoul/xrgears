@@ -14,6 +14,7 @@
 #include <openhmd.h>
 
 #include <vector>
+#include <array>
 
 #include "vikModel.hpp"
 #include "../system/vikLog.hpp"
@@ -196,7 +197,7 @@ class Distortion {
 
     vkUpdateDescriptorSets(device,
                            static_cast<uint32_t>(write_descriptor_sets.size()),
-                           write_descriptor_sets.data(), 0, NULL);
+                           write_descriptor_sets.data(), 0, nullptr);
   }
 
   void init_descriptor_set_layout() {
@@ -235,7 +236,7 @@ class Distortion {
     vkCmdBindDescriptorSets(command_buffer,
                             VK_PIPELINE_BIND_POINT_GRAPHICS,
                             pipeline_layout, 0, 1,
-                            &descriptor_set, 0, NULL);
+                            &descriptor_set, 0, nullptr);
 
     vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     // TODO(lubosz): Use vertex buffer

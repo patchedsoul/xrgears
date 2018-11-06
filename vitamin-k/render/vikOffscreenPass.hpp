@@ -13,6 +13,7 @@
 #include <vulkan/vulkan.h>
 
 #include <vector>
+#include <array>
 
 #include "vikDevice.hpp"
 
@@ -36,7 +37,7 @@ class OffscreenPass {
   };
 
   struct FrameBuffer {
-    int32_t width, height;
+    uint32_t width, height;
     VkFramebuffer frameBuffer;
     FrameBufferAttachment diffuseColor;
     FrameBufferAttachment depth;
@@ -214,7 +215,7 @@ class OffscreenPass {
 
     VkFramebufferCreateInfo fbufCreateInfo = {};
     fbufCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    fbufCreateInfo.pNext = NULL;
+    fbufCreateInfo.pNext = nullptr;
     fbufCreateInfo.renderPass = offScreenFrameBuf.renderPass;
     fbufCreateInfo.pAttachments = attachments.data();
     fbufCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -291,7 +292,7 @@ class OffscreenPass {
   void setViewPortAndScissorStereo(const VkCommandBuffer& cmdBuffer) {
     VkViewport viewports[2];
 
-    int32_t w = offScreenFrameBuf.width, h = offScreenFrameBuf.height;
+    uint32_t w = offScreenFrameBuf.width, h = offScreenFrameBuf.height;
 
     // Left
     viewports[0] = { 0, 0, (float) w / 2.0f, (float) h, 0.0, 1.0f };

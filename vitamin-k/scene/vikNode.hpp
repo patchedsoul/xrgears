@@ -11,12 +11,14 @@
 #pragma once
 
 #include <vector>
+#include <glm/gtc/matrix_inverse.hpp>
 
 #include "../render/vikModel.hpp"
 
 #include "vikMaterial.hpp"
 #include "../system/vikAssets.hpp"
 #include "vikSkyBox.hpp"
+#include "vikCamera.hpp"
 
 namespace vik {
 class Node {
@@ -102,7 +104,7 @@ class Node {
                            nullptr);
   }
 
-  void update_uniform_buffer(vik::Camera::StereoView sv, float timer) {
+  void update_uniform_buffer(Camera::StereoView sv, float timer) {
     ubo.model = glm::mat4();
 
     ubo.model = glm::translate(ubo.model, info.position);

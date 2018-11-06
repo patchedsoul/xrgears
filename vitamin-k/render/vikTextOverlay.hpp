@@ -19,6 +19,7 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <functional>
 
 #include "vikTools.hpp"
 #include "vikDebug.hpp"
