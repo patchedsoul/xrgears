@@ -61,20 +61,6 @@ class RendererTextOverlay : public Renderer {
     text_overlay->set_update_cb(cb);
   }
 
-  VkSubmitInfo init_text_submit_info() {
-    // Wait for color attachment output to finish before rendering the text overlay
-    // VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-
-    VkSubmitInfo submit_info = initializers::submitInfo();
-    // submit_info.pWaitDstStageMask = &stageFlags;
-    submit_info.waitSemaphoreCount = 1;
-    submit_info.pWaitSemaphores = &semaphores.render_complete;
-    submit_info.signalSemaphoreCount = 1;
-    submit_info.pSignalSemaphores = &text_overlay_complete;
-    submit_info.commandBufferCount = 1;
-    return submit_info;
-  }
-
   void update_text_overlay() {
     if (!settings->enable_text_overlay)
       return;
@@ -91,11 +77,18 @@ class RendererTextOverlay : public Renderer {
   }
 
   void submit_text_overlay() {
-    VkSubmitInfo submit_info = init_text_submit_info();
-    submit_info.pCommandBuffers = &text_overlay->cmdBuffers[current_buffer];
-
     VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    submit_info.pWaitDstStageMask = &stageFlags;
+
+    VkSubmitInfo submit_info = {
+      .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+      .waitSemaphoreCount = 1,
+      .pWaitSemaphores = &semaphores.render_complete,
+      .pWaitDstStageMask = &stageFlags,
+      .commandBufferCount = 1,
+      .pCommandBuffers = &text_overlay->cmdBuffers[current_buffer],
+      .signalSemaphoreCount = 1,
+      .pSignalSemaphores = &text_overlay_complete
+    };
 
     vik_log_check(vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE));
   }
@@ -133,7 +126,9 @@ class RendererTextOverlay : public Renderer {
 
   void init_semaphores() {
     Renderer::init_semaphores();
-     VkSemaphoreCreateInfo semaphore_info = initializers::semaphoreCreateInfo();
+    VkSemaphoreCreateInfo semaphore_info = {
+      .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+    };
     // Create a semaphore used to synchronize command submission
     // Ensures that the image is not presented until all commands for the text overlay have been sumbitted and executed
     // Will be inserted after the render complete semaphore if the text overlay is enabled

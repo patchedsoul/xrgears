@@ -33,7 +33,6 @@
 #include "../window/vikWindowDirectMode.hpp"
 
 #include "../render/vikTools.hpp"
-#include "../render/vikInitializers.hpp"
 #include "../scene/vikCamera.hpp"
 #include "../render/vikRendererTextOverlay.hpp"
 #include "../render/vikTimer.hpp"

@@ -166,17 +166,20 @@ class TextOverlay {
     // Command buffer
 
     // Pool
-    VkCommandPoolCreateInfo cmdPoolInfo = {};
-    cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    cmdPoolInfo.queueFamilyIndex = vulkanDevice->queueFamilyIndices.graphics;
-    cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    vik_log_check(vkCreateCommandPool(vulkanDevice->logicalDevice, &cmdPoolInfo, nullptr, &commandPool));
+    VkCommandPoolCreateInfo cmdPoolInfo = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+      .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+      .queueFamilyIndex = vulkanDevice->queueFamilyIndices.graphics
+    };
+    vik_log_check(vkCreateCommandPool(vulkanDevice->logicalDevice, &cmdPoolInfo,
+                                      nullptr, &commandPool));
 
-    VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-        initializers::commandBufferAllocateInfo(
-          commandPool,
-          VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-          (uint32_t)cmdBuffers.size());
+    VkCommandBufferAllocateInfo cmdBufAllocateInfo = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      .commandPool = commandPool,
+      .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+      .commandBufferCount = (uint32_t)cmdBuffers.size()
+    };
 
     vik_log_check(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &cmdBufAllocateInfo, cmdBuffers.data()));
 
@@ -191,26 +194,35 @@ class TextOverlay {
     vertexBuffer.map();
 
     // Font texture
-    VkImageCreateInfo imageInfo = initializers::imageCreateInfo();
-    imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageInfo.format = VK_FORMAT_R8_UNORM;
-    imageInfo.extent.width = STB_FONT_WIDTH;
-    imageInfo.extent.height = STB_FONT_HEIGHT;
-    imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = 1;
-    imageInfo.arrayLayers = 1;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+    VkImageCreateInfo imageInfo = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+      .imageType = VK_IMAGE_TYPE_2D,
+      .format = VK_FORMAT_R8_UNORM,
+      .extent = {
+        .width = STB_FONT_WIDTH,
+        .height = STB_FONT_HEIGHT,
+        .depth = 1,
+      },
+      .mipLevels = 1,
+      .arrayLayers = 1,
+      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .tiling = VK_IMAGE_TILING_OPTIMAL,
+      .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+      .initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED
+    };
+
     vik_log_check(vkCreateImage(vulkanDevice->logicalDevice, &imageInfo, nullptr, &image));
 
     VkMemoryRequirements memReqs;
-    VkMemoryAllocateInfo allocInfo = initializers::memoryAllocateInfo();
     vkGetImageMemoryRequirements(vulkanDevice->logicalDevice, image, &memReqs);
-    allocInfo.allocationSize = memReqs.size;
-    allocInfo.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    VkMemoryAllocateInfo allocInfo {
+      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+      .allocationSize = memReqs.size,
+      .memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+    };
+
     vik_log_check(vkAllocateMemory(vulkanDevice->logicalDevice, &allocInfo, nullptr, &imageMemory));
     vik_log_check(vkBindImageMemory(vulkanDevice->logicalDevice, image, imageMemory, 0));
 
@@ -233,7 +245,9 @@ class TextOverlay {
     cmdBufAllocateInfo.commandBufferCount = 1;
     vik_log_check(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &cmdBufAllocateInfo, &copyCmd));
 
-    VkCommandBufferBeginInfo cmdBufInfo = initializers::commandBufferBeginInfo();
+    VkCommandBufferBeginInfo cmdBufInfo = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO
+    };
     vik_log_check(vkBeginCommandBuffer(copyCmd, &cmdBufInfo));
 
     // Prepare for transfer
@@ -244,13 +258,18 @@ class TextOverlay {
           VK_IMAGE_LAYOUT_PREINITIALIZED,
           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-    VkBufferImageCopy bufferCopyRegion = {};
-    bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    bufferCopyRegion.imageSubresource.mipLevel = 0;
-    bufferCopyRegion.imageSubresource.layerCount = 1;
-    bufferCopyRegion.imageExtent.width = STB_FONT_WIDTH;
-    bufferCopyRegion.imageExtent.height = STB_FONT_HEIGHT;
-    bufferCopyRegion.imageExtent.depth = 1;
+    VkBufferImageCopy bufferCopyRegion = {
+      .imageSubresource = {
+        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        .mipLevel = 0,
+        .layerCount = 1,
+      },
+      .imageExtent = {
+        .width = STB_FONT_WIDTH,
+        .height = STB_FONT_HEIGHT,
+        .depth = 1
+      },
+    };
 
     vkCmdCopyBufferToImage(
           copyCmd,
@@ -270,9 +289,11 @@ class TextOverlay {
 
     vik_log_check(vkEndCommandBuffer(copyCmd));
 
-    VkSubmitInfo submitInfo = initializers::submitInfo();
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &copyCmd;
+    VkSubmitInfo submitInfo = {
+      .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+      .commandBufferCount = 1,
+      .pCommandBuffers = &copyCmd
+    };
 
     vik_log_check(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
     vik_log_check(vkQueueWaitIdle(queue));
@@ -281,79 +302,113 @@ class TextOverlay {
 
     vkFreeCommandBuffers(vulkanDevice->logicalDevice, commandPool, 1, &copyCmd);
 
-    VkImageViewCreateInfo imageViewInfo = initializers::imageViewCreateInfo();
-    imageViewInfo.image = image;
-    imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    imageViewInfo.format = imageInfo.format;
-    imageViewInfo.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
-    imageViewInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+    VkImageViewCreateInfo imageViewInfo = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+      .image = image,
+      .viewType = VK_IMAGE_VIEW_TYPE_2D,
+      .format = imageInfo.format,
+      .components = {
+        .r = VK_COMPONENT_SWIZZLE_R,
+        .g = VK_COMPONENT_SWIZZLE_G,
+        .b = VK_COMPONENT_SWIZZLE_B,
+        .a = VK_COMPONENT_SWIZZLE_A
+      },
+      .subresourceRange = {
+        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        .baseMipLevel = 0,
+        .levelCount = 1,
+        .baseArrayLayer = 0,
+        .layerCount = 1
+      }
+    };
+
     vik_log_check(vkCreateImageView(vulkanDevice->logicalDevice, &imageViewInfo, nullptr, &view));
 
     // Sampler
-    VkSamplerCreateInfo samplerInfo = initializers::samplerCreateInfo();
-    samplerInfo.magFilter = VK_FILTER_LINEAR;
-    samplerInfo.minFilter = VK_FILTER_LINEAR;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.mipLodBias = 0.0f;
-    samplerInfo.compareOp = VK_COMPARE_OP_NEVER;
-    samplerInfo.minLod = 0.0f;
-    samplerInfo.maxLod = 1.0f;
-    samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    VkSamplerCreateInfo samplerInfo = {
+      .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+      .magFilter = VK_FILTER_LINEAR,
+      .minFilter = VK_FILTER_LINEAR,
+      .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+      .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+      .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+      .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+      .mipLodBias = 0.0f,
+      .maxAnisotropy = 1.0f,
+      .compareOp = VK_COMPARE_OP_NEVER,
+      .minLod = 0.0f,
+      .maxLod = 1.0f,
+      .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE
+    };
+
     vik_log_check(vkCreateSampler(vulkanDevice->logicalDevice, &samplerInfo, nullptr, &sampler));
 
     // Descriptor
     // Font uses a separate descriptor pool
-    std::array<VkDescriptorPoolSize, 1> poolSizes;
-    poolSizes[0] = initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+    std::vector<VkDescriptorPoolSize> poolSizes = {{
+      .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      .descriptorCount = 1
+    }};
 
-    VkDescriptorPoolCreateInfo descriptorPoolInfo =
-        initializers::descriptorPoolCreateInfo(
-          static_cast<uint32_t>(poolSizes.size()),
-          poolSizes.data(),
-          1);
+    VkDescriptorPoolCreateInfo descriptorPoolInfo = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+      .maxSets = 1,
+      .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
+      .pPoolSizes = poolSizes.data()
+    };
 
     vik_log_check(vkCreateDescriptorPool(vulkanDevice->logicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 
     // Descriptor set layout
-    std::array<VkDescriptorSetLayoutBinding, 1> setLayoutBindings;
-    setLayoutBindings[0] = initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
+    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {{
+      .binding = 0,
+      .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      .descriptorCount = 1,
+      .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+    }};
 
-    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo =
-        initializers::descriptorSetLayoutCreateInfo(
-          setLayoutBindings.data(),
-          static_cast<uint32_t>(setLayoutBindings.size()));
-
+    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+      .bindingCount = static_cast<uint32_t>(setLayoutBindings.size()),
+      .pBindings = setLayoutBindings.data()
+    };
     vik_log_check(vkCreateDescriptorSetLayout(vulkanDevice->logicalDevice, &descriptorSetLayoutInfo, nullptr, &descriptorSetLayout));
 
     // Pipeline layout
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo =
-        initializers::pipelineLayoutCreateInfo(
-          &descriptorSetLayout,
-          1);
-
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+      .setLayoutCount = 1,
+      .pSetLayouts = &descriptorSetLayout
+    };
     vik_log_check(vkCreatePipelineLayout(vulkanDevice->logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout));
 
     // Descriptor set
-    VkDescriptorSetAllocateInfo descriptorSetAllocInfo =
-        initializers::descriptorSetAllocateInfo(
-          descriptorPool,
-          &descriptorSetLayout,
-          1);
+    VkDescriptorSetAllocateInfo descriptorSetAllocInfo = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+      .descriptorPool = descriptorPool,
+      .descriptorSetCount = 1,
+      .pSetLayouts = &descriptorSetLayout
+    };
 
     vik_log_check(vkAllocateDescriptorSets(vulkanDevice->logicalDevice, &descriptorSetAllocInfo, &descriptorSet));
 
-    VkDescriptorImageInfo texDescriptor =
-        initializers::descriptorImageInfo(
-          sampler,
-          view,
-          VK_IMAGE_LAYOUT_GENERAL);
+    VkDescriptorImageInfo texDescriptor = {
+      .sampler = sampler,
+      .imageView = view,
+      .imageLayout = VK_IMAGE_LAYOUT_GENERAL
+    };
 
-    std::array<VkWriteDescriptorSet, 1> writeDescriptorSets;
-    writeDescriptorSets[0] = initializers::writeDescriptorSet(descriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &texDescriptor);
-    vkUpdateDescriptorSets(vulkanDevice->logicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
+    std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
+      (VkWriteDescriptorSet) {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = descriptorSet,
+        .dstBinding = 0,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        .pImageInfo = &texDescriptor
+      }
+    };
+    vkUpdateDescriptorSets(vulkanDevice->logicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
 
     // Pipeline cache
     VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
@@ -361,7 +416,9 @@ class TextOverlay {
     vik_log_check(vkCreatePipelineCache(vulkanDevice->logicalDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
 
     // Command buffer execution fence
-    VkFenceCreateInfo fenceCreateInfo = initializers::fenceCreateInfo();
+    VkFenceCreateInfo fenceCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
+    };
     vik_log_check(vkCreateFence(vulkanDevice->logicalDevice, &fenceCreateInfo, nullptr, &fence));
   }
 
@@ -369,94 +426,132 @@ class TextOverlay {
   * Prepare a separate pipeline for the font rendering decoupled from the main application
   */
   void preparePipeline() {
-    VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
-        initializers::pipelineInputAssemblyStateCreateInfo(
-          VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
-          0,
-          VK_FALSE);
+    VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+      .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
+      .primitiveRestartEnable = VK_FALSE
+    };
 
-    VkPipelineRasterizationStateCreateInfo rasterizationState =
-        initializers::pipelineRasterizationStateCreateInfo(
-          VK_POLYGON_MODE_FILL,
-          VK_CULL_MODE_BACK_BIT,
-          VK_FRONT_FACE_CLOCKWISE,
-          0);
+    VkPipelineRasterizationStateCreateInfo rasterizationState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+      .depthClampEnable = VK_FALSE,
+      .polygonMode = VK_POLYGON_MODE_FILL,
+      .cullMode = VK_CULL_MODE_BACK_BIT,
+      .frontFace = VK_FRONT_FACE_CLOCKWISE,
+      .lineWidth = 1.0f
+    };
 
     // Enable blending
-    VkPipelineColorBlendAttachmentState blendAttachmentState =
-        initializers::pipelineColorBlendAttachmentState(0xf, VK_TRUE);
+    VkPipelineColorBlendAttachmentState blendAttachmentState = {
+      .blendEnable = VK_TRUE,
+      .srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
+      .dstColorBlendFactor = VK_BLEND_FACTOR_ONE,
+      .colorBlendOp = VK_BLEND_OP_ADD,
+      .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
+      .dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
+      .alphaBlendOp = VK_BLEND_OP_ADD,
+      .colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
+                        VK_COLOR_COMPONENT_G_BIT |
+                        VK_COLOR_COMPONENT_B_BIT |
+                        VK_COLOR_COMPONENT_A_BIT
+    };
 
-    blendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-    blendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-    blendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
-    blendAttachmentState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    blendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    blendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;
-    blendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    VkPipelineColorBlendStateCreateInfo colorBlendState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+      .attachmentCount = 1,
+      .pAttachments = &blendAttachmentState
+    };
 
-    VkPipelineColorBlendStateCreateInfo colorBlendState =
-        initializers::pipelineColorBlendStateCreateInfo(
-          1,
-          &blendAttachmentState);
+    VkPipelineDepthStencilStateCreateInfo depthStencilState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+      .depthTestEnable = VK_FALSE,
+      .depthWriteEnable = VK_FALSE,
+      .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
+      .front = {
+        .compareOp = VK_COMPARE_OP_ALWAYS
+      },
+      .back = {
+        .compareOp = VK_COMPARE_OP_ALWAYS
+      }
+    };
 
-    VkPipelineDepthStencilStateCreateInfo depthStencilState =
-        initializers::pipelineDepthStencilStateCreateInfo(
-          VK_FALSE,
-          VK_FALSE,
-          VK_COMPARE_OP_LESS_OR_EQUAL);
+    VkPipelineViewportStateCreateInfo viewportState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+      .viewportCount = 1,
+      .scissorCount = 1
+    };
 
-    VkPipelineViewportStateCreateInfo viewportState =
-        initializers::pipelineViewportStateCreateInfo(1, 1, 0);
-
-    VkPipelineMultisampleStateCreateInfo multisampleState =
-        initializers::pipelineMultisampleStateCreateInfo(
-          VK_SAMPLE_COUNT_1_BIT,
-          0);
+    VkPipelineMultisampleStateCreateInfo multisampleState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+      .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT
+    };
 
     std::vector<VkDynamicState> dynamicStateEnables = {
       VK_DYNAMIC_STATE_VIEWPORT,
       VK_DYNAMIC_STATE_SCISSOR
     };
 
-    VkPipelineDynamicStateCreateInfo dynamicState =
-        initializers::pipelineDynamicStateCreateInfo(
-          dynamicStateEnables.data(),
-          static_cast<uint32_t>(dynamicStateEnables.size()),
-          0);
+    VkPipelineDynamicStateCreateInfo dynamicState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+      .dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size()),
+      .pDynamicStates = dynamicStateEnables.data()
+    };
 
-    std::array<VkVertexInputBindingDescription, 2> vertexBindings = {};
-    vertexBindings[0] = initializers::vertexInputBindingDescription(0, sizeof(glm::vec4), VK_VERTEX_INPUT_RATE_VERTEX);
-    vertexBindings[1] = initializers::vertexInputBindingDescription(1, sizeof(glm::vec4), VK_VERTEX_INPUT_RATE_VERTEX);
+    std::vector<VkVertexInputBindingDescription> vertexBindings = {
+      {
+        .binding = 0,
+        .stride = sizeof(glm::vec4),
+        .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+      },
+      {
+        .binding = 1,
+        .stride = sizeof(glm::vec4),
+        .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+      }
+    };
 
-    std::array<VkVertexInputAttributeDescription, 2> vertexAttribs = {};
-    // Position
-    vertexAttribs[0] = initializers::vertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32_SFLOAT, 0);
-    // UV
-    vertexAttribs[1] = initializers::vertexInputAttributeDescription(1, 1, VK_FORMAT_R32G32_SFLOAT, sizeof(glm::vec2));
+    std::vector<VkVertexInputAttributeDescription> vertexAttribs = {
+      // Position
+      {
+        .location = 0,
+        .binding = 0,
+        .format = VK_FORMAT_R32G32_SFLOAT,
+        .offset = 0
+      },
+      // UV
+      {
+        .location = 1,
+        .binding = 1,
+        .format = VK_FORMAT_R32G32_SFLOAT,
+        .offset = sizeof(glm::vec2)
+      }
+    };
 
-    VkPipelineVertexInputStateCreateInfo inputState = initializers::pipelineVertexInputStateCreateInfo();
-    inputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertexBindings.size());
-    inputState.pVertexBindingDescriptions = vertexBindings.data();
-    inputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexAttribs.size());
-    inputState.pVertexAttributeDescriptions = vertexAttribs.data();
+    VkPipelineVertexInputStateCreateInfo inputState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+      .vertexBindingDescriptionCount = static_cast<uint32_t>(vertexBindings.size()),
+      .pVertexBindingDescriptions = vertexBindings.data(),
+      .vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexAttribs.size()),
+      .pVertexAttributeDescriptions = vertexAttribs.data()
+    };
 
-    VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-        initializers::pipelineCreateInfo(
-          pipelineLayout,
-          renderPass,
-          0);
-
-    pipelineCreateInfo.pVertexInputState = &inputState;
-    pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
-    pipelineCreateInfo.pRasterizationState = &rasterizationState;
-    pipelineCreateInfo.pColorBlendState = &colorBlendState;
-    pipelineCreateInfo.pMultisampleState = &multisampleState;
-    pipelineCreateInfo.pViewportState = &viewportState;
-    pipelineCreateInfo.pDepthStencilState = &depthStencilState;
-    pipelineCreateInfo.pDynamicState = &dynamicState;
-    pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
-    pipelineCreateInfo.pStages = shaderStages.data();
-
+    VkGraphicsPipelineCreateInfo pipelineCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+      .stageCount = static_cast<uint32_t>(shaderStages.size()),
+      .pStages = shaderStages.data(),
+      .pVertexInputState = &inputState,
+      .pInputAssemblyState = &inputAssemblyState,
+      .pViewportState = &viewportState,
+      .pRasterizationState = &rasterizationState,
+      .pMultisampleState = &multisampleState,
+      .pDepthStencilState = &depthStencilState,
+      .pColorBlendState = &colorBlendState,
+      .pDynamicState = &dynamicState,
+      .layout = pipelineLayout,
+      .renderPass = renderPass,
+      .basePipelineHandle = VK_NULL_HANDLE,
+      .basePipelineIndex = -1
+    };
     vik_log_check(vkCreateGraphicsPipelines(vulkanDevice->logicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
   }
 
@@ -464,80 +559,86 @@ class TextOverlay {
   * Prepare a separate render pass for rendering the text as an overlay
   */
   void prepareRenderPass() {
-    VkAttachmentDescription attachments[2] = {};
+    VkAttachmentDescription attachments[2] = {
+      {
+        // Color attachment
+        .format = colorFormat,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        // Don't clear the framebuffer (like the renderpass from the example does)
+        .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+      },
+      {
+        // Depth attachment
+        .format = depthFormat,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+      }
+    };
 
-    // Color attachment
-    attachments[0].format = colorFormat;
-    attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
-    // Don't clear the framebuffer (like the renderpass from the example does)
-    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-    attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    VkAttachmentReference colorReference = {
+      .attachment = 0,
+      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+    };
 
-    // Depth attachment
-    attachments[1].format = depthFormat;
-    attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
-    attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference depthReference = {
+      depthReference.attachment = 1,
+      depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+    };
 
-    VkAttachmentReference colorReference = {};
-    colorReference.attachment = 0;
-    colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkSubpassDependency subpassDependencies[2] = {
+      {
+        // Transition from final to initial (VK_SUBPASS_EXTERNAL refers
+        // to all commmands executed outside of the actual renderpass)
+        .srcSubpass = VK_SUBPASS_EXTERNAL,
+        .dstSubpass = 0,
+        .srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+                         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+      },
+      {
+        // Transition from initial to final
+        .srcSubpass = 0,
+        .dstSubpass = VK_SUBPASS_EXTERNAL,
+        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+                         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+        .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+      }
+    };
 
-    VkAttachmentReference depthReference = {};
-    depthReference.attachment = 1;
-    depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    VkSubpassDescription subpassDescription = {
+      .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+      .colorAttachmentCount = 1,
+      .pColorAttachments = &colorReference,
+      .pDepthStencilAttachment = &depthReference
+    };
 
-    VkSubpassDependency subpassDependencies[2] = {};
-
-    // Transition from final to initial (VK_SUBPASS_EXTERNAL refers to all commmands executed outside of the actual renderpass)
-    subpassDependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-    subpassDependencies[0].dstSubpass = 0;
-    subpassDependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    subpassDependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpassDependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-    subpassDependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    subpassDependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-    // Transition from initial to final
-    subpassDependencies[1].srcSubpass = 0;
-    subpassDependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-    subpassDependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpassDependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    subpassDependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    subpassDependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-    subpassDependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-    VkSubpassDescription subpassDescription = {};
-    subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpassDescription.flags = 0;
-    subpassDescription.inputAttachmentCount = 0;
-    subpassDescription.pInputAttachments = NULL;
-    subpassDescription.colorAttachmentCount = 1;
-    subpassDescription.pColorAttachments = &colorReference;
-    subpassDescription.pResolveAttachments = NULL;
-    subpassDescription.pDepthStencilAttachment = &depthReference;
-    subpassDescription.preserveAttachmentCount = 0;
-    subpassDescription.pPreserveAttachments = NULL;
-
-    VkRenderPassCreateInfo renderPassInfo = {};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.pNext = NULL;
-    renderPassInfo.attachmentCount = 2;
-    renderPassInfo.pAttachments = attachments;
-    renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpassDescription;
-    renderPassInfo.dependencyCount = 2;
-    renderPassInfo.pDependencies = subpassDependencies;
-
-    vik_log_check(vkCreateRenderPass(vulkanDevice->logicalDevice, &renderPassInfo, nullptr, &renderPass));
+    VkRenderPassCreateInfo renderPassInfo = {
+      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+      .attachmentCount = 2,
+      .pAttachments = attachments,
+      .subpassCount = 1,
+      .pSubpasses = &subpassDescription,
+      .dependencyCount = 2,
+      .pDependencies = subpassDependencies
+    };
+    vik_log_check(vkCreateRenderPass(vulkanDevice->logicalDevice,
+                                     &renderPassInfo, nullptr, &renderPass));
   }
 
   /**
@@ -636,15 +737,23 @@ class TextOverlay {
   * Update the command buffers to reflect text changes
   */
   void updateCommandBuffers() {
-    VkCommandBufferBeginInfo cmdBufInfo = initializers::commandBufferBeginInfo();
+    VkCommandBufferBeginInfo cmdBufInfo = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO
+    };
 
-    VkRenderPassBeginInfo renderPassBeginInfo = initializers::renderPassBeginInfo();
-    renderPassBeginInfo.renderPass = renderPass;
-    renderPassBeginInfo.renderArea.extent.width = *frameBufferWidth;
-    renderPassBeginInfo.renderArea.extent.height = *frameBufferHeight;
-    // None of the attachments will be cleared
-    renderPassBeginInfo.clearValueCount = 0;
-    renderPassBeginInfo.pClearValues = nullptr;
+    VkRenderPassBeginInfo renderPassBeginInfo = {
+      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+      .renderPass = renderPass,
+      .renderArea = {
+        .extent = {
+          .width = *frameBufferWidth,
+          .height = *frameBufferHeight
+        }
+      },
+      // None of the attachments will be cleared
+      .clearValueCount = 0,
+      .pClearValues = nullptr
+    };
 
     for (size_t i = 0; i < cmdBuffers.size(); ++i) {
       renderPassBeginInfo.framebuffer = *frameBuffers[i];
@@ -656,10 +765,18 @@ class TextOverlay {
 
       vkCmdBeginRenderPass(cmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-      VkViewport viewport = initializers::viewport((float)*frameBufferWidth, (float)*frameBufferHeight, 0.0f, 1.0f);
+      VkViewport viewport = {
+        .width = (float)*frameBufferWidth,
+        .height = (float)*frameBufferHeight,
+        .minDepth = 0.0f,
+        .maxDepth = 1.0f
+      };
       vkCmdSetViewport(cmdBuffers[i], 0, 1, &viewport);
 
-      VkRect2D scissor = initializers::rect2D(*frameBufferWidth, *frameBufferHeight, 0, 0);
+      VkRect2D scissor = {
+        .offset = { .x = 0, .y = 0 },
+        .extent = { .width = *frameBufferWidth, .height = *frameBufferHeight }
+      };
       vkCmdSetScissor(cmdBuffers[i], 0, 1, &scissor);
 
       vkCmdBindPipeline(cmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
@@ -703,11 +820,12 @@ class TextOverlay {
   void reallocateCommandBuffers() {
     vkFreeCommandBuffers(vulkanDevice->logicalDevice, commandPool, static_cast<uint32_t>(cmdBuffers.size()), cmdBuffers.data());
 
-    VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-        initializers::commandBufferAllocateInfo(
-          commandPool,
-          VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-          static_cast<uint32_t>(cmdBuffers.size()));
+    VkCommandBufferAllocateInfo cmdBufAllocateInfo = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      .commandPool = commandPool,
+      .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+      .commandBufferCount = static_cast<uint32_t>(cmdBuffers.size())
+    };
 
     vik_log_check(vkAllocateCommandBuffers(vulkanDevice->logicalDevice, &cmdBufAllocateInfo, cmdBuffers.data()));
   }

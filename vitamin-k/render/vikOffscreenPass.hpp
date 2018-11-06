@@ -75,25 +75,35 @@ class OffscreenPass {
       FrameBufferAttachment *attachment) {
     attachment->format = format;
 
-    VkImageCreateInfo image = initializers::imageCreateInfo();
-    image.imageType = VK_IMAGE_TYPE_2D;
-    image.format = format;
-    image.extent.width = offScreenFrameBuf.width;
-    image.extent.height = offScreenFrameBuf.height;
-    image.extent.depth = 1;
-    image.mipLevels = 1;
-    image.arrayLayers = 1;
-    image.samples = VK_SAMPLE_COUNT_1_BIT;
-    image.tiling = VK_IMAGE_TILING_OPTIMAL;
+    VkImageCreateInfo image = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+      .imageType = VK_IMAGE_TYPE_2D,
+      .format = format,
+      .extent = {
+        .width = offScreenFrameBuf.width,
+        .height = offScreenFrameBuf.height,
+        .depth = 1
+      },
+      .mipLevels = 1,
+      .arrayLayers = 1,
+      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .tiling = VK_IMAGE_TILING_OPTIMAL
+    };
+
     image.usage = usage | VK_IMAGE_USAGE_SAMPLED_BIT;
 
-    VkMemoryAllocateInfo memAlloc = initializers::memoryAllocateInfo();
     VkMemoryRequirements memReqs;
-
     vik_log_check(vkCreateImage(device, &image, nullptr, &attachment->image));
     vkGetImageMemoryRequirements(device, attachment->image, &memReqs);
-    memAlloc.allocationSize = memReqs.size;
-    memAlloc.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    VkMemoryAllocateInfo memAlloc = {
+      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+      .allocationSize = memReqs.size,
+      .memoryTypeIndex =
+        vulkanDevice->getMemoryType(memReqs.memoryTypeBits,
+                                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+    };
+
     vik_log_check(vkAllocateMemory(device, &memAlloc, nullptr, &attachment->mem));
     vik_log_check(vkBindImageMemory(device, attachment->image, attachment->mem, 0));
 
@@ -105,16 +115,20 @@ class OffscreenPass {
     }
     assert(aspectMask > 0);
 
-    VkImageViewCreateInfo imageView = initializers::imageViewCreateInfo();
-    imageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    imageView.format = format;
-    imageView.subresourceRange = {};
-    imageView.subresourceRange.aspectMask = aspectMask;
-    imageView.subresourceRange.baseMipLevel = 0;
-    imageView.subresourceRange.levelCount = 1;
-    imageView.subresourceRange.baseArrayLayer = 0;
-    imageView.subresourceRange.layerCount = 1;
-    imageView.image = attachment->image;
+    VkImageViewCreateInfo imageView = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+      .image = attachment->image,
+      .viewType = VK_IMAGE_VIEW_TYPE_2D,
+      .format = format,
+      .subresourceRange = {
+        .aspectMask = aspectMask,
+        .baseMipLevel = 0,
+        .levelCount = 1,
+        .baseArrayLayer = 0,
+        .layerCount = 1,
+      },
+    };
+
     vik_log_check(vkCreateImageView(device, &imageView, nullptr, &attachment->view));
   }
 
@@ -169,91 +183,114 @@ class OffscreenPass {
     std::vector<VkAttachmentReference> colorReferences;
     colorReferences.push_back({ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
 
-    VkAttachmentReference depthReference = {};
-    depthReference.attachment = 1;
-    depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference depthReference = {
+      .attachment = 1,
+      .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+    };
 
-    VkSubpassDescription subpass = {};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.pColorAttachments = colorReferences.data();
-    subpass.colorAttachmentCount = static_cast<uint32_t>(colorReferences.size());
-    subpass.pDepthStencilAttachment = &depthReference;
+    VkSubpassDescription subpass = {
+      .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+      .colorAttachmentCount = static_cast<uint32_t>(colorReferences.size()),
+      .pColorAttachments = colorReferences.data(),
+      .pDepthStencilAttachment = &depthReference
+    };
 
     // Use subpass dependencies for attachment layput transitions
-    std::array<VkSubpassDependency, 2> dependencies;
+    std::array<VkSubpassDependency, 2> dependencies = {
+      (VkSubpassDependency) {
+        .srcSubpass = VK_SUBPASS_EXTERNAL,
+        .dstSubpass = 0,
+        .srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+                         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+      },
+      (VkSubpassDependency)  {
+        .srcSubpass = 0,
+        .dstSubpass = VK_SUBPASS_EXTERNAL,
+        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+                         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+        .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+      }
+    };
 
-    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependencies[0].dstSubpass = 0;
-    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+    VkRenderPassCreateInfo renderPassInfo = {
+      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+      .attachmentCount = static_cast<uint32_t>(attachmentDescs.size()),
+      .pAttachments = attachmentDescs.data(),
+      .subpassCount = 1,
+      .pSubpasses = &subpass,
+      .dependencyCount = 2,
+      .pDependencies = dependencies.data()
+    };
 
-    dependencies[1].srcSubpass = 0;
-    dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-    dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-    dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-    VkRenderPassCreateInfo renderPassInfo = {};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.pAttachments = attachmentDescs.data();
-    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachmentDescs.size());
-    renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpass;
-    renderPassInfo.dependencyCount = 2;
-    renderPassInfo.pDependencies = dependencies.data();
-
-    vik_log_check(vkCreateRenderPass(device, &renderPassInfo, nullptr, &offScreenFrameBuf.renderPass));
+    vik_log_check(vkCreateRenderPass(device, &renderPassInfo,
+                                     nullptr, &offScreenFrameBuf.renderPass));
 
     std::array<VkImageView, 2> attachments;
     attachments[0] = offScreenFrameBuf.diffuseColor.view;
     attachments[1] = offScreenFrameBuf.depth.view;
 
-    VkFramebufferCreateInfo fbufCreateInfo = {};
-    fbufCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    fbufCreateInfo.pNext = nullptr;
-    fbufCreateInfo.renderPass = offScreenFrameBuf.renderPass;
-    fbufCreateInfo.pAttachments = attachments.data();
-    fbufCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    fbufCreateInfo.width = offScreenFrameBuf.width;
-    fbufCreateInfo.height = offScreenFrameBuf.height;
-    fbufCreateInfo.layers = 1;
-    vik_log_check(vkCreateFramebuffer(device, &fbufCreateInfo, nullptr, &offScreenFrameBuf.frameBuffer));
+    VkFramebufferCreateInfo fbufCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+      .renderPass = offScreenFrameBuf.renderPass,
+      .attachmentCount = static_cast<uint32_t>(attachments.size()),
+      .pAttachments = attachments.data(),
+      .width = offScreenFrameBuf.width,
+      .height = offScreenFrameBuf.height,
+      .layers = 1
+    };
+
+    vik_log_check(vkCreateFramebuffer(device, &fbufCreateInfo,
+                                      nullptr, &offScreenFrameBuf.frameBuffer));
 
     // Create sampler to sample from the color attachments
-    VkSamplerCreateInfo sampler = initializers::samplerCreateInfo();
-    sampler.magFilter = VK_FILTER_NEAREST;
-    sampler.minFilter = VK_FILTER_NEAREST;
-    sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    sampler.addressModeV = sampler.addressModeU;
-    sampler.addressModeW = sampler.addressModeU;
-    sampler.mipLodBias = 0.0f;
-    sampler.maxAnisotropy = 1.0;
-    sampler.minLod = 0.0f;
-    sampler.maxLod = 1.0f;
-    sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+
+    VkSamplerCreateInfo sampler = {
+      .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+      .magFilter = VK_FILTER_NEAREST,
+      .minFilter = VK_FILTER_NEAREST,
+      .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+      .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+      .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+      .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+      .mipLodBias = 0.0f,
+      .maxAnisotropy = 1.0f,
+      .minLod = 0.0f,
+      .maxLod = 1.0f,
+      .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE
+    };
+
     vik_log_check(vkCreateSampler(device, &sampler, nullptr, &colorSampler));
   }
 
   VkDescriptorImageInfo get_descriptor_image_info() {
     // Image descriptors for the offscreen color attachments
-    return initializers::descriptorImageInfo(
-          colorSampler,
-          offScreenFrameBuf.diffuseColor.view,
-          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    VkDescriptorImageInfo descriptor_info = {
+          .sampler = colorSampler,
+          .imageView = offScreenFrameBuf.diffuseColor.view,
+          .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        };
+    return descriptor_info;
   }
 
-  VkWriteDescriptorSet get_image_write_descriptor_set(const VkDescriptorSet& descriptorSet, VkDescriptorImageInfo *texDescriptorPosition, uint32_t binding) {
-    return initializers::writeDescriptorSet(
-          descriptorSet,
-          VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-          binding,
-          texDescriptorPosition);
+  VkWriteDescriptorSet
+  get_image_write_descriptor_set(const VkDescriptorSet& descriptorSet,
+                                 VkDescriptorImageInfo *texDescriptorPosition,
+                                 uint32_t binding) {
+    return  (VkWriteDescriptorSet) {
+      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+      .dstSet = descriptorSet,
+      .dstBinding = binding,
+      .descriptorCount = 1,
+      .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      .pImageInfo = texDescriptorPosition
+    };
   }
 
   void beginRenderPass(const VkCommandBuffer& cmdBuffer) {
@@ -262,30 +299,40 @@ class OffscreenPass {
     clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 1.0f } };
     clearValues[1].depthStencil = { 1.0f, 0 };
 
-    VkRenderPassBeginInfo renderPassBeginInfo = initializers::renderPassBeginInfo();
-    renderPassBeginInfo.renderPass =  offScreenFrameBuf.renderPass;
-    renderPassBeginInfo.framebuffer = offScreenFrameBuf.frameBuffer;
-    renderPassBeginInfo.renderArea.extent.width = offScreenFrameBuf.width;
-    renderPassBeginInfo.renderArea.extent.height = offScreenFrameBuf.height;
-    renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-    renderPassBeginInfo.pClearValues = clearValues.data();
+    VkRenderPassBeginInfo renderPassBeginInfo = {
+      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+      .renderPass =  offScreenFrameBuf.renderPass,
+      .framebuffer = offScreenFrameBuf.frameBuffer,
+      .renderArea = {
+        .extent = {
+          .width = offScreenFrameBuf.width,
+          .height = offScreenFrameBuf.height
+        }
+      },
+      .clearValueCount = static_cast<uint32_t>(clearValues.size()),
+      .pClearValues = clearValues.data()
+    };
 
-    vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo,
+                         VK_SUBPASS_CONTENTS_INLINE);
   }
 
   void setViewPortAndScissor(const VkCommandBuffer& cmdBuffer) {
-    VkViewport viewport =
-        initializers::viewport(
-          (float)offScreenFrameBuf.width,
-          (float)offScreenFrameBuf.height,
-          0.0f, 1.0f);
+    VkViewport viewport = {
+      .width = (float)offScreenFrameBuf.width,
+      .height = (float)offScreenFrameBuf.height,
+      .minDepth = 0.0f,
+      .maxDepth = 1.0f
+    };
     vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
 
-    VkRect2D scissor =
-        initializers::rect2D(
-          offScreenFrameBuf.width,
-          offScreenFrameBuf.height,
-          0, 0);
+    VkRect2D scissor = {
+      .offset = { .x = 0, .y = 0 },
+      .extent = {
+        .width = offScreenFrameBuf.width,
+        .height = offScreenFrameBuf.height
+      }
+    };
     vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
   }
 
@@ -302,8 +349,14 @@ class OffscreenPass {
     vkCmdSetViewport(cmdBuffer, 0, 2, viewports);
 
     VkRect2D scissorRects[2] = {
-      initializers::rect2D(w / 2, h, 0, 0),
-      initializers::rect2D(w / 2, h, w / 2, 0),
+      {
+        .offset = { .x = 0, .y = 0 },
+        .extent = { .width = w / 2, .height = h }
+      },
+      {
+        .offset = { .x = (int32_t) w / 2, .y = 0 },
+        .extent = { .width = w / 2, .height = h }
+      },
     };
     vkCmdSetScissor(cmdBuffer, 0, 2, scissorRects);
   }

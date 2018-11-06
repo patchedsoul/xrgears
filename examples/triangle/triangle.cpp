@@ -343,7 +343,9 @@ class Triangle : public vik::Application {
       // Buffer copies have to be submitted to a queue, so we need a command buffer for them
       // Note: Some devices offer a dedicated transfer queue (with only the transfer bit set) that may be faster when doing lots of copies
       VkCommandBuffer copyCmd = renderer->create_command_buffer();
-      VkCommandBufferBeginInfo cmdBufInfo = vik::initializers::commandBufferBeginInfo();
+      VkCommandBufferBeginInfo cmdBufInfo = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO
+      };
       vik_log_check(vkBeginCommandBuffer(copyCmd, &cmdBufInfo));
 
       // Put buffer region copies into command buffer

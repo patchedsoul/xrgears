@@ -22,14 +22,17 @@ namespace vik {
 class Shader {
  public:
   static VkPipelineShaderStageCreateInfo load(const VkDevice& device, std::string fileName, VkShaderStageFlagBits stage) {
-    VkPipelineShaderStageCreateInfo shaderStage = {};
-    shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStage.stage = stage;
-
     std::string path = Assets::get_shader_path() + fileName;
-    shaderStage.module = load(path.c_str(), device);
-    shaderStage.pName = "main";
-    assert(shaderStage.module != VK_NULL_HANDLE);
+    VkShaderModule module = load(path.c_str(), device);
+    assert(module != VK_NULL_HANDLE);
+
+    VkPipelineShaderStageCreateInfo shaderStage = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+      .stage = stage,
+      .module = module,
+      .pName = "main"
+    };
+
     return shaderStage;
   }
 
@@ -46,12 +49,14 @@ class Shader {
       assert(size > 0);
 
       VkShaderModule shaderModule;
-      VkShaderModuleCreateInfo moduleCreateInfo{};
-      moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-      moduleCreateInfo.codeSize = size;
-      moduleCreateInfo.pCode = (uint32_t*)shaderCode;
+      VkShaderModuleCreateInfo moduleCreateInfo = {
+        .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+        .codeSize = size,
+        .pCode = (uint32_t*)shaderCode
+      };
 
-      vik_log_check(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
+      vik_log_check(vkCreateShaderModule(device, &moduleCreateInfo,
+                                         NULL, &shaderModule));
 
       // vik_log_d("Creating shader module %p (%s)", shaderModule, fileName);
 

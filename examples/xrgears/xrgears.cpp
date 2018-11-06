@@ -178,17 +178,25 @@ class XRGears : public vik::Application {
     // Set target frame buffer
     render_pass_begin_info.framebuffer = framebuffer;
 
-    VkCommandBufferBeginInfo command_bufffer_info = vik::initializers::commandBufferBeginInfo();
-    vik_log_check(vkBeginCommandBuffer(command_buffer, &command_bufffer_info));
+    VkCommandBufferBeginInfo command_buffer_info = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO
+    };
+    vik_log_check(vkBeginCommandBuffer(command_buffer, &command_buffer_info));
 
     vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
-    VkViewport viewport = vik::initializers::viewport(
-          (float) renderer->width, (float) renderer->height, 0.0f, 1.0f);
+    VkViewport viewport = {
+      .width = (float)renderer->width,
+      .height = (float)renderer->height,
+      .minDepth = 0.0f,
+      .maxDepth = 1.0f
+    };
     vkCmdSetViewport(command_buffer, 0, 1, &viewport);
 
-    VkRect2D scissor = vik::initializers::rect2D(
-          renderer->width, renderer->height, 0, 0);
+    VkRect2D scissor = {
+      .offset = { .x = 0, .y = 0 },
+      .extent = { .width = renderer->width, .height = renderer->height }
+    };
     vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
     // Final composition as full screen quad
@@ -205,7 +213,9 @@ class XRGears : public vik::Application {
       offscreen_command_buffer = renderer->create_command_buffer();
 
     // Create a semaphore used to synchronize offscreen rendering and usage
-    VkSemaphoreCreateInfo semaphore_info = vik::initializers::semaphoreCreateInfo();
+    VkSemaphoreCreateInfo semaphore_info = {
+      .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+    };
     vik_log_check(vkCreateSemaphore(renderer->device, &semaphore_info,
                                     nullptr, &offscreen_semaphore));
 
@@ -216,7 +226,9 @@ class XRGears : public vik::Application {
   void build_pbr_command_buffer(const VkCommandBuffer& command_buffer,
                                 const VkFramebuffer& framebuffer,
                                 bool offscreen) {
-    VkCommandBufferBeginInfo command_buffer_info = vik::initializers::commandBufferBeginInfo();
+    VkCommandBufferBeginInfo command_buffer_info = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO
+    };
     vik_log_check(vkBeginCommandBuffer(command_buffer, &command_buffer_info));
 
     if (vik::debugmarker::active)
@@ -266,16 +278,18 @@ class XRGears : public vik::Application {
   }
 
   void set_mono_viewport_and_scissors(VkCommandBuffer command_buffer) {
-    VkViewport viewport = vik::initializers::viewport(
-          (float)renderer->width,
-          (float)renderer->height,
-          0.0f, 1.0f);
+    VkViewport viewport = {
+      .width = (float)renderer->width,
+      .height = (float)renderer->height,
+      .minDepth = 0.0f,
+      .maxDepth = 1.0f
+    };
     vkCmdSetViewport(command_buffer, 0, 1, &viewport);
 
-    VkRect2D scissor = vik::initializers::rect2D(
-          renderer->width,
-          renderer->height,
-          0.0f, 0.0f);
+    VkRect2D scissor = {
+      .offset = { .x = 0, .y = 0 },
+      .extent = { .width = renderer->width, .height = renderer->height }
+    };
     vkCmdSetScissor(command_buffer, 0, 1, &scissor);
   }
 
@@ -301,8 +315,14 @@ class XRGears : public vik::Application {
     vkCmdSetViewport(command_buffer, 0, 2, viewports);
 
     VkRect2D scissor_rects[2] = {
-      vik::initializers::rect2D(renderer->width/2, renderer->height, 0, 0),
-      vik::initializers::rect2D(renderer->width/2, renderer->height, renderer->width / 2, 0),
+      {
+        .offset = { .x = 0, .y = 0 },
+        .extent = { .width = renderer->width/2, .height = renderer->height }
+      },
+      {
+        .offset = { .x = (int32_t) renderer->width / 2, .y = 0 },
+        .extent = { .width = renderer->width/2, .height = renderer->height }
+      },
     };
     vkCmdSetScissor(command_buffer, 0, 2, scissor_rects);
   }
@@ -393,57 +413,65 @@ class XRGears : public vik::Application {
   void prepare_vertices() {
     // Binding and attribute descriptions are shared across all gears
     vertices.binding_descriptions.resize(1);
-    vertices.binding_descriptions[0] =
-        vik::initializers::vertexInputBindingDescription(
-          VERTEX_BUFFER_BIND_ID,
-          sizeof(vik::Vertex),
-          VK_VERTEX_INPUT_RATE_VERTEX);
+    vertices.binding_descriptions[0] = {
+      .binding = VERTEX_BUFFER_BIND_ID,
+      .stride = sizeof(vik::Vertex),
+      .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+    };
 
     // Attribute descriptions
     // Describes memory layout and shader positions
     vertices.attribute_descriptions.resize(3);
     // Location 0 : Position
-    vertices.attribute_descriptions[0] = (VkVertexInputAttributeDescription) {
+    vertices.attribute_descriptions[0] = {
       .location = 0,
       .binding = VERTEX_BUFFER_BIND_ID,
       .format = VK_FORMAT_R32G32B32_SFLOAT,
       .offset = 0
     };
     // Location 1 : Normal
-    vertices.attribute_descriptions[1] = (VkVertexInputAttributeDescription) {
+    vertices.attribute_descriptions[1] = {
       .location = 1,
       .binding = VERTEX_BUFFER_BIND_ID,
       .format = VK_FORMAT_R32G32B32_SFLOAT,
       .offset = sizeof(float) * 3
     };
     // Location 2 : Color
-    vertices.attribute_descriptions[2] = (VkVertexInputAttributeDescription) {
+    vertices.attribute_descriptions[2] = {
       .location = 2,
       .binding = VERTEX_BUFFER_BIND_ID,
       .format = VK_FORMAT_R32G32B32_SFLOAT,
       .offset = sizeof(float) * 6
     };
 
-    vertices.input_state = vik::initializers::pipelineVertexInputStateCreateInfo();
-    vertices.input_state.vertexBindingDescriptionCount = static_cast<uint32_t>(vertices.binding_descriptions.size());
-    vertices.input_state.pVertexBindingDescriptions = vertices.binding_descriptions.data();
-    vertices.input_state.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertices.attribute_descriptions.size());
-    vertices.input_state.pVertexAttributeDescriptions = vertices.attribute_descriptions.data();
+    vertices.input_state = (VkPipelineVertexInputStateCreateInfo) {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+      .vertexBindingDescriptionCount = static_cast<uint32_t>(vertices.binding_descriptions.size()),
+      .pVertexBindingDescriptions = vertices.binding_descriptions.data(),
+      .vertexAttributeDescriptionCount = static_cast<uint32_t>(vertices.attribute_descriptions.size()),
+      .pVertexAttributeDescriptions = vertices.attribute_descriptions.data()
+    };
   }
 
   void init_descriptor_pool() {
     // Example uses two ubos
     std::vector<VkDescriptorPoolSize> pool_sizes = {
-      vik::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16),
-      vik::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 6)
+      {
+        .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .descriptorCount = 16
+      },
+      {
+        .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        .descriptorCount = 6
+      }
     };
 
-    VkDescriptorPoolCreateInfo descriptor_pool_info =
-        vik::initializers::descriptorPoolCreateInfo(
-          static_cast<uint32_t>(pool_sizes.size()),
-          pool_sizes.data(),
-          6);
-
+    VkDescriptorPoolCreateInfo descriptor_pool_info = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+      .maxSets = 6,
+      .poolSizeCount = static_cast<uint32_t>(pool_sizes.size()),
+      .pPoolSizes = pool_sizes.data()
+    };
     vik_log_check(vkCreateDescriptorPool(renderer->device,
                                          &descriptor_pool_info,
                                          nullptr, &renderer->descriptor_pool));
@@ -452,53 +480,64 @@ class XRGears : public vik::Application {
   void init_descriptor_set_layout() {
     std::vector<VkDescriptorSetLayoutBinding> set_layout_bindings = {
       // ubo model
-      vik::initializers::descriptorSetLayoutBinding(
-      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      VK_SHADER_STAGE_GEOMETRY_BIT,  // VK_SHADER_STAGE_VERTEX_BIT,
-      0),
+      {
+        .binding = 0,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .descriptorCount = 1,
+        .stageFlags = VK_SHADER_STAGE_GEOMETRY_BIT
+      },
       // ubo lights
-      vik::initializers::descriptorSetLayoutBinding(
-      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      VK_SHADER_STAGE_FRAGMENT_BIT,
-      1),
+      {
+        .binding = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .descriptorCount = 1,
+        .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+      },
       // ubo camera
-      vik::initializers::descriptorSetLayoutBinding(
-      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-      2)
+      {
+        .binding = 2,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .descriptorCount = 1,
+        .stageFlags = VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT
+      }
     };
 
     // cube map sampler
-    if (enable_sky)
-      set_layout_bindings.push_back(vik::initializers::descriptorSetLayoutBinding(
-                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                    VK_SHADER_STAGE_FRAGMENT_BIT,
-                                    3));
+    if (enable_sky) {
+      VkDescriptorSetLayoutBinding sky_binding = {
+        .binding = 3,
+        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        .descriptorCount = 1,
+        .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+      };
+      set_layout_bindings.push_back(sky_binding);
+    }
 
-    VkDescriptorSetLayoutCreateInfo descriptor_layout =
-        vik::initializers::descriptorSetLayoutCreateInfo(set_layout_bindings);
+    VkDescriptorSetLayoutCreateInfo descriptor_layout = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+      .bindingCount = static_cast<uint32_t>(set_layout_bindings.size()),
+      .pBindings = set_layout_bindings.data()
+    };
 
     vik_log_check(vkCreateDescriptorSetLayout(renderer->device,
                                               &descriptor_layout,
                                               nullptr, &descriptor_set_layout));
-
-    VkPipelineLayoutCreateInfo pipeline_layout_info =
-        vik::initializers::pipelineLayoutCreateInfo(&descriptor_set_layout, 1);
-
     /*
      * Push Constants
      */
+    std::vector<VkPushConstantRange> push_constant_ranges = {{
+      .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+      .offset = sizeof(glm::vec3),
+      .size = sizeof(vik::Material::PushBlock)
+    }};
 
-    std::vector<VkPushConstantRange> push_constant_ranges = {
-      vik::initializers::pushConstantRange(
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        sizeof(vik::Material::PushBlock),
-        sizeof(glm::vec3)),
+    VkPipelineLayoutCreateInfo pipeline_layout_info = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+      .setLayoutCount = 1,
+      .pSetLayouts = &descriptor_set_layout,
+      .pushConstantRangeCount = (uint32_t) push_constant_ranges.size(),
+      .pPushConstantRanges = push_constant_ranges.data()
     };
-
-    pipeline_layout_info.pushConstantRangeCount = push_constant_ranges.size();
-    pipeline_layout_info.pPushConstantRanges = push_constant_ranges.data();
-
     vik_log_check(vkCreatePipelineLayout(renderer->device,
                                          &pipeline_layout_info,
                                          nullptr, &pipeline_layout));
@@ -506,12 +545,12 @@ class XRGears : public vik::Application {
 
   void init_descriptor_set() {
     if (enable_sky) {
-      VkDescriptorSetAllocateInfo info =
-          vik::initializers::descriptorSetAllocateInfo(
-            renderer->descriptor_pool,
-            &descriptor_set_layout,
-            1);
-
+      VkDescriptorSetAllocateInfo info = {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+        .descriptorPool = renderer->descriptor_pool,
+        .descriptorSetCount = 1,
+        .pSetLayouts = &descriptor_set_layout
+      };
       sky_box->create_descriptor_set(info, &camera->uniform_buffer.descriptor);
     }
 
@@ -524,44 +563,66 @@ class XRGears : public vik::Application {
 }
 
   void init_pipelines() {
-    VkPipelineInputAssemblyStateCreateInfo input_assembly_state =
-        vik::initializers::pipelineInputAssemblyStateCreateInfo(
-          VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-          0,
-          VK_FALSE);
+    VkPipelineInputAssemblyStateCreateInfo input_assembly_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+      .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+      .primitiveRestartEnable = VK_FALSE
+    };
 
-    VkPipelineRasterizationStateCreateInfo rasterization_state =
-        vik::initializers::pipelineRasterizationStateCreateInfo(
-          VK_POLYGON_MODE_FILL,
-          VK_CULL_MODE_BACK_BIT,
-          VK_FRONT_FACE_CLOCKWISE);
+    VkPipelineRasterizationStateCreateInfo rasterization_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+      .depthClampEnable = VK_FALSE,
+      .polygonMode = VK_POLYGON_MODE_FILL,
+      .cullMode = VK_CULL_MODE_BACK_BIT,
+      .frontFace = VK_FRONT_FACE_CLOCKWISE,
+      .lineWidth = 1.0f
+    };
 
-    VkPipelineColorBlendAttachmentState blend_attachment_state =
-        vik::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE);
+    VkPipelineColorBlendAttachmentState blend_attachment_state = {
+      .blendEnable = VK_FALSE,
+      .colorWriteMask = 0xf
+    };
 
-    VkPipelineColorBlendStateCreateInfo color_blend_state =
-        vik::initializers::pipelineColorBlendStateCreateInfo(1, &blend_attachment_state);
+    VkPipelineColorBlendStateCreateInfo color_blend_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+      .attachmentCount = 1,
+      .pAttachments = &blend_attachment_state
+    };
 
-    VkPipelineDepthStencilStateCreateInfo depth_stencil_state =
-        vik::initializers::pipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
+    VkPipelineDepthStencilStateCreateInfo depth_stencil_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+      .depthTestEnable = VK_TRUE,
+      .depthWriteEnable = VK_TRUE,
+      .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
+      .front = {
+        .compareOp = VK_COMPARE_OP_ALWAYS
+      },
+      .back = {
+        .compareOp = VK_COMPARE_OP_ALWAYS
+      }
+    };
 
-    VkPipelineViewportStateCreateInfo viewport_state;
-    if (enable_stereo)
-      viewport_state = vik::initializers::pipelineViewportStateCreateInfo(2, 2, 0);
-    else
-      viewport_state = vik::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+    VkPipelineViewportStateCreateInfo viewport_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+      .viewportCount = static_cast<uint32_t>(enable_stereo ? 2 : 1),
+      .scissorCount = static_cast<uint32_t>(enable_stereo ? 2 : 1)
+    };
 
-
-    VkPipelineMultisampleStateCreateInfo multisample_state =
-        vik::initializers::pipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
+    VkPipelineMultisampleStateCreateInfo multisample_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+      .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT
+    };
 
     std::vector<VkDynamicState> dynamic_state_enables = {
       VK_DYNAMIC_STATE_VIEWPORT,
       VK_DYNAMIC_STATE_SCISSOR,
       VK_DYNAMIC_STATE_LINE_WIDTH
     };
-    VkPipelineDynamicStateCreateInfo dynamicState =
-        vik::initializers::pipelineDynamicStateCreateInfo(dynamic_state_enables);
+    VkPipelineDynamicStateCreateInfo dynamic_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+      .dynamicStateCount = static_cast<uint32_t>(dynamic_state_enables.size()),
+      .pDynamicStates = dynamic_state_enables.data()
+    };
 
     // Load shaders
     std::array<VkPipelineShaderStageCreateInfo, 3> shader_stages;
@@ -575,29 +636,31 @@ class XRGears : public vik::Application {
     shader_stages[2] = vik::Shader::load(renderer->device, "xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 
     // Vertex bindings an attributes
-    std::vector<VkVertexInputBindingDescription> vertex_input_bindings = {
-      vik::initializers::vertexInputBindingDescription(0, vertex_layout.stride(), VK_VERTEX_INPUT_RATE_VERTEX),
-    };
+    std::vector<VkVertexInputBindingDescription> vertex_input_bindings = {{
+      .binding = 0,
+      .stride = vertex_layout.stride(),
+      .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+    }};
     std::vector<VkVertexInputAttributeDescription> vertex_input_attributes = {
       // Location 0: Position
       {
         .location = 0,
         .binding = 0,
-        .format = VK_FORMAT_R32G32_SFLOAT,
+        .format = VK_FORMAT_R32G32B32_SFLOAT,
         .offset = 0
       },
       // Location 1: Normals
       {
         .location = 1,
         .binding = 0,
-        .format = VK_FORMAT_R32G32_SFLOAT,
+        .format = VK_FORMAT_R32G32B32_SFLOAT,
         .offset = sizeof(float) * 3
       },
       // Location 2: Color
       {
         .location = 2,
         .binding = 0,
-        .format = VK_FORMAT_R32G32_SFLOAT,
+        .format = VK_FORMAT_R32G32B32_SFLOAT,
         .offset = sizeof(float) * 6
       }
     };
@@ -621,7 +684,7 @@ class XRGears : public vik::Application {
       .pMultisampleState = &multisample_state,
       .pDepthStencilState = &depth_stencil_state,
       .pColorBlendState = &color_blend_state,
-      .pDynamicState = &dynamicState,
+      .pDynamicState = &dynamic_state,
       .layout = pipeline_layout,
       .basePipelineHandle = nullptr,
       .basePipelineIndex = -1,

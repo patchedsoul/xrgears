@@ -21,7 +21,6 @@
 
 #include "vikSwapChain.hpp"
 #include "vikDebug.hpp"
-#include "vikInitializers.hpp"
 #include "vikDevice.hpp"
 #include "vikSwapChainVK.hpp"
 #include "vikTimer.hpp"
@@ -185,11 +184,12 @@ class Renderer {
 
     query_supported_extensions();
 
-    VkApplicationInfo app_info = {};
-    app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    app_info.pApplicationName = name.c_str();
-    app_info.pEngineName = "vitamin-k";
-    app_info.apiVersion = VK_MAKE_VERSION(1, 0, 2);
+    VkApplicationInfo app_info = {
+      .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+      .pApplicationName = name.c_str(),
+      .pEngineName = "vitamin-k",
+      .apiVersion = VK_MAKE_VERSION(1, 0, 2)
+    };
 
     std::vector<const char*> extensions;
     enable_if_supported(&extensions, VK_KHR_SURFACE_EXTENSION_NAME);
@@ -202,11 +202,12 @@ class Renderer {
     if (settings->validation)
       enable_if_supported(&extensions, VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
-    VkInstanceCreateInfo instance_info = {};
-    instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instance_info.pApplicationInfo = &app_info;
-    instance_info.enabledExtensionCount = extensions.size();
-    instance_info.ppEnabledExtensionNames = extensions.data();
+    VkInstanceCreateInfo instance_info = {
+      .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+      .pApplicationInfo = &app_info,
+      .enabledExtensionCount = (uint32_t) extensions.size(),
+      .ppEnabledExtensionNames = extensions.data()
+    };
 
     if (settings->validation) {
       instance_info.enabledLayerCount = debug::validationLayerCount;
@@ -218,14 +219,15 @@ class Renderer {
 
   void create_frame_buffer(VkFramebuffer *frame_buffer,
                            const std::vector<VkImageView> &attachments) {
-    VkFramebufferCreateInfo frame_buffer_info = {};
-    frame_buffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    frame_buffer_info.renderPass = render_pass;
-    frame_buffer_info.attachmentCount = attachments.size();
-    frame_buffer_info.pAttachments = attachments.data();
-    frame_buffer_info.width = width;
-    frame_buffer_info.height = height;
-    frame_buffer_info.layers = 1;
+    VkFramebufferCreateInfo frame_buffer_info = {
+      .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+      .renderPass = render_pass,
+      .attachmentCount = (uint32_t) attachments.size(),
+      .pAttachments = attachments.data(),
+      .width = width,
+      .height = height,
+      .layers = 1
+    };
 
     vik_log_check(vkCreateFramebuffer(device,
                                       &frame_buffer_info,
@@ -240,11 +242,12 @@ class Renderer {
     // Create one command buffer for each swap chain image and reuse for rendering
     cmd_buffers.resize(count);
 
-    VkCommandBufferAllocateInfo cmd_buffer_info =
-        initializers::commandBufferAllocateInfo(
-          cmd_pool,
-          VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-          count);
+    VkCommandBufferAllocateInfo cmd_buffer_info = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      .commandPool = cmd_pool,
+      .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+      .commandBufferCount = count
+    };
 
     vik_log_check(vkAllocateCommandBuffers(device,
                                            &cmd_buffer_info,
@@ -299,11 +302,12 @@ class Renderer {
   VkCommandBuffer create_command_buffer() {
     VkCommandBuffer cmd_buffer;
 
-    VkCommandBufferAllocateInfo cmd_buffer_info =
-        initializers::commandBufferAllocateInfo(
-          cmd_pool,
-          VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-          1);
+    VkCommandBufferAllocateInfo cmd_buffer_info = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      .commandPool = cmd_pool,
+      .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+      .commandBufferCount = 1
+    };
 
     vik_log_check(vkAllocateCommandBuffers(device,
                                            &cmd_buffer_info,
@@ -313,8 +317,9 @@ class Renderer {
   }
 
   void create_pipeline_cache() {
-    VkPipelineCacheCreateInfo pipeline_cache_info = {};
-    pipeline_cache_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+    VkPipelineCacheCreateInfo pipeline_cache_info = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO
+    };
     vik_log_check(vkCreatePipelineCache(device, &pipeline_cache_info,
                                         nullptr, &pipeline_cache));
   }
@@ -483,7 +488,9 @@ class Renderer {
 
   virtual void init_semaphores() {
     // Create synchronization objects
-    VkSemaphoreCreateInfo semaphore_info = initializers::semaphoreCreateInfo();
+    VkSemaphoreCreateInfo semaphore_info = {
+      .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+    };
     // Create a semaphore used to synchronize image presentation
     // Ensures that the image is displayed before we start submitting new commands to the queu
     vik_log_check(vkCreateSemaphore(device, &semaphore_info, nullptr, &semaphores.present_complete));
@@ -493,10 +500,12 @@ class Renderer {
   }
 
   void create_command_pool(uint32_t index) {
-    VkCommandPoolCreateInfo cmd_pool_info = {};
-    cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    cmd_pool_info.queueFamilyIndex = index;
-    cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    VkCommandPoolCreateInfo cmd_pool_info = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+      .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+      .queueFamilyIndex = index
+    };
+
     vik_log_check(vkCreateCommandPool(device, &cmd_pool_info,
                                       nullptr, &cmd_pool));
   }
@@ -550,17 +559,19 @@ class Renderer {
 
     // The submit info structure specifices a
     // command buffer queue submission batch
-    VkSubmitInfo submit_info = initializers::submitInfo();
+    VkSubmitInfo submit_info = {
+      .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+      // Pointer to the list of pipeline stages that the semaphore waits will occur at
+      // submit_info.pWaitDstStageMask = stage_flags.data();
+      .waitSemaphoreCount = 1,
+      // Semaphore(s) to wait upon before the submitted command buffer starts executing
+      .pWaitSemaphores = &semaphores.present_complete,
+      .commandBufferCount = 1,
+      .signalSemaphoreCount = 1,
+      // Semaphore(s) to be signaled when command buffers have completed
+      .pSignalSemaphores = &semaphores.render_complete
+    };
 
-    // Pointer to the list of pipeline stages that the semaphore waits will occur at
-    // submit_info.pWaitDstStageMask = stage_flags.data();
-    submit_info.waitSemaphoreCount = 1;
-    // Semaphore(s) to wait upon before the submitted command buffer starts executing
-    submit_info.pWaitSemaphores = &semaphores.present_complete;
-    submit_info.signalSemaphoreCount = 1;
-    // Semaphore(s) to be signaled when command buffers have completed
-    submit_info.pSignalSemaphores = &semaphores.render_complete;
-    submit_info.commandBufferCount = 1;
     return submit_info;
   }
 
@@ -583,140 +594,148 @@ class Renderer {
   }
 
   void create_render_pass() {
-    std::array<VkAttachmentDescription, 2> attachments = {};
-    // Color attachment
-    attachments[0].format = window->get_swap_chain()->surface_format.format;
-    attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
-    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    // Depth attachment
-    attachments[1].format = depth_format;
-    attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
-    attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    std::array<VkAttachmentDescription, 2> attachments = {
+      (VkAttachmentDescription) {
+        // Color attachment
+        .format = window->get_swap_chain()->surface_format.format,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+      },
+      (VkAttachmentDescription) {
+        // Depth attachment
+        .format = depth_format,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+      }
+    };
 
-    VkAttachmentReference color_reference = {};
-    color_reference.attachment = 0;
-    color_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference color_reference = {
+      .attachment = 0,
+      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+    };
 
-    VkAttachmentReference depth_reference = {};
-    depth_reference.attachment = 1;
-    depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference depth_reference = {
+      .attachment = 1,
+      .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+    };
 
-    VkSubpassDescription subpass_description = {};
-    subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass_description.colorAttachmentCount = 1;
-    subpass_description.pColorAttachments = &color_reference;
-    subpass_description.pDepthStencilAttachment = &depth_reference;
-    subpass_description.inputAttachmentCount = 0;
-    subpass_description.pInputAttachments = nullptr;
-    subpass_description.preserveAttachmentCount = 0;
-    subpass_description.pPreserveAttachments = nullptr;
-    subpass_description.pResolveAttachments = nullptr;
+    VkSubpassDescription subpass_description = {
+      .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+      .colorAttachmentCount = 1,
+      .pColorAttachments = &color_reference,
+      .pDepthStencilAttachment = &depth_reference
+    };
 
     // Subpass dependencies for layout transitions
-    std::array<VkSubpassDependency, 2> dependencies;
+    std::array<VkSubpassDependency, 2> dependencies = {
+      (VkSubpassDependency) {
+        .srcSubpass = VK_SUBPASS_EXTERNAL,
+        .dstSubpass = 0,
+        .srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+                         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+      },
+      (VkSubpassDependency) {
+        .srcSubpass = 0,
+        .dstSubpass = VK_SUBPASS_EXTERNAL,
+        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+                         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+        .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+      }
+    };
 
-    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependencies[0].dstSubpass = 0;
-    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+    VkRenderPassCreateInfo render_pass_info = {
+      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+      .attachmentCount = static_cast<uint32_t>(attachments.size()),
+      .pAttachments = attachments.data(),
+      .subpassCount = 1,
+      .pSubpasses = &subpass_description,
+      .dependencyCount = static_cast<uint32_t>(dependencies.size()),
+      .pDependencies = dependencies.data()
+    };
 
-    dependencies[1].srcSubpass = 0;
-    dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-    dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-    dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-    VkRenderPassCreateInfo render_pass_info = {};
-    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    render_pass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-    render_pass_info.pAttachments = attachments.data();
-    render_pass_info.subpassCount = 1;
-    render_pass_info.pSubpasses = &subpass_description;
-    render_pass_info.dependencyCount = static_cast<uint32_t>(dependencies.size());
-    render_pass_info.pDependencies = dependencies.data();
-
-
+#if 0
     // VK_KHX_multiview
-    /*
-    VkRenderPassMultiviewCreateInfoKHX renderPassMvInfo = {};
-    renderPassMvInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHX;
-    renderPassMvInfo.subpassCount = 1;
-    renderPassMvInfo.dependencyCount = 1;
-    renderPassMvInfo.correlationMaskCount = 1;
-    renderPassMvInfo.pNext = NULL;
-
     uint32_t correlationMasks[] = { 2 };
-    renderPassMvInfo.pCorrelationMasks = correlationMasks;
-
     uint32_t viewMasks[] = { 1 };
-    renderPassMvInfo.pViewMasks = viewMasks;
-
     int32_t viewOffsets[] = { 2 };
-    renderPassMvInfo.pViewOffsets = viewOffsets;
 
-    renderPassInfo.pNext = &renderPassMvInfo;
-    renderPassInfo.pNext = NULL;
-    */
-    // VK_KHX_multiview
+    VkRenderPassMultiviewCreateInfo renderPassMvInfo = {
+      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO,
+      .subpassCount = 1,
+      .dependencyCount = 1,
+      .correlationMaskCount = 1,
+      .pCorrelationMasks = correlationMasks,
+      .pViewMasks = viewMasks,
+      .pViewOffsets = viewOffsets,
+    };
+    render_pass_info.pNext = &renderPassMvInfo;
+#endif
 
-    vik_log_check(vkCreateRenderPass(device, &render_pass_info, nullptr, &render_pass));
+    vik_log_check(vkCreateRenderPass(device, &render_pass_info,
+                                     nullptr, &render_pass));
   }
 
   void init_depth_stencil() {
-    VkImageCreateInfo image = {};
-    image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    image.imageType = VK_IMAGE_TYPE_2D;
-    image.format = depth_format;
-    image.extent = { width, height, 1 };
-    image.mipLevels = 1;
-    image.arrayLayers = 1;
-    image.samples = VK_SAMPLE_COUNT_1_BIT;
-    image.tiling = VK_IMAGE_TILING_OPTIMAL;
-    image.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    image.flags = 0;
-
-    VkMemoryAllocateInfo mem_alloc = {};
-    mem_alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    mem_alloc.allocationSize = 0;
-    mem_alloc.memoryTypeIndex = 0;
-
-    VkImageViewCreateInfo depthStencilView = {};
-    depthStencilView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    depthStencilView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    depthStencilView.format = depth_format;
-    depthStencilView.flags = 0;
-    depthStencilView.subresourceRange = {};
-    depthStencilView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-    depthStencilView.subresourceRange.baseMipLevel = 0;
-    depthStencilView.subresourceRange.levelCount = 1;
-    depthStencilView.subresourceRange.baseArrayLayer = 0;
-    depthStencilView.subresourceRange.layerCount = 1;
+    VkImageCreateInfo image = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+      .imageType = VK_IMAGE_TYPE_2D,
+      .format = depth_format,
+      .extent = {
+        .width = width,
+        .height = height,
+        .depth = 1
+      },
+      .mipLevels = 1,
+      .arrayLayers = 1,
+      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .tiling = VK_IMAGE_TILING_OPTIMAL,
+      .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT
+    };
 
     VkMemoryRequirements memReqs;
 
     vik_log_check(vkCreateImage(device, &image, nullptr, &depth_stencil.image));
     vkGetImageMemoryRequirements(device, depth_stencil.image, &memReqs);
-    mem_alloc.allocationSize = memReqs.size;
-    mem_alloc.memoryTypeIndex = vik_device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    VkMemoryAllocateInfo mem_alloc = {
+      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+      .allocationSize = memReqs.size,
+      .memoryTypeIndex = vik_device->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+    };
+
     vik_log_check(vkAllocateMemory(device, &mem_alloc, nullptr, &depth_stencil.mem));
     vik_log_check(vkBindImageMemory(device, depth_stencil.image, depth_stencil.mem, 0));
 
-    depthStencilView.image = depth_stencil.image;
+    VkImageViewCreateInfo depthStencilView = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+      .image = depth_stencil.image,
+      .viewType = VK_IMAGE_VIEW_TYPE_2D,
+      .format = depth_format,
+      .subresourceRange = {
+        .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+        .baseMipLevel = 0,
+        .levelCount = 1,
+        .baseArrayLayer = 0,
+        .layerCount = 1
+      }
+    };
     vik_log_check(vkCreateImageView(device, &depthStencilView, nullptr, &depth_stencil.view));
   }
 

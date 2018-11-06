@@ -26,7 +26,7 @@
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
-#include <drm_fourcc.h>
+#include <libdrm/drm_fourcc.h>
 
 #include <sys/ioctl.h>
 #include <sys/stat.h>

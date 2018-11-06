@@ -65,69 +65,90 @@ class Distortion {
   void init_pipeline(const VkRenderPass& render_pass,
                      const VkPipelineCache& pipeline_cache,
                      Settings::DistortionType distortion_type) {
-    VkPipelineInputAssemblyStateCreateInfo input_assembly_state =
-        initializers::pipelineInputAssemblyStateCreateInfo(
-          VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-          0,
-          VK_FALSE);
+    VkPipelineInputAssemblyStateCreateInfo input_assembly_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+      .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+      .primitiveRestartEnable = VK_FALSE
+    };
 
-    VkPipelineRasterizationStateCreateInfo rasterization_state =
-        initializers::pipelineRasterizationStateCreateInfo(
-          VK_POLYGON_MODE_FILL,
-          VK_CULL_MODE_BACK_BIT,
-          VK_FRONT_FACE_CLOCKWISE,
-          0);
+    VkPipelineRasterizationStateCreateInfo rasterization_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+      .depthClampEnable = VK_FALSE,
+      .polygonMode = VK_POLYGON_MODE_FILL,
+      .cullMode = VK_CULL_MODE_BACK_BIT,
+      .frontFace = VK_FRONT_FACE_CLOCKWISE,
+      .lineWidth = 1.0f
+    };
 
-    VkPipelineColorBlendAttachmentState blend_attachment_state =
-        initializers::pipelineColorBlendAttachmentState(
-          0xf,
-          VK_FALSE);
+    VkPipelineColorBlendAttachmentState blend_attachment_state = {
+      .blendEnable = VK_FALSE,
+      .colorWriteMask = 0xf
+    };
 
-    VkPipelineColorBlendStateCreateInfo color_blend_state =
-        initializers::pipelineColorBlendStateCreateInfo(
-          1,
-          &blend_attachment_state);
+    VkPipelineColorBlendStateCreateInfo color_blend_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+      .attachmentCount = 1,
+      .pAttachments = &blend_attachment_state
+    };
 
-    VkPipelineDepthStencilStateCreateInfo depth_stencil_state =
-        initializers::pipelineDepthStencilStateCreateInfo(
-          VK_TRUE,
-          VK_TRUE,
-          VK_COMPARE_OP_LESS_OR_EQUAL);
+    VkPipelineDepthStencilStateCreateInfo depth_stencil_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+      .depthTestEnable = VK_TRUE,
+      .depthWriteEnable = VK_TRUE,
+      .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
+      .front = {
+        .compareOp = VK_COMPARE_OP_ALWAYS
+      },
+      .back = {
+        .compareOp = VK_COMPARE_OP_ALWAYS
+      }
+    };
 
-    VkPipelineViewportStateCreateInfo viewport_state =
-        initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+    VkPipelineViewportStateCreateInfo viewport_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+      .viewportCount = 1,
+      .scissorCount = 1
+    };
 
-    VkPipelineMultisampleStateCreateInfo multisample_state =
-        initializers::pipelineMultisampleStateCreateInfo(
-          VK_SAMPLE_COUNT_1_BIT,
-          0);
+    VkPipelineMultisampleStateCreateInfo multisample_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+      .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT
+    };
 
     std::vector<VkDynamicState> dynamic_state_enables = {
       VK_DYNAMIC_STATE_VIEWPORT,
       VK_DYNAMIC_STATE_SCISSOR
     };
-    VkPipelineDynamicStateCreateInfo dynamic_state =
-        initializers::pipelineDynamicStateCreateInfo(
-          dynamic_state_enables.data(),
-          static_cast<uint32_t>(dynamic_state_enables.size()),
-          0);
-    VkGraphicsPipelineCreateInfo pipeline_info =
-        initializers::pipelineCreateInfo(
-          nullptr,
-          render_pass,
-          0);
+    VkPipelineDynamicStateCreateInfo dynamic_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+      .dynamicStateCount = static_cast<uint32_t>(dynamic_state_enables.size()),
+      .pDynamicStates = dynamic_state_enables.data()
+    };
 
     std::array<VkPipelineShaderStageCreateInfo, 2> shader_stages;
 
-    pipeline_info.pInputAssemblyState = &input_assembly_state;
-    pipeline_info.pRasterizationState = &rasterization_state;
-    pipeline_info.pColorBlendState = &color_blend_state;
-    pipeline_info.pMultisampleState = &multisample_state;
-    pipeline_info.pViewportState = &viewport_state;
-    pipeline_info.pDepthStencilState = &depth_stencil_state;
-    pipeline_info.pDynamicState = &dynamic_state;
-    pipeline_info.stageCount = static_cast<uint32_t>(shader_stages.size());
-    pipeline_info.pStages = shader_stages.data();
+    VkPipelineVertexInputStateCreateInfo empty_input_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
+    };
+
+    VkGraphicsPipelineCreateInfo pipeline_info = {
+      .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+      .flags = 0,
+      .stageCount = static_cast<uint32_t>(shader_stages.size()),
+      .pStages = shader_stages.data(),
+      .pVertexInputState = &empty_input_state,
+      .pInputAssemblyState = &input_assembly_state,
+      .pViewportState = &viewport_state,
+      .pRasterizationState = &rasterization_state,
+      .pMultisampleState = &multisample_state,
+      .pDepthStencilState = &depth_stencil_state,
+      .pColorBlendState = &color_blend_state,
+      .pDynamicState = &dynamic_state,
+      .layout = pipeline_layout,
+      .renderPass = render_pass,
+      .basePipelineHandle = VK_NULL_HANDLE,
+      .basePipelineIndex = -1
+    };
 
     // Final fullscreen composition pass pipeline
     shader_stages[0] =
@@ -152,10 +173,6 @@ class Distortion {
                                          fragment_shader_name,
                                          VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    VkPipelineVertexInputStateCreateInfo empty_input_state =
-        initializers::pipelineVertexInputStateCreateInfo();
-    pipeline_info.pVertexInputState = &empty_input_state;
-    pipeline_info.layout = pipeline_layout;
     vik_log_check(vkCreateGraphicsPipelines(device, pipeline_cache, 1,
                                             &pipeline_info, nullptr,
                                             &pipeline));
@@ -165,11 +182,14 @@ class Distortion {
   }
 
   VkWriteDescriptorSet get_uniform_write_descriptor_set(uint32_t binding) {
-    return initializers::writeDescriptorSet(
-          descriptor_set,
-          VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-          binding,
-          &ubo_handle.descriptor);
+    return (VkWriteDescriptorSet) {
+      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+      .dstSet = descriptor_set,
+      .dstBinding = binding,
+      .descriptorCount = 1,
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .pBufferInfo = &ubo_handle.descriptor
+    };
   }
 
   void init_descriptor_set(OffscreenPass *offscreenPass,
@@ -177,11 +197,12 @@ class Distortion {
     std::vector<VkWriteDescriptorSet> write_descriptor_sets;
 
     // Textured quad descriptor set
-    VkDescriptorSetAllocateInfo allocInfo =
-        initializers::descriptorSetAllocateInfo(
-          descriptorPool,
-          &descriptor_set_layout,
-          1);
+    VkDescriptorSetAllocateInfo allocInfo = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+      .descriptorPool = descriptorPool,
+      .descriptorSetCount = 1,
+      .pSetLayouts = &descriptor_set_layout
+    };
 
     vik_log_check(vkAllocateDescriptorSets(device, &allocInfo, &descriptor_set));
 
@@ -201,33 +222,39 @@ class Distortion {
   }
 
   void init_descriptor_set_layout() {
-    // Deferred shading layout
     std::vector<VkDescriptorSetLayoutBinding> set_layout_bindings = {
       // Binding 0 : Render texture target
-      initializers::descriptorSetLayoutBinding(
-      VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-      VK_SHADER_STAGE_FRAGMENT_BIT,
-      0),
+      {
+        .binding = 0,
+        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        .descriptorCount = 1,
+        .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+      },
       // Binding 1 : Fragment shader uniform buffer
-      initializers::descriptorSetLayoutBinding(
-      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      VK_SHADER_STAGE_FRAGMENT_BIT,
-      1),
+      {
+        .binding = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .descriptorCount = 1,
+        .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+      }
     };
 
-    VkDescriptorSetLayoutCreateInfo set_layout_info =
-        initializers::descriptorSetLayoutCreateInfo(
-          set_layout_bindings.data(),
-          static_cast<uint32_t>(set_layout_bindings.size()));
+    VkDescriptorSetLayoutCreateInfo set_layout_info = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+      .bindingCount = static_cast<uint32_t>(set_layout_bindings.size()),
+      .pBindings = set_layout_bindings.data()
+    };
 
     vik_log_check(vkCreateDescriptorSetLayout(device, &set_layout_info, nullptr,
                                               &descriptor_set_layout));
   }
 
   void init_pipeline_layout() {
-    VkPipelineLayoutCreateInfo pipeline_layout_info =
-        initializers::pipelineLayoutCreateInfo(&descriptor_set_layout, 1);
-
+    VkPipelineLayoutCreateInfo pipeline_layout_info = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+      .setLayoutCount = 1,
+      .pSetLayouts = &descriptor_set_layout
+    };
     vik_log_check(vkCreatePipelineLayout(device, &pipeline_layout_info,
                                          nullptr, &pipeline_layout));
   }

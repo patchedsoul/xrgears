@@ -40,20 +40,23 @@ class SkyBox {
 
   void init_texture_descriptor() {
     // Image descriptor for the cube map texture
-    texture_descriptor =
-        initializers::descriptorImageInfo(
-          cube_map.sampler,
-          cube_map.view,
-          cube_map.imageLayout);
+    texture_descriptor = {
+      .sampler = cube_map.sampler,
+      .imageView = cube_map.view,
+      .imageLayout = cube_map.imageLayout
+    };
   }
 
   VkWriteDescriptorSet
   get_cube_map_write_descriptor_set(unsigned binding, VkDescriptorSet ds) {
-    return initializers::writeDescriptorSet(
-          ds,
-          VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-          binding,
-          &texture_descriptor);
+    return  (VkWriteDescriptorSet) {
+      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+      .dstSet = ds,
+      .dstBinding = binding,
+      .descriptorCount = 1,
+      .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      .pImageInfo = &texture_descriptor
+    };
   }
 
   void load_assets(VertexLayout vertexLayout, Device *vik_device, VkQueue queue,
@@ -69,15 +72,16 @@ class SkyBox {
     vik_log_check(vkAllocateDescriptorSets(device, &allocInfo, &descriptor_set));
 
     std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
-      initializers::writeDescriptorSet(
-      descriptor_set,
-      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      2,
-      cameraDescriptor)
+      (VkWriteDescriptorSet){
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = descriptor_set,
+        .dstBinding = 2,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .pBufferInfo = cameraDescriptor
+      },
+      get_cube_map_write_descriptor_set(3, descriptor_set)
     };
-
-    writeDescriptorSets.push_back(get_cube_map_write_descriptor_set(3, descriptor_set));
-
     vkUpdateDescriptorSets(device,
                            static_cast<uint32_t>(writeDescriptorSets.size()),
                            writeDescriptorSets.data(),
@@ -100,12 +104,14 @@ class SkyBox {
 
   void init_pipeline(VkGraphicsPipelineCreateInfo* pipeline_info,
                      const VkPipelineCache& pipeline_cache) {
-    VkPipelineRasterizationStateCreateInfo rasterization_state =
-        initializers::pipelineRasterizationStateCreateInfo(
-          VK_POLYGON_MODE_FILL,
-          VK_CULL_MODE_BACK_BIT,
-          VK_FRONT_FACE_COUNTER_CLOCKWISE,
-          0);
+    VkPipelineRasterizationStateCreateInfo rasterization_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+      .depthClampEnable = VK_FALSE,
+      .polygonMode = VK_POLYGON_MODE_FILL,
+      .cullMode = VK_CULL_MODE_BACK_BIT,
+      .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
+      .lineWidth = 1.0f
+    };
 
     // Skybox pipeline (background cube)
     std::array<VkPipelineShaderStageCreateInfo, 3> shader_stages;

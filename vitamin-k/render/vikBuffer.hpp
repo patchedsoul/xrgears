@@ -106,11 +106,13 @@ struct Buffer {
     * @return VkResult of the flush call
     */
   VkResult flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
-    VkMappedMemoryRange mappedRange = {};
-    mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-    mappedRange.memory = memory;
-    mappedRange.offset = offset;
-    mappedRange.size = size;
+    VkMappedMemoryRange mappedRange = {
+      .sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,
+      .memory = memory,
+      .offset = offset,
+      .size = size
+    };
+
     return vkFlushMappedMemoryRanges(device, 1, &mappedRange);
   }
 
@@ -125,11 +127,12 @@ struct Buffer {
     * @return VkResult of the invalidate call
     */
   VkResult invalidate(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
-    VkMappedMemoryRange mappedRange = {};
-    mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-    mappedRange.memory = memory;
-    mappedRange.offset = offset;
-    mappedRange.size = size;
+    VkMappedMemoryRange mappedRange = {
+      .sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,
+      .memory = memory,
+      .offset = offset,
+      .size = size
+    };
     return vkInvalidateMappedMemoryRanges(device, 1, &mappedRange);
   }
 

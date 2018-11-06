@@ -100,10 +100,11 @@ static void setupDebugging(VkInstance instance, VkDebugReportFlagsEXT flags, VkD
   DestroyDebugReportCallback = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"));
   dbgBreakCallback = reinterpret_cast<PFN_vkDebugReportMessageEXT>(vkGetInstanceProcAddr(instance, "vkDebugReportMessageEXT"));
 
-  VkDebugReportCallbackCreateInfoEXT dbgCreateInfo = {};
-  dbgCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
-  dbgCreateInfo.pfnCallback = (PFN_vkDebugReportCallbackEXT)messageCallback;
-  dbgCreateInfo.flags = flags;
+  VkDebugReportCallbackCreateInfoEXT dbgCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT,
+    .flags = flags,
+    .pfnCallback = (PFN_vkDebugReportCallbackEXT) messageCallback
+  };
 
   VkResult err = CreateDebugReportCallback(
         instance,
@@ -182,10 +183,11 @@ static void setObjectTag(VkDevice device, uint64_t object, VkDebugReportObjectTy
 static void beginRegion(VkCommandBuffer cmdbuffer, const char* pMarkerName, glm::vec4 color) {
   // Check for valid function pointer (may not be present if not running in a debugging application)
   if (pfnCmdDebugMarkerBegin) {
-    VkDebugMarkerMarkerInfoEXT markerInfo = {};
-    markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
+    VkDebugMarkerMarkerInfoEXT markerInfo = {
+      .sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT,
+      .pMarkerName = pMarkerName
+    };
     memcpy(markerInfo.color, &color[0], sizeof(float) * 4);
-    markerInfo.pMarkerName = pMarkerName;
     pfnCmdDebugMarkerBegin(cmdbuffer, &markerInfo);
   }
 }

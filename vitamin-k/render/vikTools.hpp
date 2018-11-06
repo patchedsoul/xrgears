@@ -23,7 +23,6 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "vikInitializers.hpp"
 #include "../system/vikLog.hpp"
 
 // Default fence timeout in nanoseconds
@@ -127,11 +126,16 @@ static void setImageLayout(
     VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
     VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT) {
   // Create an image barrier object
-  VkImageMemoryBarrier imageMemoryBarrier = initializers::imageMemoryBarrier();
-  imageMemoryBarrier.oldLayout = oldImageLayout;
-  imageMemoryBarrier.newLayout = newImageLayout;
-  imageMemoryBarrier.image = image;
-  imageMemoryBarrier.subresourceRange = subresourceRange;
+
+  VkImageMemoryBarrier imageMemoryBarrier = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+    .oldLayout = oldImageLayout,
+    .newLayout = newImageLayout,
+    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+    .image = image,
+    .subresourceRange = subresourceRange
+  };
 
   // Source layouts (old)
   // Source access mask controls actions that have to be finished on the old layout
@@ -244,18 +248,18 @@ static void setImageLayout(
     VkImageLayout newImageLayout,
     VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
     VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT) {
-  VkImageSubresourceRange subresourceRange = {};
-  subresourceRange.aspectMask = aspectMask;
-  subresourceRange.baseMipLevel = 0;
-  subresourceRange.levelCount = 1;
-  subresourceRange.layerCount = 1;
-  setImageLayout(cmdbuffer, image, oldImageLayout, newImageLayout, subresourceRange, srcStageMask, dstStageMask);
+  VkImageSubresourceRange subresourceRange = {
+    .aspectMask = aspectMask,
+    .baseMipLevel = 0,
+    .levelCount = 1,
+    .layerCount = 1
+  };
+  setImageLayout(cmdbuffer, image, oldImageLayout, newImageLayout,
+                 subresourceRange, srcStageMask, dstStageMask);
 }
 
 // Display error message and exit on fatal error
 // void exitFatal(std::string message, std::string caption);
-
-
 
 /** @brief Checks if a file exists */
 #pragma GCC diagnostic ignored "-Wunused-function"

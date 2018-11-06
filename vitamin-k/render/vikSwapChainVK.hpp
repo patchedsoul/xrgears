@@ -53,36 +53,38 @@ class SwapChainVK : public SwapChain {
     VkSurfaceCapabilitiesKHR surfCaps;
     vik_log_check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &surfCaps));
 
-    VkSwapchainCreateInfoKHR swap_chain_info = {};
-    swap_chain_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-
-    swap_chain_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    swap_chain_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    swap_chain_info.imageArrayLayers = 1;
-    swap_chain_info.queueFamilyIndexCount = 0;
-    // Setting clipped to VK_TRUE allows the implementation to discard rendering outside of the surface area
-    swap_chain_info.clipped = VK_TRUE;
-
-    swap_chain_info.surface = surface;
-    swap_chain_info.imageFormat = surface_format.format;
-    swap_chain_info.imageColorSpace = surface_format.colorSpace;
-
     VkSwapchainKHR oldSwapchain = swap_chain;
-    swap_chain_info.oldSwapchain = oldSwapchain;
-
     VkExtent2D swapchainExtent = select_extent(surfCaps, width, height);
-    swap_chain_info.imageExtent = { swapchainExtent.width, swapchainExtent.height };
 
-    swap_chain_info.minImageCount = select_image_count(surfCaps);
-    swap_chain_info.preTransform = select_transform_flags(surfCaps);
-    swap_chain_info.presentMode = select_present_mode();
-    swap_chain_info.compositeAlpha = select_composite_alpha(surfCaps);
+    VkSwapchainCreateInfoKHR swap_chain_info = {
+      .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+      .surface = surface,
+      .minImageCount = select_image_count(surfCaps),
+      .imageFormat = surface_format.format,
+      .imageColorSpace = surface_format.colorSpace,
+      .imageExtent = {
+        .width = swapchainExtent.width,
+        .height = swapchainExtent.height
+      },
+      .imageArrayLayers = 1,
+      .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+      .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
+      .queueFamilyIndexCount = 0,
+      .preTransform = select_transform_flags(surfCaps),
+      .compositeAlpha = select_composite_alpha(surfCaps),
+      .presentMode = select_present_mode(),
+      // Setting clipped to VK_TRUE allows the implementation
+      // to discard rendering outside of the surface area
+      .clipped = VK_TRUE,
+      .oldSwapchain = oldSwapchain
+    };
 
     // Set additional usage flag for blitting from the swapchain images if supported
     if (is_blit_supported())
       swap_chain_info.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
-    vik_log_check(vkCreateSwapchainKHR(device, &swap_chain_info, nullptr, &swap_chain));
+    vik_log_check(vkCreateSwapchainKHR(device, &swap_chain_info,
+                                       nullptr, &swap_chain));
 
     // If an existing swap chain is re-created, destroy the old swap chain
     // This also cleans up all the presentable images
@@ -200,12 +202,15 @@ class SwapChainVK : public SwapChain {
   *
   * @return VkResult of the queue presentation
   */
-  VkResult present(VkQueue queue, uint32_t index, VkSemaphore semaphore = VK_NULL_HANDLE) {
-    VkPresentInfoKHR presentInfo = {};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = &swap_chain;
-    presentInfo.pImageIndices = &index;
+  VkResult present(VkQueue queue, uint32_t index,
+                   VkSemaphore semaphore = VK_NULL_HANDLE) {
+    VkPresentInfoKHR presentInfo = {
+      .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+      .swapchainCount = 1,
+      .pSwapchains = &swap_chain,
+      .pImageIndices = &index,
+    };
+
     // Check if a wait semaphore has been specified to wait for before presenting the image
     if (semaphore != VK_NULL_HANDLE) {
       presentInfo.pWaitSemaphores = &semaphore;

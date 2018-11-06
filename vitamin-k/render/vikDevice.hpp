@@ -199,11 +199,13 @@ class Device {
     // Graphics queue
     if (requestedQueueTypes & VK_QUEUE_GRAPHICS_BIT) {
       queueFamilyIndices.graphics = getQueueFamilyIndex(VK_QUEUE_GRAPHICS_BIT);
-      VkDeviceQueueCreateInfo queueInfo{};
-      queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-      queueInfo.queueFamilyIndex = queueFamilyIndices.graphics;
-      queueInfo.queueCount = 1;
-      queueInfo.pQueuePriorities = &defaultQueuePriority;
+      VkDeviceQueueCreateInfo queueInfo = {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+        .queueFamilyIndex = queueFamilyIndices.graphics,
+        .queueCount = 1,
+        .pQueuePriorities = &defaultQueuePriority
+      };
+
       queueCreateInfos.push_back(queueInfo);
     } else {
       queueFamilyIndices.graphics = VK_NULL_HANDLE;
@@ -214,11 +216,13 @@ class Device {
       queueFamilyIndices.compute = getQueueFamilyIndex(VK_QUEUE_COMPUTE_BIT);
       if (queueFamilyIndices.compute != queueFamilyIndices.graphics) {
         // If compute family index differs, we need an additional queue create info for the compute queue
-        VkDeviceQueueCreateInfo queueInfo{};
-        queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueInfo.queueFamilyIndex = queueFamilyIndices.compute;
-        queueInfo.queueCount = 1;
-        queueInfo.pQueuePriorities = &defaultQueuePriority;
+        VkDeviceQueueCreateInfo queueInfo = {
+          .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+          .queueFamilyIndex = queueFamilyIndices.compute,
+          .queueCount = 1,
+          .pQueuePriorities = &defaultQueuePriority
+        };
+
         queueCreateInfos.push_back(queueInfo);
       }
     } else {
@@ -231,11 +235,13 @@ class Device {
       queueFamilyIndices.transfer = getQueueFamilyIndex(VK_QUEUE_TRANSFER_BIT);
       if ((queueFamilyIndices.transfer != queueFamilyIndices.graphics) && (queueFamilyIndices.transfer != queueFamilyIndices.compute)) {
         // If compute family index differs, we need an additional queue create info for the compute queue
-        VkDeviceQueueCreateInfo queueInfo{};
-        queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueInfo.queueFamilyIndex = queueFamilyIndices.transfer;
-        queueInfo.queueCount = 1;
-        queueInfo.pQueuePriorities = &defaultQueuePriority;
+        VkDeviceQueueCreateInfo queueInfo = {
+          .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+          .queueFamilyIndex = queueFamilyIndices.transfer,
+          .queueCount = 1,
+          .pQueuePriorities = &defaultQueuePriority
+        };
+
         queueCreateInfos.push_back(queueInfo);
       }
     } else {
@@ -257,11 +263,12 @@ class Device {
     for (auto window_ext : window_extensions)
       enable_if_supported(&deviceExtensions, window_ext);
 
-    VkDeviceCreateInfo deviceCreateInfo = {};
-    deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());;
-    deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
-    deviceCreateInfo.pEnabledFeatures = &enabledFeatures;
+    VkDeviceCreateInfo deviceCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+      .queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()),
+      .pQueueCreateInfos = queueCreateInfos.data(),
+      .pEnabledFeatures = &enabledFeatures
+    };
 
     // Enable the debug marker extension if it is present (likely meaning a debugging tool is present)
     // enableDebugMarkers = enableIfSupported(&deviceExtensions, VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
@@ -295,17 +302,25 @@ class Device {
     */
   VkResult createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, VkBuffer *buffer, VkDeviceMemory *memory, void *data = nullptr) {
     // Create the buffer handle
-    VkBufferCreateInfo bufferCreateInfo = initializers::bufferCreateInfo(usageFlags, size);
-    bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    VkBufferCreateInfo bufferCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+      .size = size,
+      .usage = usageFlags,
+      .sharingMode = VK_SHARING_MODE_EXCLUSIVE
+    };
     vik_log_check(vkCreateBuffer(logicalDevice, &bufferCreateInfo, nullptr, buffer));
 
     // Create the memory backing up the buffer handle
     VkMemoryRequirements memReqs;
-    VkMemoryAllocateInfo memAlloc = initializers::memoryAllocateInfo();
     vkGetBufferMemoryRequirements(logicalDevice, *buffer, &memReqs);
-    memAlloc.allocationSize = memReqs.size;
-    // Find a memory type index that fits the properties of the buffer
-    memAlloc.memoryTypeIndex = getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
+
+    VkMemoryAllocateInfo memAlloc {
+      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+      .allocationSize = memReqs.size,
+      // Find a memory type index that fits the properties of the buffer
+      .memoryTypeIndex = getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags)
+    };
+
     vik_log_check(vkAllocateMemory(logicalDevice, &memAlloc, nullptr, memory));
 
     // If a pointer to the buffer data has been passed, map the buffer and copy over the data
@@ -315,10 +330,14 @@ class Device {
       memcpy(mapped, data, size);
       // If host coherency hasn't been requested, do a manual flush to make writes visible
       if ((memoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0) {
-        VkMappedMemoryRange mappedRange = initializers::mappedMemoryRange();
-        mappedRange.memory = *memory;
-        mappedRange.offset = 0;
-        mappedRange.size = size;
+
+        VkMappedMemoryRange mappedRange = {
+          .sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,
+          .memory = *memory,
+          .offset = 0,
+          .size = size
+        };
+
         vkFlushMappedMemoryRanges(logicalDevice, 1, &mappedRange);
       }
       vkUnmapMemory(logicalDevice, *memory);
@@ -357,17 +376,26 @@ class Device {
     buffer->device = logicalDevice;
 
     // Create the buffer handle
-    VkBufferCreateInfo bufferCreateInfo = initializers::bufferCreateInfo(usageFlags, size);
+    VkBufferCreateInfo bufferCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+      .size = size,
+      .usage = usageFlags
+    };
     vik_log_check(vkCreateBuffer(logicalDevice, &bufferCreateInfo, nullptr, &buffer->buffer));
 
     // Create the memory backing up the buffer handle
     VkMemoryRequirements memReqs;
-    VkMemoryAllocateInfo memAlloc = initializers::memoryAllocateInfo();
     vkGetBufferMemoryRequirements(logicalDevice, buffer->buffer, &memReqs);
-    memAlloc.allocationSize = memReqs.size;
-    // Find a memory type index that fits the properties of the buffer
-    memAlloc.memoryTypeIndex = getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
-    vik_log_check(vkAllocateMemory(logicalDevice, &memAlloc, nullptr, &buffer->memory));
+
+    VkMemoryAllocateInfo memAlloc {
+      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+      .allocationSize = memReqs.size,
+      // Find a memory type index that fits the properties of the buffer
+      .memoryTypeIndex = getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags)
+    };
+
+    vik_log_check(vkAllocateMemory(logicalDevice, &memAlloc,
+                                   nullptr, &buffer->memory));
 
     buffer->alignment = memReqs.alignment;
     buffer->size = memAlloc.allocationSize;
@@ -424,10 +452,12 @@ class Device {
     * @return A handle to the created command buffer
     */
   VkCommandPool createCommandPool(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags createFlags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT) {
-    VkCommandPoolCreateInfo cmdPoolInfo = {};
-    cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    cmdPoolInfo.queueFamilyIndex = queueFamilyIndex;
-    cmdPoolInfo.flags = createFlags;
+    VkCommandPoolCreateInfo cmdPoolInfo = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+      .flags = createFlags,
+      .queueFamilyIndex = queueFamilyIndex
+    };
+
     VkCommandPool cmdPool;
     vik_log_check(vkCreateCommandPool(logicalDevice, &cmdPoolInfo, nullptr, &cmdPool));
     return cmdPool;
@@ -442,14 +472,21 @@ class Device {
     * @return A handle to the allocated command buffer
     */
   VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin = false) {
-    VkCommandBufferAllocateInfo cmdBufAllocateInfo = initializers::commandBufferAllocateInfo(commandPool, level, 1);
+    VkCommandBufferAllocateInfo cmdBufAllocateInfo = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      .commandPool = commandPool,
+      .level = level,
+      .commandBufferCount = 1
+    };
 
     VkCommandBuffer cmdBuffer;
     vik_log_check(vkAllocateCommandBuffers(logicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
 
     // If requested, also start recording for the new command buffer
     if (begin) {
-      VkCommandBufferBeginInfo cmdBufInfo = initializers::commandBufferBeginInfo();
+      VkCommandBufferBeginInfo cmdBufInfo = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO
+      };
       vik_log_check(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
     }
 
@@ -472,12 +509,16 @@ class Device {
 
     vik_log_check(vkEndCommandBuffer(commandBuffer));
 
-    VkSubmitInfo submitInfo = initializers::submitInfo();
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
+    VkSubmitInfo submitInfo = {
+      .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+      .commandBufferCount = 1,
+      .pCommandBuffers = &commandBuffer
+    };
 
     // Create fence to ensure that the command buffer has finished executing
-    VkFenceCreateInfo fenceInfo = initializers::fenceCreateInfo(0);
+    VkFenceCreateInfo fenceInfo = {
+      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
+    };
     VkFence fence;
     vik_log_check(vkCreateFence(logicalDevice, &fenceInfo, nullptr, &fence));
 
@@ -527,11 +568,15 @@ class Device {
     GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceProperties2KHR);
 
     if (fpGetPhysicalDeviceFeatures2KHR) {
-      VkPhysicalDeviceFeatures2KHR device_features{};
-      VkPhysicalDeviceMultiviewFeaturesKHR multi_view_features{};
-      multi_view_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHR;
-      device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
-      device_features.pNext = &multi_view_features;
+      VkPhysicalDeviceMultiviewFeaturesKHR multi_view_features = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHR
+      };
+
+      VkPhysicalDeviceFeatures2KHR device_features = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR,
+        .pNext = &multi_view_features
+      };
+
       fpGetPhysicalDeviceFeatures2KHR(physicalDevice, &device_features);
 
       vik_log_i("multiview %d", multi_view_features.multiview);
@@ -544,12 +589,15 @@ class Device {
     }
 
     if (fpGetPhysicalDeviceProperties2KHR) {
-      VkPhysicalDeviceProperties2KHR device_props{};
+      VkPhysicalDeviceMultiviewPropertiesKHR multi_view_props = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR
+      };
 
-      VkPhysicalDeviceMultiviewPropertiesKHR multi_view_props{};
-      multi_view_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR;
-      device_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
-      device_props.pNext = &multi_view_props;
+      VkPhysicalDeviceProperties2KHR device_props = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR,
+        .pNext = &multi_view_props
+      };
+
       fpGetPhysicalDeviceProperties2KHR(physicalDevice, &device_props);
 
       vik_log_i("maxMultiviewViewCount %d",
@@ -557,11 +605,14 @@ class Device {
       vik_log_i("maxMultiviewInstanceIndex %d",
                 multi_view_props.maxMultiviewInstanceIndex);
 
-      VkPhysicalDeviceProperties2KHR device_props2{};
-      VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX multi_view_props2{};
-      multi_view_props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX;
-      device_props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
-      device_props2.pNext = &multi_view_props2;
+      VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX multi_view_props2 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX
+      };
+
+      VkPhysicalDeviceProperties2KHR device_props2 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR,
+        .pNext = &multi_view_props2
+      };
       fpGetPhysicalDeviceProperties2KHR(physicalDevice, &device_props2);
 
       vik_log_i("perViewPositionAllComponents %d",

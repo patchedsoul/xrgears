@@ -67,31 +67,39 @@ class Node {
                            VkDescriptorBufferInfo* lightsDescriptor,
                            VkDescriptorBufferInfo* cameraDescriptor,
                            vik::SkyBox *skyDome) {
-    VkDescriptorSetAllocateInfo allocInfo =
-        initializers::descriptorSetAllocateInfo(
-          descriptorPool,
-          &descriptorSetLayout,
-          1);
-
+    VkDescriptorSetAllocateInfo allocInfo = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+      .descriptorPool = descriptorPool,
+      .descriptorSetCount = 1,
+      .pSetLayouts = &descriptorSetLayout
+    };
     vik_log_check(vkAllocateDescriptorSets(device, &allocInfo, &descriptor_set));
 
     std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
-      // Binding 0 : Vertex shader uniform buffer
-      initializers::writeDescriptorSet(
-      descriptor_set,
-      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      0,
-      &uniformBuffer.descriptor),
-      initializers::writeDescriptorSet(
-      descriptor_set,
-      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      1,
-      lightsDescriptor),
-      initializers::writeDescriptorSet(
-      descriptor_set,
-      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      2,
-      cameraDescriptor)
+      (VkWriteDescriptorSet) {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = descriptor_set,
+        .dstBinding = 0,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .pBufferInfo = &uniformBuffer.descriptor
+      },
+      (VkWriteDescriptorSet) {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = descriptor_set,
+        .dstBinding = 1,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .pBufferInfo = lightsDescriptor
+      },
+      (VkWriteDescriptorSet) {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = descriptor_set,
+        .dstBinding = 2,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .pBufferInfo = cameraDescriptor
+      }
     };
 
     if (skyDome != nullptr)
