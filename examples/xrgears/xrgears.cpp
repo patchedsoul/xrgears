@@ -148,12 +148,20 @@ class XRGears : public vik::Application {
   }
 
   inline VkRenderPassBeginInfo default_render_pass_info() {
-    VkRenderPassBeginInfo info = vik::initializers::renderPassBeginInfo();
-    info.renderPass = renderer->render_pass;
-    info.renderArea.offset.x = 0;
-    info.renderArea.offset.y = 0;
-    info.renderArea.extent.width = renderer->width;
-    info.renderArea.extent.height = renderer->height;
+    VkRenderPassBeginInfo info = {
+      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+      .renderPass = renderer->render_pass,
+      .renderArea = {
+        .offset = {
+          .x = 0,
+          .y = 0,
+        },
+        .extent = {
+          .width = renderer->width,
+          .height = renderer->height
+        }
+      }
+    };
     return info;
   }
 
@@ -345,17 +353,21 @@ class XRGears : public vik::Application {
 
     nodes.resize(positions.size());
     for (uint32_t i = 0; i < nodes.size(); ++i) {
-      vik::Node::NodeInfo gear_node_info = {};
-      vik::GearInfo gear_info = {};
-      gear_info.inner_radius = inner_radiuses[i];
-      gear_info.outer_radius = outer_radiuses[i];
-      gear_info.width = widths[i];
-      gear_info.tooth_count = tooth_count[i];
-      gear_info.tooth_depth = tooth_depth[i];
-      gear_node_info.position = positions[i];
-      gear_node_info.rotation_speed = rotation_speeds[i];
-      gear_node_info.rotation_offset = rotation_offsets[i];
-      gear_node_info.material = materials[i];
+
+      vik::GearInfo gear_info = {
+        .inner_radius = inner_radiuses[i],
+        .outer_radius = outer_radiuses[i],
+        .width = widths[i],
+        .tooth_count = tooth_count[i],
+        .tooth_depth = tooth_depth[i]
+      };
+
+      vik::Node::NodeInfo gear_node_info = {
+        .position = positions[i],
+        .rotation_speed = rotation_speeds[i],
+        .rotation_offset = rotation_offsets[i],
+        .material = materials[i]
+      };
 
       nodes[i] = new vik::NodeGear();
       nodes[i]->setInfo(&gear_node_info);
@@ -391,26 +403,26 @@ class XRGears : public vik::Application {
     // Describes memory layout and shader positions
     vertices.attribute_descriptions.resize(3);
     // Location 0 : Position
-    vertices.attribute_descriptions[0] =
-        vik::initializers::vertexInputAttributeDescription(
-          VERTEX_BUFFER_BIND_ID,
-          0,
-          VK_FORMAT_R32G32B32_SFLOAT,
-          0);
+    vertices.attribute_descriptions[0] = (VkVertexInputAttributeDescription) {
+      .location = 0,
+      .binding = VERTEX_BUFFER_BIND_ID,
+      .format = VK_FORMAT_R32G32B32_SFLOAT,
+      .offset = 0
+    };
     // Location 1 : Normal
-    vertices.attribute_descriptions[1] =
-        vik::initializers::vertexInputAttributeDescription(
-          VERTEX_BUFFER_BIND_ID,
-          1,
-          VK_FORMAT_R32G32B32_SFLOAT,
-          sizeof(float) * 3);
+    vertices.attribute_descriptions[1] = (VkVertexInputAttributeDescription) {
+      .location = 1,
+      .binding = VERTEX_BUFFER_BIND_ID,
+      .format = VK_FORMAT_R32G32B32_SFLOAT,
+      .offset = sizeof(float) * 3
+    };
     // Location 2 : Color
-    vertices.attribute_descriptions[2] =
-        vik::initializers::vertexInputAttributeDescription(
-          VERTEX_BUFFER_BIND_ID,
-          2,
-          VK_FORMAT_R32G32B32_SFLOAT,
-          sizeof(float) * 6);
+    vertices.attribute_descriptions[2] = (VkVertexInputAttributeDescription) {
+      .location = 2,
+      .binding = VERTEX_BUFFER_BIND_ID,
+      .format = VK_FORMAT_R32G32B32_SFLOAT,
+      .offset = sizeof(float) * 6
+    };
 
     vertices.input_state = vik::initializers::pipelineVertexInputStateCreateInfo();
     vertices.input_state.vertexBindingDescriptionCount = static_cast<uint32_t>(vertices.binding_descriptions.size());
@@ -562,45 +574,63 @@ class XRGears : public vik::Application {
 
     shader_stages[2] = vik::Shader::load(renderer->device, "xrgears/multiview.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 
-    VkGraphicsPipelineCreateInfo pipeline_info;
-
-    VkRenderPass used_pass;
-    if (enable_distortion)
-      used_pass = offscreen_pass->getRenderPass();
-    else
-      used_pass = renderer->render_pass;
-
-    pipeline_info = vik::initializers::pipelineCreateInfo(pipeline_layout, used_pass);
-
     // Vertex bindings an attributes
     std::vector<VkVertexInputBindingDescription> vertex_input_bindings = {
       vik::initializers::vertexInputBindingDescription(0, vertex_layout.stride(), VK_VERTEX_INPUT_RATE_VERTEX),
     };
     std::vector<VkVertexInputAttributeDescription> vertex_input_attributes = {
       // Location 0: Position
-      vik::initializers::vertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0),
+      {
+        .location = 0,
+        .binding = 0,
+        .format = VK_FORMAT_R32G32_SFLOAT,
+        .offset = 0
+      },
       // Location 1: Normals
-      vik::initializers::vertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 3),
+      {
+        .location = 1,
+        .binding = 0,
+        .format = VK_FORMAT_R32G32_SFLOAT,
+        .offset = sizeof(float) * 3
+      },
       // Location 2: Color
-      vik::initializers::vertexInputAttributeDescription(0, 2, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 6),
+      {
+        .location = 2,
+        .binding = 0,
+        .format = VK_FORMAT_R32G32_SFLOAT,
+        .offset = sizeof(float) * 6
+      }
     };
-    VkPipelineVertexInputStateCreateInfo vertex_input_state = vik::initializers::pipelineVertexInputStateCreateInfo();
-    vertex_input_state.vertexBindingDescriptionCount = static_cast<uint32_t>(vertex_input_bindings.size());
-    vertex_input_state.pVertexBindingDescriptions = vertex_input_bindings.data();
-    vertex_input_state.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertex_input_attributes.size());
-    vertex_input_state.pVertexAttributeDescriptions = vertex_input_attributes.data();
 
-    pipeline_info.pVertexInputState = &vertex_input_state;
-    pipeline_info.pInputAssemblyState = &input_assembly_state;
-    pipeline_info.pRasterizationState = &rasterization_state;
-    pipeline_info.pColorBlendState = &color_blend_state;
-    pipeline_info.pMultisampleState = &multisample_state;
-    pipeline_info.pViewportState = &viewport_state;
-    pipeline_info.pDepthStencilState = &depth_stencil_state;
-    pipeline_info.pDynamicState = &dynamicState;
-    pipeline_info.stageCount = static_cast<uint32_t>(shader_stages.size());
-    pipeline_info.pStages = shader_stages.data();
-    pipeline_info.renderPass = used_pass;
+    VkPipelineVertexInputStateCreateInfo vertex_input_state = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+      .vertexBindingDescriptionCount = static_cast<uint32_t>(vertex_input_bindings.size()),
+      .pVertexBindingDescriptions = vertex_input_bindings.data(),
+      .vertexAttributeDescriptionCount = static_cast<uint32_t>(vertex_input_attributes.size()),
+      .pVertexAttributeDescriptions = vertex_input_attributes.data()
+    };
+
+    VkGraphicsPipelineCreateInfo pipeline_info = {
+      .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+      .stageCount = static_cast<uint32_t>(shader_stages.size()),
+      .pStages = shader_stages.data(),
+      .pVertexInputState = &vertex_input_state,
+      .pInputAssemblyState = &input_assembly_state,
+      .pViewportState = &viewport_state,
+      .pRasterizationState = &rasterization_state,
+      .pMultisampleState = &multisample_state,
+      .pDepthStencilState = &depth_stencil_state,
+      .pColorBlendState = &color_blend_state,
+      .pDynamicState = &dynamicState,
+      .layout = pipeline_layout,
+      .basePipelineHandle = nullptr,
+      .basePipelineIndex = -1,
+    };
+
+    if (enable_distortion)
+      pipeline_info.renderPass = offscreen_pass->getRenderPass();
+    else
+      pipeline_info.renderPass = renderer->render_pass;
 
     vik_log_check(vkCreateGraphicsPipelines(renderer->device,
                                             renderer->pipeline_cache, 1,
