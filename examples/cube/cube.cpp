@@ -97,10 +97,10 @@ class XrCube : public vik::Application {
 
     vkCreateFence(renderer->device,
                   &fenceinfo,
-                  NULL,
+                  nullptr,
                   &fence);
 
-    gettimeofday(&start_tv, NULL);
+    gettimeofday(&start_tv, nullptr);
 
     build_command_buffers();
   }
@@ -134,7 +134,7 @@ class XrCube : public vik::Application {
 
   uint64_t get_animation_time() {
     timeval tv;
-    gettimeofday(&tv, NULL);
+    gettimeofday(&tv, nullptr);
     return (get_ms_from_tv(tv) - get_ms_from_tv(start_tv)) / 5;
   }
 
@@ -181,46 +181,48 @@ class XrCube : public vik::Application {
       }
     };
 
-    VkPipelineVertexInputStateCreateInfo vi_create_info = {};
-    vi_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vi_create_info.vertexBindingDescriptionCount = 3;
-    vi_create_info.pVertexBindingDescriptions = vertexBinding;
-    vi_create_info.vertexAttributeDescriptionCount = 3;
-    vi_create_info.pVertexAttributeDescriptions = vertexAttribute;
+    VkPipelineVertexInputStateCreateInfo vi_create_info = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+      .vertexBindingDescriptionCount = 3,
+      .pVertexBindingDescriptions = vertexBinding,
+      .vertexAttributeDescriptionCount = 3,
+      .pVertexAttributeDescriptions = vertexAttribute,
+    };
 
     VkPipelineShaderStageCreateInfo stagesInfo[] =  {
       vik::Shader::load(renderer->device, "vkcube/vkcube.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
       vik::Shader::load(renderer->device, "vkcube/vkcube.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT),
     };
 
-    VkPipelineInputAssemblyStateCreateInfo assmblyInfo = {};
-    assmblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    assmblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-    assmblyInfo.primitiveRestartEnable = false;
+    VkPipelineInputAssemblyStateCreateInfo assmblyInfo = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+      .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
+      .primitiveRestartEnable = false
+    };
 
-    VkPipelineViewportStateCreateInfo viewPorInfo = {};
-    viewPorInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewPorInfo.viewportCount = 1;
-    viewPorInfo.scissorCount = 1;
+    VkPipelineViewportStateCreateInfo viewPorInfo = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+      .viewportCount = 1,
+      .scissorCount = 1
+    };
 
+    VkPipelineRasterizationStateCreateInfo rasterInfo = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+      .rasterizerDiscardEnable = false,
+      .polygonMode = VK_POLYGON_MODE_FILL,
+      .cullMode = VK_CULL_MODE_BACK_BIT,
+      .frontFace = VK_FRONT_FACE_CLOCKWISE,
+      .lineWidth = 1.0f
+    };
 
-    VkPipelineRasterizationStateCreateInfo rasterInfo = {};
-    rasterInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rasterInfo.rasterizerDiscardEnable = false;
-    rasterInfo.polygonMode = VK_POLYGON_MODE_FILL;
-    rasterInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
-    rasterInfo.lineWidth = 1.0f;
+    VkPipelineMultisampleStateCreateInfo multiInfo = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+      .rasterizationSamples = (VkSampleCountFlagBits) 1
+    };
 
-
-    VkPipelineMultisampleStateCreateInfo multiInfo = {};
-    multiInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multiInfo.rasterizationSamples = (VkSampleCountFlagBits) 1;
-
-
-    VkPipelineDepthStencilStateCreateInfo sencilinfo = {};
-    sencilinfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-
+    VkPipelineDepthStencilStateCreateInfo sencilinfo = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO
+    };
 
     std::array<VkPipelineColorBlendAttachmentState, 1> attachments = {};
     attachments[0].colorWriteMask =
@@ -229,49 +231,51 @@ class XrCube : public vik::Application {
         VK_COLOR_COMPONENT_G_BIT |
         VK_COLOR_COMPONENT_B_BIT;
 
-    VkPipelineColorBlendStateCreateInfo colorinfo = {};
-    colorinfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    colorinfo.attachmentCount = 1;
-    colorinfo.pAttachments = attachments.data();
+    VkPipelineColorBlendStateCreateInfo colorinfo = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+      .attachmentCount = 1,
+      .pAttachments = attachments.data()
+    };
 
     VkDynamicState dynamicStates[] = {
       VK_DYNAMIC_STATE_VIEWPORT,
       VK_DYNAMIC_STATE_SCISSOR,
     };
 
-    VkPipelineDynamicStateCreateInfo dynamicinfo = {};
-    dynamicinfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicinfo.dynamicStateCount = 2;
-    dynamicinfo.pDynamicStates = dynamicStates;
+    VkPipelineDynamicStateCreateInfo dynamicinfo = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+      .dynamicStateCount = 2,
+      .pDynamicStates = dynamicStates
+    };
 
-    VkPipeline basehandle = { 0 };
+    VkPipeline basehandle = {};
 
-    VkGraphicsPipelineCreateInfo pipeLineCreateInfo = {};
-    pipeLineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipeLineCreateInfo.stageCount = 2;
-    pipeLineCreateInfo.pStages = stagesInfo;
-    pipeLineCreateInfo.pVertexInputState = &vi_create_info;
-    pipeLineCreateInfo.pInputAssemblyState = &assmblyInfo;
-    pipeLineCreateInfo.pViewportState = &viewPorInfo;
-    pipeLineCreateInfo.pRasterizationState = &rasterInfo;
-    pipeLineCreateInfo.pMultisampleState = &multiInfo;
-    pipeLineCreateInfo.pDepthStencilState = &sencilinfo;
-    pipeLineCreateInfo.pColorBlendState = &colorinfo;
-    pipeLineCreateInfo.pDynamicState = &dynamicinfo;
-    pipeLineCreateInfo.flags = 0;
-    pipeLineCreateInfo.layout = pipeline_layout;
-    pipeLineCreateInfo.renderPass = renderer->render_pass;
-    pipeLineCreateInfo.subpass = 0;
-    pipeLineCreateInfo.basePipelineHandle = basehandle;
-    pipeLineCreateInfo.basePipelineIndex = 0;
+    VkGraphicsPipelineCreateInfo pipeLineCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+      .stageCount = 2,
+      .pStages = stagesInfo,
+      .pVertexInputState = &vi_create_info,
+      .pInputAssemblyState = &assmblyInfo,
+      .pViewportState = &viewPorInfo,
+      .pRasterizationState = &rasterInfo,
+      .pMultisampleState = &multiInfo,
+      .pDepthStencilState = &sencilinfo,
+      .pColorBlendState = &colorinfo,
+      .pDynamicState = &dynamicinfo,
+      .layout = pipeline_layout,
+      .renderPass = renderer->render_pass,
+      .subpass = 0,
+      .basePipelineHandle = basehandle,
+      .basePipelineIndex = 0
+    };
 
-    VkPipelineCache cache = { VK_NULL_HANDLE };
+    VkPipelineCache cache = {};
 
     vkCreateGraphicsPipelines(renderer->device,
                               cache,
                               1,
                               &pipeLineCreateInfo,
-                              NULL,
+                              nullptr,
                               &pipeline);
 
     vkDestroyShaderModule(renderer->device, stagesInfo[0].module, nullptr);
@@ -279,24 +283,25 @@ class XrCube : public vik::Application {
   }
 
   VkDescriptorSetLayout init_descriptor_set_layout() {
-    VkDescriptorSetLayoutBinding bindings = {};
-    bindings.binding = 0;
-    bindings.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    bindings.descriptorCount = 1;
-    bindings.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    bindings.pImmutableSamplers = NULL;
+    VkDescriptorSetLayoutBinding bindings = {
+      .binding = 0,
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .descriptorCount = 1,
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+      .pImmutableSamplers = nullptr
+    };
 
-    VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.pNext = NULL;
-    layoutInfo.flags = 0;
-    layoutInfo.bindingCount = 1;
-    layoutInfo.pBindings = &bindings;
+    VkDescriptorSetLayoutCreateInfo layoutInfo = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+      .flags = 0,
+      .bindingCount = 1,
+      .pBindings = &bindings
+    };
 
     VkDescriptorSetLayout set_layout;
     vkCreateDescriptorSetLayout(renderer->device,
                                 &layoutInfo,
-                                NULL,
+                                nullptr,
                                 &set_layout);
     return set_layout;
   }
@@ -309,7 +314,7 @@ class XrCube : public vik::Application {
 
     vkCreatePipelineLayout(renderer->device,
                            &pipeLineInfo,
-                           NULL,
+                           nullptr,
                            &pipeline_layout);
   }
 
@@ -318,36 +323,39 @@ class XrCube : public vik::Application {
     poolsizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolsizes[0].descriptorCount = 1;
 
-    VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
-    descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    descriptorPoolCreateInfo.pNext = NULL;
-    descriptorPoolCreateInfo.flags = 0;
-    descriptorPoolCreateInfo.maxSets = 1;
-    descriptorPoolCreateInfo.poolSizeCount = 1;
-    descriptorPoolCreateInfo.pPoolSizes = poolsizes.data();
+    VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+      .flags = 0,
+      .maxSets = 1,
+      .poolSizeCount = 1,
+      .pPoolSizes = poolsizes.data()
+    };
 
     VkDescriptorPool descriptorPool;
-    vkCreateDescriptorPool(renderer->device, &descriptorPoolCreateInfo, NULL, &descriptorPool);
+    vkCreateDescriptorPool(renderer->device, &descriptorPoolCreateInfo,
+                           nullptr, &descriptorPool);
 
     return descriptorPool;
   }
 
   void init_descriptor_sets(const VkDescriptorPool& descriptorPool,
                             const VkDescriptorSetLayout& set_layout) {
-    VkDescriptorSetAllocateInfo descriptorAllocateInfo = {};
-    descriptorAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    descriptorAllocateInfo.descriptorPool = descriptorPool;
-    descriptorAllocateInfo.descriptorSetCount = 1;
-    descriptorAllocateInfo.pSetLayouts = &set_layout;
+    VkDescriptorSetAllocateInfo descriptorAllocateInfo = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+      .descriptorPool = descriptorPool,
+      .descriptorSetCount = 1,
+      .pSetLayouts = &set_layout
+    };
 
     vkAllocateDescriptorSets(renderer->device, &descriptorAllocateInfo, &descriptor_set);
   }
 
   void update_descriptor_sets() {
-    VkDescriptorBufferInfo descriptorBufferInfo = {};
-    descriptorBufferInfo.buffer = buffer;
-    descriptorBufferInfo.offset = 0;
-    descriptorBufferInfo.range = sizeof(struct ubo);
+    VkDescriptorBufferInfo descriptorBufferInfo = {
+      .buffer = buffer,
+      .offset = 0,
+      .range = sizeof(struct ubo)
+    };
 
     std::array<VkWriteDescriptorSet, 1> writeDescriptorSet = {};
     writeDescriptorSet[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -358,7 +366,8 @@ class XrCube : public vik::Application {
     writeDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     writeDescriptorSet[0].pBufferInfo = &descriptorBufferInfo;
 
-    vkUpdateDescriptorSets(renderer->device, 1, writeDescriptorSet.data(), 0, NULL);
+    vkUpdateDescriptorSets(renderer->device, 1,
+                           writeDescriptorSet.data(), 0, nullptr);
   }
 
   uint32_t getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties) {
@@ -477,11 +486,11 @@ class XrCube : public vik::Application {
     uint32_t mem_size = normals_offset + sizeof(vNormals);
 
 
-    VkBufferCreateInfo bufferInfo = {};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = mem_size;
-    bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-    bufferInfo.flags = 0;
+    VkBufferCreateInfo bufferInfo = {
+      .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+      .size = mem_size,
+      .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+    };
 
     vkCreateBuffer(renderer->device,
                    &bufferInfo,
@@ -491,15 +500,15 @@ class XrCube : public vik::Application {
     VkMemoryRequirements memReqs;
     vkGetBufferMemoryRequirements(renderer->device, buffer, &memReqs);
 
-    VkMemoryAllocateInfo allcoinfo = {};
-    allcoinfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allcoinfo.allocationSize = memReqs.size;
-    allcoinfo.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    VkMemoryAllocateInfo allcoinfo = {
+      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+      .allocationSize = memReqs.size,
+      .memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits,
+                                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+    };
 
-    VkResult r = vkAllocateMemory(renderer->device,
-                                   &allcoinfo,
-				    nullptr,
-				   &mem);
+    VkResult r = vkAllocateMemory(renderer->device, &allcoinfo, nullptr, &mem);
     vik_log_f_if(r != VK_SUCCESS, "vkAllocateMemory failed");
 
     r = vkMapMemory(renderer->device, mem, 0, allcoinfo.allocationSize, 0, &map);
@@ -549,13 +558,24 @@ class XrCube : public vik::Application {
     clearValues[0].color = { { 0.2f, 0.2f, 0.2f, 1.0f } };
     clearValues[1].depthStencil = { 1.0f, 0 };
 
-    VkRenderPassBeginInfo passBeginInfo = {};
-    passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    passBeginInfo.renderPass = renderer->render_pass;
-    passBeginInfo.framebuffer = frame_buffer;
-    passBeginInfo.renderArea = { { 0, 0 }, { renderer->width, renderer->height } };
-    passBeginInfo.clearValueCount = clearValues.size();
-    passBeginInfo.pClearValues = clearValues.data();
+    VkRenderPassBeginInfo passBeginInfo = {
+      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+      .renderPass = renderer->render_pass,
+      .framebuffer = frame_buffer,
+      .renderArea = {
+        .offset = {
+          .x = 0,
+          .y = 0
+        },
+        .extent = {
+          .width = renderer->width,
+          .height = renderer->height
+        }
+      },
+      .clearValueCount = clearValues.size(),
+      .pClearValues = clearValues.data(),
+    };
+
 
     vkCmdBeginRenderPass(cmd_buffer,
                          &passBeginInfo,
@@ -583,7 +603,7 @@ class XrCube : public vik::Application {
                             VK_PIPELINE_BIND_POINT_GRAPHICS,
                             pipeline_layout,
                             0, 1,
-                            &descriptor_set, 0, NULL);
+                            &descriptor_set, 0, nullptr);
 
     const VkViewport viewport = {
       .x = 0,
