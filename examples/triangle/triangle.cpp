@@ -105,10 +105,12 @@ class Triangle : public vik::Application {
   }
 
   void prepareSynchronizationPrimitives() {
-    VkFenceCreateInfo fenceCreateInfo = {};
-    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    // Create in signaled state so we don't wait on first render of each command buffer
-    fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    VkFenceCreateInfo fenceCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+      // Create in signaled state so we don't wait on first render of each command buffer
+      .flags = VK_FENCE_CREATE_SIGNALED_BIT
+    };
+
     waitFences.resize(renderer->cmd_buffers.size());
     for (auto& fence : waitFences)
       vik_log_check(vkCreateFence(renderer->device, &fenceCreateInfo, nullptr, &fence));
@@ -121,17 +123,18 @@ class Triangle : public vik::Application {
 
     vik_log_check(vkEndCommandBuffer(commandBuffer));
 
-    VkSubmitInfo submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &commandBuffer;
+    VkSubmitInfo submit_info = {
+      .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+      .commandBufferCount = 1,
+      .pCommandBuffers = &commandBuffer
+    };
 
-    VkFenceCreateInfo fenceCreateInfo = {};
-    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceCreateInfo.flags = 0;
+    VkFenceCreateInfo fenceCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
+    };
+
     VkFence fence;
     vik_log_check(vkCreateFence(renderer->device, &fenceCreateInfo, nullptr, &fence));
-
     vik_log_check(vkQueueSubmit(renderer->queue, 1, &submit_info, fence));
     vik_log_check(vkWaitForFences(renderer->device, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
 
@@ -140,24 +143,30 @@ class Triangle : public vik::Application {
   }
 
   void build_command_buffers() {
-    VkCommandBufferBeginInfo cmdBufInfo = {};
-    cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    cmdBufInfo.pNext = nullptr;
+    VkCommandBufferBeginInfo cmdBufInfo = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO
+    };
 
     VkClearValue clearValues[2];
     clearValues[0].color = { { 0.0f, 0.0f, 0.2f, 1.0f } };
     clearValues[1].depthStencil = { 1.0f, 0 };
 
-    VkRenderPassBeginInfo renderPassBeginInfo = {};
-    renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassBeginInfo.pNext = nullptr;
-    renderPassBeginInfo.renderPass = renderer->render_pass;
-    renderPassBeginInfo.renderArea.offset.x = 0;
-    renderPassBeginInfo.renderArea.offset.y = 0;
-    renderPassBeginInfo.renderArea.extent.width = renderer->width;
-    renderPassBeginInfo.renderArea.extent.height = renderer->height;
-    renderPassBeginInfo.clearValueCount = 2;
-    renderPassBeginInfo.pClearValues = clearValues;
+    VkRenderPassBeginInfo renderPassBeginInfo = {
+      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+      .renderPass = renderer->render_pass,
+      .renderArea = {
+        .offset = {
+          .x = 0,
+          .y = 0,
+        },
+        .extent = {
+          .width = renderer->width,
+          .height = renderer->height,
+        }
+      },
+      .clearValueCount = 2,
+      .pClearValues = clearValues
+    };
 
     vik_log_d("we will process %ld draw buffers", renderer->cmd_buffers.size());
 
@@ -166,20 +175,29 @@ class Triangle : public vik::Application {
 
       vik_log_check(vkBeginCommandBuffer(renderer->cmd_buffers[i], &cmdBufInfo));
 
-      vkCmdBeginRenderPass(renderer->cmd_buffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+      vkCmdBeginRenderPass(renderer->cmd_buffers[i], &renderPassBeginInfo,
+                           VK_SUBPASS_CONTENTS_INLINE);
 
-      VkViewport viewport = {};
-      viewport.height = (float) renderer->height;
-      viewport.width = (float) renderer->width;
-      viewport.minDepth = (float) 0.0f;
-      viewport.maxDepth = (float) 1.0f;
+      VkViewport viewport = {
+        .width = (float) renderer->width,
+        .height = (float) renderer->height,
+        .minDepth = (float) 0.0f,
+        .maxDepth = (float) 1.0f
+      };
+
       vkCmdSetViewport(renderer->cmd_buffers[i], 0, 1, &viewport);
 
-      VkRect2D scissor = {};
-      scissor.extent.width = renderer->width;
-      scissor.extent.height = renderer->height;
-      scissor.offset.x = 0;
-      scissor.offset.y = 0;
+      VkRect2D scissor = {
+        .offset = {
+          .x = 0,
+          .y = 0
+        },
+        .extent = {
+          .width = renderer->width,
+          .height = renderer->height,
+        }
+      };
+
       vkCmdSetScissor(renderer->cmd_buffers[i], 0, 1, &scissor);
 
       vkCmdBindDescriptorSets(renderer->cmd_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
@@ -228,8 +246,10 @@ class Triangle : public vik::Application {
     indices.count = static_cast<uint32_t>(indexBuffer.size());
     uint32_t indexBufferSize = indices.count * sizeof(uint32_t);
 
-    VkMemoryAllocateInfo memAlloc = {};
-    memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    VkMemoryAllocateInfo memAlloc = {
+      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO
+    };
+
     VkMemoryRequirements memReqs;
 
     void *data;
@@ -257,24 +277,32 @@ class Triangle : public vik::Application {
       } stagingBuffers;
 
       // Vertex buffer
-      VkBufferCreateInfo vertexBufferInfo = {};
-      vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-      vertexBufferInfo.size = vertexBufferSize;
-      // Buffer is used as the copy source
-      vertexBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+      VkBufferCreateInfo vertexBufferInfo = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = vertexBufferSize,
+        // Buffer is used as the copy source
+        .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT
+      };
+
       // Create a host-visible buffer to copy the vertex data to (staging buffer)
-      vik_log_check(vkCreateBuffer(renderer->device, &vertexBufferInfo, nullptr, &stagingBuffers.vertices.buffer));
-      vkGetBufferMemoryRequirements(renderer->device, stagingBuffers.vertices.buffer, &memReqs);
+      vik_log_check(vkCreateBuffer(renderer->device, &vertexBufferInfo,
+                                   nullptr, &stagingBuffers.vertices.buffer));
+      vkGetBufferMemoryRequirements(renderer->device,
+                                    stagingBuffers.vertices.buffer, &memReqs);
       memAlloc.allocationSize = memReqs.size;
       // Request a host visible memory type that can be used to copy our data do
       // Also request it to be coherent, so that writes are visible to the GPU right after unmapping the buffer
       memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-      vik_log_check(vkAllocateMemory(renderer->device, &memAlloc, nullptr, &stagingBuffers.vertices.memory));
+      vik_log_check(vkAllocateMemory(renderer->device, &memAlloc, nullptr,
+                                     &stagingBuffers.vertices.memory));
       // Map and copy
-      vik_log_check(vkMapMemory(renderer->device, stagingBuffers.vertices.memory, 0, memAlloc.allocationSize, 0, &data));
+      vik_log_check(vkMapMemory(renderer->device, stagingBuffers.vertices.memory,
+                                0, memAlloc.allocationSize, 0, &data));
       memcpy(data, vertexBuffer.data(), vertexBufferSize);
       vkUnmapMemory(renderer->device, stagingBuffers.vertices.memory);
-      vik_log_check(vkBindBufferMemory(renderer->device, stagingBuffers.vertices.buffer, stagingBuffers.vertices.memory, 0));
+      vik_log_check(vkBindBufferMemory(renderer->device,
+                                       stagingBuffers.vertices.buffer,
+                                       stagingBuffers.vertices.memory, 0));
 
       // Create a device local buffer to which the (host local) vertex data will be copied and which will be used for rendering
       vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
@@ -286,10 +314,12 @@ class Triangle : public vik::Application {
       vik_log_check(vkBindBufferMemory(renderer->device, vertices.buffer, vertices.memory, 0));
 
       // Index buffer
-      VkBufferCreateInfo indexbufferInfo = {};
-      indexbufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-      indexbufferInfo.size = indexBufferSize;
-      indexbufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+      VkBufferCreateInfo indexbufferInfo = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = indexBufferSize,
+        .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT
+      };
+
       // Copy index data to a buffer visible to the host (staging buffer)
       vik_log_check(vkCreateBuffer(renderer->device, &indexbufferInfo, nullptr, &stagingBuffers.indices.buffer));
       vkGetBufferMemoryRequirements(renderer->device, stagingBuffers.indices.buffer, &memReqs);
@@ -317,10 +347,10 @@ class Triangle : public vik::Application {
       vik_log_check(vkBeginCommandBuffer(copyCmd, &cmdBufInfo));
 
       // Put buffer region copies into command buffer
-      VkBufferCopy copyRegion = {};
-
-      // Vertex buffer
-      copyRegion.size = vertexBufferSize;
+      VkBufferCopy copyRegion = {
+        // Vertex buffer
+        .size = vertexBufferSize
+      };
       vkCmdCopyBuffer(copyCmd, stagingBuffers.vertices.buffer, vertices.buffer, 1, &copyRegion);
       // Index buffer
       copyRegion.size = indexBufferSize;
@@ -340,13 +370,15 @@ class Triangle : public vik::Application {
       // Create host-visible buffers only and use these for rendering. This is not advised and will usually result in lower rendering performance
 
       // Vertex buffer
-      VkBufferCreateInfo vertexBufferInfo = {};
-      vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-      vertexBufferInfo.size = vertexBufferSize;
-      vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+      VkBufferCreateInfo vertexBufferInfo = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = vertexBufferSize,
+        .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+      };
 
       // Copy vertex data to a buffer visible to the host
-      vik_log_check(vkCreateBuffer(renderer->device, &vertexBufferInfo, nullptr, &vertices.buffer));
+      vik_log_check(vkCreateBuffer(renderer->device, &vertexBufferInfo,
+                                   nullptr, &vertices.buffer));
       vkGetBufferMemoryRequirements(renderer->device, vertices.buffer, &memReqs);
       memAlloc.allocationSize = memReqs.size;
       // VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT is host visible memory, and VK_MEMORY_PROPERTY_HOST_COHERENT_BIT makes sure writes are directly visible
@@ -358,10 +390,11 @@ class Triangle : public vik::Application {
       vik_log_check(vkBindBufferMemory(renderer->device, vertices.buffer, vertices.memory, 0));
 
       // Index buffer
-      VkBufferCreateInfo indexbufferInfo = {};
-      indexbufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-      indexbufferInfo.size = indexBufferSize;
-      indexbufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+      VkBufferCreateInfo indexbufferInfo = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = indexBufferSize,
+        .usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+      };
 
       // Copy index data to a buffer visible to the host
       vik_log_check(vkCreateBuffer(renderer->device, &indexbufferInfo, nullptr, &indices.buffer));
@@ -381,123 +414,140 @@ class Triangle : public vik::Application {
     typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     typeCounts[0].descriptorCount = 1;
 
-    VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
-    descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    descriptorPoolInfo.pNext = nullptr;
-    descriptorPoolInfo.poolSizeCount = 1;
-    descriptorPoolInfo.pPoolSizes = typeCounts;
-    descriptorPoolInfo.maxSets = 1;
+    VkDescriptorPoolCreateInfo descriptorPoolInfo = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+      .maxSets = 1,
+      .poolSizeCount = 1,
+      .pPoolSizes = typeCounts
+    };
 
-    vik_log_check(vkCreateDescriptorPool(renderer->device, &descriptorPoolInfo, nullptr, &renderer->descriptor_pool));
+    vik_log_check(vkCreateDescriptorPool(renderer->device, &descriptorPoolInfo,
+                                         nullptr, &renderer->descriptor_pool));
   }
 
   void setupDescriptorSetLayout() {
-    VkDescriptorSetLayoutBinding layoutBinding = {};
-    layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    layoutBinding.descriptorCount = 1;
-    layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    layoutBinding.pImmutableSamplers = nullptr;
+    VkDescriptorSetLayoutBinding layoutBinding = {
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .descriptorCount = 1,
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT
+    };
 
-    VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
-    descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    descriptorLayout.pNext = nullptr;
-    descriptorLayout.bindingCount = 1;
-    descriptorLayout.pBindings = &layoutBinding;
+    VkDescriptorSetLayoutCreateInfo descriptorLayout = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+      .bindingCount = 1,
+      .pBindings = &layoutBinding
+    };
 
-    vik_log_check(vkCreateDescriptorSetLayout(renderer->device, &descriptorLayout, nullptr, &descriptorSetLayout));
+    vik_log_check(vkCreateDescriptorSetLayout(renderer->device,
+                                              &descriptorLayout, nullptr,
+                                              &descriptorSetLayout));
 
-    VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
-    pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pPipelineLayoutCreateInfo.pNext = nullptr;
-    pPipelineLayoutCreateInfo.setLayoutCount = 1;
-    pPipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
+    VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+      .setLayoutCount = 1,
+      .pSetLayouts = &descriptorSetLayout
+    };
 
-    vik_log_check(vkCreatePipelineLayout(renderer->device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+    vik_log_check(vkCreatePipelineLayout(renderer->device,
+                                         &pPipelineLayoutCreateInfo, nullptr,
+                                         &pipelineLayout));
   }
 
   void setupDescriptorSet() {
-    VkDescriptorSetAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = renderer->descriptor_pool;
-    allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = &descriptorSetLayout;
+    VkDescriptorSetAllocateInfo allocInfo = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+      .descriptorPool = renderer->descriptor_pool,
+      .descriptorSetCount = 1,
+      .pSetLayouts = &descriptorSetLayout
+    };
 
-    vik_log_check(vkAllocateDescriptorSets(renderer->device, &allocInfo, &descriptorSet));
+    vik_log_check(vkAllocateDescriptorSets(renderer->device, &allocInfo,
+                                           &descriptorSet));
 
-    VkWriteDescriptorSet writeDescriptorSet = {};
+    VkWriteDescriptorSet writeDescriptorSet = {
+      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+      .dstSet = descriptorSet,
+      .dstBinding = 0,
+      .descriptorCount = 1,
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .pBufferInfo = &uniformBufferVS.descriptor
+    };
 
-    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writeDescriptorSet.dstSet = descriptorSet;
-    writeDescriptorSet.descriptorCount = 1;
-    writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    writeDescriptorSet.pBufferInfo = &uniformBufferVS.descriptor;
-    writeDescriptorSet.dstBinding = 0;
-
-    vkUpdateDescriptorSets(renderer->device, 1, &writeDescriptorSet, 0, nullptr);
+    vkUpdateDescriptorSets(renderer->device, 1,
+                           &writeDescriptorSet, 0, nullptr);
   }
 
   void preparePipelines() {
-    VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
-    pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineCreateInfo.layout = pipelineLayout;
-    pipelineCreateInfo.renderPass = renderer->render_pass;
+    VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+      .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+    };
 
-    VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
-    inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-
-    VkPipelineRasterizationStateCreateInfo rasterizationState = {};
-    rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-    rasterizationState.cullMode = VK_CULL_MODE_NONE;
-    rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-    rasterizationState.depthClampEnable = VK_FALSE;
-    rasterizationState.rasterizerDiscardEnable = VK_FALSE;
-    rasterizationState.depthBiasEnable = VK_FALSE;
-    rasterizationState.lineWidth = 1.0f;
+    VkPipelineRasterizationStateCreateInfo rasterizationState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+      .depthClampEnable = VK_FALSE,
+      .rasterizerDiscardEnable = VK_FALSE,
+      .polygonMode = VK_POLYGON_MODE_FILL,
+      .cullMode = VK_CULL_MODE_NONE,
+      .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
+      .depthBiasEnable = VK_FALSE,
+      .lineWidth = 1.0f
+    };
 
     VkPipelineColorBlendAttachmentState blendAttachmentState[1] = {};
     blendAttachmentState[0].colorWriteMask = 0xf;
     blendAttachmentState[0].blendEnable = VK_FALSE;
-    VkPipelineColorBlendStateCreateInfo colorBlendState = {};
-    colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    colorBlendState.attachmentCount = 1;
-    colorBlendState.pAttachments = blendAttachmentState;
+    VkPipelineColorBlendStateCreateInfo colorBlendState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+      .attachmentCount = 1,
+      .pAttachments = blendAttachmentState
+    };
 
-    VkPipelineViewportStateCreateInfo viewportState = {};
-    viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewportState.viewportCount = 1;
-    viewportState.scissorCount = 1;
+    VkPipelineViewportStateCreateInfo viewportState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+      .viewportCount = 1,
+      .scissorCount = 1
+    };
 
     std::vector<VkDynamicState> dynamicStateEnables;
     dynamicStateEnables.push_back(VK_DYNAMIC_STATE_VIEWPORT);
     dynamicStateEnables.push_back(VK_DYNAMIC_STATE_SCISSOR);
-    VkPipelineDynamicStateCreateInfo dynamicState = {};
-    dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicState.pDynamicStates = dynamicStateEnables.data();
-    dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
 
-    VkPipelineDepthStencilStateCreateInfo depthStencilState = {};
-    depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencilState.depthTestEnable = VK_TRUE;
-    depthStencilState.depthWriteEnable = VK_TRUE;
-    depthStencilState.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-    depthStencilState.depthBoundsTestEnable = VK_FALSE;
-    depthStencilState.back.failOp = VK_STENCIL_OP_KEEP;
-    depthStencilState.back.passOp = VK_STENCIL_OP_KEEP;
-    depthStencilState.back.compareOp = VK_COMPARE_OP_ALWAYS;
-    depthStencilState.stencilTestEnable = VK_FALSE;
-    depthStencilState.front = depthStencilState.back;
+    VkPipelineDynamicStateCreateInfo dynamicState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+      .dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size()),
+      .pDynamicStates = dynamicStateEnables.data()
+    };
 
-    VkPipelineMultisampleStateCreateInfo multisampleState = {};
-    multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-    multisampleState.pSampleMask = nullptr;
+    VkPipelineDepthStencilStateCreateInfo depthStencilState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+      .depthTestEnable = VK_TRUE,
+      .depthWriteEnable = VK_TRUE,
+      .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
+      .depthBoundsTestEnable = VK_FALSE,
+      .stencilTestEnable = VK_FALSE,
+      .front = {
+        .failOp = VK_STENCIL_OP_KEEP,
+        .passOp = VK_STENCIL_OP_KEEP,
+        .compareOp = VK_COMPARE_OP_ALWAYS
+      },
+      .back = {
+        .failOp = VK_STENCIL_OP_KEEP,
+        .passOp = VK_STENCIL_OP_KEEP,
+        .compareOp = VK_COMPARE_OP_ALWAYS
+      },
+    };
 
-    VkVertexInputBindingDescription vertexInputBinding = {};
-    vertexInputBinding.binding = 0;
-    vertexInputBinding.stride = sizeof(Vertex);
-    vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    VkPipelineMultisampleStateCreateInfo multisampleState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+      .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT
+    };
+
+    VkVertexInputBindingDescription vertexInputBinding = {
+      .binding = 0,
+      .stride = sizeof(Vertex),
+      .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+    };
 
     std::array<VkVertexInputAttributeDescription, 2> vertexInputAttributs;
     vertexInputAttributs[0].binding = 0;
@@ -509,12 +559,13 @@ class Triangle : public vik::Application {
     vertexInputAttributs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
     vertexInputAttributs[1].offset = offsetof(Vertex, color);
 
-    VkPipelineVertexInputStateCreateInfo vertexInputState = {};
-    vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputState.vertexBindingDescriptionCount = 1;
-    vertexInputState.pVertexBindingDescriptions = &vertexInputBinding;
-    vertexInputState.vertexAttributeDescriptionCount = 2;
-    vertexInputState.pVertexAttributeDescriptions = vertexInputAttributs.data();
+    VkPipelineVertexInputStateCreateInfo vertexInputState = {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+      .vertexBindingDescriptionCount = 1,
+      .pVertexBindingDescriptions = &vertexInputBinding,
+      .vertexAttributeDescriptionCount = 2,
+      .pVertexAttributeDescriptions = vertexInputAttributs.data()
+    };
 
     std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages{};
     shaderStages[0] = vik::Shader::load(
@@ -524,20 +575,26 @@ class Triangle : public vik::Application {
           renderer->device,
           "triangle/triangle.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
-    pipelineCreateInfo.pStages = shaderStages.data();
+    VkGraphicsPipelineCreateInfo pipelineCreateInfo = {
+      .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+      .stageCount = static_cast<uint32_t>(shaderStages.size()),
+      .pStages = shaderStages.data(),
+      .pVertexInputState = &vertexInputState,
+      .pInputAssemblyState = &inputAssemblyState,
+      .pViewportState = &viewportState,
+      .pRasterizationState = &rasterizationState,
+      .pMultisampleState = &multisampleState,
+      .pDepthStencilState = &depthStencilState,
+      .pColorBlendState = &colorBlendState,
+      .pDynamicState = &dynamicState,
+      .layout = pipelineLayout,
+      .renderPass = renderer->render_pass
+    };
 
-    pipelineCreateInfo.pVertexInputState = &vertexInputState;
-    pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
-    pipelineCreateInfo.pRasterizationState = &rasterizationState;
-    pipelineCreateInfo.pColorBlendState = &colorBlendState;
-    pipelineCreateInfo.pMultisampleState = &multisampleState;
-    pipelineCreateInfo.pViewportState = &viewportState;
-    pipelineCreateInfo.pDepthStencilState = &depthStencilState;
-    pipelineCreateInfo.renderPass = renderer->render_pass;
-    pipelineCreateInfo.pDynamicState = &dynamicState;
-
-    vik_log_check(vkCreateGraphicsPipelines(renderer->device, renderer->pipeline_cache, 1, &pipelineCreateInfo, nullptr, &pipeline));
+    vik_log_check(vkCreateGraphicsPipelines(renderer->device,
+                                            renderer->pipeline_cache, 1,
+                                            &pipelineCreateInfo, nullptr,
+                                            &pipeline));
 
     vkDestroyShaderModule(renderer->device, shaderStages[0].module, nullptr);
     vkDestroyShaderModule(renderer->device, shaderStages[1].module, nullptr);
@@ -546,23 +603,27 @@ class Triangle : public vik::Application {
   void prepareUniformBuffers() {
     VkMemoryRequirements memReqs;
 
-    VkBufferCreateInfo bufferInfo = {};
-    VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.pNext = nullptr;
-    allocInfo.allocationSize = 0;
-    allocInfo.memoryTypeIndex = 0;
+    VkBufferCreateInfo bufferInfo = {
+      .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+      .size = sizeof(uboVS),
+      .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
+    };
 
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof(uboVS);
-    bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    vik_log_check(vkCreateBuffer(renderer->device, &bufferInfo,
+                                 nullptr, &uniformBufferVS.buffer));
+    vkGetBufferMemoryRequirements(renderer->device, uniformBufferVS.buffer,
+                                  &memReqs);
 
-    vik_log_check(vkCreateBuffer(renderer->device, &bufferInfo, nullptr, &uniformBufferVS.buffer));
-    vkGetBufferMemoryRequirements(renderer->device, uniformBufferVS.buffer, &memReqs);
-    allocInfo.allocationSize = memReqs.size;
-    allocInfo.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vik_log_check(vkAllocateMemory(renderer->device, &allocInfo, nullptr, &(uniformBufferVS.memory)));
-    vik_log_check(vkBindBufferMemory(renderer->device, uniformBufferVS.buffer, uniformBufferVS.memory, 0));
+    VkMemoryAllocateInfo allocInfo = {
+      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+      .allocationSize = memReqs.size,
+      .memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+    };
+
+    vik_log_check(vkAllocateMemory(renderer->device, &allocInfo,
+                                   nullptr, &(uniformBufferVS.memory)));
+    vik_log_check(vkBindBufferMemory(renderer->device, uniformBufferVS.buffer,
+                                     uniformBufferVS.memory, 0));
 
     uniformBufferVS.descriptor.buffer = uniformBufferVS.buffer;
     uniformBufferVS.descriptor.offset = 0;
