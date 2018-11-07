@@ -271,7 +271,8 @@ class Device {
       deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
     }
 
-    VkResult result = vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &logicalDevice);
+    VkResult result = vkCreateDevice(physicalDevice, &deviceCreateInfo,
+                                     nullptr, &logicalDevice);
 
     if (result == VK_SUCCESS)
       // Create a default command pool for graphics command buffers
@@ -329,15 +330,13 @@ class Device {
     return VK_SUCCESS;
   }
 
-  void create_and_map(Buffer *buffer,
-                     VkDeviceSize size) {
+  void create_and_map(Buffer *buffer, VkDeviceSize size) {
     vik_log_check(
           createBuffer(
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
             | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            buffer,
-            size));
+            buffer, size));
 
     // Map persistent
     vik_log_check(buffer->map());
@@ -536,8 +535,10 @@ class Device {
       fpGetPhysicalDeviceFeatures2KHR(physicalDevice, &device_features);
 
       vik_log_i("multiview %d", multi_view_features.multiview);
-      vik_log_i("multiviewGeometryShader %d", multi_view_features.multiviewGeometryShader);
-      vik_log_i("multiviewTessellationShader %d", multi_view_features.multiviewTessellationShader);
+      vik_log_i("multiviewGeometryShader %d",
+                multi_view_features.multiviewGeometryShader);
+      vik_log_i("multiviewTessellationShader %d",
+                multi_view_features.multiviewTessellationShader);
     } else {
       vik_log_w("vkGetPhysicalDeviceFeatures2KHR extension not found.");
     }
@@ -551,8 +552,10 @@ class Device {
       device_props.pNext = &multi_view_props;
       fpGetPhysicalDeviceProperties2KHR(physicalDevice, &device_props);
 
-      vik_log_i("maxMultiviewViewCount %d", multi_view_props.maxMultiviewViewCount);
-      vik_log_i("maxMultiviewInstanceIndex %d", multi_view_props.maxMultiviewInstanceIndex);
+      vik_log_i("maxMultiviewViewCount %d",
+                multi_view_props.maxMultiviewViewCount);
+      vik_log_i("maxMultiviewInstanceIndex %d",
+                multi_view_props.maxMultiviewInstanceIndex);
 
       VkPhysicalDeviceProperties2KHR device_props2{};
       VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX multi_view_props2{};
@@ -561,7 +564,8 @@ class Device {
       device_props2.pNext = &multi_view_props2;
       fpGetPhysicalDeviceProperties2KHR(physicalDevice, &device_props2);
 
-      vik_log_i("perViewPositionAllComponents %d", multi_view_props2.perViewPositionAllComponents);
+      vik_log_i("perViewPositionAllComponents %d",
+                multi_view_props2.perViewPositionAllComponents);
     } else {
       vik_log_w("vkGetPhysicalDeviceProperties2KHR extension not found.");
     }

@@ -721,7 +721,6 @@ class TextureCubeMap : public Texture {
                  "File not found: Could not load texture from %s",
                  filename.c_str());
 
-    // TODO(lubosz): clang freezes here.
     gli::texture_cube texCube(gli::load(filename));
 
     assert(!texCube.empty());
