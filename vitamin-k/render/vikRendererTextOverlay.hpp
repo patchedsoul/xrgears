@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "vikRenderer.hpp"
+#include "vikTextOverlay.hpp"
 
 namespace vik {
 

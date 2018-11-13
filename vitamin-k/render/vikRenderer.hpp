@@ -24,7 +24,6 @@
 #include "vikDevice.hpp"
 #include "vikSwapChainVK.hpp"
 #include "vikTimer.hpp"
-#include "vikTextOverlay.hpp"
 #include "vikShader.hpp"
 
 #include "../system/vikSettings.hpp"
