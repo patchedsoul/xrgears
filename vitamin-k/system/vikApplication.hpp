@@ -102,7 +102,7 @@ class Application {
       camera->set_view_updated_cb([this]() { view_updated = true; });
   }
 
-  ~Application()  {
+  virtual ~Application()  {
     if (camera)
       delete camera;
     if (renderer)

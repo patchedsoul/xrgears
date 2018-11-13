@@ -34,6 +34,7 @@ add_cxxflag("-Wsuggest-attribute=const")
 add_cxxflag("-Wundef")
 add_cxxflag("-Wuninitialized")
 add_cxxflag("-Wunreachable-code")
+add_cxxflag("-Wnon-virtual-dtor")
 
 # not fixed
 #add_cxxflag("-Wconversion")

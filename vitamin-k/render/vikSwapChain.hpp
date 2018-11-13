@@ -42,7 +42,7 @@ class SwapChain {
   std::function<void(uint32_t index)> render_cb;
 
   SwapChain() {}
-  ~SwapChain() {}
+  virtual ~SwapChain() {}
 
   virtual void cleanup() = 0;
 
