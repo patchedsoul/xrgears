@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <csignal>
 
 #include <vulkan/vulkan.h>
 
@@ -882,11 +883,25 @@ class XRGears : public vik::Application {
     }
     */
   }
+  void exit() {
+    quit = true;
+  }
 };
 
+static XRGears *app;
+static void sigint_cb(int signum) {
+  (void) signum;
+  app->exit();
+}
+
 int main(int argc, char *argv[]) {
-  XRGears app(argc, argv);
-  app.init();
-  app.loop();
+  app = new XRGears(argc, argv);
+  app->init();
+
+  signal(SIGINT, sigint_cb);
+
+  app->loop();
+  delete app;
+
   return 0;
 }
