@@ -26,14 +26,12 @@ class Window {
 
   std::function<void()> render_frame_cb;
 
-  std::function<void(double x, double y)>
-    pointer_motion_cb = [](double x, double y) {};
+  std::function<void(double x, double y)> pointer_motion_cb = {};
   std::function<void(Input::MouseButton button, bool state)>
-    pointer_button_cb = [](Input::MouseButton button, bool state) {};
+    pointer_button_cb = {};
   std::function<void(Input::MouseScrollAxis axis, double value)>
-    pointer_axis_cb = [](Input::MouseScrollAxis axis, double value) {};
-  std::function<void(Input::Key key, bool state)>
-    keyboard_key_cb = [](Input::Key key, bool state) {};
+    pointer_axis_cb = {};
+  std::function<void(Input::Key key, bool state)> keyboard_key_cb = {};
 
   std::function<void(uint32_t width, uint32_t height)> dimension_cb;
   std::function<void(uint32_t width, uint32_t height)> size_only_cb;
