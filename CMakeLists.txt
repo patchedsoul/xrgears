@@ -4,47 +4,60 @@ project(xrgears)
 # Yeah it's gross but it's to find the assets. You're welcome to make it better.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin/")
 
-function(add_cxxflag FLAG)
-    string(APPEND CMAKE_CXX_FLAGS " ${FLAG}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" PARENT_SCOPE)
-endfunction()
-
 add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
 add_definitions(-DVK_USE_PLATFORM_XCB_KHR)
 
-# warnings
-# add_cxxflag("-Werror")
+# Warnings
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  add_compile_options(-Weverything)
 
-add_cxxflag("-Wall")
-add_cxxflag("-Wcast-qual")
-add_cxxflag("-Wformat=2")
-add_cxxflag("-Winline")
-add_cxxflag("-Wlogical-op")
-add_cxxflag("-Wmissing-declarations")
-add_cxxflag("-Wno-cast-qual")
-add_cxxflag("-Wno-delete-non-virtual-dtor")
-add_cxxflag("-Wno-sign-compare")
-add_cxxflag("-Wno-switch")
-add_cxxflag("-Wno-unused-parameter")
-add_cxxflag("-Woverflow")
-add_cxxflag("-Woverloaded-virtual")
-add_cxxflag("-Wpointer-arith")
-add_cxxflag("-Wredundant-decls")
-add_cxxflag("-Wsuggest-attribute=const")
-add_cxxflag("-Wundef")
-add_cxxflag("-Wuninitialized")
-add_cxxflag("-Wunreachable-code")
-add_cxxflag("-Wnon-virtual-dtor")
+  # disable warnings
+  add_compile_options(
+    # ignore these
+    -Wno-c++98-compat
+    -Wno-c++98-compat-pedantic
+    -Wno-weak-vtables
+    -Wno-c99-extensions
 
-# not fixed
-#add_cxxflag("-Wconversion")
-#add_cxxflag("-Weffc++")
-#add_cxxflag("-Wextra")
-#add_cxxflag("-Wold-style-cast")
-#add_cxxflag("-Wsign-conversion")
+    -Wno-unused-parameter
+    -Wno-old-style-cast
+    -Wno-padded
 
-# gcc coverage stats
-#add_cxxflag("--coverage")
+    # probably we want to fix these
+    -Wno-sign-conversion
+    -Wno-switch-enum
+    -Wno-double-promotion
+    -Wno-zero-as-null-pointer-constant
+    -Wno-documentation
+    -Wno-conversion
+    -Wno-shadow-field-in-constructor
+    -Wno-shadow
+    -Wno-shadow-uncaptured-local
+    -Wno-cast-align
+    -Wno-pedantic
+    -Wno-format-nonliteral
+    -Wno-unused-macros
+    -Wno-shadow-field
+    -Wno-sign-compare
+    -Wno-disabled-macro-expansion
+    -Wno-covered-switch-default
+    -Wno-cast-qual
+    -Wno-documentation-unknown-command
+    -Wno-missing-field-initializers
+    -Wno-reserved-id-macro
+    -Wno-missing-variable-declarations
+  )
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  add_compile_options(
+    -Wall
+    -Wextra
+    # We want to ignore these
+    -Wno-missing-field-initializers
+    -Wno-unused-parameter
+    # we want to fix these
+    -Wno-sign-compare
+  )
+endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(PkgConfig REQUIRED)
