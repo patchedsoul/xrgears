@@ -71,12 +71,17 @@ pkg_get_variable(WAYLAND_SCANNER wayland-scanner wayland_scanner)
 message("WAYLAND_SCANNER found: ${WAYLAND_SCANNER}")
 message("WAYLAND_PROTOCOLS_DATADIR: ${WAYLAND_PROTOCOLS_DATADIR}")
 
+set(VITAMIN_K_INCLUDES
+  ${CMAKE_CURRENT_SOURCE_DIR}/wayland-protocols
+  ${CMAKE_CURRENT_SOURCE_DIR}/fonts
+  ${OPENHMD_INCLUDE_DIRS}
+  ${DRM_INCLUDE_DIRS}
+)
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/vitamin-k
-    ${CMAKE_CURRENT_SOURCE_DIR}/wayland-protocols
-    ${CMAKE_CURRENT_SOURCE_DIR}/fonts
-    ${OPENHMD_INCLUDE_DIRS}
-    ${DRM_INCLUDE_DIRS})
+    ${VITAMIN_K_INCLUDES}
+)
 
 include(CheckIncludeFileCXX)
 find_file(VULKAN_INTEL_INCLUDE_FILE
@@ -163,8 +168,14 @@ add_library(wayland-protocols ${WAYLAND_PROTOCOLS_SRC})
 target_include_directories(wayland-protocols PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
 
 file(GLOB_RECURSE VITAMINK_SRC vitamin-k/*.hpp)
-add_library(vitamin-k ${VITAMINK_SRC})
-set_target_properties(vitamin-k  PROPERTIES LINKER_LANGUAGE CXX)
+
+add_library(vitamin-k INTERFACE)
+target_compile_definitions(vitamin-k
+    INTERFACE LIBRARY_HEADER_ONLY
+)
+target_sources(vitamin-k INTERFACE ${VITAMINK_SRC})
+target_include_directories(vitamin-k INTERFACE ${VITAMIN_K_INCLUDES})
+
 set(LINT_SOURCES ${VITAMINK_SRC})
 
 set(EXAMPLE_LIBS
