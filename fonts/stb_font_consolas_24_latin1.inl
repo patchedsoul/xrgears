@@ -734,4 +734,3 @@ static void stb_font_consolas_24_latin1(stb_fontchar font[STB_FONT_consolas_24_l
 #define STB_SOMEFONT_NUM_CHARS           STB_FONT_consolas_24_latin1_NUM_CHARS
 #define STB_SOMEFONT_LINE_SPACING        STB_FONT_consolas_24_latin1_LINE_SPACING
 #endif
-

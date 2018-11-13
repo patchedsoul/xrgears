@@ -304,7 +304,7 @@ class WindowWayland : public Window {
   }
 
   Display* get_display_from_output(wl_output* output) {
-    for (int i = 0; i < displays.size(); i++) {
+    for (int i = 0; i < (int) displays.size(); i++) {
       if (displays[i].output == output)
         return &displays[i];
     }
@@ -359,7 +359,7 @@ class WindowWayland : public Window {
 
   void validate_display() {
     Display *d;
-    if (settings->display > displays.size()) {
+    if (settings->display > (int) displays.size()) {
       vik_log_e("Requested display %d, but only %d displays are available.",
                 settings->display, displays.size());
 
@@ -374,7 +374,7 @@ class WindowWayland : public Window {
   void validate_mode() {
     Display* d = current_display();
 
-    if (settings->mode > d->modes.size()) {
+    if (settings->mode > (int) d->modes.size()) {
       vik_log_e("Requested mode %d, but only %d modes"
                 " are available on display %d.",
                 settings->mode,

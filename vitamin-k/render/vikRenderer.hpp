@@ -351,7 +351,7 @@ class Renderer {
     // Select physical device to be used for the Vulkan example
     // Defaults to the first device unless specified by command line
     uint32_t selected_device = 0;
-    if (settings->gpu > gpu_count - 1) {
+    if (settings->gpu > (int) gpu_count - 1) {
       vik_log_f("Selected device index %d is out of range,"
                 " reverting to device 0"
                 " (use --list-gpus to show available Vulkan devices)",

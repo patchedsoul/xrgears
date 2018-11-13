@@ -24,7 +24,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     -Wno-padded
 
     # probably we want to fix these
-    -Wno-sign-conversion
     -Wno-switch-enum
     -Wno-double-promotion
     -Wno-zero-as-null-pointer-constant
@@ -38,7 +37,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     -Wno-format-nonliteral
     -Wno-unused-macros
     -Wno-shadow-field
-    -Wno-sign-compare
     -Wno-disabled-macro-expansion
     -Wno-covered-switch-default
     -Wno-cast-qual
@@ -54,8 +52,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # We want to ignore these
     -Wno-missing-field-initializers
     -Wno-unused-parameter
-    # we want to fix these
-    -Wno-sign-compare
   )
 endif()
 
