@@ -105,7 +105,7 @@ class XRGears : public vik::Application {
       enable_distortion = false;
   }
 
-  ~XRGears() {
+  virtual ~XRGears() {
     if (offscreen_pass)
       delete offscreen_pass;
 
