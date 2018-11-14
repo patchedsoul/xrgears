@@ -359,6 +359,10 @@ class WindowWayland : public Window {
 
   void validate_display() {
     Display *d;
+
+    if (settings->display < 0)
+      settings->display = 0;
+
     if (settings->display > (int) displays.size()) {
       vik_log_e("Requested display %d, but only %d displays are available.",
                 settings->display, displays.size());
@@ -373,6 +377,9 @@ class WindowWayland : public Window {
 
   void validate_mode() {
     Display* d = current_display();
+
+    if (settings->mode < 0)
+      settings->mode = 0;
 
     if (settings->mode > (int) d->modes.size()) {
       vik_log_e("Requested mode %d, but only %d modes"
