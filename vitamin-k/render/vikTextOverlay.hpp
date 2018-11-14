@@ -395,7 +395,7 @@ class TextOverlay {
     VkDescriptorImageInfo texDescriptor = {
       .sampler = sampler,
       .imageView = view,
-      .imageLayout = VK_IMAGE_LAYOUT_GENERAL
+      .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     };
 
     std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
