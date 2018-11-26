@@ -87,6 +87,12 @@ class WindowDirectMode : public Window {
       vik_log_w("Selecting '%s' instead.", d->name.c_str());
     }
 
+    if(settings->display<0){
+    	settings->display=0;
+        VikDisplay *d = current_display();
+        vik_log_w("Selecting '%s' first display.", d->name.c_str());
+    }
+
     VikDisplay *d = current_display();
     settings->size.first = d->primary_mode.width;
     settings->size.second = d->primary_mode.height;
@@ -145,12 +151,13 @@ class WindowDirectMode : public Window {
 
   void init_swap_chain(uint32_t width, uint32_t height) {
     VikDisplay *d = current_display();
+/*
     vik_log_i("Will use display: %s %dx%d@%.2f",
               d->name.c_str(),
               d->primary_mode.width, d->primary_mode.height,
               (double) d->primary_mode.dot_clock /
               (d->primary_mode.htotal * d->primary_mode.vtotal));
-
+*/
     VkDisplayKHR display = get_xlib_randr_output(d->output);
 
     aquire_xlib_display(display);
