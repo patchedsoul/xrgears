@@ -31,6 +31,7 @@ class Settings {
     WAYLAND_XDG,
     WAYLAND_SHELL,
     DIRECT_MODE,
+    DIRECT_WAYLAND,
     INVALID
   };
 
@@ -268,6 +269,8 @@ class Settings {
       return WAYLAND_SHELL;
     else if (streq(s, "direct"))
       return DIRECT_MODE;
+    else if (streq(s, "direct-wayland"))
+      return DIRECT_WAYLAND;
     else
       return INVALID;
   }

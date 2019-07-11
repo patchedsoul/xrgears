@@ -467,8 +467,9 @@ class Renderer {
     if (count > 0) {
       std::vector<VkExtensionProperties> extensions(count);
       if (vkEnumerateInstanceExtensionProperties(nullptr, &count, &extensions.front()) == VK_SUCCESS)
-        for (auto ext : extensions)
+        for (auto ext : extensions) {
           supported_extensions.push_back(ext.extensionName);
+        }
     }
   }
 

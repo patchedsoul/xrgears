@@ -31,6 +31,7 @@
 #endif
 
 #include "../window/vikWindowDirectMode.hpp"
+#include "../window/vikWindowDirectWayland.hpp"
 
 #include "../render/vikTools.hpp"
 #include "../scene/vikCamera.hpp"
@@ -176,6 +177,9 @@ class Application {
         return set_and_init_window();
       case Settings::DIRECT_MODE:
         window = new WindowDirectMode(&settings);
+        return set_and_init_window();
+      case Settings::DIRECT_WAYLAND:
+        window = new WindowDirectWayland(&settings);
         return set_and_init_window();
       default:
         vik_log_f("Usupported Window Type %d", settings.window_type);

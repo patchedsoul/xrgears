@@ -145,33 +145,46 @@ endforeach()
 set(WAYLAND_PROTOCOLS_DIR "${CMAKE_CURRENT_BINARY_DIR}/wayland-protocols/")
 file(MAKE_DIRECTORY "${WAYLAND_PROTOCOLS_DIR}")
 
-set(PROTOCOL xdg-shell-unstable-v6)
-set(PROTOCOL_XML
-    "${WAYLAND_PROTOCOLS_DATADIR}/unstable/xdg-shell/${PROTOCOL}.xml")
+set(PROTOCOLS)
+set(PROTOCOLS_XML)
+list(APPEND PROTOCOLS xdg-shell-unstable-v6)
+list(APPEND PROTOCOLS_XML
+    "${WAYLAND_PROTOCOLS_DATADIR}/unstable/xdg-shell/xdg-shell-unstable-v6.xml")
+
+list(APPEND PROTOCOLS drm-lease-unstable-v1)
+list(APPEND PROTOCOLS_XML
+	"${CMAKE_CURRENT_SOURCE_DIR}/vitamin-k/window/drm-lease-unstable-v1.xml")
 
 set(WAYLAND_PROTOCOLS_SRC)
-set(OUTFILE "${WAYLAND_PROTOCOLS_DIR}/${PROTOCOL}.c")
-list(APPEND WAYLAND_PROTOCOLS_SRC "${OUTFILE}")
-add_custom_command(OUTPUT "${OUTFILE}"
-    COMMAND
-    ${WAYLAND_SCANNER}
-    code
-    "${PROTOCOL_XML}"
-    "${OUTFILE}"
-    VERBATIM
-    COMMENT "Generating code file with wayland-scanner")
+list(LENGTH PROTOCOLS NPROTOCOLS)
+math(EXPR NPROTOCOLS "${NPROTOCOLS}-1")
+foreach(INDEX RANGE ${NPROTOCOLS})
+	list(GET PROTOCOLS ${INDEX} PROTOCOL)
+	list(GET PROTOCOLS_XML ${INDEX} PROTOCOL_XML)
 
+	set(OUTFILE "${WAYLAND_PROTOCOLS_DIR}/${PROTOCOL}.c")
+	list(APPEND WAYLAND_PROTOCOLS_SRC "${OUTFILE}")
 
-set(OUTFILE "${WAYLAND_PROTOCOLS_DIR}/${PROTOCOL}.h")
-list(APPEND WAYLAND_PROTOCOLS_SRC "${OUTFILE}")
-add_custom_command(OUTPUT "${OUTFILE}"
-    COMMAND
-    ${WAYLAND_SCANNER}
-    client-header
-    "${PROTOCOL_XML}"
-    "${OUTFILE}"
-    VERBATIM
-    COMMENT "Generating client header file with wayland-scanner")
+	add_custom_command(OUTPUT "${OUTFILE}"
+		COMMAND
+		${WAYLAND_SCANNER}
+		private-code
+		"${PROTOCOL_XML}"
+		"${OUTFILE}"
+		VERBATIM
+		COMMENT "Generating code file with wayland-scanner for ${PROTOCOL}")
+
+	set(OUTFILE "${WAYLAND_PROTOCOLS_DIR}/${PROTOCOL}.h")
+	list(APPEND WAYLAND_PROTOCOLS_SRC "${OUTFILE}")
+	add_custom_command(OUTPUT "${OUTFILE}"
+		COMMAND
+		${WAYLAND_SCANNER}
+		client-header
+		"${PROTOCOL_XML}"
+		"${OUTFILE}"
+		VERBATIM
+		COMMENT "Generating client header file with wayland-scanner for ${PROTOCOL}")
+endforeach()
 
 add_library(wayland-protocols ${WAYLAND_PROTOCOLS_SRC})
 target_include_directories(wayland-protocols PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
